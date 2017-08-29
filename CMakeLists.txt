@@ -17,7 +17,8 @@ if (NOT EXISTS "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     # Dependencies
     #==============================================================================
-    find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation rviz tf tf_conversions visualization_msgs roboy_communication_middleware common_utilities)
+    find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation rviz tf tf_conversions
+            visualization_msgs roboy_communication_middleware common_utilities)
     include(findros)
     # Eigen
     find_package(PkgConfig REQUIRED)
@@ -45,7 +46,7 @@ if (NOT EXISTS "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     # Application
     #==============================================================================
-    add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp)
+    add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp src/roboyPlexus.cpp)
     target_link_libraries( roboy_plexus  -lpthread -lrt ${ros_LIBRARIES})
 else ()
     message(STATUS "cannot cross compile, are you in an embedded_command_shell.sh?!")

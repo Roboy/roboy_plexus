@@ -7,7 +7,7 @@
 #include "socal/hps.h"
 #include "socal/alt_gpio.h"
 #include "roboy_plexus/hps_0.h"
-#include "roboy_plexus/myoControl.hpp"
+#include "roboy_plexus/roboyPlexus.hpp"
 #include <vector>
 
 using namespace std;
@@ -53,7 +53,11 @@ int main(int argc, char *argv[]) {
 
     vector<int> deviceIDs = {0,1};
 
-    MyoControl myoControl(h2p_lw_myo_addr);
+    RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_darkroom_addr);
+
+    while(ros::ok()){
+        ROS_INFO_THROTTLE(5, "i'm nervous");
+    }
 
     // clean up our memory mapping and exit
     if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {

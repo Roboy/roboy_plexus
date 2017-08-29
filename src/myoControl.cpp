@@ -24,6 +24,11 @@ MyoControl::~MyoControl(){
 	cout << "shutting down myoControl" << endl;
 }
 
+void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint){
+    changeControl(motor, mode, params);
+    MYO_WRITE_sp(myo_base[motor/MOTORS_PER_MYOCONTROL], motor-(motor>=MOTORS_PER_MYOCONTROL?MOTORS_PER_MYOCONTROL:0), setPoint);
+}
+
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params){
 	int motorOffset = motor>=MOTORS_PER_MYOCONTROL?MOTORS_PER_MYOCONTROL:0;
 	MYO_WRITE_control(myo_base[motor/MOTORS_PER_MYOCONTROL], motor-motorOffset, mode);
@@ -90,16 +95,8 @@ void MyoControl::reset(){
 	}
 }
 
-void MyoControl::setPosition(int motor, int32_t position){
+void MyoControl::changeSetpoint(int motor, int32_t position){
 	MYO_WRITE_sp(myo_base[motor/MOTORS_PER_MYOCONTROL], motor-(motor>=MOTORS_PER_MYOCONTROL?MOTORS_PER_MYOCONTROL:0), position);
-}
-
-void MyoControl::setVelocity(int motor, int16_t velocity){
-	MYO_WRITE_sp(myo_base[motor/MOTORS_PER_MYOCONTROL], motor-(motor>=MOTORS_PER_MYOCONTROL?MOTORS_PER_MYOCONTROL:0), velocity);
-}
-
-void MyoControl::setDisplacement(int motor, int16_t displacement){
-	MYO_WRITE_sp(myo_base[motor/MOTORS_PER_MYOCONTROL], motor-(motor>=MOTORS_PER_MYOCONTROL?MOTORS_PER_MYOCONTROL:0), displacement);
 }
 
 bool MyoControl::setSPIactive(int motor, bool active){
@@ -355,7 +352,7 @@ bool MyoControl::playTrajectory(const char* file){
     do{
 		dt = elapsedTime;
 		for (auto &motor : trajectories) {
-			setDisplacement(motor.first, motor.second[sample]);
+			changeSetpoint(motor.first, motor.second[sample]);
 		}
 		sample++;
 
@@ -373,7 +370,7 @@ bool MyoControl::playTrajectory(const char* file){
 
 void MyoControl::estimateSpringParameters(int motor, int timeout,  uint numberOfDataPoints){
 	vector<float> weight, displacement, coeffs;
-	setDisplacement(motor,0);
+	changeSetpoint(motor,0);
 	changeControl(motor,DISPLACEMENT);
 	float force_min = 0, force_max = 4.0;
 	milliseconds ms_start = duration_cast< milliseconds >(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
@@ -381,7 +378,7 @@ void MyoControl::estimateSpringParameters(int motor, int timeout,  uint numberOf
 	outfile.open ("springParameters_calibration.csv");
 	do{
 		float f = (rand()/(float)RAND_MAX)*(force_max-force_min)+force_min;
-		setDisplacement(motor, f);
+        changeSetpoint(motor, f);
 		t0 = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
 		do{// wait a bit until force is applied
 			// update control

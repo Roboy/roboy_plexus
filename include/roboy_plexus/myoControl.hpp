@@ -46,6 +46,14 @@ class MyoControl{
 public:
 	MyoControl(vector<int32_t*> &myo_base);
 	~MyoControl();
+    /**
+	 * Changes the controller of a motor
+	 * @param motor for this motor
+	 * @param mode choose from Position, Velocity or Displacement
+	 * @param params with these controller parameters
+     * @param setPoint new setPoint
+	 */
+    void changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
 	/**
 	 * Changes the controller of a motor
 	 * @param motor for this motor
@@ -74,23 +82,11 @@ public:
 	 */
 	void reset();
 	/**
-	 * Changes setpoint for position controller
+	 * Changes setpoint
 	 * @param motor for this motor
-	 * @param position the new setpoint
+	 * @param setPoint the new setpoint
 	 */
-	void setPosition(int motor, int32_t position);
-	/**
-	 * Changes setpoint for velocity controller
-	 * @param motor for this motor
-	 * @param velocity the new setpoint
-	 */
-	void setVelocity(int motor, int16_t velocity);
-	/**
-	 * Changes setpoint for displacement controller
-	 * @param motor for this motor
-	 * @param displacement the new setpoint
-	 */
-	void setDisplacement(int motor, int16_t displacement);
+	void changeSetpoint(int motor, int32_t setPoint);
 	/**
 	 * Sets the spi state for the interface of a motor
 	 * @param motor
