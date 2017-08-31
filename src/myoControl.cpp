@@ -18,6 +18,11 @@ MyoControl::MyoControl(vector<int32_t*> &myo_base):myo_base(myo_base){
 	for(uint motor=0;motor<numberOfMotors;motor++){
 		control_params[motor][DISPLACEMENT] = params;
 	}
+
+	for(uint i=0;i<myo_base.size();i++){
+		MYO_WRITE_spi_activated(myo_base[i],true);
+	}
+	reset();
 }
 
 MyoControl::~MyoControl(){
