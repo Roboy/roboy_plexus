@@ -1,15 +1,13 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 
 RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):darkroom_base(darkroom_base){
-    nh = ros::NodeHandlePtr(new ros::NodeHandle);
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
-        ros::init(argc, argv, "interface",
-                  ros::init_options::NoSigintHandler |
-                  ros::init_options::AnonymousName |
-                  ros::init_options::NoRosout);
+        ros::init(argc, argv, "interface");
     }
+
+    nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(1));
     spinner->start();
@@ -22,7 +20,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):da
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
 
-    motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusThread, this));
+    motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
 }
 
