@@ -31,7 +31,7 @@ RoboyPlexus::~RoboyPlexus(){
 }
 
 void RoboyPlexus::motorStatusPublisher(){
-    ros::Rate rate(100);
+    ros::Rate rate(240);
     while(keep_publishing_motor_status){
         uint active_sensors = 0;
         roboy_communication_middleware::DarkRoom msg;
