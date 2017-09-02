@@ -16,12 +16,15 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):da
 
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
+    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
+
+    myoControl->allToDisplacement(0);
 }
 
 RoboyPlexus::~RoboyPlexus(){
@@ -96,5 +99,18 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i], req.setPoints[i]);
         i++;
     }
+    return true;
+}
+
+bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode::Request  &req,
+                                     roboy_communication_middleware::ControlMode::Response &res){
+    ROS_INFO("serving control mode service");
+    uint i = 0;
+    if(req.control_mode == POSITION)
+        myoControl->allToPosition(req.setPoint);
+    else if (req.control_mode = VELOCITY)
+        myoControl->allToVelocity(req.setPoint);
+    else if(req.control_mode == DISPLACEMENT)
+        myoControl->allToDisplacement(req.setPoint);
     return true;
 }
