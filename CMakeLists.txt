@@ -47,6 +47,7 @@ if (NOT EXISTS "ENV{SOCEDS_DEST_ROOT}")
     # Application
     #==============================================================================
     add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp src/roboyPlexus.cpp)
+    add_dependencies(roboy_plexus roboy_communication_middleware_gencpp)
     target_link_libraries( roboy_plexus  -lpthread -lrt ${ros_LIBRARIES})
 else ()
     message(STATUS "cannot cross compile, are you in an embedded_command_shell.sh?!")
