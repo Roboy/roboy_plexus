@@ -1,4 +1,5 @@
 #include <roboy_plexus/roboyPlexus.hpp>
+#include <roboy_plexus/myoControl.hpp>
 
 RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):darkroom_base(darkroom_base){
     if (!ros::isInitialized()) {
@@ -17,12 +18,16 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):da
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
     controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
+    emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop", &RoboyPlexus::EmergencyStopService, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
+
+    for(uint motor = 0; motor<NUMBER_OF_MOTORS_PER_FPGA; motor++)
+        control_mode[motor] = DISPLACEMENT;
 
     myoControl->allToDisplacement(0);
 }
@@ -65,6 +70,7 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
     uint i = 0;
     for(auto motor:msg->motors){
         myoControl->changeSetpoint(motor,msg->setPoints[i]);
+        i++;
     }
 }
 
@@ -97,6 +103,7 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         params.IntegralNegMax = req.config.IntegralNegMax[i];
         myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i], req.setPoints[i]);
+        control_mode[motor] = req.config.control_mode[i];
         i++;
     }
     return true;
@@ -104,13 +111,54 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
 
 bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode::Request  &req,
                                      roboy_communication_middleware::ControlMode::Response &res){
-    ROS_INFO("serving control mode service");
-    uint i = 0;
-    if(req.control_mode == POSITION)
-        myoControl->allToPosition(req.setPoint);
-    else if (req.control_mode = VELOCITY)
-        myoControl->allToVelocity(req.setPoint);
-    else if(req.control_mode == DISPLACEMENT)
-        myoControl->allToDisplacement(req.setPoint);
+    if(!emergency_stop) {
+        ROS_INFO("serving control mode service");
+        uint i = 0;
+        if (req.control_mode == POSITION) {
+            for (auto &mode:control_mode)
+                mode.second = POSITION;
+            myoControl->allToPosition(req.setPoint);
+        } else if (req.control_mode = VELOCITY) {
+            for (auto &mode:control_mode)
+                mode.second = VELOCITY;
+            myoControl->allToVelocity(req.setPoint);
+        } else if (req.control_mode == DISPLACEMENT) {
+            for (auto &mode:control_mode)
+                mode.second = DISPLACEMENT;
+            myoControl->allToDisplacement(req.setPoint);
+        }
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request  &req,
+                                       std_srvs::SetBool::Response &res){
+
+    if(req.data == 1) {
+        ROS_INFO("emergency stop service called");
+        control_mode_backup = control_mode;
+        control_params_backup = myoControl->control_params;
+        control_Parameters_t params;
+        params.Kp = 0;
+        params.Ki = 0;
+        params.Kd = 0;
+        params.outputPosMax = 0;
+        params.outputNegMax = 0;
+        params.forwardGain = 0;
+        for(uint motor = 0; motor<NUMBER_OF_MOTORS_PER_FPGA; motor++){
+            myoControl->changeControl(motor, DISPLACEMENT, params);
+        }
+        emergency_stop = true;
+    }else{
+        ROS_INFO("resuming normal operation");
+        uint motor = 0;
+        for(auto &params:control_params_backup){
+            myoControl->changeControl(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
+            motor++;
+        }
+        emergency_stop = false;
+    }
     return true;
 }
