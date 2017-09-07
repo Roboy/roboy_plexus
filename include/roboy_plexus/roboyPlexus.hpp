@@ -3,8 +3,10 @@
 #include <ros/ros.h>
 #include <vector>
 #include <roboy_plexus/myoControl.hpp>
+#include <roboy_plexus/am4096.hpp>
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
+#include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MotorCommand.h>
 #include <roboy_communication_middleware/MotorStatus.h>
 #include <roboy_communication_middleware/MotorConfigService.h>
@@ -19,10 +21,11 @@ using namespace std;
 
 class RoboyPlexus{
 public:
-    RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base);
+    RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base, vector<int> &deviceIDs, int32_t* darkroom_base);
     ~RoboyPlexus();
 private:
     void motorStatusPublisher();
+    void jointStatusPublisher();
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
     bool MotorConfigService(roboy_communication_middleware::MotorConfigService::Request  &req,
                             roboy_communication_middleware::MotorConfigService::Response &res);
@@ -34,14 +37,15 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
-    ros::Publisher motorStatus_pub, darkroom_pub;
+    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     boost::shared_ptr<MyoControl> myoControl;
-    boost::shared_ptr<std::thread> motorStatusThread;
-    bool keep_publishing_motor_status = true;
+    boost::shared_ptr<std::thread> motorStatusThread, jointStatusThread;
+    bool keep_publishing = true;
     int32_t *darkroom_base;
     bool emergency_stop = false;
+    vector<boost::shared_ptr<AM4096>> jointAngle;
 };

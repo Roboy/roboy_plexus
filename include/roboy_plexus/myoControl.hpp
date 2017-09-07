@@ -11,8 +11,8 @@
 #include <string>
 #include <sstream>
 
-#include "roboy_plexus/myoControlRegister.hpp"
-#include "roboy_plexus/timer.hpp"
+#include <roboy_plexus/myoControlRegister.hpp>
+#include <roboy_plexus/timer.hpp>
 
 using namespace std;
 using namespace std::chrono;

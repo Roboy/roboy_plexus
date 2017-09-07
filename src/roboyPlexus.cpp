@@ -1,7 +1,8 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 #include <roboy_plexus/myoControl.hpp>
 
-RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):darkroom_base(darkroom_base){
+RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base, vector<int> &deviceIDs, int32_t* darkroom_base):
+        darkroom_base(darkroom_base){
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
@@ -21,26 +22,35 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, int32_t* darkroom_base):da
     emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop", &RoboyPlexus::EmergencyStopService, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+    jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>("/roboy/middleware/JointStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
 
+    jointStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::jointStatusPublisher, this));
+    jointStatusThread->detach();
+
     for(uint motor = 0; motor<NUMBER_OF_MOTORS_PER_FPGA; motor++)
         control_mode[motor] = DISPLACEMENT;
 
     myoControl->allToDisplacement(0);
+
+    for(uint i2c_bus=0; i2c_bus<i2c_base.size(); i2c_bus++)
+        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[i2c_bus], deviceIDs)));;
 }
 
 RoboyPlexus::~RoboyPlexus(){
-    keep_publishing_motor_status = false;
+    keep_publishing = false;
     if(motorStatusThread->joinable())
         motorStatusThread->join();
+    if(jointStatusThread->joinable())
+        jointStatusThread->join();
 }
 
 void RoboyPlexus::motorStatusPublisher(){
     ros::Rate rate(240);
-    while(keep_publishing_motor_status){
+    while(keep_publishing){
         uint active_sensors = 0;
         roboy_communication_middleware::DarkRoom msg;
         for(uint i=0;i<NUM_SENSORS;i++){
@@ -62,6 +72,22 @@ void RoboyPlexus::motorStatusPublisher(){
             msg2.current.push_back(myoControl->getCurrent(motor));
         }
         motorStatus_pub.publish(msg2);
+        rate.sleep();
+    }
+}
+
+void RoboyPlexus::jointStatusPublisher(){
+    ros::Rate rate(50);
+    while(keep_publishing){
+        roboy_communication_middleware::JointStatus msg;
+        for (uint i = 0; i < jointAngle.size(); i++) {
+            jointAngle[i]->readAbsAngle(msg.absAngles);
+            jointAngle[i]->readRelAngle(msg.relAngles);
+            jointAngle[i]->readMagnetStatus(msg.tooFar, msg.tooClose);
+            jointAngle[i]->readTacho(msg.tacho);
+            jointAngle[i]->readAgcGain(msg.agcGain);
+        }
+        jointStatus_pub.publish(msg);
         rate.sleep();
     }
 }

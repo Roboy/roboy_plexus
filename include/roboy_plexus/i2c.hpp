@@ -30,6 +30,7 @@ public:
 
 	void write(uint8_t i2cAddr, uint32_t data, uint8_t number_of_bytes);
 	uint32_t read(uint8_t i2cAddr, uint8_t reg, uint8_t number_of_bytes);
+    bool ack_error();
 };
 
 #define IORD(base,reg) (*(((volatile int32_t*)base)+reg))
