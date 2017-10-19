@@ -6,7 +6,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
-        ros::init(argc, argv, "interface");
+        ros::init(argc, argv, "roboy_fpga_interface");
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
