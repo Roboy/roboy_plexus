@@ -25,6 +25,46 @@ MyoControl::MyoControl(vector<int32_t*> &myo_base):myo_base(myo_base){
 	reset();
 }
 
+MyoControl::MyoControl(vector<int32_t*> &myo_base, uint32_t *adc_base):myo_base(myo_base),
+																	   adc_base(adc_base){
+	// initialize control mode
+	numberOfMotors = myo_base.size()*MOTORS_PER_MYOCONTROL;
+	// initialize all controllers with default values
+	control_Parameters_t params;
+	getDefaultControlParams(&params, POSITION);
+	for(uint motor=0;motor<numberOfMotors;motor++){
+	changeControl(motor, 0, params);
+	control_params[motor][POSITION] = params;
+	}
+	getDefaultControlParams(&params, VELOCITY);
+	for(uint motor=0;motor<numberOfMotors;motor++){
+	control_params[motor][VELOCITY] = params;
+	}
+	getDefaultControlParams(&params, DISPLACEMENT);
+	for(uint motor=0;motor<numberOfMotors;motor++){
+	control_params[motor][DISPLACEMENT] = params;
+	}
+
+	for(uint i=0;i<myo_base.size();i++){
+	MYO_WRITE_spi_activated(myo_base[i],true);
+	}
+	reset();
+
+    // set measure number for ADC convert
+    int numberOfSamples = 1;
+    IOWR(adc_base, 0x01, numberOfSamples);
+
+
+    // start measure
+    for(uint channel = 0; channel<8; channel++){
+        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
+        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+        usleep(1);
+    }
+
+}
+
 MyoControl::~MyoControl(){
 	cout << "shutting down myoControl" << endl;
 }
@@ -224,18 +264,30 @@ void MyoControl::allToDisplacement(int16_t displacement){
 	}
 }
 
-void MyoControl::zeroWeight(){
-	weight_offset = -getWeight();
+void MyoControl::zeroWeight(int load_cell){
+    uint32_t adc_value = 0;
+	weight_offset = -getWeight(load_cell, adc_value);
 }
 
-float MyoControl::getWeight(){
-	float weight = 0;
-	uint32_t adc_value = 0;
-	if(adc_base!=nullptr){
-		*adc_base = 0;
-		adc_value = *adc_base;
-		weight = (adc_weight_parameters[0]+weight_offset+adc_weight_parameters[1]*adc_value);
-	}
+uint32_t MyoControl::readADC(int load_cell = 0){
+    // wait measure done
+    while ((IORD(adc_base,0x00) & 0x01) == 0x00);
+    // read adc value
+    uint32_t adc_value = IORD(adc_base, 0x01);
+    return adc_value;
+}
+
+float MyoControl::getWeight(int load_cell){
+    uint32_t adc_value = readADC(load_cell);
+    float weight = (adc_weight_parameters[0]+weight_offset+adc_weight_parameters[1]*adc_value);
+    return weight;
+}
+
+float MyoControl::getWeight(int load_cell, uint32_t &adc_value){
+    while ((IORD(adc_base,0x00) & 0x01) == 0x00);
+    // read adc value
+    adc_value = IORD(adc_base, 0x01);
+    float weight = (adc_weight_parameters[0]+weight_offset+adc_weight_parameters[1]*adc_value);
 	return weight;
 }
 
@@ -373,16 +425,23 @@ bool MyoControl::playTrajectory(const char* file){
     return true;
 }
 
-void MyoControl::estimateSpringParameters(int motor, int timeout,  uint numberOfDataPoints){
-	vector<float> weight, displacement, coeffs;
+void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+                                          uint numberOfDataPoints, float displacement_min,
+                                          float displacement_max){
+	vector<float> weight, displacement;
 	changeSetpoint(motor,0);
 	changeControl(motor,DISPLACEMENT);
-	float force_min = 0, force_max = 4.0;
 	milliseconds ms_start = duration_cast< milliseconds >(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
 	ofstream outfile;
-	outfile.open ("springParameters_calibration.csv");
+    char str[100];
+    sprintf(str, "springParameters_calibration_motor%d.csv", motor);
+	outfile.open (str);
+    if(!outfile.is_open()){
+        cout << "could not open file " << str << " for writing, aborting!" << endl;
+        return;
+    }
 	do{
-		float f = (rand()/(float)RAND_MAX)*(force_max-force_min)+force_min;
+		float f = (rand()/(float)RAND_MAX)*(displacement_max-displacement_min)+displacement_min;
         changeSetpoint(motor, f);
 		t0 = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
 		do{// wait a bit until force is applied
@@ -391,13 +450,13 @@ void MyoControl::estimateSpringParameters(int motor, int timeout,  uint numberOf
 		}while((t1-t0).count()<500);
 
 		// note the weight
-		weight.push_back(getWeight());
+		weight.push_back(getWeight(motor));
 		// note the force
 		displacement.push_back(getDisplacement(motor));
 		outfile << displacement.back() << ", " << weight.back() << endl;
 		ms_stop = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
 	}while((ms_stop-ms_start).count()<timeout && weight.size()<numberOfDataPoints);
-	polynomialRegression(3, displacement, weight, coeffs);
+	polynomialRegression(degree, displacement, weight, coeffs);
 //	polyPar[motor] = coeffs;
 	outfile.close();
 }

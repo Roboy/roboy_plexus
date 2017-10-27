@@ -45,6 +45,7 @@ enum CONTROLMODE{
 class MyoControl{
 public:
 	MyoControl(vector<int32_t*> &myo_base);
+	MyoControl(vector<int32_t*> &myo_base, uint32_t *adc_base);
 	~MyoControl();
     /**
 	 * Changes the controller of a motor
@@ -163,13 +164,29 @@ public:
 	 */
 	void allToDisplacement(int16_t displacement);
 	/**
-	 * Zeros the current weight
+	 * Zeros the weight for a load cell
+	 * @param load_cell for this load cell
 	 */
-	void zeroWeight();
+	void zeroWeight(int load_cell = 0);
+    /**
+	 * Returns the current adc of the load cell
+	 * @param load_cell for this load cell
+     * @return the adc value
+	 */
+    uint32_t readADC(int load_cell);
+    /**
+	 * Returns the current weight according to adc_weight_parameters of a load_cell
+	 * @param load_cell for this load cell
+	 * @return the load
+	 */
+    float getWeight(int load_cell);
 	/**
-	 * Returns the current weight according to adc_weight_parameters
+	 * Returns the current weight according to adc_weight_parameters of a load_cell
+	 * @param load_cell for this load cell
+	 * @param the adc value
+	 * @return the load
 	 */
-	float getWeight();
+	float getWeight(int load_cell, uint32_t &adc_value);
 	/**
 	 * records positions of motors in Displacment mode
 	 * @param samplingTime
@@ -195,10 +212,16 @@ public:
 	 * keeping track of displacement and weight, it will either timeout or stop when the
 	 * requested number of samples was reached
 	 * @param motor for this motor
+	 * @param degree the degree for the polynomial regression
+	 * @param coeffs these are the result from the polynomial regression
 	 * @param timeout in milliseconds
 	 * @param numberOfDataPoints how many samples do you wanne collect
+	 * @param displacement_min the minimal displacement to be sampled from
+	 * @param displacement_min the maximal displacement to be sampled from
 	 */
-	void estimateSpringParameters(int motor, int timeout, uint numberOfDataPoints);
+	void estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+                                  uint numberOfDataPoints, float displacement_min,
+                                  float displacement_max);
 	/**
 	 * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)
 	 * @param degree (e.g. 2 -> a * x^0 + b * x^1 + c * x^2)
@@ -210,9 +233,9 @@ public:
 			vector<float> &coeffs);
 
 	map<int,map<int,control_Parameters_t>> control_params;
-	uint32_t *adc_base = nullptr;
+	uint32_t* adc_base;
 	float weight_offset = 0;
-	float adc_weight_parameters[2] = {830.7, -0.455};
+	float adc_weight_parameters[2] = {0, 1};
 	uint numberOfMotors;
 private:
 	Timer timer;

@@ -22,7 +22,8 @@ int main(int argc, char *argv[]) {
 
     void *virtual_base;
     int fd;
-    void *h2p_lw_led_addr, *h2p_lw_adc_addr;
+    void *h2p_lw_led_addr;
+    uint32_t *h2p_lw_adc_addr;
     int32_t *h2p_lw_darkroom_addr;
     vector<int32_t*> h2p_lw_myo_addr;
     vector<int32_t*> h2p_lw_i2c_addr;
@@ -51,10 +52,11 @@ int main(int argc, char *argv[]) {
 
     h2p_lw_darkroom_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
+    h2p_lw_adc_addr = (uint32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
     vector<int> deviceIDs = {0,1};
 
-    RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs, h2p_lw_darkroom_addr);
+    RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs, h2p_lw_darkroom_addr, h2p_lw_adc_addr);
 
     while(ros::ok()){
         ROS_INFO_THROTTLE(5, "i'm nervous");
