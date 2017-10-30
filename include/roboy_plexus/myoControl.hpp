@@ -14,6 +14,8 @@
 #include <roboy_plexus/myoControlRegister.hpp>
 #include <roboy_plexus/timer.hpp>
 
+#define NUMBER_OF_ADC_SAMPLES 1
+
 using namespace std;
 using namespace std::chrono;
 

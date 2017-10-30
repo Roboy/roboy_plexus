@@ -28,7 +28,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>("/roboy/middleware/JointStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
-    adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/load_cell", 1);
+    adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
@@ -64,7 +64,7 @@ RoboyPlexus::~RoboyPlexus() {
 }
 
 void RoboyPlexus::adcPublisher() {
-    ros::Rate rate(240);
+    ros::Rate rate(100);
     while (keep_publishing) {
         roboy_communication_middleware::ADCvalue msg;
         for (uint i = 0; i < NUMBER_OF_LOADCELLS; i++) {
@@ -74,6 +74,7 @@ void RoboyPlexus::adcPublisher() {
             msg.load.push_back(val);
         }
         adc_pub.publish(msg);
+        rate.sleep();
     }
 }
 
@@ -110,7 +111,7 @@ void RoboyPlexus::jointStatusPublisher() {
 }
 
 void RoboyPlexus::motorStatusPublisher() {
-    ros::Rate rate(200);
+    ros::Rate rate(100);
     while (keep_publishing) {
         roboy_communication_middleware::MotorStatus msg2;
         for (uint motor = 0; motor < 14; motor++) {
