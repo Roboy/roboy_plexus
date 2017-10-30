@@ -307,10 +307,26 @@ uint32_t MyoControl::readADC(int load_cell = 0) {
     while ((IORD(adc_base, 0x00) & 0x01) == 0x00);
     // read adc value
     uint32_t adc_value = 0;
-    for (uint i = 0; i < NUMBER_OF_ADC_SAMPLES; i++) {
-        adc_value += IORD(adc_base, 0x01);
-//        printf("CH%d=%.3fV (0x%04x)\r\n", load_cell, (float)adc_value/1000.0, adc_value);
+    uint sample = 0;
+    while(sample<NUMBER_OF_ADC_SAMPLES){
+        uint32_t val = IORD(adc_base, 0x01);
+        if(val>0){
+            sample ++;
+            adc_value += val;
+//            printf("CH%d=%.3fV (0x%04x)\r\n", load_cell, (float)adc_value/1000.0, adc_value);
+        }else{
+            // start measure
+            IOWR(adc_base, 0x00, (load_cell << 1) | 0x00);
+            IOWR(adc_base, 0x00, (load_cell << 1) | 0x01);
+            IOWR(adc_base, 0x00, (load_cell << 1) | 0x00);
+            usleep(1);
+            // wait measure done
+            while ((IORD(adc_base, 0x00) & 0x01) == 0x00);
+        }
     }
+
+    adc_value /= NUMBER_OF_ADC_SAMPLES;
+
     return adc_value;
 }
 
@@ -462,8 +478,7 @@ bool MyoControl::playTrajectory(const char *file) {
 
 void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                           uint numberOfDataPoints, float displacement_min,
-                                          float displacement_max) {
-    vector<float> weight, displacement;
+                                          float displacement_max, vector<double> &load, vector<double> &displacement) {
     changeSetpoint(motor, 0);
     changeControl(motor, DISPLACEMENT);
     milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
@@ -475,6 +490,7 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
         cout << "could not open file " << str << " for writing, aborting!" << endl;
         return;
     }
+    outfile << "displacement[ticks], load[N]" << endl;
     do {
         float f = (rand() / (float) RAND_MAX) * (displacement_max - displacement_min) + displacement_min;
         changeSetpoint(motor, f);
@@ -482,24 +498,29 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
         do {// wait a bit until force is applied
             // update control
             t1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        } while ((t1 - t0).count() < 500);
+        } while ((t1 - t0).count() < 1000);
 
         // note the weight
-        weight.push_back(getWeight(motor));
+        load.push_back(getWeight(0)); // TODO: use a different load_cell for each motor
         // note the force
         displacement.push_back(getDisplacement(motor));
-        outfile << displacement.back() << ", " << weight.back() << endl;
+        outfile << displacement.back() << ", " << load.back() << endl;
         ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         cout << "setPoint: \t" << f << "\tdisplacement:\t" << displacement.back() << "\tload:\t" <<
-             weight.back() << endl;
-    } while ((ms_stop - ms_start).count() < timeout && weight.size() < numberOfDataPoints);
+             load.back() << endl;
+    } while ((ms_stop - ms_start).count() < timeout && load.size() < numberOfDataPoints);
     changeSetpoint(motor, 0);
-    polynomialRegression(degree, displacement, weight, coeffs);
+    polynomialRegression(degree, displacement, load, coeffs);
+    outfile << "regression coefficients for polynomial of "<< degree << " degree:" << endl;
+    for(float coef:coeffs){
+        outfile << coef << "\t";
+    }
+    outfile << endl;
 //	polyPar[motor] = coeffs;
     outfile.close();
 }
 
-void MyoControl::polynomialRegression(int degree, vector<float> &x, vector<float> &y,
+void MyoControl::polynomialRegression(int degree, vector<double> &x, vector<double> &y,
                                       vector<float> &coeffs) {
     int N = x.size(), i, j, k;
     double X[2 * degree +

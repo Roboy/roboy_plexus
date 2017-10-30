@@ -14,7 +14,7 @@
 #include <roboy_plexus/myoControlRegister.hpp>
 #include <roboy_plexus/timer.hpp>
 
-#define NUMBER_OF_ADC_SAMPLES 1
+#define NUMBER_OF_ADC_SAMPLES 10
 
 using namespace std;
 using namespace std::chrono;
@@ -220,10 +220,12 @@ public:
 	 * @param numberOfDataPoints how many samples do you wanne collect
 	 * @param displacement_min the minimal displacement to be sampled from
 	 * @param displacement_min the maximal displacement to be sampled from
+	 * @param load will be filled with the load cell data
+	 * @param displacement will be filled with the displacement
 	 */
 	void estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                   uint numberOfDataPoints, float displacement_min,
-                                  float displacement_max);
+                                  float displacement_max, vector<double> &load, vector<double> &displacement);
 	/**
 	 * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)
 	 * @param degree (e.g. 2 -> a * x^0 + b * x^1 + c * x^2)
@@ -231,13 +233,13 @@ public:
 	 * @param X the x-data
 	 * @param Y the y-data
 	 */
-	void polynomialRegression(int degree, vector<float> &x, vector<float> &y,
+	void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
 			vector<float> &coeffs);
 
 	map<int,map<int,control_Parameters_t>> control_params;
 	uint32_t* adc_base;
 	float weight_offset = 0;
-	float adc_weight_parameters[2] = {0, 1};
+	float adc_weight_parameters[2] = {0.2659488846, 0.0990372554/4.0};
 	uint numberOfMotors;
 private:
 	Timer timer;

@@ -114,7 +114,7 @@ void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(100);
     while (keep_publishing) {
         roboy_communication_middleware::MotorStatus msg2;
-        for (uint motor = 0; motor < 14; motor++) {
+        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             msg2.pwmRef.push_back(myoControl->getPWM(motor));
             msg2.position.push_back(myoControl->getPosition(motor));
             msg2.velocity.push_back(myoControl->getVelocity(motor));
@@ -200,7 +200,12 @@ bool RoboyPlexus::MotorCalibrationService(roboy_communication_middleware::MotorC
         ROS_INFO("serving motor calibration service for motor %d", req.motor);
         myoControl->estimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
                                              req.timeout, req.numberOfDataPoints, req.displacement_min,
-                                             req.displacement_max);
+                                             req.displacement_max, res.load, res.displacement);
+        cout << "coefficients:\t";
+        for(uint i=0; i<req.degree; i++){
+            cout << res.estimated_spring_parameters[i] << "\t";
+        }
+        cout << endl;
         return true;
     } else {
         return false;
