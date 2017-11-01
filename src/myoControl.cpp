@@ -7,7 +7,6 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
     control_Parameters_t params;
     getDefaultControlParams(&params, POSITION);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        changeControl(motor, 0, params);
         control_params[motor][POSITION] = params;
     }
     getDefaultControlParams(&params, VELOCITY);
@@ -18,6 +17,8 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         control_params[motor][DISPLACEMENT] = params;
     }
+
+    changeControl(DISPLACEMENT);
 
     for (uint i = 0; i < myo_base.size(); i++) {
         MYO_WRITE_spi_activated(myo_base[i], true);
@@ -33,7 +34,6 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, uint32_t *adc_base) : myo_ba
     control_Parameters_t params;
     getDefaultControlParams(&params, POSITION);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        changeControl(motor, 0, params);
         control_params[motor][POSITION] = params;
     }
     getDefaultControlParams(&params, VELOCITY);
@@ -44,6 +44,8 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, uint32_t *adc_base) : myo_ba
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         control_params[motor][DISPLACEMENT] = params;
     }
+
+    changeControl(DISPLACEMENT);
 
     for (uint i = 0; i < myo_base.size(); i++) {
         MYO_WRITE_spi_activated(myo_base[i], true);
@@ -231,7 +233,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
         case POSITION:
             params->spPosMax = 10000000;
             params->spNegMax = -10000000;
-            params->Kp = 1.0;
+            params->Kp = 1;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
@@ -242,7 +244,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
         case VELOCITY:
             params->spPosMax = 100;
             params->spNegMax = -100;
-            params->Kp = 1.0;
+            params->Kp = 1;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
@@ -253,7 +255,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
         case DISPLACEMENT:
             params->spPosMax = 2000;
             params->spNegMax = 0;
-            params->Kp = 100.0;
+            params->Kp = 100;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;

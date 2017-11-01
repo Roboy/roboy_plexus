@@ -161,10 +161,10 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         params.deadBand = req.config.deadBand[i];
         params.IntegralPosMax = req.config.IntegralPosMax[i];
         params.IntegralNegMax = req.config.IntegralNegMax[i];
-        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
-        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
-                 req.setPoints[i]);
-        control_mode[motor] = req.config.control_mode[i];
+//        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
+//        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
+//                 req.setPoints[i]);
+//        control_mode[motor] = req.config.control_mode[i];
         i++;
     }
     return true;
@@ -175,18 +175,24 @@ bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode
     if (!emergency_stop) {
         ROS_INFO("serving control mode service");
         uint i = 0;
-        if (req.control_mode == POSITION) {
-            for (auto &mode:control_mode)
-                mode.second = POSITION;
-            myoControl->allToPosition(req.setPoint);
-        } else if (req.control_mode = VELOCITY) {
-            for (auto &mode:control_mode)
-                mode.second = VELOCITY;
-            myoControl->allToVelocity(req.setPoint);
-        } else if (req.control_mode == DISPLACEMENT) {
-            for (auto &mode:control_mode)
-                mode.second = DISPLACEMENT;
-            myoControl->allToDisplacement(req.setPoint);
+        switch(req.control_mode){
+            case POSITION:
+                for (auto &mode:control_mode)
+                    mode.second = POSITION;
+                myoControl->allToPosition(req.setPoint);
+                break;
+            case VELOCITY:
+                for (auto &mode:control_mode)
+                    mode.second = VELOCITY;
+                myoControl->allToVelocity(req.setPoint);
+                break;
+            case DISPLACEMENT:
+                for (auto &mode:control_mode)
+                    mode.second = DISPLACEMENT;
+                myoControl->allToDisplacement(req.setPoint);
+                break;
+            default:
+                return false;
         }
         return true;
     } else {
