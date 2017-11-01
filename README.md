@@ -1,5 +1,5 @@
 # Prerequisites
-1. Install dependancies
+1. Install dependencies
 ```
 sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf 
 ```
