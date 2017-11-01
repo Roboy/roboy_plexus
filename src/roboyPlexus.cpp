@@ -161,10 +161,10 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         params.deadBand = req.config.deadBand[i];
         params.IntegralPosMax = req.config.IntegralPosMax[i];
         params.IntegralNegMax = req.config.IntegralNegMax[i];
-//        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
-//        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
-//                 req.setPoints[i]);
-//        control_mode[motor] = req.config.control_mode[i];
+        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
+        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
+                 req.setPoints[i]);
+        control_mode[motor] = req.config.control_mode[i];
         i++;
     }
     return true;
