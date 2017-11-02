@@ -111,7 +111,7 @@ void RoboyPlexus::jointStatusPublisher() {
 }
 
 void RoboyPlexus::motorStatusPublisher() {
-    ros::Rate rate(100);
+    ros::Rate rate(200);
     while (keep_publishing) {
         roboy_communication_middleware::MotorStatus msg2;
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
