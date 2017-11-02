@@ -15,6 +15,7 @@
 #include <roboy_plexus/timer.hpp>
 
 #define NUMBER_OF_ADC_SAMPLES 10
+#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2800 // in Hz, used to scale the motor velocity
 
 using namespace std;
 using namespace std::chrono;
@@ -127,7 +128,7 @@ public:
 	 * Gets the current velocity of a motor in radians/seconds
 	 * @param motor for this motor
 	 */
-	int16_t getVelocity(int motor);
+	int32_t getVelocity(int motor);
 	/**
 	 * Gets the displacement in encoder ticks
 	 * @param motor for this motor

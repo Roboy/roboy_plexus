@@ -204,9 +204,10 @@ int32_t MyoControl::getPosition(int motor) {
                              motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
 }
 
-int16_t MyoControl::getVelocity(int motor) {
-    return MYO_READ_velocity(myo_base[motor / MOTORS_PER_MYOCONTROL],
-                             motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
+int32_t MyoControl::getVelocity(int motor) {
+    int16_t vel = MYO_READ_velocity(myo_base[motor / MOTORS_PER_MYOCONTROL],
+                                    motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
+    return  ((int32_t) vel) * MOTOR_BOARD_COMMUNICATION_FREQUENCY;
 }
 
 int16_t MyoControl::getDisplacement(int motor) {
