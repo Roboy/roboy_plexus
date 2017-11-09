@@ -80,11 +80,15 @@ void RoboyPlexus::adcPublisher() {
 
 void RoboyPlexus::darkRoomPublisher() {
     ros::Rate rate(240);
+    high_resolution_clock::time_point t0 = high_resolution_clock::now();
     while (keep_publishing) {
         uint active_sensors = 0;
         roboy_communication_middleware::DarkRoom msg;
         for (uint i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, i);
+            high_resolution_clock::time_point t1 = high_resolution_clock::now();
+            microseconds time_span = duration_cast<microseconds>(t1 - t0);
+            msg.timestamp.push_back(time_span.count());
             msg.sensor_value.push_back(val);
             if ((val >> 29) & 0x1)//valid
                 active_sensors++;

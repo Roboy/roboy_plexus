@@ -15,12 +15,14 @@
 #include <std_srvs/SetBool.h>
 #include <thread>
 #include <map>
+#include <chrono>
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_MOTORS_PER_FPGA 14
 #define NUMBER_OF_LOADCELLS 8
 
 using namespace std;
+using namespace chrono;
 
 class RoboyPlexus{
 public:
