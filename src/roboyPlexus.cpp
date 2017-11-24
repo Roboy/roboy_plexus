@@ -29,6 +29,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>("/roboy/middleware/JointStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
     adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
+    gsensor_pub = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/imu0", 1);
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
@@ -52,7 +53,31 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     myoControl->allToDisplacement(0);
 
     for (uint i2c_bus = 0; i2c_bus < i2c_base.size(); i2c_bus++)
-        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[i2c_bus], deviceIDs)));;
+        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[i2c_bus], deviceIDs)));
+
+
+    // open i2c bus for gsensor
+    if ((file = open(filename, O_RDWR)) < 0) {
+        ROS_ERROR("Failed to open the i2c bus of gsensor");
+    }
+
+    // init
+    // gsensor i2c address: 101_0011
+    int addr = 0b01010011;
+    if (ioctl(file, I2C_SLAVE, addr) < 0) {
+        ROS_ERROR("Failed to acquire bus access and/or talk to slave");
+    }
+    // configure accelerometer as +-2g and start measure
+    bSuccess = ADXL345_Init(file);
+    if (bSuccess){
+        // dump chip id
+        bSuccess = ADXL345_IdRead(file, &id);
+        if (bSuccess)
+            ROS_INFO("gsensor chip_id=%02Xh\r\n", id);
+    }
+
+    gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
+    gsensor_thread->detach();
 }
 
 RoboyPlexus::~RoboyPlexus() {
@@ -61,6 +86,41 @@ RoboyPlexus::~RoboyPlexus() {
         motorStatusThread->join();
     if (jointStatusThread->joinable())
         jointStatusThread->join();
+    if (gsensor_thread->joinable())
+        gsensor_thread->join();
+
+    if (file)
+        close(file);
+}
+
+void RoboyPlexus::gsensorPublisher() {
+    ros::Rate rate(100);
+    while (keep_publishing) {
+        sensor_msgs::Imu msg;
+        msg.header.stamp = ros::Time::now();
+        msg.header.frame_id = "calibrationCube";
+        msg.orientation.w = 1;
+        msg.linear_acceleration_covariance = {
+                0.01, 0, 0,
+                0, 0.01, 0,
+                0, 0, 0.01
+        };
+        if (ADXL345_IsDataReady(file)){
+            bSuccess = ADXL345_XYZ_Read(file, szXYZ);
+            if (bSuccess){
+                ROS_DEBUG_THROTTLE(1,"X=%d mg, Y=%d mg, Z=%d mg", (int16_t)szXYZ[0]*mg_per_digi, (int16_t)szXYZ[1]*mg_per_digi, (int16_t)szXYZ[2]*mg_per_digi);
+                msg.linear_acceleration.x = (int16_t)szXYZ[0]*mg_per_digi;
+                msg.linear_acceleration.y = (int16_t)szXYZ[1]*mg_per_digi;
+                msg.linear_acceleration.z = (int16_t)szXYZ[2]*mg_per_digi;
+                // convert to m/s^2
+                msg.linear_acceleration.x *= 0.00981;
+                msg.linear_acceleration.y *= 0.00981;
+                msg.linear_acceleration.z *= 0.00981;
+            }
+            gsensor_pub.publish(msg);
+        }
+        rate.sleep();
+    }
 }
 
 void RoboyPlexus::adcPublisher() {
@@ -250,4 +310,107 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         emergency_stop = false;
     }
     return true;
+}
+
+bool RoboyPlexus::ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value){
+    bool bSuccess = false;
+    uint8_t szValue[2];
+    // write to define register
+    szValue[0] = address;
+    szValue[1] = value;
+    if (write(file, &szValue, sizeof(szValue)) == sizeof(szValue)){
+        bSuccess = true;
+    }
+    return bSuccess;
+}
+
+bool RoboyPlexus::ADXL345_REG_READ(int file, uint8_t address,uint8_t *value){
+    bool bSuccess = false;
+    uint8_t Value;
+    // write to define register
+    if (write(file, &address, sizeof(address)) == sizeof(address)){
+
+        // read back value
+        if (read(file, &Value, sizeof(Value)) == sizeof(Value)){
+            *value = Value;
+            bSuccess = true;
+        }
+    }
+    return bSuccess;
+}
+
+bool RoboyPlexus::ADXL345_REG_MULTI_READ(int file, uint8_t readaddr,uint8_t readdata[], uint8_t len){
+    bool bSuccess = false;
+    // write to define register
+    if (write(file, &readaddr, sizeof(readaddr)) == sizeof(readaddr)){
+        // read back value
+        if (read(file, readdata, len) == len){
+            bSuccess = true;
+        }
+    }
+    return bSuccess;
+}
+
+bool RoboyPlexus::ADXL345_Init(int file){
+    bool bSuccess;
+
+    // +- 2g range, 10 bits
+    bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_DATA_FORMAT, XL345_RANGE_2G | XL345_FULL_RESOLUTION);
+
+    //Output Data Rate: 800Hz
+    if (bSuccess){
+        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_BW_RATE, XL345_RATE_100);
+    }
+
+    //INT_Enable: Data Ready
+    if (bSuccess){
+        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_INT_ENALBE, XL345_DATAREADY);
+    }
+
+    // stop measure
+    if (bSuccess){
+        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_POWER_CTL, XL345_STANDBY);
+    }
+
+    // start measure
+    if (bSuccess){
+        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_POWER_CTL, XL345_MEASURE);
+
+    }
+
+
+    return bSuccess;
+
+}
+
+bool RoboyPlexus::ADXL345_IsDataReady(int file){
+    bool bReady = false;
+    uint8_t data8;
+
+    if (ADXL345_REG_READ(file, ADXL345_REG_INT_SOURCE,&data8)){
+        if (data8 & XL345_DATAREADY)
+            bReady = true;
+    }
+
+    return bReady;
+}
+
+bool RoboyPlexus::ADXL345_XYZ_Read(int file, uint16_t szData16[3]){
+    bool bPass;
+    uint8_t szData8[6];
+    bPass = ADXL345_REG_MULTI_READ(file, 0x32, (uint8_t *)&szData8, sizeof(szData8));
+    if (bPass){
+        szData16[0] = (szData8[1] << 8) | szData8[0];
+        szData16[1] = (szData8[3] << 8) | szData8[2];
+        szData16[2] = (szData8[5] << 8) | szData8[4];
+    }
+
+    return bPass;
+}
+
+bool RoboyPlexus::ADXL345_IdRead(int file, uint8_t *pId){
+    bool bPass;
+    bPass = ADXL345_REG_READ(file, ADXL345_REG_DEVID, pId);
+
+    return bPass;
 }

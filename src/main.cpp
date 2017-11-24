@@ -10,19 +10,24 @@
 #include "roboy_plexus/roboyPlexus.hpp"
 #include <vector>
 
+
 using namespace std;
 
+#define ALT_LWFPGASLVS_OFST 0xFF200000
 #define HW_REGS_BASE ( ALT_STM_OFST )
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 //#define ADC_MEASUREMENT
 
+
+
+
 int main(int argc, char *argv[]) {
 
     void *virtual_base;
     int fd;
-    void *h2p_lw_led_addr;
+    uint32_t *h2p_lw_led_addr;
     uint32_t *h2p_lw_adc_addr;
     int32_t *h2p_lw_darkroom_addr;
     vector<int32_t*> h2p_lw_myo_addr;
@@ -44,65 +49,87 @@ int main(int argc, char *argv[]) {
         return( 1 );
     }
 
+    h2p_lw_led_addr = (uint32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-
+//
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-
+//
     h2p_lw_darkroom_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-
+//
     h2p_lw_adc_addr = (uint32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-
+//
     vector<int> deviceIDs = {0,1};
 
     RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs, h2p_lw_darkroom_addr, h2p_lw_adc_addr);
-
-    while(ros::ok()){
-        uint32_t crc32 = IORD(h2p_lw_darkroom_addr, 32);
-        uint32_t fw_version = IORD(h2p_lw_darkroom_addr, 33);
-        uint32_t ID = IORD(h2p_lw_darkroom_addr, 34);
-        uint32_t phase0 = IORD(h2p_lw_darkroom_addr, 35);
-        uint32_t phase1 = IORD(h2p_lw_darkroom_addr, 36);
-        uint32_t tilt0 = IORD(h2p_lw_darkroom_addr, 37);
-        uint32_t tilt1 = IORD(h2p_lw_darkroom_addr, 38);
-        uint32_t unlock_count = IORD(h2p_lw_darkroom_addr, 39);
-        uint32_t hw_version = IORD(h2p_lw_darkroom_addr, 40);
-        uint32_t curve0 = IORD(h2p_lw_darkroom_addr, 41);
-        uint32_t curve1 = IORD(h2p_lw_darkroom_addr, 42);
-        uint32_t acc_x = IORD(h2p_lw_darkroom_addr, 43);
-        uint32_t acc_y = IORD(h2p_lw_darkroom_addr, 44);
-        uint32_t acc_z = IORD(h2p_lw_darkroom_addr, 45);
-        uint32_t gibphase0 = IORD(h2p_lw_darkroom_addr, 46);
-        uint32_t gibphase1 = IORD(h2p_lw_darkroom_addr, 47);
-        uint32_t gibmag0 = IORD(h2p_lw_darkroom_addr, 48);
-        uint32_t gibmag1 = IORD(h2p_lw_darkroom_addr, 49);
-        uint32_t mode = IORD(h2p_lw_darkroom_addr, 50);
-        uint32_t faults = IORD(h2p_lw_darkroom_addr, 51);
-        ROS_INFO_THROTTLE(1,
-            "crc32:       %d\n"
-            "fw_version:  %d\n"
-            "ID:          %d\n"
-            "phase0:      %d\n"
-            "phase1:      %d\n"
-            "tilt0:       %d\n"
-            "tilt1:       %d\n"
-            "unlock_count:%d\n"
-            "hw_version:  %d\n"
-            "curve0:      %d\n"
-            "curve1:      %d\n"
-            "acc_x:       %d\n"
-            "acc_y:       %d\n"
-            "acc_z:       %d\n"
-            "gibphase0:   %d\n"
-            "gibphase1:   %d\n"
-            "gibmag0:     %d\n"
-            "gibmag0:     %d\n"
-            "mode:        %d\n"
-            "faults:      %d\n", crc32, fw_version,ID,phase0,phase1,tilt0,tilt1,unlock_count,hw_version,
-                          curve0,curve1,acc_x,acc_y,acc_z, gibphase0, gibphase1, gibmag0, gibmag1, mode, faults
-        );
+//
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "roboy_fpga_interface");
     }
+    ros::NodeHandle nh;
+
+    uint32_t mask = 0;
+    high_resolution_clock::time_point t0 = high_resolution_clock::now(), t1;
+    while(ros::ok()){
+        t1 = high_resolution_clock::now();
+        milliseconds time_span = duration_cast<milliseconds>(t1-t0);
+        if(time_span.count()%500==0){
+            mask ++;
+            if(mask==255)
+                mask =0;
+            *h2p_lw_led_addr = mask;
+        }
+    }
+
+
+//    I2C i2c(h2p_lw_i2c_addr[0]);
+//    vector<uint8_t> data;
+//    i2c.read(LSM9DS1_ADDRESS_ACCELGYRO,0x80 | 0x18,6,data);
+//    for(auto d:data)
+//        printf("%x\t",d);
+//    printf("\n");
+//
+//
+//    Adafruit_LSM9DS1 lsm(0,h2p_lw_i2c_addr[0]);
+//    while(!lsm.begin()){
+//        usleep(100);
+//        ROS_WARN_THROTTLE(1, "no lsm detected");
+//    }
+//
+//    // 1.) Set the accelerometer range
+//    lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_2G);
+//    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_4G);
+//    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_8G);
+//    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_16G);
+//
+//    // 2.) Set the magnetometer sensitivity
+//    lsm.setupMag(lsm.LSM9DS1_MAGGAIN_4GAUSS);
+//    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_8GAUSS);
+//    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_12GAUSS);
+//    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_16GAUSS);
+//
+//    // 3.) Setup the gyroscope
+////    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_245DPS);
+//    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_500DPS);
+//    //lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_2000DPS);
+//
+//    ros::Rate rate(10);
+//    while(ros::ok()){
+//        lsm.read();  /* ask it to read in the data */
+//
+//        /* Get a new sensor event */
+//        sensors_event_t a, m, g, temp;
+//
+//        lsm.getEvent(&a, &m, &g, &temp);
+//
+//        ROS_INFO("%f\t%f\t%f\t%f\t%f\t%f", a.acceleration.x, a.acceleration.y, a.acceleration.z,
+//                 g.gyro.x, g.gyro.y, g.gyro.z, temp.temperature);
+//        rate.sleep();
+//    }
 
     // clean up our memory mapping and exit
     if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
