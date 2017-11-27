@@ -20,10 +20,46 @@ using namespace std;
 
 //#define ADC_MEASUREMENT
 
-
-
-
 int main(int argc, char *argv[]) {
+
+//    int file;
+//    const char *filename = "/dev/i2c-1";
+//    uint8_t id;
+//    bool bSuccess;
+//    const int mg_per_digi = 4;
+//    uint16_t szXYZ[3];
+//    int cnt=0, max_cnt=0;
+//
+//    printf("===== gsensor test =====\r\n");
+//
+//    if (argc == 2){
+//        max_cnt = atoi(argv[1]);
+//    }
+//
+//    // open bus
+//    if ((file = open(filename, O_RDWR)) < 0) {
+//        /* ERROR HANDLING: you can check errno to see what went wrong */
+//        perror("Failed to open the i2c bus of gsensor");
+//        exit(1);
+//    }
+//
+//    bSuccess = false;
+//    uint8_t readdata[5];
+//    // write to define register
+//    uint8_t readaddr = 0;
+//    int i = 0;
+//    while(i<100) {
+//        if (write(file, &readaddr, sizeof(readaddr)) == sizeof(readaddr)) {
+//            // read back value
+//            if (read(file, readdata, 5) == 5) {
+//                bSuccess = true;
+//            }
+//        }
+//        usleep(10000);
+//        i++;
+//    }
+//
+//    return bSuccess;
 
     void *virtual_base;
     int fd;
@@ -86,50 +122,50 @@ int main(int argc, char *argv[]) {
     }
 
 
-//    I2C i2c(h2p_lw_i2c_addr[0]);
-//    vector<uint8_t> data;
-//    i2c.read(LSM9DS1_ADDRESS_ACCELGYRO,0x80 | 0x18,6,data);
-//    for(auto d:data)
-//        printf("%x\t",d);
-//    printf("\n");
-//
-//
-//    Adafruit_LSM9DS1 lsm(0,h2p_lw_i2c_addr[0]);
-//    while(!lsm.begin()){
-//        usleep(100);
-//        ROS_WARN_THROTTLE(1, "no lsm detected");
-//    }
-//
-//    // 1.) Set the accelerometer range
-//    lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_2G);
-//    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_4G);
-//    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_8G);
-//    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_16G);
-//
-//    // 2.) Set the magnetometer sensitivity
-//    lsm.setupMag(lsm.LSM9DS1_MAGGAIN_4GAUSS);
-//    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_8GAUSS);
-//    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_12GAUSS);
-//    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_16GAUSS);
-//
-//    // 3.) Setup the gyroscope
-////    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_245DPS);
-//    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_500DPS);
-//    //lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_2000DPS);
-//
-//    ros::Rate rate(10);
-//    while(ros::ok()){
-//        lsm.read();  /* ask it to read in the data */
-//
-//        /* Get a new sensor event */
-//        sensors_event_t a, m, g, temp;
-//
-//        lsm.getEvent(&a, &m, &g, &temp);
-//
-//        ROS_INFO("%f\t%f\t%f\t%f\t%f\t%f", a.acceleration.x, a.acceleration.y, a.acceleration.z,
-//                 g.gyro.x, g.gyro.y, g.gyro.z, temp.temperature);
-//        rate.sleep();
-//    }
+////    I2C i2c(h2p_lw_i2c_addr[0]);
+////    vector<uint8_t> data;
+////    i2c.read(LSM9DS1_ADDRESS_ACCELGYRO,0x80 | 0x18,6,data);
+////    for(auto d:data)
+////        printf("%x\t",d);
+////    printf("\n");
+////
+////
+////    Adafruit_LSM9DS1 lsm(0,h2p_lw_i2c_addr[0]);
+////    while(!lsm.begin()){
+////        usleep(100);
+////        ROS_WARN_THROTTLE(1, "no lsm detected");
+////    }
+////
+////    // 1.) Set the accelerometer range
+////    lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_2G);
+////    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_4G);
+////    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_8G);
+////    //lsm.setupAccel(lsm.LSM9DS1_ACCELRANGE_16G);
+////
+////    // 2.) Set the magnetometer sensitivity
+////    lsm.setupMag(lsm.LSM9DS1_MAGGAIN_4GAUSS);
+////    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_8GAUSS);
+////    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_12GAUSS);
+////    //lsm.setupMag(lsm.LSM9DS1_MAGGAIN_16GAUSS);
+////
+////    // 3.) Setup the gyroscope
+//////    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_245DPS);
+////    lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_500DPS);
+////    //lsm.setupGyro(lsm.LSM9DS1_GYROSCALE_2000DPS);
+////
+////    ros::Rate rate(10);
+////    while(ros::ok()){
+////        lsm.read();  /* ask it to read in the data */
+////
+////        /* Get a new sensor event */
+////        sensors_event_t a, m, g, temp;
+////
+////        lsm.getEvent(&a, &m, &g, &temp);
+////
+////        ROS_INFO("%f\t%f\t%f\t%f\t%f\t%f", a.acceleration.x, a.acceleration.y, a.acceleration.z,
+////                 g.gyro.x, g.gyro.y, g.gyro.z, temp.temperature);
+////        rate.sleep();
+////    }
 
     // clean up our memory mapping and exit
     if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
