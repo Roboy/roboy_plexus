@@ -49,8 +49,19 @@
 #define DARKROOM_0_COMPONENT_TYPE DarkRoom
 #define DARKROOM_0_COMPONENT_NAME DarkRoom_0
 #define DARKROOM_0_BASE 0x800
-#define DARKROOM_0_SPAN 256
-#define DARKROOM_0_END 0x8ff
+#define DARKROOM_0_SPAN 512
+#define DARKROOM_0_END 0x9ff
+
+/*
+ * Macros for device 'DarkRoomOOTXdecoder_0', class 'DarkRoomOOTXdecoder'
+ * The macros are prefixed with 'DARKROOMOOTXDECODER_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define DARKROOMOOTXDECODER_0_COMPONENT_TYPE DarkRoomOOTXdecoder
+#define DARKROOMOOTXDECODER_0_COMPONENT_NAME DarkRoomOOTXdecoder_0
+#define DARKROOMOOTXDECODER_0_BASE 0xa00
+#define DARKROOMOOTXDECODER_0_SPAN 256
+#define DARKROOMOOTXDECODER_0_END 0xaff
 
 /*
  * Macros for device 'I2C_1', class 'I2C'
@@ -59,9 +70,9 @@
  */
 #define I2C_1_COMPONENT_TYPE I2C
 #define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x900
+#define I2C_1_BASE 0xb00
 #define I2C_1_SPAN 32
-#define I2C_1_END 0x91f
+#define I2C_1_END 0xb1f
 
 /*
  * Macros for device 'I2C_0', class 'I2C'
@@ -70,9 +81,9 @@
  */
 #define I2C_0_COMPONENT_TYPE I2C
 #define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x920
+#define I2C_0_BASE 0xb20
 #define I2C_0_SPAN 32
-#define I2C_0_END 0x93f
+#define I2C_0_END 0xb3f
 
 /*
  * Macros for device 'LED', class 'altera_avalon_pio'
@@ -81,9 +92,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x940
+#define LED_BASE 0xb40
 #define LED_SPAN 16
-#define LED_END 0x94f
+#define LED_END 0xb4f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -105,9 +116,9 @@
  */
 #define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
 #define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
-#define ADC_LTC2308_0_BASE 0x950
+#define ADC_LTC2308_0_BASE 0xb50
 #define ADC_LTC2308_0_SPAN 8
-#define ADC_LTC2308_0_END 0x957
+#define ADC_LTC2308_0_END 0xb57
 
 /*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
@@ -120,7 +131,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2899645186
-#define SYSID_QSYS_TIMESTAMP 1511528135
+#define SYSID_QSYS_TIMESTAMP 1511973849
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

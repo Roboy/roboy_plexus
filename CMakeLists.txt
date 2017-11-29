@@ -46,7 +46,7 @@ if (NOT EXISTS "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     # Application
     #==============================================================================
-    add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp src/roboyPlexus.cpp src/am4096.cpp)
+    add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp src/roboyPlexus.cpp src/am4096.cpp src/CRC32.cpp)
     add_dependencies(roboy_plexus roboy_communication_middleware_gencpp)
     target_link_libraries( roboy_plexus  -lpthread -lrt ${ros_LIBRARIES})
 else ()

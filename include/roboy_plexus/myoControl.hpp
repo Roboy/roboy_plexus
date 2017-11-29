@@ -48,7 +48,7 @@ enum CONTROLMODE{
 class MyoControl{
 public:
 	MyoControl(vector<int32_t*> &myo_base);
-	MyoControl(vector<int32_t*> &myo_base, uint32_t *adc_base);
+	MyoControl(vector<int32_t*> &myo_base, int32_t *adc_base);
 	~MyoControl();
     /**
 	 * Changes the controller of a motor
@@ -238,7 +238,7 @@ public:
 			vector<float> &coeffs);
 
 	map<int,map<int,control_Parameters_t>> control_params;
-	uint32_t* adc_base;
+	int32_t* adc_base;
 	float weight_offset = 0;
 	float adc_weight_parameters[2] = {0.2659488846, 0.0990372554/4.0};
 	uint numberOfMotors;

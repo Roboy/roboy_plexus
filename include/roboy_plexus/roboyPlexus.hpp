@@ -8,6 +8,7 @@
 #include <roboy_communication_middleware/ADCvalue.h>
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
+#include <roboy_communication_middleware/DarkRoomOOTX.h>
 #include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MotorCalibrationService.h>
 #include <roboy_communication_middleware/MotorCommand.h>
@@ -22,6 +23,9 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include "hwlib.h"
+#include "roboy_plexus/half.hpp"
+#include "roboy_plexus/CRC32.h"
+#include <bitset>
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_MOTORS_PER_FPGA 14
@@ -29,17 +33,23 @@
 
 using namespace std;
 using namespace chrono;
+using half_float::half;
+
+static vector<int32_t*> DEFAULT_POINTER_VECTOR;
+static vector<int32_t> DEFAULT_VECTOR;
 
 class RoboyPlexus{
 public:
-    RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base,
-                vector<int> &deviceIDs, int32_t* darkroom_base = nullptr,
-                uint32_t *adc_base = nullptr);
+    RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
+                vector<int32_t> &deviceIDs = DEFAULT_VECTOR, int32_t* darkroom_base = nullptr,
+                vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
+                int32_t *adc_base = nullptr);
     ~RoboyPlexus();
 private:
     void gsensorPublisher();
     void adcPublisher();
     void darkRoomPublisher();
+    void darkRoomOOTXPublisher();
     void jointStatusPublisher();
     void motorStatusPublisher();
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
@@ -59,18 +69,33 @@ private:
     bool ADXL345_XYZ_Read(int file, uint16_t szData16[3]);
     bool ADXL345_IdRead(int file, uint8_t *pId);
 private:
+    uint8_t reverse(uint8_t b) {
+        b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+        b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+        b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+        return b;
+    }
+    uint32_t reverse(uint32_t b){
+        uint32_t a = (uint32_t)((uint8_t)reverse((uint8_t)(b>>24&0xff))<<24|(uint8_t)reverse((uint8_t)(b>>16&0xff))<<16|
+                (uint8_t)reverse((uint8_t)(b>>8&0xff))<<8|(uint8_t)reverse((uint8_t)(b&0xff)));
+        return a;
+    }
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
-    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub, adc_pub, gsensor_pub;
+    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub, darkroom_ootx_pub, adc_pub, gsensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     boost::shared_ptr<MyoControl> myoControl;
-    boost::shared_ptr<std::thread> adcThread, darkRoomThread, jointStatusThread, motorStatusThread, gsensor_thread;
+    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
+            gsensor_thread;
     bool keep_publishing = true;
-    int32_t *darkroom_base;
+    int32_t *darkroom_base, *adc_base;
+    vector<int32_t*> myo_base, i2c_base, darkroom_ootx_addr;
+    vector<int32_t> deviceIDs;
+
     bool emergency_stop = false;
     vector<boost::shared_ptr<AM4096>> jointAngle;
     int file;
