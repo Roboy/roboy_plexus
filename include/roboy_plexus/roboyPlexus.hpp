@@ -142,4 +142,6 @@ private:
             uint8_t faults;             // 0x20
         }frame;
     }ootx;
+
+    uint32_t ootx_sensor_channel = 0;
 };

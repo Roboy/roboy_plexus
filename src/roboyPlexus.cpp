@@ -75,16 +75,17 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     int addr = 0b01010011;
     if (ioctl(file, I2C_SLAVE, addr) < 0) {
         ROS_ERROR("Failed to acquire bus access and/or talk to slave");
-    }
-    // configure accelerometer as +-2g and start measure
-    bSuccess = ADXL345_Init(file);
-    if (bSuccess){
-        // dump chip id
-        bSuccess = ADXL345_IdRead(file, &id);
+    }else{
+        // configure accelerometer as +-2g and start measure
+        bSuccess = ADXL345_Init(file);
         if (bSuccess){
-            ROS_INFO("gsensor chip_id=%02Xh\r\n", id);
-            gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
-            gsensor_thread->detach();
+            // dump chip id
+            bSuccess = ADXL345_IdRead(file, &id);
+            if (bSuccess){
+                ROS_INFO("gsensor chip_id=%02Xh\r\n", id);
+                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
+                gsensor_thread->detach();
+            }
         }
     }
 }
@@ -186,10 +187,11 @@ void RoboyPlexus::darkRoomPublisher() {
 
 void RoboyPlexus::darkRoomOOTXPublisher() {
     // ootx frames are 17bits preamble + 271 bits payload + 32 bits checksum = 320 bits.
-    // At 120Hz motor speed, this is ~2.6 seconds per frame. Lets set the update rate to 3 seconds then.
-    ros::Rate rate(0.33333);
+    // At 120Hz motor speed, this is ~2.6 seconds per frame. Lets set the update rate to 5 seconds then.
+    ros::Rate rate(1/5.0);
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     while (keep_publishing) {
+        bool successfully_decoded_ootx = true;
         for(uint lighthouse=0;lighthouse<2;lighthouse++){
             for(uint decoder=0;decoder<darkroom_ootx_addr.size();decoder++){
                 // TODO: remove reverse and have the fpga convert it directly
@@ -262,6 +264,8 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
 
                     darkroom_ootx_pub.publish(msg);
                 }else{
+                    successfully_decoded_ootx = false;
+
                     stringstream str;
                     str << "received ootx frame"  << " with crc " << crc32checksum
                         << " which does not match the calculated: " << crc32checksumCalculated << endl;
@@ -284,8 +288,17 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
                     str << "fcal_1_gibmag:       " << ootx.frame.fcal_1_gibmag << endl;
                     str << "mode:                " << (uint)ootx.frame.mode << endl;
                     str << "faults:              " << (uint)ootx.frame.faults << endl;
-                    ROS_WARN_STREAM( str.str() );
+                    ROS_DEBUG_STREAM( str.str() );
                 }
+            }
+        }
+        if(!successfully_decoded_ootx){
+            // no valid ootx frame decoded, lets switch to another sensor channel
+            ootx_sensor_channel++;
+            if(ootx_sensor_channel>NUM_SENSORS)
+                ootx_sensor_channel = 0;
+            for(uint decoder=0;decoder<darkroom_ootx_addr.size();decoder++) {
+                IOWR(darkroom_ootx_addr[decoder], 0, ootx_sensor_channel);
             }
         }
         rate.sleep();
