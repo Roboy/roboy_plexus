@@ -31,6 +31,8 @@
 #define NUMBER_OF_MOTORS_PER_FPGA 14
 #define NUMBER_OF_LOADCELLS 8
 
+#pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
+
 using namespace std;
 using namespace chrono;
 using half_float::half;
@@ -69,13 +71,23 @@ private:
     bool ADXL345_XYZ_Read(int file, uint16_t szData16[3]);
     bool ADXL345_IdRead(int file, uint8_t *pId);
 private:
-    uint8_t reverse(uint8_t b) {
+    /**
+     * Reverses the bit order of a byte, eg. 0b00001011 -> 0b11010000
+     * @param b input byte
+     * @return reversed byte
+     */
+    inline uint8_t reverse(uint8_t b) {
         b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
         b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
         b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
         return b;
     }
-    uint32_t reverse(uint32_t b){
+    /**
+     * Reverses the bit order of each byte in a 4 byte uint32_t
+     * @param b input
+     * @return reversed uint32_t
+     */
+    inline uint32_t reverse(uint32_t b){
         uint32_t a = (uint32_t)((uint8_t)reverse((uint8_t)(b>>24&0xff))<<24|(uint8_t)reverse((uint8_t)(b>>16&0xff))<<16|
                 (uint8_t)reverse((uint8_t)(b>>8&0xff))<<8|(uint8_t)reverse((uint8_t)(b&0xff)));
         return a;
@@ -105,4 +117,29 @@ private:
     const int mg_per_digi = 4;
     uint16_t szXYZ[3];
     int cnt=0, max_cnt=0;
+
+    union {
+        uint8_t data[33];
+        struct {
+            uint16_t fw_version;        // 0x00
+            uint32_t ID;                // 0x02
+            uint16_t fcal_0_phase;      // 0x06
+            uint16_t fcal_1_phase;      // 0x08
+            uint16_t fcal_0_tilt;       // 0x0A
+            uint16_t fcal_1_tilt;       // 0x0C
+            uint8_t unlock_count;       // 0x0E
+            uint8_t hw_version;         // 0x0F
+            uint16_t fcal_0_curve;      // 0x10
+            uint16_t fcal_1_curve;      // 0x12
+            int8_t accel_dir_x;         // 0x14
+            int8_t accel_dir_y;         // 0x15
+            int8_t accel_dir_z;         // 0x16
+            uint16_t fcal_0_gibphase;   // 0x17
+            uint16_t fcal_1_gibphase;   // 0x19
+            uint16_t fcal_0_gibmag;     // 0x1B
+            uint16_t fcal_1_gibmag;     // 0x1D
+            uint8_t mode;               // 0x1F
+            uint8_t faults;             // 0x20
+        }frame;
+    }ootx;
 };

@@ -185,79 +185,107 @@ void RoboyPlexus::darkRoomPublisher() {
 }
 
 void RoboyPlexus::darkRoomOOTXPublisher() {
-    ros::Rate rate(1);
+    // ootx frames are 17bits preamble + 271 bits payload + 32 bits checksum = 320 bits.
+    // At 120Hz motor speed, this is ~2.6 seconds per frame. Lets set the update rate to 3 seconds then.
+    ros::Rate rate(0.33333);
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     while (keep_publishing) {
         for(uint lighthouse=0;lighthouse<2;lighthouse++){
             for(uint decoder=0;decoder<darkroom_ootx_addr.size();decoder++){
-                roboy_communication_middleware::DarkRoomOOTX msg;
                 // TODO: remove reverse and have the fpga convert it directly
-                uint16_t fw_version = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],(uint32_t)(18*lighthouse+0)))&0xFFFF);
-                uint32_t ID = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+1));
-                uint32_t crc32checksum = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+17));
-                uint32_t test = (uint16_t)(IORD(darkroom_ootx_addr[decoder],18)&0xFFFF);
-                bitset<32> bits(crc32checksum);
-                cout << bits << endl;
-
-
-                msg.lighthouse = lighthouse;
-                msg.fw_version = fw_version;
-                msg.ID = ID;
-                half fcal_0_phase, fcal_1_phase, fcal_0_tilt, fcal_1_tilt;
-                fcal_0_phase.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+2))&0xFFFF);
-                fcal_1_phase.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+3))&0xFFFF);
-                fcal_0_tilt.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+4))&0xFFFF);
-                fcal_1_tilt.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+5))&0xFFFF);
-                msg.fcal_0_phase = fcal_0_phase;
-                msg.fcal_1_phase = fcal_1_phase;
-                msg.fcal_0_tilt = fcal_0_tilt;
-                msg.fcal_1_tilt = fcal_1_tilt;
-                msg.unlock_count = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+6))&0xFF;
-                msg.hw_version = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+7));
-                half fcal_0_curve, fcal_1_curve;
-                fcal_0_curve.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+8))&0xFFFF);
-                fcal_1_curve.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+9))&0xFFFF);
-                msg.fcal_0_curve = fcal_0_curve;
-                msg.fcal_1_curve = fcal_1_curve;
+                ootx.frame.fw_version = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],(uint32_t)(18*lighthouse+0)))&0xFFFF);
+                ootx.frame.ID = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+1));
+                ootx.frame.fcal_0_phase = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+2))&0xFFFF);
+                ootx.frame.fcal_1_phase = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+3))&0xFFFF);
+                ootx.frame.fcal_0_tilt = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+4))&0xFFFF);
+                ootx.frame.fcal_1_tilt = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+5))&0xFFFF);
+                ootx.frame.unlock_count = (uint8_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+6))&0xFF);
+                ootx.frame.hw_version = (uint8_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+7))&0xFF);
+                ootx.frame.fcal_0_curve = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+8))&0xFFFF);
+                ootx.frame.fcal_1_curve = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+9))&0xFFFF);
                 uint32_t acc = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+10));
-                msg.accel_dir_x = ((int8_t)(acc>>0&0xff));
-                msg.accel_dir_y = ((int8_t)(acc>>8&0xff));
-                msg.accel_dir_z = ((int8_t)(acc>>16&0xff));
-                half fcal_0_gibphase, fcal_1_gibphase, fcal_0_gibmag, fcal_1_gibmag;
-                fcal_0_gibphase.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+11))&0xFFFF);
-                fcal_1_gibphase.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+12))&0xFFFF);
-                fcal_0_gibmag.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+13))&0xFFFF);
-                fcal_1_gibmag.data_ = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+14))&0xFFFF);
-                msg.fcal_0_gibphase = fcal_0_gibphase;
-                msg.fcal_1_gibphase = fcal_1_gibphase;
-                msg.fcal_0_gibmag = fcal_0_gibmag;
-                msg.fcal_1_gibmag = fcal_1_gibmag;
-                msg.mode = (uint8_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+15))&0xFF);
-                msg.faults = (uint8_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+16))&0xFF);
-                msg.crc32 = crc32checksum;
+                ootx.frame.accel_dir_x = ((int8_t)(acc>>0&0xFF));
+                ootx.frame.accel_dir_y = ((int8_t)(acc>>8&0xFF));
+                ootx.frame.accel_dir_z = ((int8_t)(acc>>16&0xFF));
+                ootx.frame.fcal_0_gibphase = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+11))&0xFFFF);
+                ootx.frame.fcal_1_gibphase = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+12))&0xFFFF);
+                ootx.frame.fcal_0_gibmag = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+13))&0xFFFF);
+                ootx.frame.fcal_1_gibmag = (uint16_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+14))&0xFFFF);
+                ootx.frame.mode = (uint8_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+15))&0xFF);
+                ootx.frame.faults = (uint8_t)(reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+16))&0xFF);
 
-                cout << "received ootx frame"  << " with crc " << crc32checksum << endl;
-                cout << "fw_version:          " ; printf("%x\n",msg.fw_version);
-                cout << "ID:                  " << msg.ID << endl;
-                cout << "fcal_0_phase:        " << msg.fcal_0_phase << endl;
-                cout << "fcal_1_phase:        " << msg.fcal_1_phase << endl;
-                cout << "fcal_0_tilt:         " << msg.fcal_0_tilt << endl;
-                cout << "fcal_1_tilt:         " << msg.fcal_1_tilt << endl;
-                cout << "unlock_count:        " << (uint)msg.unlock_count << endl;
-                cout << "hw_version:          " << (uint)msg.hw_version << endl;
-                cout << "fcal_0_curve:        " << msg.fcal_0_curve << endl;
-                cout << "fcal_1_curve:        " << msg.fcal_1_curve << endl;
-                cout << "accel_dir_x:         " << msg.accel_dir_x << endl;
-                cout << "accel_dir_y:         " << msg.accel_dir_y << endl;
-                cout << "accel_dir_z:         " << msg.accel_dir_z << endl;
-                cout << "fcal_0_gibphase:     " << msg.fcal_0_gibphase << endl;
-                cout << "fcal_1_gibphase:     " << msg.fcal_1_gibphase << endl;
-                cout << "fcal_0_gibmag:       " << msg.fcal_0_gibmag << endl;
-                cout << "fcal_1_gibmag:       " << msg.fcal_1_gibmag << endl;
-                cout << "mode:                " << (uint)msg.mode << endl;
-                cout << "faults:              " << (uint)msg.faults << endl;
+                uint32_t crc32checksum = reverse(IORD(darkroom_ootx_addr[decoder],18*lighthouse+17));
 
-                darkroom_ootx_pub.publish(msg);
+                CRC32 crc;
+                for(int i=0; i<33;i++) {
+                    crc.update(ootx.data[i]);
+                }
+
+                uint32_t crc32checksumCalculated = crc.finalize();
+                if(crc.finalize() == crc32checksum){ // kinda paranoid right...?!
+                    roboy_communication_middleware::DarkRoomOOTX msg;
+                    msg.lighthouse = lighthouse;
+                    msg.fw_version = ootx.frame.fw_version;
+                    msg.ID = ootx.frame.ID;
+                    half fcal_0_phase, fcal_1_phase, fcal_0_tilt, fcal_1_tilt;
+                    fcal_0_phase.data_ = ootx.frame.fcal_0_phase;
+                    fcal_1_phase.data_ = ootx.frame.fcal_1_phase;
+                    fcal_0_tilt.data_ = ootx.frame.fcal_0_tilt;
+                    fcal_1_tilt.data_ = ootx.frame.fcal_1_tilt;
+                    msg.fcal_0_phase = fcal_0_phase;
+                    msg.fcal_1_phase = fcal_1_phase;
+                    msg.fcal_0_tilt = fcal_0_tilt;
+                    msg.fcal_1_tilt = fcal_1_tilt;
+                    msg.unlock_count = fcal_1_tilt;
+                    msg.hw_version = ootx.frame.hw_version;
+                    half fcal_0_curve, fcal_1_curve;
+                    fcal_0_curve.data_ = ootx.frame.fcal_0_curve;
+                    fcal_1_curve.data_ = ootx.frame.fcal_1_curve;
+                    msg.fcal_0_curve = fcal_0_curve;
+                    msg.fcal_1_curve = fcal_1_curve;
+                    // max/min value of acceleration is 127/-127, so we divide to get an orientation vector
+                    msg.accel_dir_x = ootx.frame.accel_dir_x/127.0f;
+                    msg.accel_dir_y = ootx.frame.accel_dir_y/127.0f;
+                    msg.accel_dir_z = ootx.frame.accel_dir_z/127.0f;
+                    half fcal_0_gibphase, fcal_1_gibphase, fcal_0_gibmag, fcal_1_gibmag;
+                    fcal_0_gibphase.data_ = ootx.frame.fcal_0_gibphase;
+                    fcal_1_gibphase.data_ = ootx.frame.fcal_1_gibphase;
+                    fcal_0_gibmag.data_ = ootx.frame.fcal_0_gibmag;
+                    fcal_1_gibmag.data_ = ootx.frame.fcal_1_gibmag;
+                    msg.fcal_0_gibphase = fcal_0_gibphase;
+                    msg.fcal_1_gibphase = fcal_1_gibphase;
+                    msg.fcal_0_gibmag = fcal_0_gibmag;
+                    msg.fcal_1_gibmag = fcal_1_gibmag;
+                    msg.mode = ootx.frame.mode;
+                    msg.faults = ootx.frame.faults;
+                    msg.crc32 = crc32checksum;
+
+                    darkroom_ootx_pub.publish(msg);
+                }else{
+                    stringstream str;
+                    str << "received ootx frame"  << " with crc " << crc32checksum
+                        << " which does not match the calculated: " << crc32checksumCalculated << endl;
+                    str << "fw_version:          " << ootx.frame.fw_version << endl;
+                    str << "ID:                  " << ootx.frame.ID << endl;
+                    str << "fcal_0_phase:        " << ootx.frame.fcal_0_phase << endl;
+                    str << "fcal_1_phase:        " << ootx.frame.fcal_1_phase << endl;
+                    str << "fcal_0_tilt:         " << ootx.frame.fcal_0_tilt << endl;
+                    str << "fcal_1_tilt:         " << ootx.frame.fcal_1_tilt << endl;
+                    str << "unlock_count:        " << (uint)ootx.frame.unlock_count << endl;
+                    str << "hw_version:          " << (uint)ootx.frame.hw_version << endl;
+                    str << "fcal_0_curve:        " << ootx.frame.fcal_0_curve << endl;
+                    str << "fcal_1_curve:        " << ootx.frame.fcal_1_curve << endl;
+                    str << "accel_dir_x:         " << (int)ootx.frame.accel_dir_x << endl;
+                    str << "accel_dir_y:         " << (int)ootx.frame.accel_dir_y << endl;
+                    str << "accel_dir_z:         " << (int)ootx.frame.accel_dir_z << endl;
+                    str << "fcal_0_gibphase:     " << ootx.frame.fcal_0_gibphase << endl;
+                    str << "fcal_1_gibphase:     " << ootx.frame.fcal_1_gibphase << endl;
+                    str << "fcal_0_gibmag:       " << ootx.frame.fcal_0_gibmag << endl;
+                    str << "fcal_1_gibmag:       " << ootx.frame.fcal_1_gibmag << endl;
+                    str << "mode:                " << (uint)ootx.frame.mode << endl;
+                    str << "faults:              " << (uint)ootx.frame.faults << endl;
+                    ROS_WARN_STREAM( str.str() );
+                }
             }
         }
         rate.sleep();
