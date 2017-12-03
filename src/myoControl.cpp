@@ -335,13 +335,13 @@ uint32_t MyoControl::readADC(int load_cell = 0) {
 
 float MyoControl::getWeight(int load_cell) {
     uint32_t adc_value = readADC(load_cell);
-    float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value);
+    float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value)*9.81f;
     return weight;
 }
 
 float MyoControl::getWeight(int load_cell, uint32_t &adc_value) {
     adc_value = readADC(load_cell);
-    float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value);
+    float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value)*9.81f;
     return weight;
 }
 

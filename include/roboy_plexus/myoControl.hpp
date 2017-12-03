@@ -240,7 +240,7 @@ public:
 	map<int,map<int,control_Parameters_t>> control_params;
 	int32_t* adc_base;
 	float weight_offset = 0;
-	float adc_weight_parameters[2] = {0.2659488846, 0.0990372554/4.0};
+	float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y
 	uint numberOfMotors;
 private:
 	Timer timer;

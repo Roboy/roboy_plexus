@@ -348,6 +348,7 @@ void RoboyPlexus::motorAnglePublisher() {
             str << "xerr_flags:    " << motorAngle[0]->decodeFlag(s.xerr_flags,XERROR_FLAGS) << endl;
             msg.angles.push_back(s.angle);
             msg.magneticFieldStrength.push_back(s.fieldStrength);
+//            msg.temperature.push_back(s.temp);
         }
         ROS_DEBUG_STREAM_THROTTLE(5,str.str());
         motorAngle_pub.publish(msg);
@@ -386,7 +387,7 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         return false;
     }
 
-    ROS_INFO("serving motor config service");
+    ROS_INFO("serving motor config service for %d motors", req.config.motors.size());
     control_Parameters_t params;
     uint i = 0;
     for (auto motor:req.config.motors) {
@@ -418,20 +419,22 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
 bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode::Request &req,
                                      roboy_communication_middleware::ControlMode::Response &res) {
     if (!emergency_stop) {
-        ROS_INFO("serving control mode service");
         uint i = 0;
         switch(req.control_mode){
             case POSITION:
+                ROS_INFO("switch to POSITION control");
                 for (auto &mode:control_mode)
                     mode.second = POSITION;
                 myoControl->allToPosition(req.setPoint);
                 break;
             case VELOCITY:
+                ROS_INFO("switch to VELOCITY control");
                 for (auto &mode:control_mode)
                     mode.second = VELOCITY;
                 myoControl->allToVelocity(req.setPoint);
                 break;
             case DISPLACEMENT:
+                ROS_INFO("switch to DISPLACEMENT control");
                 for (auto &mode:control_mode)
                     mode.second = DISPLACEMENT;
                 myoControl->allToDisplacement(req.setPoint);
