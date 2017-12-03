@@ -10,6 +10,7 @@
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
 #include <roboy_communication_middleware/JointStatus.h>
+#include <roboy_communication_middleware/MotorAngle.h>
 #include <roboy_communication_middleware/MotorCalibrationService.h>
 #include <roboy_communication_middleware/MotorCommand.h>
 #include <roboy_communication_middleware/MotorStatus.h>
@@ -26,6 +27,7 @@
 #include "roboy_plexus/half.hpp"
 #include "roboy_plexus/CRC32.h"
 #include <bitset>
+#include "roboy_plexus/A1335.hpp"
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_MOTORS_PER_FPGA 14
@@ -53,6 +55,7 @@ private:
     void darkRoomPublisher();
     void darkRoomOOTXPublisher();
     void jointStatusPublisher();
+    void motorAnglePublisher();
     void motorStatusPublisher();
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
     bool MotorConfigService(roboy_communication_middleware::MotorConfigService::Request  &req,
@@ -95,21 +98,22 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
-    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub, darkroom_ootx_pub, adc_pub, gsensor_pub;
+    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub, darkroom_ootx_pub, adc_pub, gsensor_pub, motorAngle_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     boost::shared_ptr<MyoControl> myoControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
-            gsensor_thread;
+            gsensor_thread, motorAngleThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base;
     vector<int32_t*> myo_base, i2c_base, darkroom_ootx_addr;
     vector<int32_t> deviceIDs;
 
     bool emergency_stop = false;
-    vector<boost::shared_ptr<AM4096>> jointAngle;
+    vector<boost::shared_ptr<AM4096>> jointAngle; // joint angle sensors
+    vector<boost::shared_ptr<A1335>> motorAngle; // motor angle of new motor units
     int file;
     const char *filename = "/dev/i2c-0";
     uint8_t id;

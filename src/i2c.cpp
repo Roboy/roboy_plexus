@@ -99,3 +99,12 @@ void I2C::read_continuous(uint8_t i2cAddr, uint8_t number_of_bytes, vector<uint8
 bool I2C::ack_error() {
     return IORD(h2p_lw_i2c_addr, ACK_ERROR);
 }
+
+bool I2C::checkAddressSpace(uint8_t fromDeviceID, uint8_t toDeviceID, vector<uint8_t> &activeDevices){
+    for(fromDeviceID;fromDeviceID<toDeviceID;fromDeviceID++){
+        vector<uint8_t> data;
+        read(fromDeviceID,0x20,0,data);
+        if(!ack_error())
+            activeDevices.push_back(fromDeviceID);
+    }
+}

@@ -28,13 +28,13 @@ bool AM4096::readAbsAngle(uint8_t i2cAddr, uint32_t &absAngle){
 	// reg = DataOK + 3x"0" + 12x bit abs angle + 16x"0"
 
 	// TODO: check if this works with new I2C core
-//	bool dataOK = (reg >> 31) & 0b1;
-//
-//	//std::bitset<32> bits(reg);
-//	//std::cout << "readAbsAngle " << bits << std::endl;
-//
-//	absAngle = (reg >> 16) & 0xFFF;
-//	return dataOK;
+	bool dataOK = (bool)((data[0] >> 7) & 0b1);
+
+	//std::bitset<32> bits(reg);
+	//std::cout << "readAbsAngle " << bits << std::endl;
+
+	absAngle = (uint32_t)(((data[0] & 0xf) << 8) | data[1]);
+	return dataOK;
 }
 
 void AM4096::readRelAngle(vector<uint32_t> &relAngles){
@@ -50,13 +50,14 @@ void AM4096::readRelAngle(vector<uint32_t> &relAngles){
 
 bool AM4096::readRelAngle(uint8_t i2cAddr, uint32_t &relAngle){
 	// TODO: check if this works with new I2C core
-//	uint32_t reg = i2c->read(i2cAddr, 32, 2);
+	vector<uint8_t> data;
+	i2c->read(i2cAddr, 32, 2, data);
 //	// reg = DataOK + 3x"0" + 12x bit rel angle + 16x"0"
 //
-//	bool dataOK = (reg >> 31) & 0b1;
+	bool dataOK = (bool)((data[0] >> 7) & 0b1);
 //
-//	relAngle = (reg >> 16) & 0xFFF;
-//	return dataOK;
+	relAngle = (uint32_t)(((data[0] & 0xf) << 8) | data[1]);
+	return dataOK;
 }
 
 void AM4096::readMagnetStatus(vector<bool> &magnetTooFar, vector<bool> &magnetTooClose){
@@ -79,14 +80,15 @@ void AM4096::readMagnetStatus(vector<unsigned char> &magnetTooFar, vector<unsign
 
 void AM4096::readMagnetStatus(uint8_t i2cAddr, bool &magnetTooFar, bool &magnetTooClose){
 	// TODO: check if this works with new I2C core
-//	uint32_t reg = i2c->read(i2cAddr, 34, 2);
+	vector<uint8_t> data;
+	i2c->read(i2cAddr, 34, 2, data);
 
 	// reg = "?" + Weh + Wel + 29x"?"
 	// Weh Magnet too far
 	// Wel Magnet too close
 
-//	magnetTooFar = (reg >> 30) & 0x1;
-//	magnetTooClose = (reg >> 29) & 0x1;
+	magnetTooFar = (bool)((data[0] >> 6) & 0x1);
+	magnetTooClose = (bool)((data[0] >> 5) & 0x1);
 }
 
 void AM4096::readAgcGain(vector<uint8_t> &agcGain){
@@ -99,9 +101,10 @@ void AM4096::readAgcGain(vector<uint8_t> &agcGain){
 
 void AM4096::readAgcGain(uint8_t i2cAddr, uint8_t &agcGain) {
 	// TODO: check if this works with new I2C core
-//	uint32_t reg = i2c->read(i2cAddr, 35, 2);
+	vector<uint8_t> data;
+	i2c->read(i2cAddr, 35, 2, data);
 	// reg = 4x agcGain bits + "?" + Thof + 10x Tho bits + 16x "?"
-//	agcGain = (reg >> 28) & 0xF;
+	agcGain = (uint8_t)((data[0] >> 4) & 0x1);
 }
 
 void AM4096::readTacho(vector<uint32_t> &tacho){
@@ -116,9 +119,10 @@ void AM4096::readTacho(vector<uint32_t> &tacho){
 
 bool AM4096::readTacho(uint8_t i2cAddr, uint32_t &tacho) {
 	// TODO: check if this works with new I2C core
-//	uint32_t reg = i2c->read(i2cAddr, 35, 2);
+	vector<uint8_t> data;
+	i2c->read(i2cAddr, 35, 2, data);
 	// reg = 4x agcGain bits + "?" + Thof + 10x Tho bits + 16x "?"
-//	tacho = (reg >> 16) & 0x3FF;
-//	bool overflow = (reg >> 26) & 0x1;
-//	return overflow;
+	tacho = (uint32_t)(((data[0] & 0b11) << 8) | data[1]);
+	bool overflow = (bool)((data[0] >> 2) & 0x1);
+	return overflow;
 }

@@ -46,6 +46,7 @@ public:
 	void read(uint8_t i2cAddr, uint8_t reg, uint8_t number_of_bytes, vector<uint8_t> &data);
 	void read_continuous(uint8_t i2cAddr, uint8_t number_of_bytes, vector<uint8_t> &data);
     bool ack_error();
+	bool checkAddressSpace(uint8_t fromDeviceID, uint8_t toDeviceID, vector<uint8_t> &activeDevices);
 };
 
 #define IORD(base,reg) (*(((volatile uint32_t*)base)+reg))

@@ -29,6 +29,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
                                                 &RoboyPlexus::MotorCalibrationService, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+    motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
     jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>("/roboy/middleware/JointStatus", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
     darkroom_ootx_pub = nh->advertise<roboy_communication_middleware::DarkRoomOOTX>("/roboy/middleware/DarkRoom/ootx", 1);
@@ -38,6 +39,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
 
+    // TODO: make the active interfaces ros parameter server variables
     if (darkroom_base != nullptr) {
         darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
         darkRoomThread->detach();
@@ -54,10 +56,18 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     }
 
     if(!i2c_base.empty()) {
-        for (uint i2c_bus = 0; i2c_bus < i2c_base.size(); i2c_bus++)
-            jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[i2c_bus], deviceIDs)));
-        jointStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::jointStatusPublisher, this));
-        jointStatusThread->detach();
+        if(i2c_base.size()>0) {
+            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs)));
+            motorAngleThread = boost::shared_ptr<std::thread>(
+                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+            motorAngleThread->detach();
+            if(i2c_base.size()==2){
+                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs)));
+                jointStatusThread = boost::shared_ptr<std::thread>(
+                        new std::thread(&RoboyPlexus::jointStatusPublisher, this));
+                jointStatusThread->detach();
+            }
+        }
     }
 
     for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++)
@@ -317,6 +327,30 @@ void RoboyPlexus::jointStatusPublisher() {
             jointAngle[i]->readAgcGain(msg.agcGain);
         }
         jointStatus_pub.publish(msg);
+        rate.sleep();
+    }
+}
+
+void RoboyPlexus::motorAnglePublisher() {
+    ros::Rate rate(50);
+    while (keep_publishing) {
+        roboy_communication_middleware::MotorAngle msg;
+        vector<A1335State> state;
+        motorAngle[0]->readAngleData(state);
+        stringstream str;
+        for(auto s:state){
+            str << "Motor Angle Sensor on i2C address " << (int)s.address << " is " << (s.isOK?"ok":"not ok") << endl;
+            str << "angle:         " << s.angle << endl;
+            str << "angle_flags:   " << motorAngle[0]->decodeFlag(s.angle_flags,ANGLES_FLAGS) << endl;
+            str << "err_flags:     " << motorAngle[0]->decodeFlag(s.err_flags,ERROR_FLAGS) << endl;
+            str << "fieldStrength: " << s.fieldStrength << endl;
+            str << "status_flags:  " << motorAngle[0]->decodeFlag(s.status_flags,STATUS_FLAGS) << endl;
+            str << "xerr_flags:    " << motorAngle[0]->decodeFlag(s.xerr_flags,XERROR_FLAGS) << endl;
+            msg.angles.push_back(s.angle);
+            msg.magneticFieldStrength.push_back(s.fieldStrength);
+        }
+        ROS_DEBUG_STREAM_THROTTLE(5,str.str());
+        motorAngle_pub.publish(msg);
         rate.sleep();
     }
 }
