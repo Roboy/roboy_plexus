@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ros/ros.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <cstdint>

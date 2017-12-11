@@ -2,7 +2,7 @@
 #include <roboy_plexus/myoControl.hpp>
 
 RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
-                         vector<int32_t> &deviceIDs, int32_t *darkroom_base,
+                         vector<vector<int32_t>> &deviceIDs, int32_t *darkroom_base,
                          vector<int32_t *> &darkroom_ootx_addr,
                          int32_t *adc_base) :
         myo_base(myo_base), i2c_base(i2c_base), deviceIDs(deviceIDs), darkroom_base(darkroom_base),
@@ -57,12 +57,12 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
 
     if(!i2c_base.empty()) {
         if(i2c_base.size()>0) {
-            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs)));
+            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs[0])));
             motorAngleThread = boost::shared_ptr<std::thread>(
                     new std::thread(&RoboyPlexus::motorAnglePublisher, this));
             motorAngleThread->detach();
             if(i2c_base.size()==2){
-                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs)));
+                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[1])));
                 jointStatusThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::jointStatusPublisher, this));
                 jointStatusThread->detach();
@@ -92,12 +92,14 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
             // dump chip id
             bSuccess = ADXL345_IdRead(file, &id);
             if (bSuccess){
-                ROS_INFO("gsensor chip_id=%02Xh\r\n", id);
+                ROS_INFO("gsensor chip_id=%02Xh", id);
                 gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
                 gsensor_thread->detach();
             }
         }
     }
+
+    ROS_INFO("roboy plexus initialized");
 }
 
 RoboyPlexus::~RoboyPlexus() {
@@ -191,7 +193,7 @@ void RoboyPlexus::darkRoomPublisher() {
                 active_sensors++;
         }
         darkroom_pub.publish(msg);
-        ROS_INFO_THROTTLE(1, "lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
+        ROS_INFO_THROTTLE(10, "lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
     }
 }
 

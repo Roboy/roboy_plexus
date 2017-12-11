@@ -41,11 +41,12 @@ using half_float::half;
 
 static vector<int32_t*> DEFAULT_POINTER_VECTOR;
 static vector<int32_t> DEFAULT_VECTOR;
+static vector<vector<int32_t>> DEFAULT_VECTOR_VECTOR;
 
 class RoboyPlexus{
 public:
     RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
-                vector<int32_t> &deviceIDs = DEFAULT_VECTOR, int32_t* darkroom_base = nullptr,
+                vector<vector<int32_t>> &deviceIDs = DEFAULT_VECTOR_VECTOR, int32_t* darkroom_base = nullptr,
                 vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr);
     ~RoboyPlexus();
@@ -109,7 +110,7 @@ private:
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base;
     vector<int32_t*> myo_base, i2c_base, darkroom_ootx_addr;
-    vector<int32_t> deviceIDs;
+    vector<vector<int32_t>> deviceIDs;
 
     bool emergency_stop = false;
     vector<boost::shared_ptr<AM4096>> jointAngle; // joint angle sensors

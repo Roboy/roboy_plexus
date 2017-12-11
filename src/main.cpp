@@ -100,17 +100,7 @@ int main(int argc, char *argv[]) {
 //
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 //
-    vector<int> deviceIDs = {0xC};
-
-//    // Checking for any devices connected
-    I2C i2c(h2p_lw_i2c_addr.front());
-    vector<uint8_t> active_devices;
-    i2c.checkAddressSpace(0, 128, active_devices);
-    for (auto device:active_devices) {
-        ROS_INFO("%d active", device);
-    }
-
-
+    vector<vector<int>> deviceIDs = {{},{0x0}};
 
     RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs,
                             h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
