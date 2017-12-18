@@ -232,8 +232,8 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 
     switch (control_mode) {
         case POSITION:
-            params->outputPosMax = 4000;
-            params->outputNegMax = -4000;
+//            params->outputPosMax = 4000;
+//            params->outputNegMax = -4000;
             params->spPosMax = 10000000;
             params->spNegMax = -10000000;
             params->Kp = 1;

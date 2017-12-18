@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 //
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 //
-    vector<vector<int>> deviceIDs = {{},{0x0}};
+    vector<vector<int>> deviceIDs = {{0xC},{0x0}};
 
     RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs,
                             h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
