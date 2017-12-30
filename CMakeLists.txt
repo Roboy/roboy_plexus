@@ -5,7 +5,7 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 
 SET(CMAKE_BUILD_TYPE Debug)
-if (NOT EXISTS "ENV{SOCEDS_DEST_ROOT}")
+if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     message(STATUS "cross compiling for arm")
     # we are cross compiling for arm (make sure to be in embedded_command_shell.sh)
     set(CMAKE_SYSTEM_NAME Linux)
@@ -50,18 +50,19 @@ if (NOT EXISTS "ENV{SOCEDS_DEST_ROOT}")
             src/A1335.cpp)
     add_dependencies(roboy_plexus roboy_communication_middleware_gencpp)
     target_link_libraries( roboy_plexus  -lpthread -lrt ${ros_LIBRARIES})
+
+    #==============================================================================
+    # Installation
+    #==============================================================================
+    install(TARGETS
+            roboy_plexus
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            )
+
+    install(FILES
+            package.xml
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+            )
 else ()
     message(STATUS "cannot cross compile, are you in an embedded_command_shell.sh?!")
 endif ()
-#==============================================================================
-# Installation
-#==============================================================================
-install(TARGETS
-        roboy_plexus
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-
-install(FILES
-        package.xml
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-        )
