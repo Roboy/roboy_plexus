@@ -61,15 +61,11 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 	2: displacement (encoder ticks)
 	* force mode is available only from GUI and requires a YAML file with spring constants 
 	* example transform from displacement to force: https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125
-	* myomuscle calibration file is required, specify the path in GUI
-	* one could calibrate any myomuscle using the rqt plugin with GUI:
-	```
-    	rqt
-    	```
+	* myomuscle calibration file is required, specify the path in GUI (start by calling `rqt`)
 	* `Plugins->Roboy->roboy motor calibration`
 	* use myomuscle tab
 
 5. Start GUI (the plots show all the motors together (encoded in different colors) 
-   ```
-   rqt
-   ```
+  ```
+  rqt
+  ```
