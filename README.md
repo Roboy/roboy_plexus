@@ -27,14 +27,14 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   ifup eth0
   ```
 
-* make sure the PC and FPGA know where to look for ROS, i.e. ROS_MASTER_URI and ROS_IP are set (usually in the ~/.bashrc)
+* make sure the PC and FPGA know where to look for ROS, i.e. `ROS_MASTER_URI` and `ROS_IP` are set (usually in the ~/.bashrc)
 
-* if catkin_make fails, setup up the FPGA dev environment by calling
+* if `catkin_make` fails, set up FPGA dev environment by calling
   ```
   ~/intelFPGA/17.1/embedded/embedded_command_shell.sh
   ```
 
-2. The status of the motors is published under the rostopic `roboy/middleware/MotorStatus`
+2. Status of the motors is published under the rostopic `roboy/middleware/MotorStatus`
   ``` 
   rostopic echo /roboy/middleware/MotorStatus
   ```
@@ -47,7 +47,7 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 * type definitions for msgs and srvs are in `roboy_communication/middleware` or on https://github.com/Roboy/roboy_communication/tree/master/middleware
 
-3. The control commands are set by publishing ROS messages under /roboy/middleware/MotorCommand:
+3. The control commands are set by publishing ROS messages under `/roboy/middleware/MotorCommand`:
   ```  
   rostopic pub /roboy/middleware/MotorCommand roboy_communication_middleware/MotorCommand "id: 0 
 		motors: [0,1]
@@ -56,16 +56,16 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 4. (Optional) Configure motor mode by calling ROS service `/roboy/middleware/MotorConfig`
 * available control modes:
-	0: position (encoder ticks with rad_per_encoder_count: 0.00005788606746738269)
-	1: velocity (rad/s) - untested!
-	2: displacement (encoder ticks)
+	* 0: position (encoder ticks with `rad_per_encoder_count: 0.00005788606746738269`)
+	* 1: velocity (rad/s) - untested!
+	* 2: displacement (encoder ticks)
 	* force mode is available only from GUI and requires a YAML file with spring constants 
-	* example transform from displacement to force: https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125
+	* [example transform from displacement to force](https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125)
 	* myomuscle calibration file is required, specify the path in GUI (start by calling `rqt`)
 	* `Plugins->Roboy->roboy motor calibration`
 	* use myomuscle tab
 
-5. Start GUI (the plots show all the motors together (encoded in different colors) 
+5. Start GUI (the plots show all the motors together encoded in different colors) 
   ```
   rqt
   ```
