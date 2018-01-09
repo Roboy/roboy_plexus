@@ -59,22 +59,17 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 	0: position (encoder ticks with rad_per_encoder_count: 0.00005788606746738269)
 	1: velocity (rad/s) - untested!
 	2: displacement (encoder ticks)
-	** force mode is available only from GUI and requires a YAML file with spring constants 
-	** example transform from displacement to force: https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125
-	** generic myomuscle calibration file is in
-	** one could calibrate any myomuscle using the rqt plugin with GUI:
+	* force mode is available only from GUI and requires a YAML file with spring constants 
+	* example transform from displacement to force: https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125
+	* myomuscle calibration file is required, specify the path in GUI
+	* one could calibrate any myomuscle using the rqt plugin with GUI:
 	```
     	rqt
     	```
-	** Plugins->Roboy->roboy motor calibration 
-	** use myomuscle tab
+	* `Plugins->Roboy->roboy motor calibration`
+	* use myomuscle tab
 
 5. Start GUI (the plots show all the motors together (encoded in different colors) 
    ```
    rqt
    ```
-* motors in use:
-	0: biceps
-	1: triceps
-	2: wrist flexor
-	3: wrist extensor
