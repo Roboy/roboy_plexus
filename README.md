@@ -18,9 +18,9 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   ~/.roboy_plexus
   ```
 
-* if ssh doesn't work, connect the FPGA board to the PC via the USB port (use the one on the power plug side on FPGA board) and coonnect to the serial monitor with
+* if ssh doesn't work, connect the FPGA board to the PC via the USB port (use the one on the ethernet side of FPGA board) and connect to the serial monitor with
   ```
-  screen /dev/ttyUSB0/
+  screen /dev/ttyUSB0/ 115200
   ```
 * if the board was rebooted and the ethernet network interface doesn't work try
   ```
