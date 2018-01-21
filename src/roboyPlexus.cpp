@@ -7,10 +7,16 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
                          int32_t *adc_base) :
         myo_base(myo_base), i2c_base(i2c_base), deviceIDs(deviceIDs), darkroom_base(darkroom_base),
         darkroom_ootx_addr(darkroom_ootx_addr), adc_base(adc_base){
+    ifstream ifile("/sys/class/net/eth0/address");
+    ifile >> ethaddr;
+    ifile.close();
+    string node_name = "roboy_fpga_" + ethaddr;
+    replace(node_name.begin(), node_name.end(), ':', '_');
+
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
-        ros::init(argc, argv, "roboy_fpga_interface");
+        ros::init(argc, argv, node_name);
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
@@ -183,6 +189,7 @@ void RoboyPlexus::darkRoomPublisher() {
     while (keep_publishing) {
         uint active_sensors = 0;
         roboy_communication_middleware::DarkRoom msg;
+        msg.objectID = ethaddr;
         for (uint i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, i);
             high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -194,6 +201,7 @@ void RoboyPlexus::darkRoomPublisher() {
         }
         darkroom_pub.publish(msg);
         ROS_INFO_THROTTLE(10, "lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
+        rate.sleep();
     }
 }
 

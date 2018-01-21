@@ -20,6 +20,7 @@
 #include <thread>
 #include <map>
 #include <chrono>
+#include <algorithm>
 #include <roboy_plexus/ADXL345.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
@@ -149,4 +150,6 @@ private:
     }ootx;
 
     uint32_t ootx_sensor_channel = 0;
+
+    string ethaddr;
 };

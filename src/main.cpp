@@ -105,12 +105,12 @@ int main(int argc, char *argv[]) {
     RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs,
                             h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
 //
-    if (!ros::isInitialized()) {
-        int argc = 0;
-        char **argv = NULL;
-        ros::init(argc, argv, "roboy_fpga_interface");
-    }
-    ros::NodeHandle nh;
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "roboy_fpga_interface");
+//    }
+//    ros::NodeHandle nh;
 
     uint32_t mask = 0;
     high_resolution_clock::time_point t0 = high_resolution_clock::now(), t1;
