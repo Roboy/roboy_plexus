@@ -136,16 +136,6 @@ void MyoControl::changeControl(int mode) {
     }
 }
 
-bool MyoControl::toggleSPI() {
-    bool spi_active;
-    for (uint i = 0; i < myo_base.size(); i++) {
-        spi_active = MYO_READ_spi_activated(myo_base[i]);
-        MYO_WRITE_spi_activated(myo_base[i], !spi_active);
-    }
-
-    return !spi_active;
-}
-
 void MyoControl::reset() {
     for (uint i = 0; i < myo_base.size(); i++) {
         MYO_WRITE_reset_myo_control(myo_base[i], true);
@@ -218,10 +208,6 @@ int16_t MyoControl::getDisplacement(int motor) {
 int16_t MyoControl::getCurrent(int motor) {
     return MYO_READ_current(myo_base[motor / MOTORS_PER_MYOCONTROL],
                             motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
-}
-
-bool MyoControl::getSPIactive(int motor) {
-    return MYO_READ_spi_activated(myo_base[motor / MOTORS_PER_MYOCONTROL]);
 }
 
 void MyoControl::getDefaultControlParams(control_Parameters_t *params, int control_mode) {

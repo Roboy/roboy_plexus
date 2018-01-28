@@ -77,11 +77,6 @@ public:
 	 */
 	void changeControl(int mode);
 	/**
-	 * Toggles SPI transmission
-	 * @return on/off
-	 */
-	bool toggleSPI();
-	/**
 	 * Resets all myo controllers
 	 */
 	void reset();
@@ -139,11 +134,6 @@ public:
 	 * @param motor for this motor
 	 */
 	int16_t getCurrent(int motor);
-	/**
-	 * Gets the current spi state
-	 * @param active/not active
-	 */
-	bool getSPIactive(int motor);
 	/**
 	 * Fills the given params with default values for the corresponding control mode
 	 * @param params pointer to control struct

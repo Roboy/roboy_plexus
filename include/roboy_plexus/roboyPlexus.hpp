@@ -43,7 +43,10 @@ using half_float::half;
 static vector<int32_t*> DEFAULT_POINTER_VECTOR;
 static vector<int32_t> DEFAULT_VECTOR;
 static vector<vector<int32_t>> DEFAULT_VECTOR_VECTOR;
-
+/** @defgroup test The First Group
+ *  This is the first group
+ *  @{
+ */
 class RoboyPlexus{
 public:
     RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
@@ -153,3 +156,5 @@ private:
 
     string ethaddr;
 };
+
+/** @} */ // end of group1
