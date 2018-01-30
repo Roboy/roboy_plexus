@@ -385,7 +385,21 @@ void RoboyPlexus::motorStatusPublisher() {
 void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg) {
     uint i = 0;
     for (auto motor:msg->motors) {
-        myoControl->changeSetpoint(motor, msg->setPoints[i]);
+        switch(control_mode[motor]){
+            case POSITION:
+                myoControl->setPosition(motor, msg->setPoints[i]);
+                break;
+            case VELOCITY:
+                myoControl->setVelocity(motor, msg->setPoints[i]);
+                break;
+            case DISPLACEMENT:
+                myoControl->setDisplacement(motor, msg->setPoints[i]);
+                break;
+            case FORCE:
+                myoControl->setDisplacement(motor, msg->setPoints[i]);
+                break;
+        }
+
         i++;
     }
 }
@@ -454,6 +468,7 @@ bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode
         }
         return true;
     } else {
+        ROS_WARN("emergency stop active, can NOT change control mode");
         return false;
     }
 }

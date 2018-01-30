@@ -20,10 +20,53 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 
     changeControl(DISPLACEMENT);
 
+
+
     for (uint i = 0; i < myo_base.size(); i++) {
+        MYO_WRITE_update_frequency(myo_base[i], 2700);
         MYO_WRITE_spi_activated(myo_base[i], true);
+        printf("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
+//        for(uint motor=0; motor<7; motor++){
+//            printf(        "Kp             %d\n"
+//                           "Ki             %d\n"
+//                           "Kd             %d\n"
+//                           "sp             %d\n"
+//                           "forwardGain    %d\n"
+//                           "outputPosMax   %d\n"
+//                           "outputNegMax   %d\n"
+//                           "IntegralPosMax %d\n"
+//                           "IntegralNegMax %d\n"
+//                           "deadBand       %d\n"
+//                           "control        %d\n"
+//                           "position       %d\n"
+//                           "velocity       %d\n"
+//                           "current        %d\n"
+//                           "displacement   %d\n"
+//                           "pwmRef         %d\n"
+//                           "update_frequency %d\n",
+//            MYO_READ_Kp(myo_base[i],motor),
+//            MYO_READ_Ki(myo_base[i],motor),
+//            MYO_READ_Kd(myo_base[i],motor),
+//            MYO_READ_sp(myo_base[i],motor),
+//            MYO_READ_forwardGain(myo_base[i],motor),
+//            MYO_READ_outputPosMax(myo_base[i],motor),
+//            MYO_READ_outputNegMax(myo_base[i],motor),
+//            MYO_READ_IntegralPosMax(myo_base[i],motor),
+//            MYO_READ_IntegralNegMax(myo_base[i],motor),
+//            MYO_READ_deadBand(myo_base[i],motor),
+//            MYO_READ_control(myo_base[i],motor),
+//            MYO_READ_position(myo_base[i],motor),
+//            MYO_READ_velocity(myo_base[i],motor),
+//            MYO_READ_current(myo_base[i],motor),
+//            MYO_READ_displacement(myo_base[i],motor),
+//            MYO_READ_pwmRef(myo_base[i],motor),
+//            MYO_READ_update_frequency(myo_base[i]));
+//        }
+
     }
     reset();
+
+
 }
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_base(myo_base),
@@ -92,7 +135,6 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
 
 void MyoControl::changeControl(int motor, int mode) {
     int motorOffset = motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0;
-    MYO_WRITE_control(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, mode);
     MYO_WRITE_reset_controller(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset);
     MYO_WRITE_Kp(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, control_params[motor][mode].Kp);
     MYO_WRITE_Kd(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, control_params[motor][mode].Kd);
@@ -115,7 +157,6 @@ void MyoControl::changeControl(int motor, int mode) {
 void MyoControl::changeControl(int mode) {
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         int motorOffset = motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0;
-        MYO_WRITE_control(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, mode);
         MYO_WRITE_reset_controller(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset);
         MYO_WRITE_Kp(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, control_params[motor][mode].Kp);
         MYO_WRITE_Kd(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, control_params[motor][mode].Kd);
@@ -141,11 +182,6 @@ void MyoControl::reset() {
         MYO_WRITE_reset_myo_control(myo_base[i], true);
         MYO_WRITE_reset_myo_control(myo_base[i], false);
     }
-}
-
-void MyoControl::changeSetpoint(int motor, int32_t position) {
-    MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
-                 motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), position);
 }
 
 bool MyoControl::setSPIactive(int motor, bool active) {
@@ -205,6 +241,21 @@ int16_t MyoControl::getDisplacement(int motor) {
                                  motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
 }
 
+void MyoControl::setPosition(int motor, int32_t setPoint){
+    MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
+                 motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), (int32_t)setPoint);
+}
+
+void MyoControl::setVelocity(int motor, int16_t setPoint){
+    MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
+                 motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), (int32_t)(setPoint/MOTOR_BOARD_COMMUNICATION_FREQUENCY));
+}
+
+void MyoControl::setDisplacement(int motor, int16_t setPoint){
+    MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
+                 motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), (int32_t)setPoint);
+}
+
 int16_t MyoControl::getCurrent(int motor) {
     return MYO_READ_current(myo_base[motor / MOTORS_PER_MYOCONTROL],
                             motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
@@ -233,7 +284,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
         case VELOCITY:
             params->spPosMax = 100;
             params->spNegMax = -100;
-            params->Kp = 1;
+            params->Kp = 100;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
@@ -262,24 +313,21 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 void MyoControl::allToPosition(int32_t pos) {
     changeControl(POSITION);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
-                     motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), pos);
+        setPosition(motor, pos);
     }
 }
 
 void MyoControl::allToVelocity(int16_t vel) {
     changeControl(VELOCITY);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
-                     motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), vel);
+        setVelocity(motor,vel);
     }
 }
 
 void MyoControl::allToDisplacement(int16_t displacement) {
     changeControl(DISPLACEMENT);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
-                     motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), displacement);
+        setDisplacement(motor,displacement);
     }
 }
 
@@ -451,7 +499,7 @@ bool MyoControl::playTrajectory(const char *file) {
     do {
         dt = elapsedTime;
         for (auto &motor : trajectories) {
-            changeSetpoint(motor.first, motor.second[sample]);
+            setDisplacement(motor.first, motor.second[sample]);
         }
         sample++;
 
@@ -470,7 +518,7 @@ bool MyoControl::playTrajectory(const char *file) {
 void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                           uint numberOfDataPoints, float displacement_min,
                                           float displacement_max, vector<double> &load, vector<double> &displacement) {
-    changeSetpoint(motor, 0);
+    setDisplacement(motor, 0);
     changeControl(motor, DISPLACEMENT);
     milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
     ofstream outfile;
@@ -484,7 +532,7 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
     outfile << "displacement[ticks], load[N]" << endl;
     do {
         float f = (rand() / (float) RAND_MAX) * (displacement_max - displacement_min) + displacement_min;
-        changeSetpoint(motor, f);
+        setDisplacement(motor, f);
         t0 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         do {// wait a bit until force is applied
             // update control
@@ -500,7 +548,7 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
         cout << "setPoint: \t" << f << "\tdisplacement:\t" << displacement.back() << "\tload:\t" <<
              load.back() << endl;
     } while ((ms_stop - ms_start).count() < timeout && load.size() < numberOfDataPoints);
-    changeSetpoint(motor, 0);
+    setDisplacement(motor, 0);
     polynomialRegression(degree, displacement, load, coeffs);
     outfile << "regression coefficients for polynomial of "<< degree << " degree:" << endl;
     for(float coef:coeffs){

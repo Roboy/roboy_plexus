@@ -1,3 +1,38 @@
+/*
+    BSD 3-Clause License
+
+    Copyright (c) 2017, Roboy
+            All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+            modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    * Neither the name of the copyright holder nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+            IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+            FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+            DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+            SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+            CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    author: Simon Trendel ( simon.trendel@tum.de ), 2018
+    description: Class for interfacing motor status and PID controllers running in fpga
+*/
+
 #pragma once
 
 #include <vector>
@@ -11,11 +46,50 @@
 #include <string>
 #include <sstream>
 
-#include <roboy_plexus/myoControlRegister.hpp>
 #include <roboy_plexus/timer.hpp>
 
+#define MOTORS_PER_MYOCONTROL 7
+
+#define IORD(base,reg) (*(((volatile int32_t*)base)+reg))
+#define IOWR(base,reg,data) (*(((volatile int32_t*)base)+reg)=data)
+
+// the upper 8 bit define which value, the lower 8 bit define which motor
+#define MYO_READ_Kp(base,motor) IORD(base, (uint32_t)(0x00<<8|motor&0xff) )
+#define MYO_READ_Ki(base,motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
+#define MYO_READ_Kd(base,motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
+#define MYO_READ_sp(base,motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
+#define MYO_READ_forwardGain(base,motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
+#define MYO_READ_outputPosMax(base,motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
+#define MYO_READ_outputNegMax(base,motor) IORD(base, (uint32_t)(0x06<<8|motor&0xff) )
+#define MYO_READ_IntegralPosMax(base,motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
+#define MYO_READ_IntegralNegMax(base,motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
+#define MYO_READ_deadBand(base,motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
+#define MYO_READ_control(base,motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
+#define MYO_READ_position(base,motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
+#define MYO_READ_velocity(base,motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
+#define MYO_READ_current(base,motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
+#define MYO_READ_displacement(base,motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
+#define MYO_READ_pwmRef(base,motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
+#define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
+
+#define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
+#define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
+#define MYO_WRITE_Kd(base,motor,data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
+#define MYO_WRITE_sp(base,motor,data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
+#define MYO_WRITE_forwardGain(base,motor,data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), data )
+#define MYO_WRITE_outputPosMax(base,motor,data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), data )
+#define MYO_WRITE_outputNegMax(base,motor,data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), data )
+#define MYO_WRITE_IntegralPosMax(base,motor,data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
+#define MYO_WRITE_IntegralNegMax(base,motor,data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
+#define MYO_WRITE_deadBand(base,motor,data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
+#define MYO_WRITE_control(base,motor,data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
+#define MYO_WRITE_reset_myo_control(base,data) IOWR(base, (uint32_t)(0x0B<<8|0), data )
+#define MYO_WRITE_spi_activated(base,data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
+#define MYO_WRITE_reset_controller(base,motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
+#define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
+
 #define NUMBER_OF_ADC_SAMPLES 10
-#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2800 // in Hz, used to scale the motor velocity
+#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2700 // in Hz, used to scale the motor velocity
 
 using namespace std;
 using namespace std::chrono;
@@ -47,7 +121,16 @@ enum CONTROLMODE{
 
 class MyoControl{
 public:
+    /**
+     * Constructor
+     * @param myo_base vector of myo base addresses (cf hps_0.h)
+     */
 	MyoControl(vector<int32_t*> &myo_base);
+    /**
+     * Alternative Constructor
+     * @param myo_base vector of myo base addresses (cf hps_0.h)
+     * @param adc_base adc base address (cf hps_0.h)
+     */
 	MyoControl(vector<int32_t*> &myo_base, int32_t *adc_base);
 	~MyoControl();
     /**
@@ -80,12 +163,6 @@ public:
 	 * Resets all myo controllers
 	 */
 	void reset();
-	/**
-	 * Changes setpoint
-	 * @param motor for this motor
-	 * @param setPoint the new setpoint
-	 */
-	void changeSetpoint(int motor, int32_t setPoint);
 	/**
 	 * Sets the spi state for the interface of a motor
 	 * @param motor
@@ -129,6 +206,21 @@ public:
 	 * @param motor for this motor
 	 */
 	int16_t getDisplacement(int motor);
+    /**
+	 * Sets the position of a motor in radians
+	 * @param motor for this motor
+	 */
+    void setPosition(int motor, int32_t setPoint);
+    /**
+     * Sets the current velocity of a motor in radians/seconds
+     * @param motor for this motor
+     */
+    void setVelocity(int motor, int16_t setPoint);
+    /**
+     * Set the displacement in encoder ticks
+     * @param motor for this motor
+     */
+    void setDisplacement(int motor, int16_t setPoint);
 	/**
 	 * Gets the current in Ampere
 	 * @param motor for this motor

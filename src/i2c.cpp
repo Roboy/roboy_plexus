@@ -115,4 +115,5 @@ bool I2C::checkAddressSpace(uint8_t fromDeviceID, uint8_t toDeviceID, vector<uin
         if(!ack_error())
             activeDevices.push_back(fromDeviceID);
     }
+    return !activeDevices.empty();
 }

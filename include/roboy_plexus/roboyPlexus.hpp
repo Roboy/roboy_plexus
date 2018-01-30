@@ -55,29 +55,72 @@ public:
                 int32_t *adc_base = nullptr);
     ~RoboyPlexus();
 private:
+    /**
+     * Publishes IMU data
+     */
     void gsensorPublisher();
+    /**
+     * Publishes ADC values
+     */
     void adcPublisher();
+    /**
+     * Publishes lighthouse sensor values
+     */
     void darkRoomPublisher();
+    /**
+     * Publishes decoded lighthouse ootx data
+     */
     void darkRoomOOTXPublisher();
+    /**
+     * Publishes joint angles
+     */
     void jointStatusPublisher();
+    /**
+     * Publishes motor angles
+     */
     void motorAnglePublisher();
+    /**
+     * Publishes information about motors
+     */
     void motorStatusPublisher();
+    /**
+     * Callback for motor command
+     * @param msg motor command
+     */
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
+    /**
+     * Service for changing motor PID parameters
+     * @param req PID parameters
+     * @param res success
+     * @return success
+     */
     bool MotorConfigService(roboy_communication_middleware::MotorConfigService::Request  &req,
                             roboy_communication_middleware::MotorConfigService::Response &res);
+    /**
+     * Service for changing the control mode of motors, perviously set PID parameters are restored
+     * @param req control mode
+     * @param res
+     * @return success
+     */
     bool ControlModeService(roboy_communication_middleware::ControlMode::Request  &req,
                             roboy_communication_middleware::ControlMode::Response &res);
+    /**
+     * Service for motor spring calibration, samples the spring space for a requested amount of time and estimates spring coefficients
+     * @param req
+     * @param res
+     * @return
+     */
     bool MotorCalibrationService(roboy_communication_middleware::MotorCalibrationService::Request  &req,
                             roboy_communication_middleware::MotorCalibrationService::Response &res);
+    /**
+     * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
+     * @param req
+     * @param res
+     * @return
+     */
     bool EmergencyStopService(std_srvs::SetBool::Request  &req,
                               std_srvs::SetBool::Response &res);
-    bool ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value);
-    bool ADXL345_REG_READ(int file, uint8_t address,uint8_t *value);
-    bool ADXL345_REG_MULTI_READ(int file, uint8_t readaddr,uint8_t readdata[], uint8_t len);
-    bool ADXL345_Init(int file);
-    bool ADXL345_IsDataReady(int file);
-    bool ADXL345_XYZ_Read(int file, uint16_t szData16[3]);
-    bool ADXL345_IdRead(int file, uint8_t *pId);
+
 private:
     /**
      * Reverses the bit order of a byte, eg. 0b00001011 -> 0b11010000
@@ -100,6 +143,15 @@ private:
                 (uint8_t)reverse((uint8_t)(b>>8&0xff))<<8|(uint8_t)reverse((uint8_t)(b&0xff)));
         return a;
     }
+    // helper functions for reading the IMU
+    bool ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value);
+    bool ADXL345_REG_READ(int file, uint8_t address,uint8_t *value);
+    bool ADXL345_REG_MULTI_READ(int file, uint8_t readaddr,uint8_t readdata[], uint8_t len);
+    bool ADXL345_Init(int file);
+    bool ADXL345_IsDataReady(int file);
+    bool ADXL345_XYZ_Read(int file, uint16_t szData16[3]);
+    bool ADXL345_IdRead(int file, uint8_t *pId);
+
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
