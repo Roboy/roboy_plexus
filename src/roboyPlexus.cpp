@@ -61,20 +61,20 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
         adcThread->detach();
     }
 
-    if(!i2c_base.empty()) {
-        if(i2c_base.size()>0) {
-            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs[0])));
-            motorAngleThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-            motorAngleThread->detach();
-            if(i2c_base.size()==2){
-                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[1])));
-                jointStatusThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::jointStatusPublisher, this));
-                jointStatusThread->detach();
-            }
-        }
-    }
+//    if(!i2c_base.empty()) {
+//        if(i2c_base.size()>0) {
+//            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs[0])));
+//            motorAngleThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//            motorAngleThread->detach();
+//            if(i2c_base.size()==2){
+//                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[1])));
+//                jointStatusThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::jointStatusPublisher, this));
+//                jointStatusThread->detach();
+//            }
+//        }
+//    }
 
     for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++)
         control_mode[motor] = DISPLACEMENT;
