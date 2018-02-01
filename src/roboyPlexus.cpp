@@ -61,49 +61,49 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
         adcThread->detach();
     }
 
-    if(!i2c_base.empty()) {
-        if(i2c_base.size()>0) {
-            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs[0])));
-            motorAngleThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-            motorAngleThread->detach();
-            if(i2c_base.size()==2){
-                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[1])));
-                jointStatusThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::jointStatusPublisher, this));
-                jointStatusThread->detach();
-            }
-        }
-    }
+//    if(!i2c_base.empty()) {
+//        if(i2c_base.size()>0) {
+//            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[0], deviceIDs[0])));
+//            motorAngleThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//            motorAngleThread->detach();
+//            if(i2c_base.size()==2){
+//                jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[1])));
+//                jointStatusThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::jointStatusPublisher, this));
+//                jointStatusThread->detach();
+//            }
+//        }
+//    }
 
     for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++)
         control_mode[motor] = DISPLACEMENT;
 
     myoControl->allToDisplacement(0);
 
-    // open i2c bus for gsensor
-    if ((file = open(filename, O_RDWR)) < 0) {
-        ROS_ERROR("Failed to open the i2c bus of gsensor");
-    }
-
-    // init
-    // gsensor i2c address: 101_0011
-    int addr = 0b01010011;
-    if (ioctl(file, I2C_SLAVE, addr) < 0) {
-        ROS_ERROR("Failed to acquire bus access and/or talk to slave");
-    }else{
-        // configure accelerometer as +-2g and start measure
-        bSuccess = ADXL345_Init(file);
-        if (bSuccess){
-            // dump chip id
-            bSuccess = ADXL345_IdRead(file, &id);
-            if (bSuccess){
-                ROS_INFO("gsensor chip_id=%02Xh", id);
-                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
-                gsensor_thread->detach();
-            }
-        }
-    }
+//    // open i2c bus for gsensor
+//    if ((file = open(filename, O_RDWR)) < 0) {
+//        ROS_ERROR("Failed to open the i2c bus of gsensor");
+//    }
+//
+//    // init
+//    // gsensor i2c address: 101_0011
+//    int addr = 0b01010011;
+//    if (ioctl(file, I2C_SLAVE, addr) < 0) {
+//        ROS_ERROR("Failed to acquire bus access and/or talk to slave");
+//    }else{
+//        // configure accelerometer as +-2g and start measure
+//        bSuccess = ADXL345_Init(file);
+//        if (bSuccess){
+//            // dump chip id
+//            bSuccess = ADXL345_IdRead(file, &id);
+//            if (bSuccess){
+//                ROS_INFO("gsensor chip_id=%02Xh", id);
+//                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
+//                gsensor_thread->detach();
+//            }
+//        }
+//    }
 
     ROS_INFO("roboy plexus initialized");
 }
