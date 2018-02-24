@@ -31,7 +31,6 @@
 #include "roboy_plexus/A1335.hpp"
 
 #define NUM_SENSORS 32
-#define NUMBER_OF_MOTORS_PER_FPGA 14
 #define NUMBER_OF_LOADCELLS 8
 
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails

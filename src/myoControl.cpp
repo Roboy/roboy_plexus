@@ -23,7 +23,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 
 
     for (uint i = 0; i < myo_base.size(); i++) {
-        MYO_WRITE_update_frequency(myo_base[i], 2700);
+        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
         printf("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
 //        for(uint motor=0; motor<7; motor++){
@@ -65,8 +65,6 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 
     }
     reset();
-
-
 }
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_base(myo_base),
