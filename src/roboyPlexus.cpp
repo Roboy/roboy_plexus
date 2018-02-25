@@ -41,6 +41,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     darkroom_ootx_pub = nh->advertise<roboy_communication_middleware::DarkRoomOOTX>("/roboy/middleware/DarkRoom/ootx", 1);
     adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
     gsensor_pub = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/imu0", 1);
+    magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
@@ -104,6 +105,17 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
 //            }
 //        }
 //    }
+
+    // Look in the device's user manual for allowed addresses! (Table 6)
+    vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
+    vector<uint8_t> deviceaddress1 = {0b1001010};//
+    vector<int> devicepins0 = {0,1};
+    vector<int> devicepins1 = {0};
+    tlv493D0[0].reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
+    tlv493D0[1].reset(new TLV493D(i2c_base[1], deviceaddress1, devicepins1));
+
+    magneticsShoulderThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+    magneticsShoulderThread->detach();
 
     ROS_INFO("roboy plexus initialized");
 }
@@ -378,6 +390,17 @@ void RoboyPlexus::motorStatusPublisher() {
             msg2.current.push_back(myoControl->getCurrent(motor));
         }
         motorStatus_pub.publish(msg2);
+        rate.sleep();
+    }
+}
+
+void RoboyPlexus::magneticShoulderJointPublisher(){
+    ros::Rate rate(200);
+    while (keep_publishing) {
+        roboy_communication_middleware::MagneticSensor msg;
+        tlv493D0[0]->read(msg.x,msg.y,msg.z);
+        tlv493D0[1]->read(msg.x,msg.y,msg.z);
+        magneticSensor_pub.publish(msg);
         rate.sleep();
     }
 }

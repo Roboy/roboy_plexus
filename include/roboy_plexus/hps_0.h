@@ -42,15 +42,26 @@
 #define DARKROOMOOTXDECODER_0_END 0x2ff
 
 /*
+ * Macros for device 'I2C_2', class 'I2C'
+ * The macros are prefixed with 'I2C_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_2_COMPONENT_TYPE I2C
+#define I2C_2_COMPONENT_NAME I2C_2
+#define I2C_2_BASE 0x300
+#define I2C_2_SPAN 32
+#define I2C_2_END 0x31f
+
+/*
  * Macros for device 'I2C_1', class 'I2C'
  * The macros are prefixed with 'I2C_1_'.
  * The prefix is the slave descriptor.
  */
 #define I2C_1_COMPONENT_TYPE I2C
 #define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x300
+#define I2C_1_BASE 0x320
 #define I2C_1_SPAN 32
-#define I2C_1_END 0x31f
+#define I2C_1_END 0x33f
 
 /*
  * Macros for device 'I2C_0', class 'I2C'
@@ -59,9 +70,9 @@
  */
 #define I2C_0_COMPONENT_TYPE I2C
 #define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x320
+#define I2C_0_BASE 0x340
 #define I2C_0_SPAN 32
-#define I2C_0_END 0x33f
+#define I2C_0_END 0x35f
 
 /*
  * Macros for device 'LED', class 'altera_avalon_pio'
@@ -70,9 +81,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x340
+#define LED_BASE 0x360
 #define LED_SPAN 16
-#define LED_END 0x34f
+#define LED_END 0x36f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -94,9 +105,9 @@
  */
 #define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
 #define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
-#define ADC_LTC2308_0_BASE 0x350
+#define ADC_LTC2308_0_BASE 0x370
 #define ADC_LTC2308_0_SPAN 8
-#define ADC_LTC2308_0_END 0x357
+#define ADC_LTC2308_0_END 0x377
 
 /*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
@@ -109,7 +120,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1519416923
+#define SYSID_QSYS_TIMESTAMP 1519504604
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

@@ -10,6 +10,7 @@
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
 #include <roboy_communication_middleware/JointStatus.h>
+#include <roboy_communication_middleware/MagneticSensor.h>
 #include <roboy_communication_middleware/MotorAngle.h>
 #include <roboy_communication_middleware/MotorCalibrationService.h>
 #include <roboy_communication_middleware/MotorCommand.h>
@@ -29,6 +30,7 @@
 #include "roboy_plexus/CRC32.h"
 #include <bitset>
 #include "roboy_plexus/A1335.hpp"
+#include "roboy_plexus/tlv493d.hpp"
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
@@ -82,6 +84,10 @@ private:
      * Publishes information about motors
      */
     void motorStatusPublisher();
+    /**
+     * Publishes 3d magnetic information about shoulder joint
+     */
+    void magneticShoulderJointPublisher();
     /**
      * Callback for motor command
      * @param msg motor command
@@ -154,14 +160,14 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
-    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub, darkroom_ootx_pub, adc_pub, gsensor_pub, motorAngle_pub;
+    ros::Publisher motorStatus_pub, jointStatus_pub, darkroom_pub, darkroom_ootx_pub, adc_pub, gsensor_pub, motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     boost::shared_ptr<MyoControl> myoControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
-            gsensor_thread, motorAngleThread;
+            gsensor_thread, motorAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base;
     vector<int32_t*> myo_base, i2c_base, darkroom_ootx_addr;
@@ -206,6 +212,8 @@ private:
     uint32_t ootx_sensor_channel = 0;
 
     string ethaddr;
+
+    boost::shared_ptr<TLV493D> tlv493D0[2];
 };
 
 /** @} */ // end of group1

@@ -1,14 +1,14 @@
 #include "roboy_plexus/i2c.hpp"
 
 I2C::I2C(void * baseAddr):h2p_lw_i2c_addr(baseAddr) {
-    vector<uint8_t> activeDevices;
-    checkAddressSpace(0,255,activeDevices);
-    stringstream str;
-    str << "active i2c devices on bus witch base address " << baseAddr << ": ";
-    for(int device:activeDevices){
-        str << hex << device << " ";
-    }
-    ROS_INFO_STREAM(str.str());
+//    vector<uint8_t> activeDevices;
+//    checkAddressSpace(0,255,activeDevices);
+//    stringstream str;
+//    str << "active i2c devices on bus witch base address " << baseAddr << ": ";
+//    for(int device:activeDevices){
+//        str << hex << device << " ";
+//    }
+//    ROS_INFO_STREAM(str.str());
 }
 
 void I2C::write(uint8_t i2cAddr, uint32_t data, uint8_t number_of_bytes) {

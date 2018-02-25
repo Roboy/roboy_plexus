@@ -89,7 +89,7 @@
 #define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
-#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2500 // in Hz, used to scale the motor velocity
+#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, used to scale the motor velocity
 
 using namespace std;
 using namespace std::chrono;

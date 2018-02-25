@@ -92,6 +92,7 @@ public:
 private:
 	void * h2p_lw_i2c_addr;
 
+public:
 	// registers: read or write
 	const uint8_t ADDR = 0;
 	const uint8_t DATA = 1;  // note that internally there are 2 registers for data: data_rd and data_wr

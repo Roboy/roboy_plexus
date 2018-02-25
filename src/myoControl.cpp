@@ -65,6 +65,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 
     }
     reset();
+
 }
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_base(myo_base),

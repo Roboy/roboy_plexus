@@ -84,6 +84,7 @@ int main(int argc, char *argv[]) {
 //
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 //
     h2p_lw_darkroom_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
@@ -92,6 +93,13 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 //
     vector<vector<int>> deviceIDs = {{0xC},{0x0}};
+
+//    I2C i2c(h2p_lw_i2c_addr[1]);
+//    vector<uint8_t> active_devices;
+//    i2c.checkAddressSpace(0,255,active_devices);
+//    ROS_INFO("found %ld active devices", active_devices.size());
+
+
 
 //    MyoControl myoControl(h2p_lw_myo_addr);
 
@@ -110,6 +118,7 @@ int main(int argc, char *argv[]) {
             *h2p_lw_led_addr = mask;
         }
     }
+
 
 
 ////    I2C i2c(h2p_lw_i2c_addr[0]);
