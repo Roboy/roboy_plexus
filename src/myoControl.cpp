@@ -20,12 +20,10 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 
     changeControl(DISPLACEMENT);
 
-
-
     for (uint i = 0; i < myo_base.size(); i++) {
         MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
-        printf("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
+        ROS_INFO("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
 //        for(uint motor=0; motor<7; motor++){
 //            printf(        "Kp             %d\n"
 //                           "Ki             %d\n"
@@ -65,7 +63,6 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 
     }
     reset();
-
 }
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_base(myo_base),
@@ -90,7 +87,9 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     changeControl(DISPLACEMENT);
 
     for (uint i = 0; i < myo_base.size(); i++) {
+        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
+        ROS_INFO("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
     }
     reset();
 
@@ -108,7 +107,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
 }
 
 MyoControl::~MyoControl() {
-    cout << "shutting down myoControl" << endl;
+    ROS_INFO("shutting down myoControl");
 }
 
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
@@ -303,7 +302,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->IntegralNegMax = 0;
             break;
         default:
-            cout << "unknown control mode" << endl;
+            ROS_ERROR("unknown control mode");
             break;
     }
 

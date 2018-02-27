@@ -30,7 +30,7 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     author: Simon Trendel ( simon.trendel@tum.de ), 2018
-    description: Class for interfacing motor status and PID controllers running in fpga
+    description: Class for interfacing motor status and PID controllers running on fpga
 */
 
 #pragma once
@@ -47,6 +47,7 @@
 #include <sstream>
 #include <common_utilities/CommonDefinitions.h>
 #include <roboy_plexus/timer.hpp>
+#include <ros/ros.h>
 
 #define MOTORS_PER_MYOCONTROL 6
 
@@ -89,35 +90,10 @@
 #define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
-#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, used to scale the motor velocity
+#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2500 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
 
 using namespace std;
 using namespace std::chrono;
-
-//typedef struct
-//{
-//    int32_t outputPosMax; /*!< maximum control output in the positive direction in counts, max 4000*/
-//    int32_t outputNegMax; /*!< maximum control output in the negative direction in counts, max -4000*/
-//    int32_t spPosMax;/*<!Positive limit for the set point.*/
-//    int32_t spNegMax;/*<!Negative limit for the set point.*/
-//	uint16_t Kp;/*!<Gain of the proportional component*/
-//	uint16_t Ki;/*!<Gain of the integral component*/
-//	uint16_t Kd;/*!<Gain of the differential component*/
-//	int16_t forwardGain; /*!<Gain of  the feed-forward term*/
-//	uint16_t deadBand;/*!<Optional deadband threshold for the control response*/
-//	int16_t IntegralPosMax; /*!<Integral positive component maximum*/
-//	int16_t IntegralNegMax; /*!<Integral negative component maximum*/
-//	vector<float> polyPar; /*! polynomial fit from displacement (d)  to tendon force (f)
-//				 f=polyPar[0]+polyPar[1]*d +polyPar[2]*d^2+ +polyPar[3]*d^3 + ... */
-//	float radPerEncoderCount;
-//}control_Parameters_t;
-//
-//enum CONTROLMODE{
-//	POSITION = 0,
-//	VELOCITY = 1,
-//	DISPLACEMENT = 2,
-//	FORCE
-//};
 
 class MyoControl{
 public:
