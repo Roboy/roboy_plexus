@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['integralnegmax',['IntegralNegMax',['../structcontrol___parameters__t.html#af42c296014d5788330d4a1ccf36dd12f',1,'control_Parameters_t']]],
-  ['integralposmax',['IntegralPosMax',['../structcontrol___parameters__t.html#aedcd10be1a12e2576ad7148b5c401b24',1,'control_Parameters_t']]]
+  ['magnetic',['magnetic',['../structsensors__event__t.html#aa634d41a024e1cacdceecf85ec326698',1,'sensors_event_t']]],
+  ['max_5fvalue',['max_value',['../structsensor__t.html#a1a17359f1080eb169a452656f7dec1ee',1,'sensor_t']]],
+  ['min_5fdelay',['min_delay',['../structsensor__t.html#a1cd271377ff25ec9ca54886f876c87ec',1,'sensor_t']]],
+  ['min_5fvalue',['min_value',['../structsensor__t.html#a4556ed82a0389a7f6af25a6fd0ee1431',1,'sensor_t']]]
 ];

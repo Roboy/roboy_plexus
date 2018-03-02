@@ -104,14 +104,14 @@ Collaboration diagram for A1335:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a6748382ca1d93db30e3e7d1e4aaef7e2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6748382ca1d93db30e3e7d1e4aaef7e2"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>A1335</b> (int32_t *i2c_base, vector&lt; int32_t &gt; &amp;deviceIDs)</td></tr>
+<tr class="memitem:a6748382ca1d93db30e3e7d1e4aaef7e2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_a1335.html#a6748382ca1d93db30e3e7d1e4aaef7e2">A1335</a> (int32_t *i2c_base, vector&lt; int32_t &gt; &amp;deviceIDs)</td></tr>
+<tr class="memdesc:a6748382ca1d93db30e3e7d1e4aaef7e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#a6748382ca1d93db30e3e7d1e4aaef7e2">More...</a><br /></td></tr>
 <tr class="separator:a6748382ca1d93db30e3e7d1e4aaef7e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcd02fbd6de8517db1a1ba96edce33e7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adcd02fbd6de8517db1a1ba96edce33e7"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>readAngleData</b> (vector&lt; <a class="el" href="struct_a1335_state.html">A1335State</a> &gt; &amp;states)</td></tr>
+<tr class="memitem:adcd02fbd6de8517db1a1ba96edce33e7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_a1335.html#adcd02fbd6de8517db1a1ba96edce33e7">readAngleData</a> (vector&lt; <a class="el" href="struct_a1335_state.html">A1335State</a> &gt; &amp;states)</td></tr>
+<tr class="memdesc:adcd02fbd6de8517db1a1ba96edce33e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the angle data.  <a href="#adcd02fbd6de8517db1a1ba96edce33e7">More...</a><br /></td></tr>
 <tr class="separator:adcd02fbd6de8517db1a1ba96edce33e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afde670dc959a57f952c2f9734650abd8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afde670dc959a57f952c2f9734650abd8"></a>
-string&#160;</td><td class="memItemRight" valign="bottom"><b>decodeFlag</b> (int type, uint16_t code)</td></tr>
+<tr class="memitem:afde670dc959a57f952c2f9734650abd8"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_a1335.html#afde670dc959a57f952c2f9734650abd8">decodeFlag</a> (int type, uint16_t code)</td></tr>
+<tr class="memdesc:afde670dc959a57f952c2f9734650abd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a status flag.  <a href="#afde670dc959a57f952c2f9734650abd8">More...</a><br /></td></tr>
 <tr class="separator:afde670dc959a57f952c2f9734650abd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
@@ -173,6 +173,104 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>deviceID</b></td><
 string&#160;</td><td class="memItemRight" valign="bottom"><b>str</b></td></tr>
 <tr class="separator:a267c97d38d6021f159a2b3d24f95de40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a6748382ca1d93db30e3e7d1e4aaef7e2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">A1335::A1335 </td>
+          <td>(</td>
+          <td class="paramtype">int32_t *&#160;</td>
+          <td class="paramname"><em>i2c_base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector&lt; int32_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>deviceIDs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">i2c_base</td><td>i2c base (cf <a class="el" href="hps__0_8h_source.html">hps_0.h</a> ) </td></tr>
+    <tr><td class="paramname">deviceIDs</td><td>active device ids </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="afde670dc959a57f952c2f9734650abd8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">string A1335::decodeFlag </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>code</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decodes a status flag. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>the type </td></tr>
+    <tr><td class="paramname">code</td><td>thsi code </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>human readable string </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="adcd02fbd6de8517db1a1ba96edce33e7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool A1335::readAngleData </td>
+          <td>(</td>
+          <td class="paramtype">vector&lt; <a class="el" href="struct_a1335_state.html">A1335State</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>states</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads the angle data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">states</td><td>will be filled with angle data </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>success </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a class="anchor" id="a5f73932e3601ac66bfc0f51d386d0d18"></a>
 <div class="memitem">
@@ -299,8 +397,8 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>str</b></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/home/letrend/workspace/roboy_middleware/src/roboy_plexus/include/roboy_plexus/<a class="el" href="_a1335_8hpp_source.html">A1335.hpp</a></li>
-<li>/home/letrend/workspace/roboy_middleware/src/roboy_plexus/src/A1335.cpp</li>
+<li>/home/roboy/workspace/roboy_middleware/src/roboy_plexus/include/roboy_plexus/<a class="el" href="_a1335_8hpp_source.html">A1335.hpp</a></li>
+<li>/home/roboy/workspace/roboy_middleware/src/roboy_plexus/src/A1335.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

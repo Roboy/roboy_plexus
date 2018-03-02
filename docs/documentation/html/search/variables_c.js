@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['magnetic',['magnetic',['../structsensors__event__t.html#aa634d41a024e1cacdceecf85ec326698',1,'sensors_event_t']]],
-  ['max_5fvalue',['max_value',['../structsensor__t.html#a1a17359f1080eb169a452656f7dec1ee',1,'sensor_t']]],
-  ['min_5fdelay',['min_delay',['../structsensor__t.html#a1cd271377ff25ec9ca54886f876c87ec',1,'sensor_t']]],
-  ['min_5fvalue',['min_value',['../structsensor__t.html#a4556ed82a0389a7f6af25a6fd0ee1431',1,'sensor_t']]]
+  ['pitch',['pitch',['../structsensors__vec__t.html#aa298c3cbbd0016698c64d9451fbf3aff',1,'sensors_vec_t']]],
+  ['pressure',['pressure',['../structsensors__event__t.html#a2ec6e34e1a6cf832d85ca19066bd38f0',1,'sensors_event_t']]]
 ];

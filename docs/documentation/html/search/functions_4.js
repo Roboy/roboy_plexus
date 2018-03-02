@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['finalize',['finalize',['../class_c_r_c32.html#a6cf02e2e09cfdea2806ea8d2a86c2355',1,'CRC32']]]
+  ['emergencystopservice',['EmergencyStopService',['../class_roboy_plexus.html#a3ec293f74affffdff8763cda92c1584d',1,'RoboyPlexus']]],
+  ['estimatespringparameters',['estimateSpringParameters',['../class_myo_control.html#a3a68c639cef371ed745f46a7783ed00a',1,'MyoControl']]]
 ];

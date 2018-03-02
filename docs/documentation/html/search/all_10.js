@@ -1,11 +1,13 @@
 var searchData=
 [
   ['r',['r',['../structsensors__color__t.html#acdeed981e7df8c701e09d4b2fdb9a40c',1,'sensors_color_t']]],
-  ['radperencodercount',['radPerEncoderCount',['../structcontrol___parameters__t.html#a6a1b1bfd808cd10ad3a12220069f4798',1,'control_Parameters_t']]],
+  ['read',['read',['../class_i2_c.html#a3cddecf30e1352f32175a88b1a20ed8a',1,'I2C']]],
   ['read8',['read8',['../class_adafruit___b_n_o055.html#a6247e63696145d19a0a5c53dcfd5fa0c',1,'Adafruit_BNO055']]],
+  ['read_5fcontinuous',['read_continuous',['../class_i2_c.html#ab99c3875e95a088b18c7a8863df5ddbe',1,'I2C']]],
   ['readabsangle',['readAbsAngle',['../class_a_m4096.html#a5115c02a2129e2132864c03ceadbca0a',1,'AM4096::readAbsAngle(vector&lt; uint32_t &gt; &amp;absAngles)'],['../class_a_m4096.html#a025326cea51cf708fb75bfa1f8a5f58b',1,'AM4096::readAbsAngle(uint8_t i2cAddr, uint32_t &amp;absAngle)']]],
   ['readadc',['readADC',['../class_myo_control.html#a268ad878db7638a2686063b87b8e86ee',1,'MyoControl']]],
   ['readagcgain',['readAgcGain',['../class_a_m4096.html#abb3f4a99b82f41b9acc66c53ea70418a',1,'AM4096::readAgcGain(vector&lt; uint8_t &gt; &amp;agcGain)'],['../class_a_m4096.html#ad31beb8780d08179acfe5878d417851a',1,'AM4096::readAgcGain(uint8_t i2cAddr, uint8_t &amp;agcGain)']]],
+  ['readangledata',['readAngleData',['../class_a1335.html#adcd02fbd6de8517db1a1ba96edce33e7',1,'A1335']]],
   ['readlen',['readLen',['../class_adafruit___b_n_o055.html#a334c0a59391abc93b4eeeb7a7b1d2b7f',1,'Adafruit_BNO055']]],
   ['readmagnetstatus',['readMagnetStatus',['../class_a_m4096.html#aa496e1af8165ab287e2bc67d83707493',1,'AM4096::readMagnetStatus(vector&lt; bool &gt; &amp;magnetTooFar, vector&lt; bool &gt; &amp;magnetTooClose)'],['../class_a_m4096.html#a0d76438b79da985cceafa83aa7b4cbd7',1,'AM4096::readMagnetStatus(uint8_t i2cAddr, bool &amp;magnetTooFar, bool &amp;magnetTooClose)']]],
   ['readrelangle',['readRelAngle',['../class_a_m4096.html#aea3efdaca96434acdfd26dbab8375dc3',1,'AM4096::readRelAngle(vector&lt; uint32_t &gt; &amp;relAngles)'],['../class_a_m4096.html#a0e270cd4daedaf101df90bf94591cc59',1,'AM4096::readRelAngle(uint8_t i2cAddr, uint32_t &amp;relAngle)']]],

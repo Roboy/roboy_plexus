@@ -19,5 +19,6 @@ var searchData=
   ['getvector',['getVector',['../class_adafruit___b_n_o055.html#aa352ee195ee844ba5c1ba61b010e4517',1,'Adafruit_BNO055']]],
   ['getvelocity',['getVelocity',['../class_myo_control.html#a3406f027a2db8f8128a5248d852ee022',1,'MyoControl']]],
   ['getweight',['getWeight',['../class_myo_control.html#a323e3d37b7ae28140d0ca817017acf68',1,'MyoControl::getWeight(int load_cell)'],['../class_myo_control.html#ac2ff5a6dce0ff74784a055cd0015592b',1,'MyoControl::getWeight(int load_cell, uint32_t &amp;adc_value)']]],
+  ['gsensorpublisher',['gsensorPublisher',['../class_roboy_plexus.html#a50bef6b03e7064522b8633d1c5a3177a',1,'RoboyPlexus']]],
   ['gyro',['gyro',['../structsensors__event__t.html#ad108ea8c3a18d02cfc674ba27e94a2c4',1,'sensors_event_t']]]
 ];

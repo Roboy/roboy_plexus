@@ -87,6 +87,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="class_i2_c-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">I2C Class Reference</div>  </div>
@@ -95,30 +96,27 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:abd07cb0f1bf730d1df6b04da15cbb5f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="abd07cb0f1bf730d1df6b04da15cbb5f0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>I2C</b> (void *baseAddr)</td></tr>
+<tr class="memitem:abd07cb0f1bf730d1df6b04da15cbb5f0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i2_c.html#abd07cb0f1bf730d1df6b04da15cbb5f0">I2C</a> (void *baseAddr)</td></tr>
+<tr class="memdesc:abd07cb0f1bf730d1df6b04da15cbb5f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#abd07cb0f1bf730d1df6b04da15cbb5f0">More...</a><br /></td></tr>
 <tr class="separator:abd07cb0f1bf730d1df6b04da15cbb5f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea4174fc96bd3de1a38e533ac8303f78"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i2_c.html#aea4174fc96bd3de1a38e533ac8303f78">write</a> (uint8_t i2cAddr, uint32_t data, uint8_t number_of_bytes)</td></tr>
 <tr class="memdesc:aea4174fc96bd3de1a38e533ac8303f78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes up to three bytes to an address.  <a href="#aea4174fc96bd3de1a38e533ac8303f78">More...</a><br /></td></tr>
 <tr class="separator:aea4174fc96bd3de1a38e533ac8303f78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3cddecf30e1352f32175a88b1a20ed8a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3cddecf30e1352f32175a88b1a20ed8a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>read</b> (uint8_t i2cAddr, uint8_t reg, uint8_t number_of_bytes, vector&lt; uint8_t &gt; &amp;data)</td></tr>
+<tr class="memitem:a3cddecf30e1352f32175a88b1a20ed8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i2_c.html#a3cddecf30e1352f32175a88b1a20ed8a">read</a> (uint8_t i2cAddr, uint8_t reg, uint8_t number_of_bytes, vector&lt; uint8_t &gt; &amp;data)</td></tr>
+<tr class="memdesc:a3cddecf30e1352f32175a88b1a20ed8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads up to number of bytes from i2c slave.  <a href="#a3cddecf30e1352f32175a88b1a20ed8a">More...</a><br /></td></tr>
 <tr class="separator:a3cddecf30e1352f32175a88b1a20ed8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab99c3875e95a088b18c7a8863df5ddbe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab99c3875e95a088b18c7a8863df5ddbe"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>read_continuous</b> (uint8_t i2cAddr, uint8_t number_of_bytes, vector&lt; uint8_t &gt; &amp;data)</td></tr>
+<tr class="memitem:ab99c3875e95a088b18c7a8863df5ddbe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i2_c.html#ab99c3875e95a088b18c7a8863df5ddbe">read_continuous</a> (uint8_t i2cAddr, uint8_t number_of_bytes, vector&lt; uint8_t &gt; &amp;data)</td></tr>
+<tr class="memdesc:ab99c3875e95a088b18c7a8863df5ddbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads up to number of bytes from i2c slave, without start register (behaviour depends on slave device)  <a href="#ab99c3875e95a088b18c7a8863df5ddbe">More...</a><br /></td></tr>
 <tr class="separator:ab99c3875e95a088b18c7a8863df5ddbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62120faeca3732e21de55e7927a6e3ac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62120faeca3732e21de55e7927a6e3ac"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>ack_error</b> ()</td></tr>
+<tr class="memitem:a62120faeca3732e21de55e7927a6e3ac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i2_c.html#a62120faeca3732e21de55e7927a6e3ac">ack_error</a> ()</td></tr>
+<tr class="memdesc:a62120faeca3732e21de55e7927a6e3ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queries for acknowledge error.  <a href="#a62120faeca3732e21de55e7927a6e3ac">More...</a><br /></td></tr>
 <tr class="separator:a62120faeca3732e21de55e7927a6e3ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a38fcf92b84b187998f34baa03ef8c57c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38fcf92b84b187998f34baa03ef8c57c"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>checkAddressSpace</b> (uint8_t fromDeviceID, uint8_t toDeviceID, vector&lt; uint8_t &gt; &amp;activeDevices)</td></tr>
+<tr class="memitem:a38fcf92b84b187998f34baa03ef8c57c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i2_c.html#a38fcf92b84b187998f34baa03ef8c57c">checkAddressSpace</a> (uint8_t fromDeviceID, uint8_t toDeviceID, vector&lt; uint8_t &gt; &amp;activeDevices)</td></tr>
+<tr class="memdesc:a38fcf92b84b187998f34baa03ef8c57c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scans the provided address range for active devices.  <a href="#a38fcf92b84b187998f34baa03ef8c57c">More...</a><br /></td></tr>
 <tr class="separator:a38fcf92b84b187998f34baa03ef8c57c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a806f73619cbbd7a90fa7147864b7d367"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a806f73619cbbd7a90fa7147864b7d367"></a>
-void *&#160;</td><td class="memItemRight" valign="bottom"><b>h2p_lw_i2c_addr</b></td></tr>
-<tr class="separator:a806f73619cbbd7a90fa7147864b7d367"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54ff590f72659bc61ef5e2167bb19b04"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a54ff590f72659bc61ef5e2167bb19b04"></a>
 const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>ADDR</b> = 0</td></tr>
 <tr class="separator:a54ff590f72659bc61ef5e2167bb19b04"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,8 +153,191 @@ const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>WRITE</b> = 
 <tr class="memitem:ab7cbde73eebcf6cb017b9fe3b79f2667"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab7cbde73eebcf6cb017b9fe3b79f2667"></a>
 const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>READ</b> = 1</td></tr>
 <tr class="separator:ab7cbde73eebcf6cb017b9fe3b79f2667"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr class="memitem:a806f73619cbbd7a90fa7147864b7d367"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a806f73619cbbd7a90fa7147864b7d367"></a>
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>h2p_lw_i2c_addr</b></td></tr>
+<tr class="separator:a806f73619cbbd7a90fa7147864b7d367"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="abd07cb0f1bf730d1df6b04da15cbb5f0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">I2C::I2C </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>baseAddr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">baseAddr</td><td>i2c base address (cf <a class="el" href="hps__0_8h_source.html">hps_0.h</a>) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a62120faeca3732e21de55e7927a6e3ac"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool I2C::ack_error </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Queries for acknowledge error. </p>
+<dl class="section return"><dt>Returns</dt><dd>error/no error </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a38fcf92b84b187998f34baa03ef8c57c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool I2C::checkAddressSpace </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>fromDeviceID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>toDeviceID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector&lt; uint8_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>activeDevices</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Scans the provided address range for active devices. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fromDeviceID</td><td>start address </td></tr>
+    <tr><td class="paramname">toDeviceID</td><td>end address </td></tr>
+    <tr><td class="paramname">activeDevices</td><td>will be filled with active device addresses </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if at least one active device was found </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a3cddecf30e1352f32175a88b1a20ed8a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void I2C::read </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>i2cAddr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>reg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>number_of_bytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector&lt; uint8_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads up to number of bytes from i2c slave. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">i2cAddr</td><td>i2c slave address </td></tr>
+    <tr><td class="paramname">reg</td><td>start register </td></tr>
+    <tr><td class="paramname">number_of_bytes</td><td>hwo many bytes should be read </td></tr>
+    <tr><td class="paramname">data</td><td>will be filled with the read data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ab99c3875e95a088b18c7a8863df5ddbe"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void I2C::read_continuous </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>i2cAddr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>number_of_bytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector&lt; uint8_t &gt; &amp;&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads up to number of bytes from i2c slave, without start register (behaviour depends on slave device) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">i2cAddr</td><td>i2c slave address </td></tr>
+    <tr><td class="paramname">number_of_bytes</td><td>hwo many bytes should be read </td></tr>
+    <tr><td class="paramname">data</td><td>will be filled with the read data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="aea4174fc96bd3de1a38e533ac8303f78"></a>
 <div class="memitem">
 <div class="memproto">
@@ -200,8 +381,8 @@ const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>READ</b> = 1
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/home/letrend/workspace/roboy_middleware/src/roboy_plexus/include/roboy_plexus/<a class="el" href="i2c_8hpp_source.html">i2c.hpp</a></li>
-<li>/home/letrend/workspace/roboy_middleware/src/roboy_plexus/src/i2c.cpp</li>
+<li>/home/roboy/workspace/roboy_middleware/src/roboy_plexus/include/roboy_plexus/<a class="el" href="i2c_8hpp_source.html">i2c.hpp</a></li>
+<li>/home/roboy/workspace/roboy_middleware/src/roboy_plexus/src/i2c.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
