@@ -17,7 +17,10 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   ssh root@192.168.240.240
   ~/.roboy_plexus
   ```
-
+* look for `Gandalf Data Limited` in the following command output in order to find out FPGA's IP, substitute `192.168.0.255` by your network broadcast address
+  ```
+  sudo nmap -nsP 192.168.0.255/24
+  ```
 * if ssh doesn't work, connect the FPGA board to the PC via the USB port (use the one on the ethernet side of FPGA board) and connect to the serial monitor with
   ```
   screen /dev/ttyUSB0 115200
