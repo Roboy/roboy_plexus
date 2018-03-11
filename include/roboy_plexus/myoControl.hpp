@@ -249,7 +249,7 @@ public:
 	 */
 	float getWeight(int load_cell, uint32_t &adc_value);
 	/**
-	 * records positions of motors in Displacment mode
+	 * records positions of motors in Displacement mode
 	 * @param samplingTime
 	 * @param recordTime
 	 * @param trajectories will be filled with positions
@@ -261,6 +261,22 @@ public:
 	        float samplingTime, float recordTime,
 			map<int,vector<float>> &trajectories, vector<int> &idList,
 	        vector<int> &controlmode, string name);
+
+    /**
+	 * starts recording positions of motors in Displacement mode
+	 * @param samplingTime
+	 * @param trajectories will be filled with positions
+	 * @param idList record these motors
+	 * @param name filename
+	 */
+    float startRecordTrajectories(
+            float samplingTime, map<int,vector<float>> &trajectories,
+            vector<int> &idList, string name);
+
+    /**
+     * stops recording a trajectory and writes to file
+     */
+    void stopRecordTrajectories();
 
 	/**
 	 * Plays back a trajectory
@@ -304,4 +320,5 @@ private:
 	Timer timer;
 	vector<int32_t*> myo_base;
 	int iter = 0;
+    bool recording = false; // keeps track of recording status
 };

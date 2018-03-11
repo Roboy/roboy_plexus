@@ -381,7 +381,7 @@ float MyoControl::getWeight(int load_cell, uint32_t &adc_value) {
 
 float MyoControl::recordTrajectories(
         float samplingTime, float recordTime,
-        map<int, vector<float>> &trajectories, vector<int> &idList,
+        map<int,vector<float>> &trajectories, vector<int> &idList,
         vector<int> &controlmode, string name) {
     // this will be filled with the trajectories
     allToDisplacement(200);
@@ -453,6 +453,88 @@ float MyoControl::recordTrajectories(
 
     // return average sampling time in milliseconds
     return elapsedTime / (double) sample * 1000.0f;
+}
+
+float MyoControl::startRecordTrajectories(
+        float samplingTime, map<int, vector<float>> &trajectories,
+        vector<int> &idList, string name) {
+
+    recording = true;
+    ROS_INFO("Started recording a trajectory");
+    // this will be filled with the trajectories
+    allToDisplacement(200);
+
+    // samplingTime milli -> seconds
+    samplingTime /= 1000.0f;
+
+    double elapsedTime = 0.0, dt;
+    long sample = 0;
+
+    // start recording
+    timer.start();
+    do {
+        dt = elapsedTime;
+        for (uint motor = 0; motor < idList.size(); motor++) {
+            trajectories[idList[motor]].push_back(getPosition(motor));
+        }
+        sample++;
+        elapsedTime = timer.elapsedTime();
+        dt = elapsedTime - dt;
+        // if faster than sampling time sleep for difference
+        if (dt < samplingTime) {
+            usleep((samplingTime - dt) * 1000000.0);
+            elapsedTime = timer.elapsedTime();
+        }
+    } while (recording);
+
+    // set force to zero
+    allToDisplacement(0);
+
+    // done recording
+//    std::ofstream outfile;
+//    if (name.empty()) {
+//        time_t rawtime;
+//        struct tm *timeinfo;
+//        time(&rawtime);
+//        timeinfo = localtime(&rawtime);
+//        char str[200];
+//        sprintf(str, "recording_%s.log",
+//                asctime(timeinfo));
+//        name = str;
+//    }
+//
+//    outfile.open(name);
+//    if (outfile.is_open()) {
+//        outfile << "<?xml version=\"1.0\" ?>"
+//                << std::endl;
+//        uint m = 0;
+//        char motorname[10];
+//        for (uint m = 0; m < idList.size(); m++) {
+//            sprintf(motorname, "motor%d", idList[m]);
+//            outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
+//                    << POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
+//                    << std::endl;
+//            outfile << "<waypointlist>" << std::endl;
+//            for (uint i = 0; i < trajectories[idList[m]].size(); i++)
+//                outfile << trajectories[idList[m]][i] << " ";
+//            outfile << "</waypointlist>" << std::endl;
+//            outfile << "</trajectory>" << std::endl;
+//        }
+//        outfile << "</roboybehavior>" << std::endl;
+//        outfile.close();
+//    }
+//
+//    char msg[1000];
+//    sprintf(msg, "Saved trajectory as %s", name);
+//    ROS_INFO(msg);
+
+    // return average sampling time in milliseconds
+    return elapsedTime / (double) sample * 1000.0f;
+}
+
+void MyoControl::stopRecordTrajectories() {
+    recording = false;
+    ROS_INFO("Stopped recording a trajectory");
 }
 
 bool MyoControl::playTrajectory(const char *file) {
