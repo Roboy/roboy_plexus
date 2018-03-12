@@ -19,6 +19,7 @@
 #include <roboy_communication_control/StartRecordTrajectory.h>
 #include <roboy_communication_control/StopRecordTrajectory.h>
 #include <std_srvs/SetBool.h>
+#include <std_msgs/Float32MultiArray.h>
 #include <sensor_msgs/Imu.h>
 #include <thread>
 #include <map>
