@@ -18,6 +18,7 @@
 #include <roboy_communication_middleware/MotorConfigService.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
 #include <roboy_communication_control/StopRecordTrajectory.h>
+#include <roboy_communication_control/PerformMovement.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <sensor_msgs/Imu.h>
@@ -67,6 +68,14 @@ private:
      * Publishes ADC values
      */
     void adcPublisher();
+    /**
+     * Publishes lighthouse sensor values
+     */
+    void darkRoomPublisher();
+    /**
+     * Publishes decoded lighthouse ootx data
+     */
+    void darkRoomOOTXPublisher();
     /**
      * Publishes joint angles
      */
@@ -137,6 +146,17 @@ private:
     bool StopRecordTrajectoryService(roboy_communication_control::StopRecordTrajectory::Request &req,
                                       roboy_communication_control::StopRecordTrajectory::Response &res);
 
+    /**
+     * Service replays the trajectory
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
+                                     roboy_communication_control::PerformMovement::Response &res);
+
+
+
 
 
 private:
@@ -173,9 +193,9 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
-    ros::Publisher motorStatus_pub, jointStatus_pub, adc_pub, gsensor_pub, motorAngle_pub, magneticSensor_pub;
+    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub, motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv,
-            motorCalibration_srv, startRecordTrajectory_srv, stopRecordTrajectory_srv;
+            motorCalibration_srv, startRecordTrajectory_srv, stopRecordTrajectory_srv, replayTrajectory_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;

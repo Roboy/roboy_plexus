@@ -491,42 +491,40 @@ float MyoControl::startRecordTrajectories(
     allToDisplacement(0);
 
     // done recording
-//    std::ofstream outfile;
-//    if (name.empty()) {
-//        time_t rawtime;
-//        struct tm *timeinfo;
-//        time(&rawtime);
-//        timeinfo = localtime(&rawtime);
-//        char str[200];
-//        sprintf(str, "recording_%s.log",
-//                asctime(timeinfo));
-//        name = str;
-//    }
-//
-//    outfile.open(name);
-//    if (outfile.is_open()) {
-//        outfile << "<?xml version=\"1.0\" ?>"
-//                << std::endl;
-//        uint m = 0;
-//        char motorname[10];
-//        for (uint m = 0; m < idList.size(); m++) {
-//            sprintf(motorname, "motor%d", idList[m]);
-//            outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
-//                    << POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
-//                    << std::endl;
-//            outfile << "<waypointlist>" << std::endl;
-//            for (uint i = 0; i < trajectories[idList[m]].size(); i++)
-//                outfile << trajectories[idList[m]][i] << " ";
-//            outfile << "</waypointlist>" << std::endl;
-//            outfile << "</trajectory>" << std::endl;
-//        }
-//        outfile << "</roboybehavior>" << std::endl;
-//        outfile.close();
-//    }
-//
-//    char msg[1000];
-//    sprintf(msg, "Saved trajectory as %s", name);
-//    ROS_INFO(msg);
+    std::ofstream outfile;
+    if (name.empty()) {
+        time_t rawtime;
+        struct tm *timeinfo;
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        char str[200];
+        sprintf(str, "recording_%s.log",
+                asctime(timeinfo));
+        name = str;
+    }
+
+    outfile.open(name);
+    if (outfile.is_open()) {
+        outfile << "<?xml version=\"1.0\" ?>"
+                << std::endl;
+        uint m = 0;
+        char motorname[10];
+        for (uint m = 0; m < idList.size(); m++) {
+            sprintf(motorname, "motor%d", idList[m]);
+            outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
+                    << POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
+                    << std::endl;
+            outfile << "<waypointlist>" << std::endl;
+            for (uint i = 0; i < trajectories[idList[m]].size(); i++)
+                outfile << trajectories[idList[m]][i] << " ";
+            outfile << "</waypointlist>" << std::endl;
+            outfile << "</trajectory>" << std::endl;
+        }
+        outfile << "</roboybehavior>" << std::endl;
+        outfile.close();
+    }
+
+    ROS_INFO("Saved trajectory");
 
     // return average sampling time in milliseconds
     return elapsedTime / (double) sample * 1000.0f;
@@ -541,6 +539,7 @@ bool MyoControl::playTrajectory(const char *file) {
     // initialize TiXmlDocument doc with a string
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
+        ROS_ERROR("could not load xml trajectory %s", file);
         return false;
     }
 
@@ -556,6 +555,7 @@ bool MyoControl::playTrajectory(const char *file) {
         if (trajectory_it->Attribute("motorid") && trajectory_it->QueryIntAttribute("samplingTime", &samplingTime)) {
             int motor;
             if (trajectory_it->QueryIntAttribute("motorid", &motor) != TIXML_SUCCESS) {
+                ROS_ERROR("no motorid found");
                 return false;
             }
             TiXmlElement *waypointlist_it = trajectory_it->FirstChildElement("waypointlist");
