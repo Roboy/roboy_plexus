@@ -462,30 +462,26 @@ float MyoControl::startRecordTrajectories(
     recording = true;
     ROS_INFO("Started recording a trajectory");
     // this will be filled with the trajectories
-    allToDisplacement(200);
+    allToDisplacement(50);
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
 
     double elapsedTime = 0.0, dt;
     long sample = 0;
-
+    ros::Rate rate(1.0/samplingTime);
+    ROS_INFO_STREAM(1.0/samplingTime);
     // start recording
-    timer.start();
     do {
         dt = elapsedTime;
         for (uint motor = 0; motor < idList.size(); motor++) {
             trajectories[idList[motor]].push_back(getPosition(motor));
         }
         sample++;
-        elapsedTime = timer.elapsedTime();
-        dt = elapsedTime - dt;
-        // if faster than sampling time sleep for difference
-        if (dt < samplingTime) {
-            usleep((samplingTime - dt) * 1000000.0);
-            elapsedTime = timer.elapsedTime();
-        }
+        rate.sleep();
     } while (recording);
+
+
 
     // set force to zero
     allToDisplacement(0);
@@ -509,6 +505,7 @@ float MyoControl::startRecordTrajectories(
                 << std::endl;
         uint m = 0;
         char motorname[10];
+        outfile << "<behavior>" << std::endl;
         for (uint m = 0; m < idList.size(); m++) {
             sprintf(motorname, "motor%d", idList[m]);
             outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
@@ -520,7 +517,7 @@ float MyoControl::startRecordTrajectories(
             outfile << "</waypointlist>" << std::endl;
             outfile << "</trajectory>" << std::endl;
         }
-        outfile << "</roboybehavior>" << std::endl;
+        outfile << "</behavior>" << std::endl;
         outfile.close();
     }
 
@@ -536,23 +533,26 @@ void MyoControl::stopRecordTrajectories() {
 }
 
 bool MyoControl::playTrajectory(const char *file) {
-    // initialize TiXmlDocument doc with a string
+
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
         ROS_ERROR("could not load xml trajectory %s", file);
         return false;
     }
 
-    TiXmlElement *root = doc.RootElement();
+    TiXmlElement *root = doc.FirstChildElement("behavior");
 
     map<int, vector<float>> trajectories;
     int samplingTime, numberOfSamples;
-
     // Constructs the myoMuscles by parsing custom xml.
+//    TiXmlElement *root = NULL;
+
+    ROS_INFO("found trajectory");
     TiXmlElement *trajectory_it = NULL;
     for (trajectory_it = root->FirstChildElement("trajectory"); trajectory_it;
+
          trajectory_it = trajectory_it->NextSiblingElement("trajectory")) {
-        if (trajectory_it->Attribute("motorid") && trajectory_it->QueryIntAttribute("samplingTime", &samplingTime)) {
+        if (trajectory_it->QueryIntAttribute("samplingTime", &samplingTime) == TIXML_SUCCESS) {
             int motor;
             if (trajectory_it->QueryIntAttribute("motorid", &motor) != TIXML_SUCCESS) {
                 ROS_ERROR("no motorid found");
@@ -565,32 +565,37 @@ bool MyoControl::playTrajectory(const char *file) {
                 stream >> n;
                 trajectories[motor].push_back(n);
                 if (!stream) {
-                    numberOfSamples = trajectories.size();
+                    numberOfSamples = trajectories[motor].size();
                     break;
                 }
             }
         }
+        else {
+            return false;
+        }
     }
+
     allToDisplacement(0);
     timer.start();
     double elapsedTime = 0.0, dt;
     int sample = 0;
-    samplingTime /= 1000.0f;
+
+    samplingTime ;
+    ros::Rate rate(1.0/(samplingTime/1000.0f));
+    ROS_INFO_STREAM(1.0/(samplingTime/1000.0f));
     do {
         dt = elapsedTime;
         for (auto &motor : trajectories) {
-            setDisplacement(motor.first, motor.second[sample]);
+            if(sample==0)
+            {
+                changeControl(motor.first, POSITION);
+            }
+
+            setPosition(motor.first, motor.second[sample]);
         }
         sample++;
-
-        elapsedTime = timer.elapsedTime();
-        dt = elapsedTime - dt;
-        // if faster than sampling time sleep for difference
-        if (dt < samplingTime) {
-            usleep((samplingTime - dt) * 1000000.0);
-            elapsedTime = timer.elapsedTime();
-        }
-    } while (timer.elapsedTime() < (numberOfSamples * samplingTime / 1000.0f));
+        rate.sleep();
+    } while (sample<numberOfSamples);
 
     return true;
 }

@@ -555,7 +555,7 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
 bool RoboyPlexus::StartRecordTrajectoryService(roboy_communication_control::StartRecordTrajectory::Request &req,
                                   roboy_communication_control::StartRecordTrajectory::Response &res) {
 
-    float samplingTime = 1/200; // 200 Hz is the fastest update rate for the motors
+    float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
     string name = req.name;
     vector<int> idList(begin(req.idList), end(req.idList));
     map<int, vector<float>> trajectories;

@@ -43,6 +43,7 @@
 #include "socal/hps.h"
 #include "roboy_plexus/hps_0.h"
 #include "roboy_plexus/roboyPlexus.hpp"
+#include <ros/ros.h>
 
 using namespace std;
 
@@ -52,6 +53,7 @@ using namespace std;
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int main(int argc, char *argv[]) {
+
     void *virtual_base;
     int fd;
     int32_t *h2p_lw_led_addr;
