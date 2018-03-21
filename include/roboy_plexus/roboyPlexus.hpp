@@ -213,7 +213,7 @@ private:
 
     string ethaddr;
 
-    boost::shared_ptr<TLV493D> tlv493D0[2];
+    boost::shared_ptr<TLV493D> tlv493D0;
 };
 
 /** @} */ // end of group1
