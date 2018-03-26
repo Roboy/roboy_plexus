@@ -16,9 +16,12 @@
 #include <roboy_communication_middleware/MotorCommand.h>
 #include <roboy_communication_middleware/MotorStatus.h>
 #include <roboy_communication_middleware/MotorConfigService.h>
+#include <roboy_communication_middleware/SetInt16.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
 #include <roboy_communication_control/StopRecordTrajectory.h>
 #include <roboy_communication_control/PerformMovement.h>
+#include <roboy_communication_control/PerformBehavior.h>
+#include <roboy_communication_control/ListTrajectories.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <sensor_msgs/Imu.h>
@@ -35,6 +38,8 @@
 #include <bitset>
 #include "roboy_plexus/A1335.hpp"
 #include "roboy_plexus/tlv493d.hpp"
+#include <sys/types.h>
+#include <dirent.h>
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
@@ -155,6 +160,33 @@ private:
     bool ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
                                      roboy_communication_control::PerformMovement::Response &res);
 
+    /**
+     * Service executes behavior (a set of trajectories possibly combined with pauses)
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
+                                 roboy_communication_control::PerformBehavior::Response &res);
+
+    /**
+     * Service return a list of trajectories in the requested folder
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ListExistingTrajectories(roboy_communication_control::ListTrajectories::Request &req,
+                                  roboy_communication_control::ListTrajectories::Response &res);
+
+    /**
+     * Service sets displacement for all motors
+     * @param req
+     * @param res
+     * @return
+     */
+    bool SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
+                               roboy_communication_middleware::SetInt16::Request &res);
+
 
 
 
@@ -193,9 +225,11 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub;
-    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub, motorAngle_pub, magneticSensor_pub;
-    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv,
-            motorCalibration_srv, startRecordTrajectory_srv, stopRecordTrajectory_srv, replayTrajectory_srv;
+    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
+            motorAngle_pub, magneticSensor_pub;
+    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
+            startRecordTrajectory_srv, stopRecordTrajectory_srv, replayTrajectory_srv, execureBehavior_srv,
+            setDisplacementForAll_srv, listExistingTrajectories_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;

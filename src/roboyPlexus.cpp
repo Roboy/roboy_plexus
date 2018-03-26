@@ -33,12 +33,18 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
                                              this);
     motorCalibration_srv = nh->advertiseService("/roboy/middleware/MotorCalibration",
                                                 &RoboyPlexus::MotorCalibrationService, this);
+    setDisplacementForAll_srv = nh->advertiseService("/roboy/middleware/SetDisplacementForAll",
+                                                     &RoboyPlexus::SetDisplacementForAll, this);
     startRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StartRecordTrajectory",
                                                      &RoboyPlexus::StartRecordTrajectoryService, this);
     stopRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StopRecordTrajectory",
                                                      &RoboyPlexus::StopRecordTrajectoryService, this);
     replayTrajectory_srv = nh->advertiseService("roboy/middleware/ReplayTrajectory",
                                                     &RoboyPlexus::ReplayTrajectoryService, this);
+    execureBehavior_srv = nh->advertiseService("roboy/middleware/ExecuteBehavior",
+                                               &RoboyPlexus::ExecuteBehaviorService, this);
+    listExistingTrajectories_srv = nh->advertiseService("roboy/middleware/ListExistingTrajectories",
+                                                        &RoboyPlexus::ListExistingTrajectories, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
@@ -552,6 +558,12 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
     return true;
 }
 
+bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
+                                        roboy_communication_middleware::SetInt16::Request &res) {
+    myoControl->allToDisplacement(req.setpoint);
+    return true;
+}
+
 bool RoboyPlexus::StartRecordTrajectoryService(roboy_communication_control::StartRecordTrajectory::Request &req,
                                   roboy_communication_control::StartRecordTrajectory::Response &res) {
 
@@ -624,10 +636,35 @@ bool RoboyPlexus::StopRecordTrajectoryService(roboy_communication_control::StopR
 
 bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
                              roboy_communication_control::PerformMovement::Response &res) {
-
-
     res.success = myoControl->playTrajectory(req.value.c_str());
     return res.success;
+}
+
+bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
+                                         roboy_communication_control::PerformBehavior::Response &res) {
+    for (string actionName: req.actions) {
+        if (actionName.find("pause") != std::string::npos) {
+            string delimiter = "_";
+            int pause = stoi(actionName.substr(0, actionName.find(delimiter)));
+            ros::Duration(pause).sleep();
+            res.success = true && res.success;
+        }
+        else {
+            res.success = myoControl->playTrajectory(actionName.c_str()) && res.success;
+        }
+    }
+}
+
+bool RoboyPlexus::ListExistingTrajectories(roboy_communication_control::ListTrajectories::Request &req,
+                              roboy_communication_control::ListTrajectories::Response &res) {
+    // read filenames in the specified folder
+    DIR* dirp = opendir(req.folder.c_str());
+    struct dirent * dp;
+    while ((dp = readdir(dirp)) != NULL) {
+        res.trajectories.push_back(dp->d_name);
+    }
+    closedir(dirp);
+    return true;
 }
 
 bool RoboyPlexus::ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value){

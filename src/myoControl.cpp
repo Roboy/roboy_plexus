@@ -547,7 +547,8 @@ bool MyoControl::playTrajectory(const char *file) {
     // Constructs the myoMuscles by parsing custom xml.
 //    TiXmlElement *root = NULL;
 
-    ROS_INFO("found trajectory");
+    ROS_INFO_STREAM("Found trajectory " + string(file));
+
     TiXmlElement *trajectory_it = NULL;
     for (trajectory_it = root->FirstChildElement("trajectory"); trajectory_it;
 
@@ -576,6 +577,7 @@ bool MyoControl::playTrajectory(const char *file) {
     }
 
     allToDisplacement(0);
+    ROS_INFO_STREAM("Replaying trajectory " + string(file));
     timer.start();
     double elapsedTime = 0.0, dt;
     int sample = 0;

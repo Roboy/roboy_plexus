@@ -18,7 +18,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     # Dependencies
     #==============================================================================
     find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation rviz tf tf_conversions
-            visualization_msgs roboy_communication_middleware common_utilities)
+            visualization_msgs roboy_communication_middleware roboy_communication_control common_utilities)
     include(findros)
     # Eigen
     find_package(PkgConfig REQUIRED)
@@ -29,7 +29,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     pkg_check_modules(yaml-cpp REQUIRED yaml-cpp)
     include_directories(${yaml-cpp_INCLUDE_DIRS})
 
-    catkin_package(CATKIN_DEPENDS message_runtime roboy_communication_middleware common_utilities)
+    catkin_package(CATKIN_DEPENDS message_runtime roboy_communication_middleware roboy_communication_control common_utilities)
 
     SET(ALT_DEVICE_FAMILY soc_cv_av)
     add_definitions(-D${ALT_DEVICE_FAMILY})
@@ -48,7 +48,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp src/roboyPlexus.cpp src/am4096.cpp src/CRC32.cpp
             src/A1335.cpp src/tlv493d.cpp)
-    add_dependencies(roboy_plexus roboy_communication_middleware_gencpp)
+    add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp)
     target_link_libraries( roboy_plexus  -lpthread -lrt ${ros_LIBRARIES})
 
     #==============================================================================
