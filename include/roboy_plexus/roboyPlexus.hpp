@@ -19,9 +19,12 @@
 #include <roboy_communication_middleware/SetInt16.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
 #include <roboy_communication_control/StopRecordTrajectory.h>
+#include <roboy_communication_control/StartRecordTrajectoryAction.h>
+#include <roboy_communication_control/StopRecordTrajectoryAction.h>
 #include <roboy_communication_control/PerformMovement.h>
 #include <roboy_communication_control/PerformBehavior.h>
 #include <roboy_communication_control/ListTrajectories.h>
+#include <actionlib/server/simple_action_server.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <sensor_msgs/Imu.h>
@@ -135,21 +138,23 @@ private:
     bool EmergencyStopService(std_srvs::SetBool::Request  &req,
                               std_srvs::SetBool::Response &res);
     /**
-     * Motor setpoints trajectory recording service.
+     * Motor setpoints trajectory recording action.
      * @param req
      * @param res
      * @return
      */
-    bool StartRecordTrajectoryService(roboy_communication_control::StartRecordTrajectory::Request &req,
-                                      roboy_communication_control::StartRecordTrajectory::Response &res);
+    void StartRecordTrajectoryService(const roboy_communication_control::StartRecordTrajectoryGoalConstPtr& goal,
+                                      actionlib::SimpleActionServer<roboy_communication_control::StartRecordTrajectoryAction>* actionServer );
+
     /**
-     * Service stops recording the trajectory
+     * Action stops recording the trajectory
      * @param req
      * @param res
      * @return
      */
-    bool StopRecordTrajectoryService(roboy_communication_control::StopRecordTrajectory::Request &req,
-                                      roboy_communication_control::StopRecordTrajectory::Response &res);
+    void StopRecordTrajectoryService(const roboy_communication_control::StopRecordTrajectoryGoalConstPtr& goal,
+                                     actionlib::SimpleActionServer<roboy_communication_control::StopRecordTrajectoryAction>* actionServer );
+
 
     /**
      * Service replays the trajectory

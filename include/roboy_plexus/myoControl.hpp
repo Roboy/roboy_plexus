@@ -321,4 +321,5 @@ private:
 	vector<int32_t*> myo_base;
 	int iter = 0;
     bool recording = false; // keeps track of recording status
+	const string trajectories_folder = "/home/root/trajectories/";
 };

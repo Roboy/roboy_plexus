@@ -1,6 +1,26 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 #include <roboy_plexus/myoControl.hpp>
 
+#include <actionlib/server/simple_action_server.h>
+
+typedef actionlib::SimpleActionServer<roboy_communication_control::StartRecordTrajectoryAction> Server;
+
+void execute(const roboy_communication_control::StartRecordTrajectoryGoalConstPtr& goal, Server* as)  // Note: "Action" is not appended to DoDishes here
+{
+    // Do lots of awesome groundbreaking robot stuff here
+    as->setSucceeded();
+}
+
+int main2(int argc, char** argv)
+{
+    ros::init(argc, argv, "do_dishes_server");
+    ros::NodeHandle n;
+    Server server(n, "do_dishes", boost::bind(&execute, _1, &server), false);
+    server.start();
+    ros::spin();
+    return 0;
+}
+
 RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
                          vector<vector<int32_t>> &deviceIDs, int32_t *darkroom_base,
                          vector<int32_t *> &darkroom_ootx_addr,
@@ -35,10 +55,16 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
                                                 &RoboyPlexus::MotorCalibrationService, this);
     setDisplacementForAll_srv = nh->advertiseService("/roboy/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
-    startRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StartRecordTrajectory",
-                                                     &RoboyPlexus::StartRecordTrajectoryService, this);
-    stopRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StopRecordTrajectory",
-                                                     &RoboyPlexus::StopRecordTrajectoryService, this);
+//    startRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StartRecordTrajectory",
+//                                                     &RoboyPlexus::StartRecordTrajectoryService, this);
+//    stopRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StopRecordTrajectory",
+//                                                     &RoboyPlexus::StopRecordTrajectoryService, this);
+
+//    actionlib::SimpleActionServer<roboy_communication_control::StartRecordTrajectoryAction> server(*nh, "do_dishes",
+//                                            false);
+//    boost::bind(&RoboyPlexus::StartRecordTrajectoryService, this)
+//    server.start();
+
     replayTrajectory_srv = nh->advertiseService("roboy/middleware/ReplayTrajectory",
                                                     &RoboyPlexus::ReplayTrajectoryService, this);
     execureBehavior_srv = nh->advertiseService("roboy/middleware/ExecuteBehavior",
@@ -564,12 +590,12 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16
     return true;
 }
 
-bool RoboyPlexus::StartRecordTrajectoryService(roboy_communication_control::StartRecordTrajectory::Request &req,
-                                  roboy_communication_control::StartRecordTrajectory::Response &res) {
+void RoboyPlexus::StartRecordTrajectoryService(const roboy_communication_control::StartRecordTrajectoryGoalConstPtr& goal,
+                   actionlib::SimpleActionServer<roboy_communication_control::StartRecordTrajectoryAction>* actionServer ) {
 
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
-    string name = req.name;
-    vector<int> idList(begin(req.idList), end(req.idList));
+    string name = goal->name;
+    vector<int> idList(begin(goal->idList), end(goal->idList));
     map<int, vector<float>> trajectories;
 
     myoControl->startRecordTrajectories(samplingTime, trajectories, idList, name);
@@ -621,17 +647,14 @@ bool RoboyPlexus::StartRecordTrajectoryService(roboy_communication_control::Star
 //        res.trajectories.data.insert(res.trajectories.data.end(),motor.second.begin(),motor.second.end()); // setpoints
 //    }
 
-    res.success = true;
-
-    return true;
+   actionServer->setSucceeded();
 
 }
 
-bool RoboyPlexus::StopRecordTrajectoryService(roboy_communication_control::StopRecordTrajectory::Request &req,
-                                   roboy_communication_control::StopRecordTrajectory::Response &res) {
+void RoboyPlexus::StopRecordTrajectoryService(const roboy_communication_control::StopRecordTrajectoryGoalConstPtr& goal,
+                  actionlib::SimpleActionServer<roboy_communication_control::StopRecordTrajectoryAction>* actionServer ) {
     myoControl->stopRecordTrajectories();
-    res.success = true;
-    return true;
+    actionServer->setSucceeded();
 }
 
 bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,

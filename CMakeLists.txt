@@ -18,7 +18,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     # Dependencies
     #==============================================================================
     find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation rviz tf tf_conversions
-            visualization_msgs roboy_communication_middleware roboy_communication_control common_utilities)
+            visualization_msgs roboy_communication_middleware roboy_communication_control common_utilities
+            actionlib_msgs actionlib)
     include(findros)
     # Eigen
     find_package(PkgConfig REQUIRED)
@@ -29,7 +30,15 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     pkg_check_modules(yaml-cpp REQUIRED yaml-cpp)
     include_directories(${yaml-cpp_INCLUDE_DIRS})
 
-    catkin_package(CATKIN_DEPENDS message_runtime roboy_communication_middleware roboy_communication_control common_utilities)
+    find_package(Boost REQUIRED)
+
+    catkin_package(CATKIN_DEPENDS
+            message_runtime
+            roboy_communication_middleware
+            roboy_communication_control
+            common_utilities
+            DEPENDS
+            Boost)
 
     SET(ALT_DEVICE_FAMILY soc_cv_av)
     add_definitions(-D${ALT_DEVICE_FAMILY})
@@ -42,6 +51,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/include
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/include/${ALT_DEVICE_FAMILY}
+            ${Boost_INCLUDE_DIRS}
     )
     #==============================================================================
     # Application
