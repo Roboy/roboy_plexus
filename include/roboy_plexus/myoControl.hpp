@@ -316,9 +316,11 @@ public:
 	float weight_offset = 0;
 	float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y
 	uint numberOfMotors;
+	const string trajectories_folder = "/home/root/trajectories/";
 private:
 	Timer timer;
 	vector<int32_t*> myo_base;
 	int iter = 0;
     bool recording = false; // keeps track of recording status
+
 };

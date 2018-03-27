@@ -24,6 +24,7 @@
 #include <roboy_communication_control/ListTrajectories.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Empty.h>
 #include <sensor_msgs/Imu.h>
 #include <thread>
 #include <map>
@@ -135,21 +136,19 @@ private:
     bool EmergencyStopService(std_srvs::SetBool::Request  &req,
                               std_srvs::SetBool::Response &res);
     /**
-     * Motor setpoints trajectory recording service.
+     * Motor setpoints trajectory recording callback.
      * @param req
      * @param res
      * @return
      */
-    bool StartRecordTrajectoryService(roboy_communication_control::StartRecordTrajectory::Request &req,
-                                      roboy_communication_control::StartRecordTrajectory::Response &res);
+    void StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg);
     /**
-     * Service stops recording the trajectory
+     * Callback stops recording the trajectory
      * @param req
      * @param res
      * @return
      */
-    bool StopRecordTrajectoryService(roboy_communication_control::StopRecordTrajectory::Request &req,
-                                      roboy_communication_control::StopRecordTrajectory::Response &res);
+    void StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg);
 
     /**
      * Service replays the trajectory
@@ -224,11 +223,11 @@ private:
 
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub;
+    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
-            startRecordTrajectory_srv, stopRecordTrajectory_srv, replayTrajectory_srv, execureBehavior_srv,
+            replayTrajectory_srv, execureBehavior_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;

@@ -27,6 +27,9 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     myoControl = boost::shared_ptr<MyoControl>(new MyoControl(myo_base, adc_base));
 
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
+    startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1, &RoboyPlexus::StartRecordTrajectoryCB, this);
+    stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1, &RoboyPlexus::StopRecordTrajectoryCB, this);
+
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
     controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
     emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop", &RoboyPlexus::EmergencyStopService,
@@ -35,15 +38,11 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
                                                 &RoboyPlexus::MotorCalibrationService, this);
     setDisplacementForAll_srv = nh->advertiseService("/roboy/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
-    startRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StartRecordTrajectory",
-                                                     &RoboyPlexus::StartRecordTrajectoryService, this);
-    stopRecordTrajectory_srv = nh->advertiseService("roboy/middleware/StopRecordTrajectory",
-                                                     &RoboyPlexus::StopRecordTrajectoryService, this);
-    replayTrajectory_srv = nh->advertiseService("roboy/middleware/ReplayTrajectory",
+    replayTrajectory_srv = nh->advertiseService("roboy/control/ReplayTrajectory",
                                                     &RoboyPlexus::ReplayTrajectoryService, this);
-    execureBehavior_srv = nh->advertiseService("roboy/middleware/ExecuteBehavior",
+    execureBehavior_srv = nh->advertiseService("roboy/control/ExecuteBehavior",
                                                &RoboyPlexus::ExecuteBehaviorService, this);
-    listExistingTrajectories_srv = nh->advertiseService("roboy/middleware/ListExistingTrajectories",
+    listExistingTrajectories_srv = nh->advertiseService("roboy/control/ListExistingTrajectories",
                                                         &RoboyPlexus::ListExistingTrajectories, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
@@ -564,12 +563,11 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16
     return true;
 }
 
-bool RoboyPlexus::StartRecordTrajectoryService(roboy_communication_control::StartRecordTrajectory::Request &req,
-                                  roboy_communication_control::StartRecordTrajectory::Response &res) {
+void RoboyPlexus::StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg) {
 
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
-    string name = req.name;
-    vector<int> idList(begin(req.idList), end(req.idList));
+    string name = msg->name;
+    vector<int> idList(begin(msg->idList), end(msg->idList));
     map<int, vector<float>> trajectories;
 
     myoControl->startRecordTrajectories(samplingTime, trajectories, idList, name);
@@ -621,22 +619,17 @@ bool RoboyPlexus::StartRecordTrajectoryService(roboy_communication_control::Star
 //        res.trajectories.data.insert(res.trajectories.data.end(),motor.second.begin(),motor.second.end()); // setpoints
 //    }
 
-    res.success = true;
-
-    return true;
-
 }
 
-bool RoboyPlexus::StopRecordTrajectoryService(roboy_communication_control::StopRecordTrajectory::Request &req,
-                                   roboy_communication_control::StopRecordTrajectory::Response &res) {
+void RoboyPlexus::StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg) {
     myoControl->stopRecordTrajectories();
-    res.success = true;
-    return true;
 }
 
 bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
                              roboy_communication_control::PerformMovement::Response &res) {
-    res.success = myoControl->playTrajectory(req.value.c_str());
+    string file = myoControl->trajectories_folder + req.value;
+    const char *fileName = file.c_str();
+    res.success = myoControl->playTrajectory(fileName);
     return res.success;
 }
 
@@ -650,6 +643,7 @@ bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBeh
             res.success = true && res.success;
         }
         else {
+            actionName = myoControl->trajectories_folder + actionName;
             res.success = myoControl->playTrajectory(actionName.c_str()) && res.success;
         }
     }
@@ -657,6 +651,7 @@ bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBeh
 
 bool RoboyPlexus::ListExistingTrajectories(roboy_communication_control::ListTrajectories::Request &req,
                               roboy_communication_control::ListTrajectories::Response &res) {
+    // TODO get rid of . and .. in the file list
     // read filenames in the specified folder
     DIR* dirp = opendir(req.folder.c_str());
     struct dirent * dp;

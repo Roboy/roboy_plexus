@@ -66,7 +66,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 }
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_base(myo_base),
-                                                                          adc_base(adc_base) {
+                                                                         adc_base(adc_base) {
     // initialize control mode
     numberOfMotors = myo_base.size() * MOTORS_PER_MYOCONTROL;
     // initialize all controllers with default values
@@ -383,6 +383,9 @@ float MyoControl::recordTrajectories(
         float samplingTime, float recordTime,
         map<int,vector<float>> &trajectories, vector<int> &idList,
         vector<int> &controlmode, string name) {
+
+    ROS_INFO_STREAM("Started recording a trajectory " + name);
+    string filepath = trajectories_folder + name;
     // this will be filled with the trajectories
     allToDisplacement(200);
 
@@ -419,7 +422,7 @@ float MyoControl::recordTrajectories(
 
     // done recording
     std::ofstream outfile;
-    if (name.empty()) {
+    if (filepath.empty()) {
         time_t rawtime;
         struct tm *timeinfo;
         time(&rawtime);
@@ -427,10 +430,10 @@ float MyoControl::recordTrajectories(
         char str[200];
         sprintf(str, "recording_%s.log",
                 asctime(timeinfo));
-        name = str;
+        filepath = str;
     }
 
-    outfile.open(name);
+    outfile.open(filepath);
     if (outfile.is_open()) {
         outfile << "<?xml version=\"1.0\" ?>"
                 << std::endl;
@@ -451,6 +454,8 @@ float MyoControl::recordTrajectories(
         outfile.close();
     }
 
+    ROS_INFO_STREAM("Saved trajectory " + name);
+
     // return average sampling time in milliseconds
     return elapsedTime / (double) sample * 1000.0f;
 }
@@ -458,9 +463,9 @@ float MyoControl::recordTrajectories(
 float MyoControl::startRecordTrajectories(
         float samplingTime, map<int, vector<float>> &trajectories,
         vector<int> &idList, string name) {
-
+    string filepath = trajectories_folder + name;
     recording = true;
-    ROS_INFO("Started recording a trajectory");
+    ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
     allToDisplacement(50);
 
@@ -488,7 +493,7 @@ float MyoControl::startRecordTrajectories(
 
     // done recording
     std::ofstream outfile;
-    if (name.empty()) {
+    if (filepath.empty()) {
         time_t rawtime;
         struct tm *timeinfo;
         time(&rawtime);
@@ -496,10 +501,10 @@ float MyoControl::startRecordTrajectories(
         char str[200];
         sprintf(str, "recording_%s.log",
                 asctime(timeinfo));
-        name = str;
+        filepath = str;
     }
 
-    outfile.open(name);
+    outfile.open(filepath);
     if (outfile.is_open()) {
         outfile << "<?xml version=\"1.0\" ?>"
                 << std::endl;
@@ -521,7 +526,7 @@ float MyoControl::startRecordTrajectories(
         outfile.close();
     }
 
-    ROS_INFO("Saved trajectory");
+    ROS_INFO_STREAM("Saved trajectory " + name);
 
     // return average sampling time in milliseconds
     return elapsedTime / (double) sample * 1000.0f;
@@ -534,6 +539,7 @@ void MyoControl::stopRecordTrajectories() {
 
 bool MyoControl::playTrajectory(const char *file) {
 
+    ROS_INFO_STREAM(file);
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
         ROS_ERROR("could not load xml trajectory %s", file);
