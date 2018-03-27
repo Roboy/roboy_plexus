@@ -421,7 +421,6 @@ float MyoControl::recordTrajectories(
     allToDisplacement(0);
 
     // done recording
-    std::ofstream outfile;
     if (filepath.empty()) {
         time_t rawtime;
         struct tm *timeinfo;
@@ -433,24 +432,26 @@ float MyoControl::recordTrajectories(
         filepath = str;
     }
 
-    outfile.open(filepath);
+    std::ofstream outfile(filepath, ofstream::binary);
+    stringstream ss;
     if (outfile.is_open()) {
-        outfile << "<?xml version=\"1.0\" ?>"
+        ss << "<?xml version=\"1.0\" ?>"
                 << std::endl;
         uint m = 0;
         char motorname[10];
         for (uint m = 0; m < idList.size(); m++) {
             sprintf(motorname, "motor%d", idList[m]);
-            outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
+            ss << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
                     << controlmode[m] << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
                     << std::endl;
-            outfile << "<waypointlist>" << std::endl;
+            ss << "<waypointlist>" << std::endl;
             for (uint i = 0; i < trajectories[idList[m]].size(); i++)
-                outfile << trajectories[idList[m]][i] << " ";
-            outfile << "</waypointlist>" << std::endl;
-            outfile << "</trajectory>" << std::endl;
+                ss << trajectories[idList[m]][i] << " ";
+            ss << "</waypointlist>" << std::endl;
+            ss << "</trajectory>" << std::endl;
         }
-        outfile << "</roboybehavior>" << std::endl;
+        ss << "</roboybehavior>" << std::endl;
+        outfile << ss.rdbuf();
         outfile.close();
     }
 
@@ -486,13 +487,11 @@ float MyoControl::startRecordTrajectories(
         rate.sleep();
     } while (recording);
 
-
-
     // set force to zero
     allToDisplacement(0);
 
     // done recording
-    std::ofstream outfile;
+
     if (filepath.empty()) {
         time_t rawtime;
         struct tm *timeinfo;
@@ -504,25 +503,28 @@ float MyoControl::startRecordTrajectories(
         filepath = str;
     }
 
-    outfile.open(filepath);
+    std::ofstream outfile(filepath, ofstream::binary);
+    stringstream ss;
     if (outfile.is_open()) {
-        outfile << "<?xml version=\"1.0\" ?>"
+        ss << "<?xml version=\"1.0\" ?>"
                 << std::endl;
         uint m = 0;
         char motorname[10];
-        outfile << "<behavior>" << std::endl;
+        ss << "<behavior>" << std::endl;
         for (uint m = 0; m < idList.size(); m++) {
             sprintf(motorname, "motor%d", idList[m]);
-            outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
+            ss << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
                     << POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
                     << std::endl;
-            outfile << "<waypointlist>" << std::endl;
+            ss << "<waypointlist>" << std::endl;
             for (uint i = 0; i < trajectories[idList[m]].size(); i++)
-                outfile << trajectories[idList[m]][i] << " ";
-            outfile << "</waypointlist>" << std::endl;
-            outfile << "</trajectory>" << std::endl;
+                ss << trajectories[idList[m]][i] << " ";
+            ss << "</waypointlist>" << std::endl;
+            ss << "</trajectory>" << std::endl;
         }
-        outfile << "</behavior>" << std::endl;
+        ss << "</behavior>" << std::endl;
+//        outfile.write(buffer, buffer.size());
+        outfile << ss.rdbuf();
         outfile.close();
     }
 
