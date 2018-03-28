@@ -29,6 +29,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
     startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1, &RoboyPlexus::StartRecordTrajectoryCB, this);
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1, &RoboyPlexus::StopRecordTrajectoryCB, this);
+    saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
 
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
     controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
@@ -40,10 +41,16 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
                                                      &RoboyPlexus::SetDisplacementForAll, this);
     replayTrajectory_srv = nh->advertiseService("roboy/control/ReplayTrajectory",
                                                     &RoboyPlexus::ReplayTrajectoryService, this);
-    execureBehavior_srv = nh->advertiseService("roboy/control/ExecuteBehavior",
+    executeActions_srv = nh->advertiseService("roboy/control/ExecuteActions",
+                                               &RoboyPlexus::ExecuteActionsService, this);
+    executeBehavior_srv = nh->advertiseService("roboy/control/ExecuteBehavior",
                                                &RoboyPlexus::ExecuteBehaviorService, this);
     listExistingTrajectories_srv = nh->advertiseService("roboy/control/ListExistingTrajectories",
-                                                        &RoboyPlexus::ListExistingTrajectories, this);
+                                                        &RoboyPlexus::ListExistingItemsService, this);
+    listExistingBehaviors_srv = nh->advertiseService("roboy/control/ListExistingBehaviors",
+                                                        &RoboyPlexus::ListExistingItemsService, this);
+    expandBehavior_srv = nh->advertiseService("roboy/control/ExpandBehavior",
+                                                     &RoboyPlexus::ExpandBehaviorService, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
@@ -572,57 +579,17 @@ void RoboyPlexus::StartRecordTrajectoryCB(const roboy_communication_control::Sta
 
     myoControl->startRecordTrajectories(samplingTime, trajectories, idList, name);
 
-//    std::ofstream outfile;
-//    if (name.empty()) {
-//        time_t rawtime;
-//        struct tm *timeinfo;
-//        time(&rawtime);
-//        timeinfo = localtime(&rawtime);
-//        char str[200];
-//        sprintf(str, "recording_%s.log",
-//                asctime(timeinfo));
-//        name = str;
-//    }
-//
-//    outfile.open(name);
-//    if (outfile.is_open()) {
-//        outfile << "<?xml version=\"1.0\" ?>"
-//                << std::endl;
-//        uint m = 0;
-//        char motorname[10];
-//        for (uint m = 0; m < idList.size(); m++) {
-//            sprintf(motorname, "motor%d", idList[m]);
-//            outfile << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
-//                    << POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
-//                    << std::endl;
-//            outfile << "<waypointlist>" << std::endl;
-//            for (uint i = 0; i < trajectories[idList[m]].size(); i++)
-//                outfile << trajectories[idList[m]][i] << " ";
-//            outfile << "</waypointlist>" << std::endl;
-//            outfile << "</trajectory>" << std::endl;
-//        }
-//        outfile << "</roboybehavior>" << std::endl;
-//        outfile.close();
-//    }
-
-//    res.trajectories.layout.dim[0].label = "motor_id";
-//    res.trajectories.layout.dim[0].size = idList.size();
-//    res.trajectories.layout.dim[0].stride = (trajectories[idList[0]].size()+1)*idList.size();
-//    res.trajectories.layout.dim[1].label = "setpoint";
-//    res.trajectories.layout.dim[1].size = trajectories[idList[0]].size()+1;
-//    res.trajectories.layout.dim[1].stride = trajectories[idList[0]].size()+1;
-//
-//    for (auto const& motor : trajectories)
-//    {
-//        res.trajectories.data.push_back(motor.first); // motor id
-//        res.trajectories.data.reserve(res.trajectories.data.size() + distance(motor.second.begin(),motor.second.end()));
-//        res.trajectories.data.insert(res.trajectories.data.end(),motor.second.begin(),motor.second.end()); // setpoints
-//    }
-
 }
 
 void RoboyPlexus::StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg) {
     myoControl->stopRecordTrajectories();
+}
+
+void RoboyPlexus::SaveBehaviorCB(const roboy_communication_control::Behavior &msg) {
+
+    ofstream output_file(myoControl->behaviors_folder+msg.name);
+    ostream_iterator<std::string> output_iterator(output_file, "\n");
+    std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
 }
 
 bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
@@ -633,33 +600,71 @@ bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMo
     return res.success;
 }
 
+bool RoboyPlexus::ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
+                                         roboy_communication_control::PerformActions::Response &res) {
+    return executeActions(req.actions);
+
+}
+
 bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
-                                         roboy_communication_control::PerformBehavior::Response &res) {
-    for (string actionName: req.actions) {
+                                        roboy_communication_control::PerformBehavior::Response &res) {
+    vector<string> actions = expandBehavior(req.name);
+    return executeActions(actions);
+
+}
+
+bool RoboyPlexus::executeActions(vector<string> actions) {
+    bool success;
+    for (string actionName: actions) {
         if (actionName.find("pause") != std::string::npos) {
             string delimiter = "_";
             int pause = stoi(actionName.substr(0, actionName.find(delimiter)));
             ros::Duration(pause).sleep();
-            res.success = true && res.success;
+            success = true && success;
+        }
+        else if (actionName.find("relax") != std::string::npos) {
+            myoControl->allToDisplacement(0);
+            success = true && success;
         }
         else {
             actionName = myoControl->trajectories_folder + actionName;
-            res.success = myoControl->playTrajectory(actionName.c_str()) && res.success;
+            success = myoControl->playTrajectory(actionName.c_str()) && success;
         }
     }
+    return success;
 }
 
-bool RoboyPlexus::ListExistingTrajectories(roboy_communication_control::ListTrajectories::Request &req,
-                              roboy_communication_control::ListTrajectories::Response &res) {
-    // TODO get rid of . and .. in the file list
+
+bool RoboyPlexus::ListExistingItemsService(roboy_communication_control::ListItems::Request &req,
+                              roboy_communication_control::ListItems::Response &res) {
+
     // read filenames in the specified folder
-    DIR* dirp = opendir(req.folder.c_str());
+    DIR* dirp = opendir(req.name.c_str());
     struct dirent * dp;
     while ((dp = readdir(dirp)) != NULL) {
-        res.trajectories.push_back(dp->d_name);
+        if(dp->d_type!=DT_DIR) {
+            res.items.push_back(dp->d_name);
+        }
     }
     closedir(dirp);
     return true;
+}
+
+bool RoboyPlexus::ExpandBehaviorService(roboy_communication_control::ListItems::Request &req,
+                                           roboy_communication_control::ListItems::Response &res) {
+
+    res.items = expandBehavior(req.name);
+    return true;
+}
+
+vector<string> RoboyPlexus::expandBehavior(string name) {
+    std::vector<string> actions;
+    ifstream input_file(myoControl->behaviors_folder+name);
+    std::copy(std::istream_iterator<std::string>(input_file),
+              std::istream_iterator<std::string>(),
+              std::back_inserter(actions));
+
+    return actions;
 }
 
 bool RoboyPlexus::ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value){

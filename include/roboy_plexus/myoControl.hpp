@@ -317,6 +317,7 @@ public:
 	float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y
 	uint numberOfMotors;
 	const string trajectories_folder = "/home/root/trajectories/";
+    const string behaviors_folder = "/home/root/behaviors/";
 private:
 	Timer timer;
 	vector<int32_t*> myo_base;

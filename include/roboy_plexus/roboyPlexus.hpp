@@ -17,11 +17,13 @@
 #include <roboy_communication_middleware/MotorStatus.h>
 #include <roboy_communication_middleware/MotorConfigService.h>
 #include <roboy_communication_middleware/SetInt16.h>
+#include <roboy_communication_control/Behavior.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
 #include <roboy_communication_control/StopRecordTrajectory.h>
 #include <roboy_communication_control/PerformMovement.h>
 #include <roboy_communication_control/PerformBehavior.h>
-#include <roboy_communication_control/ListTrajectories.h>
+#include <roboy_communication_control/PerformActions.h>
+#include <roboy_communication_control/ListItems.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Empty.h>
@@ -137,18 +139,23 @@ private:
                               std_srvs::SetBool::Response &res);
     /**
      * Motor setpoints trajectory recording callback.
-     * @param req
-     * @param res
+     * @param msg
      * @return
      */
     void StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg);
     /**
      * Callback stops recording the trajectory
-     * @param req
-     * @param res
+     * @param msg
      * @return
      */
     void StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg);
+
+
+    /**
+     * Callback saves behavior
+     * @param msg
+     */
+    void SaveBehaviorCB(const roboy_communication_control::Behavior &msg);
 
     /**
      * Service replays the trajectory
@@ -165,17 +172,36 @@ private:
      * @param res
      * @return
      */
-    bool ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
-                                 roboy_communication_control::PerformBehavior::Response &res);
+    bool ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
+                                 roboy_communication_control::PerformActions::Response &res);
 
     /**
-     * Service return a list of trajectories in the requested folder
+     * Service executes behavior (by name)
      * @param req
      * @param res
      * @return
      */
-    bool ListExistingTrajectories(roboy_communication_control::ListTrajectories::Request &req,
-                                  roboy_communication_control::ListTrajectories::Response &res);
+    bool ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
+                                roboy_communication_control::PerformBehavior::Response &res);
+
+    /**
+     * Service return a list of files in the requested folder
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ListExistingItemsService(roboy_communication_control::ListItems::Request &req,
+                                  roboy_communication_control::ListItems::Response &res);
+
+    /**
+     * Service returns the list of actions in the requested behavior
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ExpandBehaviorService(roboy_communication_control::ListItems::Request &req,
+                                  roboy_communication_control::ListItems::Response &res);
+
 
     /**
      * Service sets displacement for all motors
@@ -185,8 +211,6 @@ private:
      */
     bool SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
                                roboy_communication_middleware::SetInt16::Request &res);
-
-
 
 
 
@@ -223,12 +247,12 @@ private:
 
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub;
+    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
-            replayTrajectory_srv, execureBehavior_srv,
-            setDisplacementForAll_srv, listExistingTrajectories_srv;
+            replayTrajectory_srv, executeActions_srv, executeBehavior_srv,
+            setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
     map<int, int> setPoint_backup;
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
@@ -281,6 +305,9 @@ private:
     string ethaddr;
 
     boost::shared_ptr<TLV493D> tlv493D0[2];
+
+    bool executeActions(vector<string> actions);
+    vector<string> expandBehavior(string name);
 };
 
 /** @} */ // end of group1
