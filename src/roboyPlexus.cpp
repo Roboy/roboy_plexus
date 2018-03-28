@@ -13,9 +13,9 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     string node_name = "roboy_fpga_" + ethaddr;
     replace(node_name.begin(), node_name.end(), ':', '_');
 
-    ROS_INFO("waiting");
-    UdpServer::listen();
-    ROS_INFO("DONE");
+//    ROS_INFO("waiting");
+//    UdpServer::listen();
+//    ROS_INFO("DONE");
 
     if (!ros::isInitialized()) {
         int argc = 0;
