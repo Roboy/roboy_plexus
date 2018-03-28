@@ -7,6 +7,10 @@ Download and install SoCEDS 17.1 standard edition from https://dl.altera.com/soc
 
 Download and install Quartus 17.1 lite edition from http://dl.altera.com/?edition=lite
 
+Get The GNU C/C++ compilers for armhf architecture
+::
+    sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf 
+
 Clone roboy_plexus recursively into your catkin workspace:
 ::
     git clone --recursive https://github.com/Roboy/roboy_plexus
