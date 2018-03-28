@@ -43,6 +43,7 @@
 #include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
+#include "roboy_plexus/udpServer.hpp"
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
