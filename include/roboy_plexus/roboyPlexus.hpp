@@ -19,7 +19,7 @@
 #include <roboy_communication_middleware/SetInt16.h>
 #include <roboy_communication_control/Behavior.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
-#include <roboy_communication_control/StopRecordTrajectory.h>
+//#include <roboy_communication_control/StopRecordTrajectory.h>
 #include <roboy_communication_control/PerformMovement.h>
 #include <roboy_communication_control/PerformBehavior.h>
 #include <roboy_communication_control/PerformActions.h>
