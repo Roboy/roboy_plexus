@@ -4,7 +4,7 @@ TLV493D::TLV493D(void *i2c_base, vector<uint8_t> &deviceAddress, vector<int> &de
     i2c = boost::shared_ptr<I2C>(new I2C(i2c_base));
 
     IOWR(i2c_base, i2c->GPIO_CONTROL, 0);
-    gpioreg = IORD(i2c_base,i2c->GPIO_CONTROL); // Read previous pin status so as to not overwrite any values
+//    gpioreg = IORD(i2c_base,i2c->GPIO_CONTROL); // Read previous pin status so as to not overwrite any values
 //    uint32_t val = (4<<24)|(3<<16)|(2<<8)|1;
 //    i2c->write(5,val,4);
 
@@ -22,7 +22,6 @@ bool TLV493D::initTLV(uint8_t &deviceaddress, int devicepin) {
     bool ADDR_pin;
     uint8_t IICAddr;
     uint8_t setaddr;
-    uint8_t defaultaddr;
 
     if (devicepin == 255){
         ADDR_pin = false;
@@ -39,8 +38,8 @@ bool TLV493D::initTLV(uint8_t &deviceaddress, int devicepin) {
         setaddr  = (uint8_t)((ADDR_pin<<6)|(!bitRead(IICAddr,1)<<4)|(1<<3)|(!bitRead(IICAddr,0)<<2)|(1<<1)|(!ADDR_pin));
     }
 
-    ROS_DEBUG("setaddr:      \t" BYTE_TO_BINARY_PATTERN,BYTE_TO_BINARY(setaddr));
-    ROS_DEBUG("deviceaddress:\t" BYTE_TO_BINARY_PATTERN,BYTE_TO_BINARY(deviceaddress));
+    ROS_INFO("setaddr:      \t" BYTE_TO_BINARY_PATTERN,BYTE_TO_BINARY(setaddr));
+//    ROS_INFO("deviceaddress:\t" BYTE_TO_BINARY_PATTERN,BYTE_TO_BINARY(deviceaddress));
 
     if (setaddr != deviceaddress){
         ROS_WARN("Configuring device on pin %d with address: %x (ADDR_pin = %x, IICAddr = %x)", devicepin, setaddr, ADDR_pin, IICAddr);
@@ -52,46 +51,44 @@ bool TLV493D::initTLV(uint8_t &deviceaddress, int devicepin) {
 
     if (ADDR_pin == true){
         // take control of the SDA line
-        gpioreg ^= 1 << 4;
+        gpioreg |= 1UL << 4;
         IOWR(i2c_base, i2c->GPIO_CONTROL, gpioreg);
-        ROS_DEBUG("Activating 'El cacharro' %d (SDA HIGH)", devicepin);
         // Power on device while SDA low to set ADDR bit to 1
         usleep(100);
-        gpioreg|=(1<<devicepin);
+        gpioreg |=(1<<devicepin);
         IOWR(i2c_base, i2c->GPIO_CONTROL, gpioreg);
         usleep(2000);                     // At least during 200us
+        ROS_INFO("Activating 'El cacharro' %d (SDA HIGH) "BYTE_TO_BINARY_PATTERN, devicepin, BYTE_TO_BINARY(gpioreg));
         // Release SDA line again
-        gpioreg ^= 1 << 4;
+        gpioreg &= ~(1UL << 4);
         IOWR(i2c_base, i2c->GPIO_CONTROL, gpioreg);
-        defaultaddr = 0b1011110;
     }else{
         // take control of the SDA line
-        gpioreg ^= 1 << 4;
+        gpioreg |= 1UL << 3;
         IOWR(i2c_base, i2c->GPIO_CONTROL, gpioreg);
-        ROS_DEBUG("Activating 'El cacharro' %d (SDA LOW)", devicepin);
         // Power on device while SDA low to set ADDR bit to 0
         usleep(1);
         gpioreg|=(1<<devicepin);
         IOWR(i2c_base, i2c->GPIO_CONTROL, gpioreg);
-        usleep(1000);                     // At least during 200us
+        usleep(2000);                     // At least during 200us
+        ROS_INFO("Activating 'El cacharro' %d (SDA LOW) "BYTE_TO_BINARY_PATTERN, devicepin, BYTE_TO_BINARY(gpioreg));
         // Release SDA line again
-        gpioreg ^= 1 << 4;
+        gpioreg &= ~(1UL << 3);
         ROS_DEBUG("gpio: " BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(gpioreg));
         IOWR(i2c_base, i2c->GPIO_CONTROL, gpioreg);
-        defaultaddr = 0b0011111;
     }
 
     ROS_DEBUG("Checking defaultaddr");
     vector<uint8_t> data;
-    i2c->read(defaultaddr, 1, 1, data);
+    i2c->read(setaddr, 1, 1, data);
     if (!IORD(i2c_base, i2c->ACK_ERROR)) {
-        ROS_DEBUG("sensor active at: %x", defaultaddr);
+        ROS_INFO("TLV sensor active at: %x", setaddr);
     }else{
-        ROS_ERROR("sensor does not respond on address: %x", defaultaddr);
+        ROS_ERROR("sensor does not respond on address: %x", setaddr);
     }
 
     vector<uint8_t> regdata;
-    readAllRegisters(defaultaddr,regdata,false);
+    readAllRegisters(setaddr,regdata,false);
 //
     // Begin config
     // Static initial config for now
@@ -112,7 +109,7 @@ bool TLV493D::initTLV(uint8_t &deviceaddress, int devicepin) {
 ////
 //    // Write config
     ROS_DEBUG("Writing config now ...");
-    i2c->write(defaultaddr, cfgdata, 4);
+    i2c->write(setaddr, cfgdata, 4);
 
     ROS_DEBUG("Reading config now ...");
     regdata.clear();

@@ -108,17 +108,14 @@ int main(int argc, char *argv[]) {
     RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs,
                             h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
 
-    uint32_t mask = 0;
-    high_resolution_clock::time_point t0 = high_resolution_clock::now(), t1;
+    uint8_t mask = 0x1;
+    ros::Rate rate(10);
     while(ros::ok()){
-        t1 = high_resolution_clock::now();
-        milliseconds time_span = duration_cast<milliseconds>(t1-t0);
-        if(time_span.count()%500==0){
-            mask ++;
-            if(mask==255)
-                mask =0;
-            *h2p_lw_led_addr = mask;
-        }
+        mask<<=1;
+        *h2p_lw_led_addr = mask;
+        rate.sleep();
+        if(mask==0x80)
+            mask = 0x1;
     }
 
 

@@ -32,7 +32,7 @@ public:
     void read(vector<float> &x, vector<float> &y, vector<float> &z);
 private:
     vector<uint8_t> deviceAddress;
-    uint32_t gpioreg;
+    uint8_t gpioreg = 0;
 public:
     boost::shared_ptr<I2C> i2c;
     void *i2c_base;

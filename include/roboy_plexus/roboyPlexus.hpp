@@ -309,6 +309,7 @@ private:
 
     bool executeActions(vector<string> actions);
     vector<string> expandBehavior(string name);
+
 };
 
 /** @} */ // end of group1
