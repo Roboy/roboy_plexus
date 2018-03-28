@@ -3,9 +3,9 @@ Installation
 
 Prerequisites
 -------------
-`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install SoCEDS 17.1 standard edition.
+`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install **SoCEDS 17.1** standard edition.
 
-`Download <http://dl.altera.com/?edition=lite>`_ and install Quartus 17.1 lite edition.
+`Download <http://dl.altera.com/?edition=lite>`_ and install **Quartus 17.1** lite edition.
 
 Get The GNU C/C++ compilers for armhf architecture
 ::
@@ -22,7 +22,7 @@ The package also depends on the following packages which need to be cloned into 
 
 FPGA
 ----
-If you have a fresh de10-nano soc fpga, `download https://roboy.org/dists/stable/main/binary/>`_ download the sd card image ``DE10_nano_lxce_4.1.33-ltsi-altera.img``.
+If you have a fresh de10-nano soc fpga, `download <http://www.python.org/>`_ the sd card image ``DE10_nano_lxce_4.1.33-ltsi-altera.img``.
 Plug the sdcard into you reader. In a terminal, find out the name of your sd card device:
 ::
     sudo fdisk -l
