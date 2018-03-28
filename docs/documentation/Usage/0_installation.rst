@@ -3,9 +3,9 @@ Installation
 
 Prerequisites
 -------------
-Download and install SoCEDS 17.1 standard edition from https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3 .
+`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install SoCEDS 17.1 standard edition.
 
-Download and install Quartus 17.1 lite edition from http://dl.altera.com/?edition=lite
+`Download <http://dl.altera.com/?edition=lite>`_ and install Quartus 17.1 lite edition.
 
 Get The GNU C/C++ compilers for armhf architecture
 ::
@@ -22,12 +22,12 @@ The package also depends on the following packages which need to be cloned into 
 
 FPGA
 ----
-If you have a fresh de10-nano soc fpga, download the sd card image DE10_nano_lxce_4.1.33-ltsi-altera.img from https://roboy.org/dists/stable/main/binary/ .
+If you have a fresh de10-nano soc fpga, `download https://roboy.org/dists/stable/main/binary/>`_ download the sd card image ``DE10_nano_lxce_4.1.33-ltsi-altera.img``.
 Plug the sdcard into you reader. In a terminal, find out the name of your sd card device:
 ::
     sudo fdisk -l
 
-Then flash the image onto the sd card using the following command, replacing /dev/sdX with your sdcard device name:
+Then flash the image onto the sd card using the following command, replacing ``/dev/sdX`` with your sdcard device name:
 ::
     sudo dd if=DE10_nano_lxce_4.1.33-ltsi-altera.img of=/dev/sdX bs=1M status=progress
 .. warning::
@@ -45,7 +45,7 @@ Connect the fpga flash port with your computer using a USB cable, then verify te
 ::
     sudo ~/intelFPGA/17.1/quartus/bin/jtagconfig
 
-Start quartus and open the project DE10_NANO_SoC_GHRD.qpf in roboy_de10_nano_soc. Open the programmer.
+Start quartus and open the project ``DE10_NANO_SoC_GHRD.qpf`` in ``roboy_de10_nano_soc``. Open the programmer.
 Under Hardware Setup choose your fpga. Click auto-detect and verify the model.
 Choose soc_system.jic and flash the fpga.
 
