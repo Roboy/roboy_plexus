@@ -284,6 +284,13 @@ public:
 	 * @return success
 	 */
 	bool playTrajectory(const char* file);
+
+	/**
+	 * Enables/disables replaying trajectory
+	 * @param replay
+	 */
+	void setReplay(bool status);
+
 	/**
 	 * Estimates the spring parameters of a motor by pulling with variable forces
 	 * keeping track of displacement and weight, it will either timeout or stop when the
@@ -323,5 +330,8 @@ private:
 	vector<int32_t*> myo_base;
 	int iter = 0;
     bool recording = false; // keeps track of recording status
+	bool replay = true;
 
 };
+
+typedef boost::shared_ptr<MyoControl> MyoControlPtr;
