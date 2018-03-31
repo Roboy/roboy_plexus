@@ -476,7 +476,7 @@ float MyoControl::startRecordTrajectories(
     double elapsedTime = 0.0, dt;
     long sample = 0;
     ros::Rate rate(1.0/samplingTime);
-    ROS_INFO_STREAM(1.0/samplingTime);
+//    ROS_INFO_STREAM(1.0/samplingTime);
     // start recording
     do {
         dt = elapsedTime;
@@ -539,6 +539,15 @@ void MyoControl::stopRecordTrajectories() {
     ROS_INFO("Stopped recording a trajectory");
 }
 
+void MyoControl::setReplay(bool status) {
+    replay = status;
+    if (replay) {
+        ROS_INFO("Replaying trajectories enabled");
+    } else {
+        ROS_INFO("Replaying trajectories disabled");
+    }
+}
+
 bool MyoControl::playTrajectory(const char *file) {
 
     ROS_INFO_STREAM(file);
@@ -552,15 +561,18 @@ bool MyoControl::playTrajectory(const char *file) {
 
     map<int, vector<float>> trajectories;
     int samplingTime, numberOfSamples;
+
     // Constructs the myoMuscles by parsing custom xml.
-//    TiXmlElement *root = NULL;
 
     ROS_INFO_STREAM("Found trajectory " + string(file));
 
     TiXmlElement *trajectory_it = NULL;
+
     for (trajectory_it = root->FirstChildElement("trajectory"); trajectory_it;
 
+
          trajectory_it = trajectory_it->NextSiblingElement("trajectory")) {
+
         if (trajectory_it->QueryIntAttribute("samplingTime", &samplingTime) == TIXML_SUCCESS) {
             int motor;
             if (trajectory_it->QueryIntAttribute("motorid", &motor) != TIXML_SUCCESS) {
@@ -592,7 +604,7 @@ bool MyoControl::playTrajectory(const char *file) {
 
     samplingTime ;
     ros::Rate rate(1.0/(samplingTime/1000.0f));
-    ROS_INFO_STREAM(1.0/(samplingTime/1000.0f));
+//    ROS_INFO_STREAM(1.0/(samplingTime/1000.0f));
     do {
         dt = elapsedTime;
         for (auto &motor : trajectories) {
@@ -605,7 +617,7 @@ bool MyoControl::playTrajectory(const char *file) {
         }
         sample++;
         rate.sleep();
-    } while (sample<numberOfSamples);
+    } while (sample<numberOfSamples && replay);
 
     return true;
 }

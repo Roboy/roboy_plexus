@@ -103,10 +103,15 @@ int main(int argc, char *argv[]) {
 
 
 
-//    MyoControl myoControl(h2p_lw_myo_addr);
+    auto myoControl = boost::shared_ptr<MyoControl>(new MyoControl(h2p_lw_myo_addr, h2p_lw_adc_addr));
 
-    RoboyPlexus roboyPlexus(h2p_lw_myo_addr, h2p_lw_i2c_addr, deviceIDs,
+    RoboyPlexus roboyPlexus(myoControl, h2p_lw_i2c_addr, deviceIDs,
                             h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
+
+//    auto nh2 = ros::NodeHandlePtr(new ros::NodeHandle);
+//    FibonacciAction fibonacci("fibonacci");
+    PerformMovementAction performMovementAction(myoControl,"movement_server");
+    PerformMovementsAction performMovementsAction(myoControl,"movements_server");
 
     uint8_t mask = 0x1;
     ros::Rate rate(10);

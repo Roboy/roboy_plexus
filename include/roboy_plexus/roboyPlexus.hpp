@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <vector>
 #include <roboy_plexus/myoControl.hpp>
+#include "roboy_plexus/controlActions.hpp"
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
 #include <roboy_communication_middleware/ADCvalue.h>
@@ -25,6 +26,7 @@
 #include <roboy_communication_control/PerformActions.h>
 #include <roboy_communication_control/ListItems.h>
 #include <std_srvs/SetBool.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/Imu.h>
@@ -43,7 +45,7 @@
 #include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-#include "roboy_plexus/udpServer.hpp"
+
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
@@ -63,7 +65,7 @@ static vector<vector<int32_t>> DEFAULT_VECTOR_VECTOR;
  */
 class RoboyPlexus{
 public:
-    RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
+    RoboyPlexus(boost::shared_ptr<MyoControl> myoControl_, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
                 vector<vector<int32_t>> &deviceIDs = DEFAULT_VECTOR_VECTOR, int32_t* darkroom_base = nullptr,
                 vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr);
@@ -106,6 +108,7 @@ private:
      * @param msg motor command
      */
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
+
     /**
      * Service for changing motor PID parameters
      * @param req PID parameters
@@ -186,6 +189,13 @@ private:
                                 roboy_communication_control::PerformBehavior::Response &res);
 
     /**
+     * Stops replaying the trajectory
+     * @param msg
+     */
+    void EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg);
+
+
+    /**
      * Service return a list of files in the requested folder
      * @param req
      * @param res
@@ -248,7 +258,8 @@ private:
 
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub;
+    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
+            enablePlayback_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,

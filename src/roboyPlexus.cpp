@@ -1,11 +1,11 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 #include <roboy_plexus/myoControl.hpp>
 
-RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
+RoboyPlexus::RoboyPlexus(boost::shared_ptr<MyoControl> myoControl_, vector<int32_t *> &i2c_base,
                          vector<vector<int32_t>> &deviceIDs, int32_t *darkroom_base,
                          vector<int32_t *> &darkroom_ootx_addr,
                          int32_t *adc_base) :
-        myo_base(myo_base), i2c_base(i2c_base), deviceIDs(deviceIDs), darkroom_base(darkroom_base),
+        myoControl(myoControl_), i2c_base(i2c_base), deviceIDs(deviceIDs), darkroom_base(darkroom_base),
         darkroom_ootx_addr(darkroom_ootx_addr), adc_base(adc_base){
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
@@ -19,17 +19,15 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
         ros::init(argc, argv, node_name);
     }
 
+
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
-
-    spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(2));
-    spinner->start();
-
-    myoControl = boost::shared_ptr<MyoControl>(new MyoControl(myo_base, adc_base));
+//    myoControl = boost::shared_ptr<MyoControl>(new MyoControl(myo_base, adc_base));
 
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
     startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1, &RoboyPlexus::StartRecordTrajectoryCB, this);
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1, &RoboyPlexus::StopRecordTrajectoryCB, this);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
+    enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
 
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
     controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
@@ -60,6 +58,9 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
     gsensor_pub = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/imu0", 1);
     magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
+
+    spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
+    spinner->start();
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
@@ -609,18 +610,24 @@ bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMo
 
 bool RoboyPlexus::ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
                                          roboy_communication_control::PerformActions::Response &res) {
-    return executeActions(req.actions);
+    res.success = executeActions(req.actions);
+
+    return res.success;
 
 }
 
 bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
                                         roboy_communication_control::PerformBehavior::Response &res) {
     vector<string> actions = expandBehavior(req.name);
-    return executeActions(actions);
+    res.success = executeActions(actions);
+    ROS_INFO("reset replay");
+
+    return res.success;
 
 }
 
 bool RoboyPlexus::executeActions(vector<string> actions) {
+
     bool success;
     for (string actionName: actions) {
         if (actionName.find("pause") != std::string::npos) {
@@ -639,6 +646,10 @@ bool RoboyPlexus::executeActions(vector<string> actions) {
         }
     }
     return success;
+}
+
+void RoboyPlexus::EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg) {
+    myoControl->setReplay(msg->data);
 }
 
 
