@@ -9,6 +9,7 @@
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
+#include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MagneticSensor.h>
 #include <roboy_communication_middleware/MotorAngle.h>
@@ -43,7 +44,8 @@
 #include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-#include "roboy_plexus/udpServer.hpp"
+//#include "roboy_plexus/udpServer.hpp"
+#include "roboy_plexus/handControl.hpp"
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
@@ -64,8 +66,7 @@ static vector<vector<int32_t>> DEFAULT_VECTOR_VECTOR;
 class RoboyPlexus{
 public:
     RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
-                vector<vector<int32_t>> &deviceIDs = DEFAULT_VECTOR_VECTOR, int32_t* darkroom_base = nullptr,
-                vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
+                int32_t* darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr);
     ~RoboyPlexus();
 private:
@@ -106,6 +107,11 @@ private:
      * @param msg motor command
      */
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
+    /**
+     * Callback for hand command
+     * @param msg hand command
+     */
+    void handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg);
     /**
      * Service for changing motor PID parameters
      * @param req PID parameters
@@ -248,7 +254,7 @@ private:
 
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub;
+    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub, handCommand_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
@@ -258,6 +264,7 @@ private:
     map<int,map<int,control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     boost::shared_ptr<MyoControl> myoControl;
+    HandControlPtr handControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
             gsensor_thread, motorAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;

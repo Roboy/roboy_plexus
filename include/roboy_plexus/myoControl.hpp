@@ -49,7 +49,7 @@
 #include <roboy_plexus/timer.hpp>
 #include <ros/ros.h>
 
-#define MOTORS_PER_MYOCONTROL 6
+#define MOTORS_PER_MYOCONTROL 7
 
 #define IORD(base,reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base,reg,data) (*(((volatile int32_t*)base)+reg)=data)

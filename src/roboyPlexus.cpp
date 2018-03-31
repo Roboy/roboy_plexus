@@ -1,11 +1,9 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 #include <roboy_plexus/myoControl.hpp>
 
-RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
-                         vector<vector<int32_t>> &deviceIDs, int32_t *darkroom_base,
-                         vector<int32_t *> &darkroom_ootx_addr,
-                         int32_t *adc_base) :
-        myo_base(myo_base), i2c_base(i2c_base), deviceIDs(deviceIDs), darkroom_base(darkroom_base),
+RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,  int32_t *darkroom_base,
+                         vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base) :
+        myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base),
         darkroom_ootx_addr(darkroom_ootx_addr), adc_base(adc_base){
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
@@ -27,6 +25,7 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
     myoControl = boost::shared_ptr<MyoControl>(new MyoControl(myo_base, adc_base));
 
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
+    handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &RoboyPlexus::handCommandCB, this);
     startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1, &RoboyPlexus::StartRecordTrajectoryCB, this);
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1, &RoboyPlexus::StopRecordTrajectoryCB, this);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
@@ -75,7 +74,6 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
         darkRoomOOTXThread->detach();
     }
 
-
     if (adc_base != nullptr) {
         adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
         adcThread->detach();
@@ -101,47 +99,50 @@ RoboyPlexus::RoboyPlexus(vector<int32_t *> &myo_base, vector<int32_t *> &i2c_bas
 
     myoControl->allToDisplacement(0);
 
-//    // open i2c bus for gsensor
-//    if ((file = open(filename, O_RDWR)) < 0) {
-//        ROS_ERROR("Failed to open the i2c bus of gsensor");
-//    }
+    // open i2c bus for gsensor
+    if ((file = open(filename, O_RDWR)) < 0) {
+        ROS_ERROR("Failed to open the i2c bus of gsensor");
+    }
+
+    // init
+    // gsensor i2c address: 101_0011
+    int addr = 0b01010011;
+    if (ioctl(file, I2C_SLAVE, addr) < 0) {
+        ROS_ERROR("Failed to acquire bus access and/or talk to slave");
+    }else{
+        // configure accelerometer as +-2g and start measure
+        bSuccess = ADXL345_Init(file);
+        if (bSuccess){
+            // dump chip id
+            bSuccess = ADXL345_IdRead(file, &id);
+            if (bSuccess){
+                ROS_INFO("gsensor chip_id=%02Xh", id);
+                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
+                gsensor_thread->detach();
+            }
+        }
+    }
+
+//    // Look in the device's user manual for allowed addresses! (Table 6)
+//    vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
+//    vector<uint8_t> deviceaddress1 = {0b1001010};//
+//    vector<int> devicepins0 = {0,1};
+//    vector<int> devicepins1 = {0};
+//    tlv493D0[0].reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
+//    tlv493D0[1].reset(new TLV493D(i2c_base[1], deviceaddress1, devicepins1));
+////    vector<uint8_t> deviceaddress0 = {0b1011110, 0b0001111, 0b0001011};//
+////    vector<int> devicepins0 = {0,1,2};
+////    tlv493D0[0]->reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
+////    vector<uint8_t> deviceaddress0 = {0b1011110};//
+////    vector<int> devicepins0 = {255};
+////    tlv493D0.reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
 //
-//    // init
-//    // gsensor i2c address: 101_0011
-//    int addr = 0b01010011;
-//    if (ioctl(file, I2C_SLAVE, addr) < 0) {
-//        ROS_ERROR("Failed to acquire bus access and/or talk to slave");
-//    }else{
-//        // configure accelerometer as +-2g and start measure
-//        bSuccess = ADXL345_Init(file);
-//        if (bSuccess){
-//            // dump chip id
-//            bSuccess = ADXL345_IdRead(file, &id);
-//            if (bSuccess){
-//                ROS_INFO("gsensor chip_id=%02Xh", id);
-//                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
-//                gsensor_thread->detach();
-//            }
-//        }
-//    }
+//
+//    magneticsShoulderThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//    magneticsShoulderThread->detach();
 
-    // Look in the device's user manual for allowed addresses! (Table 6)
-    vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
-    vector<uint8_t> deviceaddress1 = {0b1001010};//
-    vector<int> devicepins0 = {0,1};
-    vector<int> devicepins1 = {0};
-    tlv493D0[0].reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
-    tlv493D0[1].reset(new TLV493D(i2c_base[1], deviceaddress1, devicepins1));
-//    vector<uint8_t> deviceaddress0 = {0b1011110, 0b0001111, 0b0001011};//
-//    vector<int> devicepins0 = {0,1,2};
-//    tlv493D0[0]->reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
-//    vector<uint8_t> deviceaddress0 = {0b1011110};//
-//    vector<int> devicepins0 = {255};
-//    tlv493D0.reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
-
-
-    magneticsShoulderThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-    magneticsShoulderThread->detach();
+    vector<uint8_t> deviceIDs = {0x9};
+    handControl.reset(new HandControl(i2c_base[4],deviceIDs));
 
     ROS_INFO("roboy plexus initialized");
 }
@@ -452,6 +453,16 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
 
         i++;
     }
+}
+
+void RoboyPlexus::handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg) {
+//    if(msg->id == id){
+        vector<uint8_t> setPoint;
+        for(auto s:msg->setPoint){
+            setPoint.push_back(s);
+        }
+        handControl->command(setPoint);
+//    }
 }
 
 bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,

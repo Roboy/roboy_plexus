@@ -47,7 +47,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     # Application
     #==============================================================================
     add_executable( roboy_plexus src/main.cpp src/myoControl.cpp src/i2c.cpp src/roboyPlexus.cpp src/am4096.cpp src/CRC32.cpp
-            src/A1335.cpp src/tlv493d.cpp src/udpServer.cpp)
+            src/A1335.cpp src/tlv493d.cpp src/handControl.cpp) #src/udpServer.cpp
     add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp)
     target_link_libraries( roboy_plexus  -lpthread -lrt ${ros_LIBRARIES})
 
