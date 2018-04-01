@@ -34,24 +34,21 @@ bool HandControl::readSensorData(vector<SensorFrame> &sensor_data){
     sensor_data.resize(deviceIDs.size());
     for(auto device:deviceIDs){
         vector<uint8_t> data;
-        i2c->write(device,0,1);
         i2c->read(device,0,10,data);
-        i2c->write(device,1,1);
-        i2c->read(device,0,12,data);
-        i2c->write(device,2,1);
-        i2c->read(device,0,12,data);
+        i2c->read(device,1,12,data);
+        i2c->read(device,2,12,data);
         sensor_data[i].current[0] = (uint16_t)(data[1]<<8|data[0]);
         sensor_data[i].current[1] = (uint16_t)(data[3]<<8|data[2]);
         sensor_data[i].current[2] = (uint16_t)(data[5]<<8|data[4]);
         sensor_data[i].current[3] = (uint16_t)(data[7]<<8|data[6]);
         sensor_data[i].current[4] = (uint16_t)(data[9]<<8|data[8]);
 
-        sensor_data[i].gyro[0] = ((int32_t)(data[13]<<24|data[12]<<16|data[11]<<8|data[10])* 250.0f) / 32768.0f;
-        sensor_data[i].gyro[1] = ((int32_t)(data[17]<<24|data[16]<<16|data[15]<<8|data[14])* 250.0f) / 32768.0f;
-        sensor_data[i].gyro[2] = ((int32_t)(data[21]<<24|data[20]<<16|data[19]<<8|data[18])* 250.0f) / 32768.0f;
-        sensor_data[i].acc[0] = (int32_t)(data[25]<<24|data[24]<<16|data[23]<<8|data[22]);
-        sensor_data[i].acc[1] = (int32_t)(data[29]<<24|data[28]<<16|data[27]<<8|data[26]);
-        sensor_data[i].acc[2] = (int32_t)(data[33]<<24|data[32]<<16|data[31]<<8|data[30]);
+        sensor_data[i].gyro[0] = ((int32_t)(data[13]<<24|data[12]<<16|data[11]<<8|data[10])*250.0f) / 32768.0f;
+        sensor_data[i].gyro[1] = ((int32_t)(data[17]<<24|data[16]<<16|data[15]<<8|data[14])*250.0f) / 32768.0f;
+        sensor_data[i].gyro[2] = ((int32_t)(data[21]<<24|data[20]<<16|data[19]<<8|data[18])*250.0f) / 32768.0f;
+        sensor_data[i].acc[0] = ((int32_t)(data[25]<<24|data[24]<<16|data[23]<<8|data[22])*2.0f) / 32768.0f;
+        sensor_data[i].acc[1] = ((int32_t)(data[29]<<24|data[28]<<16|data[27]<<8|data[26])*2.0f) / 32768.0f;
+        sensor_data[i].acc[2] = ((int32_t)(data[33]<<24|data[32]<<16|data[31]<<8|data[30])*2.0f) / 32768.0f;
         if(i2c->ack_error())
             ack_error = true;
     }
@@ -89,17 +86,17 @@ void HandControl::test(){
             usleep(10000);
         }
 
-        for (uint8_t pos = 150; pos > 30; pos--) {
-            vector<HandControl::SensorFrame> sensor_data;
-            readSensorData(sensor_data);
-            ROS_INFO("\ncurrent: %d\t%d\t%d\t%d\t%d\n gyro: %f\t%f\t%f\n acc: %f\t%f\t%f",sensor_data.back().current[0],sensor_data.back().current[1],
-                     sensor_data.back().current[2],sensor_data.back().current[3],sensor_data.back().current[4],
-                     sensor_data.back().gyro[0],sensor_data.back().gyro[1],sensor_data.back().gyro[2],
-                     sensor_data.back().acc[0],sensor_data.back().acc[1],sensor_data.back().acc[2]);
-
-            vector<uint8_t> setPoint = {pos, pos, pos, pos, pos};
-            command(setPoint);
-            usleep(10000);
-        }
+//        for (uint8_t pos = 150; pos > 30; pos--) {
+//            vector<HandControl::SensorFrame> sensor_data;
+//            readSensorData(sensor_data);
+//            ROS_INFO("\ncurrent: %d\t%d\t%d\t%d\t%d\n gyro: %f\t%f\t%f\n acc: %f\t%f\t%f",sensor_data.back().current[0],sensor_data.back().current[1],
+//                     sensor_data.back().current[2],sensor_data.back().current[3],sensor_data.back().current[4],
+//                     sensor_data.back().gyro[0],sensor_data.back().gyro[1],sensor_data.back().gyro[2],
+//                     sensor_data.back().acc[0],sensor_data.back().acc[1],sensor_data.back().acc[2]);
+//
+//            vector<uint8_t> setPoint = {pos, pos, pos, pos, pos};
+//            command(setPoint);
+//            usleep(10000);
+//        }
     }
 }

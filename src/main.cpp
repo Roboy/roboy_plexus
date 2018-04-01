@@ -106,16 +106,19 @@ int main(int argc, char *argv[]) {
 //        printf("%x\t",device);
 //    cout << endl;
 
+//    vector<uint8_t> deviceIDs = {0x9};
+//    HandControl handControl(h2p_lw_i2c_addr[4],deviceIDs);
+//    handControl.test();
 
     MyoControlPtr myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr, h2p_lw_adc_addr));
-
+//
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
-
-//    auto nh2 = ros::NodeHandlePtr(new ros::NodeHandle);
-//    FibonacciAction fibonacci("fibonacci");
-    PerformMovementAction performMovementAction(myoControl,"movement_server");
-    PerformMovementsAction performMovementsAction(myoControl,"movements_server");
-
+//
+////    auto nh2 = ros::NodeHandlePtr(new ros::NodeHandle);
+////    FibonacciAction fibonacci("fibonacci");
+////    PerformMovementAction performMovementAction(myoControl,"movement_server");
+////    PerformMovementsAction performMovementsAction(myoControl,"movements_server");
+//
     uint8_t mask = 0x1;
     ros::Rate rate(10);
     while(ros::ok()){

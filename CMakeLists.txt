@@ -42,6 +42,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/include
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/include/${ALT_DEVICE_FAMILY}
+            yamc/include
     )
     #==============================================================================
     # Application
