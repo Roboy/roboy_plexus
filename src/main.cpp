@@ -95,8 +95,32 @@ int main(int argc, char *argv[]) {
     h2p_lw_darkroom_ootx_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOMOOTXDECODER_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 //
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+
+
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "handControl");
+//        ros::start();
+//    }
+////
+//    vector<int> deviceIDs = {0xC};
 //
-//    vector<vector<int>> deviceIDs = {{0xC},{0x0}};
+//    A1335 motorAngle(h2p_lw_i2c_addr[4],deviceIDs);
+//    vector<A1335State> state;
+//    motorAngle.readAngleData(state);
+//    stringstream str;
+//    for(auto s:state){
+//        str << "Motor Angle Sensor on i2C address " << (int)s.address << " is " << (s.isOK?"ok":"not ok") << endl;
+//        str << "angle:         " << s.angle << endl;
+//        str << "angle_flags:   " << motorAngle.decodeFlag(s.angle_flags,ANGLES_FLAGS) << endl;
+//        str << "err_flags:     " << motorAngle.decodeFlag(s.err_flags,ERROR_FLAGS) << endl;
+//        str << "fieldStrength: " << s.fieldStrength << endl;
+//        str << "status_flags:  " << motorAngle.decodeFlag(s.status_flags,STATUS_FLAGS) << endl;
+//        str << "xerr_flags:    " << motorAngle.decodeFlag(s.xerr_flags,XERROR_FLAGS) << endl;
+////            msg.temperature.push_back(s.temp);
+//    }
+//    ROS_INFO_STREAM(str.str());
 
 //    I2C i2c(h2p_lw_i2c_addr[4]);
 //    vector<uint8_t> active_devices;
@@ -106,7 +130,14 @@ int main(int argc, char *argv[]) {
 //        printf("%x\t",device);
 //    cout << endl;
 
-//    vector<uint8_t> deviceIDs = {0x9};
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "handControl");
+//        ros::start();
+//    }
+////
+//    vector<uint8_t> deviceIDs = {0x50,0x51,0x52,0x53};
 //    HandControl handControl(h2p_lw_i2c_addr[4],deviceIDs);
 //    handControl.test();
 
@@ -120,13 +151,19 @@ int main(int argc, char *argv[]) {
 ////    PerformMovementsAction performMovementsAction(myoControl,"movements_server");
 //
     uint8_t mask = 0x1;
-    ros::Rate rate(10);
+    ros::Rate rate(30);
+    bool dir = 1;
     while(ros::ok()){
-        mask<<=1;
+        if(dir)
+            mask<<=1;
+        else
+            mask>>=1;
         *h2p_lw_led_addr = mask;
         rate.sleep();
         if(mask==0x80)
-            mask = 0x1;
+            dir = 0;
+        if(mask==0x1)
+            dir = 1;
     }
 
 

@@ -48,7 +48,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     expandBehavior_srv = nh->advertiseService("roboy/control/ExpandBehavior",
                                                      &RoboyPlexus::ExpandBehaviorService, this);
 
-    handIMU_pub = nh->advertise<roboy_communication_middleware::HandIMU>("/roboy/middleware/HandIMU", 1);
+    handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus", 1);
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
     darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors", 1);
@@ -142,10 +142,10 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //    magneticsShoulderThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //    magneticsShoulderThread->detach();
 
-    vector<uint8_t> deviceIDs = {0x9};
+    vector<uint8_t> deviceIDs = {0x50,0x51,0x52,0x53};
     handControl.reset(new HandControl(i2c_base[4],deviceIDs));
 
-    handIMUThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::handIMUPublisher, this));
+    handIMUThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::handStatusPublisher, this));
     handIMUThread->detach();
 
     ROS_INFO("roboy plexus initialized");
@@ -437,23 +437,27 @@ void RoboyPlexus::magneticShoulderJointPublisher(){
     }
 }
 
-void RoboyPlexus::handIMUPublisher(){
+void RoboyPlexus::handStatusPublisher(){
     ros::Rate rate(60);
     while (keep_publishing) {
-        roboy_communication_middleware::HandIMU msg;
+        roboy_communication_middleware::HandStatus msg;
         vector<HandControl::SensorFrame> sensor_data;
-//        mux.lock();
         handControl->readSensorData(sensor_data);
-//        mux.unlock();
-        for(int imu=0;imu<sensor_data.size();imu++){
-            msg.gyro_x.push_back(sensor_data[0].gyro[0]);
-            msg.gyro_y.push_back(sensor_data[0].gyro[1]);
-            msg.gyro_z.push_back(sensor_data[0].gyro[2]);
-            msg.acc_x.push_back(sensor_data[0].acc[0]);
-            msg.acc_y.push_back(sensor_data[0].acc[1]);
-            msg.acc_z.push_back(sensor_data[0].acc[2]);
+        for(int arm_board=0;arm_board<sensor_data.size();arm_board++){
+            msg.current.push_back(sensor_data[arm_board].current[0]);
+            msg.current.push_back(sensor_data[arm_board].current[1]);
+            msg.current.push_back(sensor_data[arm_board].current[2]);
+            msg.current.push_back(sensor_data[arm_board].current[3]);
+            msg.current.push_back(sensor_data[arm_board].current[4]);
+            msg.current.push_back(sensor_data[arm_board].current[5]);
+            msg.gyro_x.push_back(sensor_data[arm_board].gyro[0]);
+            msg.gyro_y.push_back(sensor_data[arm_board].gyro[1]);
+            msg.gyro_z.push_back(sensor_data[arm_board].gyro[2]);
+            msg.acc_x.push_back(sensor_data[arm_board].acc[0]);
+            msg.acc_y.push_back(sensor_data[arm_board].acc[1]);
+            msg.acc_z.push_back(sensor_data[arm_board].acc[2]);
         }
-        handIMU_pub.publish(msg);
+        handStatus_pub.publish(msg);
         rate.sleep();
     }
 }
@@ -481,7 +485,6 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
 }
 
 void RoboyPlexus::handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg) {
-//    mux.lock();
 //    if(msg->id == id){
         vector<uint8_t> setPoint;
         for(auto s:msg->setPoint){
@@ -489,7 +492,6 @@ void RoboyPlexus::handCommandCB(const roboy_communication_middleware::HandComman
         }
         handControl->command(setPoint);
 //    }
-//    mux.unlock();
 }
 
 bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,

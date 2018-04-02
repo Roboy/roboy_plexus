@@ -10,7 +10,7 @@
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
-#include <roboy_communication_middleware/HandIMU.h>
+#include <roboy_communication_middleware/HandStatus.h>
 #include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MagneticSensor.h>
@@ -49,8 +49,6 @@
 #include <dirent.h>
 //#include "roboy_plexus/udpServer.hpp"
 #include "roboy_plexus/handControl.hpp"
-#include "alternate_shared_mutex.hpp"
-using SharedMutex = yamc::alternate::basic_shared_mutex<yamc::rwlock::WriterPrefer>;
 
 
 #define NUM_SENSORS 32
@@ -109,9 +107,9 @@ private:
      */
     void magneticShoulderJointPublisher();
     /**
-     * Publishes hand IMU data
+     * Publishes hand status data
      */
-    void handIMUPublisher();
+    void handStatusPublisher();
     /**
      * Callback for motor command
      * @param msg motor command
@@ -274,7 +272,7 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub, handCommand_sub, enablePlayback_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
-            motorAngle_pub, magneticSensor_pub, handIMU_pub;
+            motorAngle_pub, magneticSensor_pub, handStatus_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
@@ -334,7 +332,6 @@ private:
 
     bool executeActions(vector<string> actions);
     vector<string> expandBehavior(string name);
-    SharedMutex mux;
 };
 
 /** @} */ // end of group1

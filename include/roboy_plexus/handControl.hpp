@@ -12,21 +12,24 @@ public:
             uint8_t angleCommand[5];
             uint8_t gpioControl[6];
         };
-        uint8_t data[11] = {0};
+        uint8_t data[11] = {0,0,0,0,0,0,0,0,0,0,0};
     };
 
     union SensorFrame{
         struct{
-            uint16_t current[5];
+            uint16_t current[6];
             float gyro[3];
             float acc[3];
         };
-        uint8_t data[34] = {0};
+        uint8_t data[36] = {0};
     };
 
     bool command(vector<uint8_t> &setPoint);
+    bool command(vector<uint8_t> &setPoint, int board);
     bool readSensorData(vector<SensorFrame> &data);
+    bool readSensorData(SensorFrame &data, int board);
     bool write(vector<CommandFrame> &command);
+    bool write(CommandFrame &command, int board);
     void test();
 
 private:
