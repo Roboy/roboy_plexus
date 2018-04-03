@@ -111,7 +111,7 @@ bool I2C::ack_error() {
 bool I2C::checkAddressSpace(uint8_t fromDeviceID, uint8_t toDeviceID, vector<uint8_t> &activeDevices){
     for(fromDeviceID;fromDeviceID<toDeviceID;fromDeviceID++){
         vector<uint8_t> data;
-        read(fromDeviceID,0x20,0,data);
+        read_continuous(fromDeviceID,1,data);
         if(!ack_error())
             activeDevices.push_back(fromDeviceID);
     }
