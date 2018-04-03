@@ -135,21 +135,21 @@ int main(int argc, char *argv[]) {
     PerformMovementAction performMovementAction(myoControl,"movement_server");
     PerformMovementsAction performMovementsAction(myoControl,"movements_server");
 //
-//    uint8_t mask = 0x1;
-//    ros::Rate rate(30);
-//    bool dir = 1;
-//    while(ros::ok()){
-//        if(dir)
-//            mask<<=1;
-//        else
-//            mask>>=1;
-//        *h2p_lw_led_addr = mask;
-//        rate.sleep();
-//        if(mask==0x80)
-//            dir = 0;
-//        if(mask==0x1)
-//            dir = 1;
-//    }
+    uint8_t mask = 0x1;
+    ros::Rate rate(30);
+    bool dir = 1;
+    while(ros::ok()){
+        if(dir)
+            mask<<=1;
+        else
+            mask>>=1;
+        *h2p_lw_led_addr = mask;
+        rate.sleep();
+        if(mask==0x80)
+            dir = 0;
+        if(mask==0x1)
+            dir = 1;
+    }
 
 
 
