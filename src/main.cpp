@@ -43,7 +43,7 @@
 #include "socal/hps.h"
 #include "roboy_plexus/hps_0.h"
 #include "roboy_plexus/roboyPlexus.hpp"
-#include <ros/ros.h>
+#include <common_utilities/UDPSocket.hpp>
 
 using namespace std;
 
@@ -53,6 +53,7 @@ using namespace std;
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int main(int argc, char *argv[]) {
+
 
     void *virtual_base;
     int fd;
@@ -96,13 +97,6 @@ int main(int argc, char *argv[]) {
 //
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
-
-//    if (!ros::isInitialized()) {
-//        int argc = 0;
-//        char **argv = NULL;
-//        ros::init(argc, argv, "handControl");
-//        ros::start();
-//    }
 ////
 //    vector<int> deviceIDs = {0xC};
 //
