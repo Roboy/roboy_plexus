@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
     int fd;
     int32_t *h2p_lw_led_addr;
     int32_t *h2p_lw_adc_addr;
+    int32_t *h2p_lw_switches_addr;
     int32_t *h2p_lw_darkroom_addr;
     vector<int32_t*> h2p_lw_darkroom_ootx_addr;
     vector<int32_t*> h2p_lw_myo_addr;
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]) {
     }
 
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-
+    h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
@@ -87,12 +88,13 @@ int main(int argc, char *argv[]) {
     h2p_lw_darkroom_ootx_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOMOOTXDECODER_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
-//    if (!ros::isInitialized()) {
-//        int argc = 0;
-//        char **argv = NULL;
-//        ros::init(argc, argv, "roboy_plexus");
-//        ros::start();
-//    }
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "roboy_plexus");
+        ros::start();
+    }
+
 //    vector<int> deviceIDs = {0xC};
 //
 //    A1335 motorAngle(h2p_lw_i2c_addr[0],deviceIDs);
@@ -128,9 +130,10 @@ int main(int argc, char *argv[]) {
 //    HandControl handControl(h2p_lw_i2c_addr[4],deviceIDs);
 //    handControl.test();
 
-    MyoControlPtr myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr, h2p_lw_adc_addr));
-//
-    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr, h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr);
+    MyoControlPtr myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
+////
+    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
+                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
 //
     PerformMovementAction performMovementAction(myoControl,"movement_server");
     PerformMovementsAction performMovementsAction(myoControl,"movements_server");

@@ -68,7 +68,7 @@ public:
      * @param i2c_base i2c base (cf hps_0.h )
      * @param deviceIDs active device ids
      */
-    A1335(int32_t* i2c_base, vector<int32_t> &deviceIDs);
+    A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs);
 
     ~A1335();
     /**
@@ -98,7 +98,7 @@ private:
     bool searchAddressSpace();
 
 private:
-    vector<int32_t> deviceIDs;
+    vector<uint8_t> deviceIDs;
     const uint8_t start_register = 0x20;
     const uint8_t num_registers = 6;
     const uint8_t start_register2 = 0x34; // Error Mask registers
