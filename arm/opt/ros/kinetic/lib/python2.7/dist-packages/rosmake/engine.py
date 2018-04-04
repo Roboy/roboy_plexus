@@ -382,7 +382,7 @@ class RosMakeAll:
                 num_cpus = parallel_build.num_cpus()
                 local_env['ROS_PARALLEL_JOBS'] = "-j%d -l%d" % (num_cpus, num_cpus)
         local_env['SVN_CMDLINE'] = "svn --non-interactive"
-        cmd = ["bash", "-c", "cd %s && %s "%(self.rospack.get_path(package), make_command()) ] #UNIXONLY
+        cmd = ["scripts", "-c", "cd %s && %s "%(self.rospack.get_path(package), make_command()) ] #UNIXONLY
         if argument:
             cmd[-1] += argument
         self.printer.print_full_verbose (cmd)
