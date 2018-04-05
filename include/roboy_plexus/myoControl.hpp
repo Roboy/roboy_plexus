@@ -286,6 +286,12 @@ public:
 	bool playTrajectory(const char* file);
 
 	/**
+	 * Sets predisplacement for recording trajectories (50 by default)
+	 * @param value
+	 */
+	void setPredisplacement(int value);
+
+	/**
 	 * Enables/disables replaying trajectory
 	 * @param replay
 	 */
@@ -318,6 +324,7 @@ public:
 	void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
 			vector<float> &coeffs);
 
+
 	map<int,map<int,control_Parameters_t>> control_params;
 	int32_t* adc_base;
 	float weight_offset = 0;
@@ -331,6 +338,7 @@ private:
 	int iter = 0;
     bool recording = false; // keeps track of recording status
 	bool replay = true;
+	int predisplacement = 50;
 
 };
 

@@ -31,6 +31,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Empty.h>
+#include "std_msgs/Int32.h"
 #include <sensor_msgs/Imu.h>
 #include <thread>
 #include <map>
@@ -174,6 +175,12 @@ private:
     void SaveBehaviorCB(const roboy_communication_control::Behavior &msg);
 
     /**
+     * Callback updates the displacement for recording trajectories
+     * @param msg
+     */
+    void PredisplacementCB(const std_msgs::Int32 &msg);
+
+    /**
      * Service replays the trajectory
      * @param req
      * @param res
@@ -270,7 +277,8 @@ private:
 
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub, handCommand_sub, enablePlayback_sub;
+    ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
+            handCommand_sub, enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub, handStatus_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,

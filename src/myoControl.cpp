@@ -391,7 +391,7 @@ float MyoControl::recordTrajectories(
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     string filepath = trajectories_folder + name;
     // this will be filled with the trajectories
-    allToDisplacement(200);
+    allToDisplacement(predisplacement);
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -472,7 +472,7 @@ float MyoControl::startRecordTrajectories(
     recording = true;
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
-    allToDisplacement(50);
+    allToDisplacement(predisplacement);
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -624,6 +624,11 @@ bool MyoControl::playTrajectory(const char *file) {
     } while (sample<numberOfSamples && replay);
 
     return true;
+}
+
+void MyoControl::setPredisplacement(int value) {
+    predisplacement = value;
+    ROS_INFO_STREAM("Now recording with displacement" + predisplacement);
 }
 
 void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
