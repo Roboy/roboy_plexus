@@ -641,8 +641,8 @@ export PKG_CONFIG_PATH="{pkgcfg_path}$PKG_CONFIG_PATH"
 export PYTHONPATH="{pythonpath}$PYTHONPATH"
 """.format(**subs))
 
-        # generate setup.bash|zsh scripts
-        for shell in ['bash', 'zsh']:
+        # generate setup.scripts|zsh scripts
+        for shell in ['scripts', 'zsh']:
             setup_path = os.path.join(install_target, 'setup.%s' % shell)
             if install:
                 setup_path = prefix_destdir(setup_path, destdir)
@@ -1011,7 +1011,7 @@ def build_workspace_isolated(
         generated_env_sh = os.path.join(develspace, 'env.sh')
         generated_setup_util_py = os.path.join(develspace, '_setup_util.py')
         if not merge and pkg_develspace:
-            # generate env.sh and setup.sh|bash|zsh which relay to last devel space
+            # generate env.sh and setup.sh|scripts|zsh which relay to last devel space
             with open(generated_env_sh, 'w') as f:
                 f.write("""\
 #!/usr/bin/env sh
@@ -1021,7 +1021,7 @@ def build_workspace_isolated(
 """.format(os.path.join(pkg_develspace, 'env.sh')))
             os.chmod(generated_env_sh, stat.S_IXUSR | stat.S_IWUSR | stat.S_IRUSR)
 
-            for shell in ['sh', 'bash', 'zsh']:
+            for shell in ['sh', 'scripts', 'zsh']:
                 with open(os.path.join(develspace, 'setup.%s' % shell), 'w') as f:
                     f.write("""\
 #!/usr/bin/env {1}
@@ -1035,7 +1035,7 @@ def build_workspace_isolated(
                 os.remove(generated_setup_util_py)
 
         elif not pkg_develspace:
-            # generate env.sh and setup.sh|bash|zsh for an empty devel space
+            # generate env.sh and setup.sh|scripts|zsh for an empty devel space
             if 'CMAKE_PREFIX_PATH' in os.environ.keys():
                 variables = {
                     'CATKIN_GLOBAL_BIN_DESTINATION': 'bin',
@@ -1059,7 +1059,7 @@ def build_workspace_isolated(
             os.chmod(generated_env_sh, stat.S_IXUSR | stat.S_IWUSR | stat.S_IRUSR)
 
             variables = {'SETUP_DIR': develspace}
-            for shell in ['sh', 'bash', 'zsh']:
+            for shell in ['sh', 'scripts', 'zsh']:
                 with open(os.path.join(develspace, 'setup.%s' % shell), 'w') as f:
                     f.write(configure_file(
                         os.path.join(get_cmake_path(), 'templates', 'setup.%s.in' % shell),

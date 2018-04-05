@@ -55,6 +55,13 @@
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
 
+#define HEAD 0
+#define SHOULDER_LEFT 1
+#define SPINE_LEFT 2
+#define SHOULDER_RIGHT 3
+#define SPINE_RIGHT 4
+#define LEGS 5
+
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
 
 using namespace std;
@@ -72,7 +79,7 @@ class RoboyPlexus{
 public:
     RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, vector<int32_t*> &i2c_base = DEFAULT_POINTER_VECTOR,
                 int32_t* darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
-                int32_t *adc_base = nullptr);
+                int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
     ~RoboyPlexus();
 private:
     /**
@@ -292,10 +299,8 @@ private:
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
             gsensor_thread, motorAngleThread, magneticsShoulderThread, handIMUThread;
     bool keep_publishing = true;
-    int32_t *darkroom_base, *adc_base;
+    int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t*> myo_base, i2c_base, darkroom_ootx_addr;
-    vector<vector<int32_t>> deviceIDs;
-
     bool emergency_stop = false;
     vector<boost::shared_ptr<AM4096>> jointAngle; // joint angle sensors
     vector<boost::shared_ptr<A1335>> motorAngle; // motor angle of new motor units

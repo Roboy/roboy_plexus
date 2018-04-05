@@ -97,15 +97,39 @@
 #define I2C_0_END 0x39f
 
 /*
+ * Macros for device 'SWITCHES', class 'altera_avalon_pio'
+ * The macros are prefixed with 'SWITCHES_'.
+ * The prefix is the slave descriptor.
+ */
+#define SWITCHES_COMPONENT_TYPE altera_avalon_pio
+#define SWITCHES_COMPONENT_NAME SWITCHES
+#define SWITCHES_BASE 0x3a0
+#define SWITCHES_SPAN 16
+#define SWITCHES_END 0x3af
+#define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
+#define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define SWITCHES_CAPTURE 0
+#define SWITCHES_DATA_WIDTH 4
+#define SWITCHES_DO_TEST_BENCH_WIRING 0
+#define SWITCHES_DRIVEN_SIM_VALUE 0
+#define SWITCHES_EDGE_TYPE NONE
+#define SWITCHES_FREQ 50000000
+#define SWITCHES_HAS_IN 1
+#define SWITCHES_HAS_OUT 0
+#define SWITCHES_HAS_TRI 0
+#define SWITCHES_IRQ_TYPE NONE
+#define SWITCHES_RESET_VALUE 0
+
+/*
  * Macros for device 'LED', class 'altera_avalon_pio'
  * The macros are prefixed with 'LED_'.
  * The prefix is the slave descriptor.
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x3a0
+#define LED_BASE 0x3b0
 #define LED_SPAN 16
-#define LED_END 0x3af
+#define LED_END 0x3bf
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -127,9 +151,9 @@
  */
 #define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
 #define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
-#define ADC_LTC2308_0_BASE 0x3b0
+#define ADC_LTC2308_0_BASE 0x3c0
 #define ADC_LTC2308_0_SPAN 8
-#define ADC_LTC2308_0_END 0x3b7
+#define ADC_LTC2308_0_END 0x3c7
 
 /*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
@@ -142,7 +166,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1522678036
+#define SYSID_QSYS_TIMESTAMP 1522860986
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

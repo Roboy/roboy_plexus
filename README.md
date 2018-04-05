@@ -36,6 +36,8 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   ```
   ~/intelFPGA/17.1/embedded/embedded_command_shell.sh
   ```
+  
+  
 
 2. Status of the motors is published under the rostopic `roboy/middleware/MotorStatus`
   ``` 
@@ -72,3 +74,18 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   ```
   rqt
   ```
+# Daemon
+You can find the daemon in scripts/automaticRoboyPlexusLauncherDaemon, execute the following commands for installing the daemon on the fpga:
+```
+mv automaticRoboyPlexusLauncherDaemon /etc/init.d/
+echo "/etc/init.d/automaticRoboyPlexusLauncherDaemon start" >> ~/.bashrc
+```
+Edit the file /lib/systemd/system/serial-getty@.service and replace the line:
+```
+ExecStart=-/sbin/agetty --keep-baud 115200,38400,9600 %I $TERM
+```
+with auto-login:
+```
+ExecStart=-/sbin/agetty --autologin root --keep-baud 115200,38400,9600 %I $TERM
+```
+This will auto-login root when the fpga boots and the daemon is started via the bashrc entry.

@@ -133,23 +133,23 @@ UDPSocket::UDPSocket(const char *client_IP, int client_port, int server_port, bo
         // loop through all the results, make a socket and bind
         for (p = servinfo; p != NULL; p = p->ai_next) {
             if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-                fprintf(stderr, "talker: socket");
+                fprintf(stderr, "talker: socket\n");
                 continue;
             }
             if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *) &yes, sizeof(int)) == -1) {
-                fprintf(stderr, "setsockopt");
+                fprintf(stderr, "setsockopt\n");
                 continue;
             };
             if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
                 close(sockfd);
-                fprintf(stderr, "listener: bind");
+                fprintf(stderr, "listener: bind\n");
                 continue;
             }
             break;
         }
 
         if (p == NULL) {
-            fprintf(stderr, "talker: failed to bind socket");
+            fprintf(stderr, "talker: failed to bind socket\n");
             return;
         }
 
@@ -163,7 +163,7 @@ UDPSocket::UDPSocket(const char *client_IP, int client_port, int server_port, bo
 
         initialized = true;
     }else{
-        fprintf(stderr, "could not create UDP socket");
+        fprintf(stderr, "could not create UDP socket\n");
     }
 }
 
@@ -185,14 +185,14 @@ UDPSocket::UDPSocket(int port, int broadcastIP, bool broadcaster) {
 
     // creat UDP socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        fprintf(stderr, "talker: socket");
+        fprintf(stderr, "talker: socket\n");
         return;
     }
 
     // Allow broadcasts
     int yes = true;
     if  (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, (const void *)&yes, sizeof(int)) == -1) {
-        fprintf(stderr, "broadcasting not allowed");
+        fprintf(stderr, "broadcasting not allowed\n");
         return;
     }
 
@@ -203,7 +203,7 @@ UDPSocket::UDPSocket(int port, int broadcastIP, bool broadcaster) {
         // Bind an address to our socket, so that client programs can listen to this server
         if (bind(sockfd, (struct sockaddr *) &client_addr, client_addr_len) == -1) {
             close(sockfd);
-            fprintf(stderr, "broadcaster bind error");
+            fprintf(stderr, "broadcaster bind error\n");
             return;
         }
     }
@@ -227,14 +227,14 @@ UDPSocket::UDPSocket(int port, bool broadcaster) {
 
     // creat UDP socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        fprintf(stderr, "talker: socket");
+        fprintf(stderr, "talker: socket\n");
         return;
     }
 
     // Allow broadcasts
     int yes = true;
     if  (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, (const void *)&yes, sizeof(int)) == -1) {
-        fprintf(stderr, "broadcasting not allowed");
+        fprintf(stderr, "broadcasting not allowed\n");
         return;
     }
 
@@ -245,7 +245,7 @@ UDPSocket::UDPSocket(int port, bool broadcaster) {
         // Bind an address to our socket, so that client programs can listen to this server
         if (bind(sockfd, (struct sockaddr *) &client_addr, client_addr_len) == -1) {
             close(sockfd);
-            fprintf(stderr, "broadcaster bind error");
+            fprintf(stderr, "broadcaster bind error\n");
             return;
         }
     }
@@ -478,7 +478,7 @@ bool UDPSocket::sendUDPToClient() {
 bool UDPSocket::broadcastUDP() {
     if ((numbytes = sendto(sockfd, buf, numbytes, 0, (struct sockaddr *) &broadcast_addr, broadcast_addr_len)) ==
         -1) {
-        printf("could not broadcast");
+        printf("could not broadcast\n");
         return false;
     }
     return true;
