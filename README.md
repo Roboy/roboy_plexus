@@ -77,8 +77,9 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 # Daemon
 You can find the daemon in scripts/automaticRoboyPlexusLauncherDaemon, execute the following commands for installing the daemon on the fpga:
 ```
-mv automaticRoboyPlexusLauncherDaemon /etc/init.d/
+sudo mv automaticRoboyPlexusLauncherDaemon /etc/init.d/
 echo "/etc/init.d/automaticRoboyPlexusLauncherDaemon start" >> ~/.bashrc
+sudo ln -s /home/root/roboy_plexus /usr/local/bin/roboy_plexus 
 ```
 Edit the file /lib/systemd/system/serial-getty@.service and replace the line:
 ```
