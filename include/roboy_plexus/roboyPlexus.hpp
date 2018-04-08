@@ -88,6 +88,8 @@ public:
 
     ~RoboyPlexus();
 
+    string getBodyPart();
+
 private:
     /**
      * Publishes IMU data
@@ -374,9 +376,13 @@ private:
 
     boost::shared_ptr<TLV493D> tlv493D0[2];
 
+    bool executeAction(string actions);
     bool executeActions(vector<string> actions);
 
     vector<string> expandBehavior(string name);
+
+    string body_part;
+
 };
 
 /** @} */ // end of group1

@@ -6,7 +6,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         adc_base(adc_base), myoControl(myoControl), switches_base(switches_base){
 
     id = IORD(switches_base,0);
-    string body_part;
+//    string body_part;
     switch(id){
         case HEAD:
             body_part = "head";
@@ -176,30 +176,31 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
 
+    // TODO add body part to start record
     startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1, &RoboyPlexus::StartRecordTrajectoryCB, this);
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1, &RoboyPlexus::StopRecordTrajectoryCB, this);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
     enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
     predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB, this);
 
-    motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
-    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
-    emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop", &RoboyPlexus::EmergencyStopService,
+    motorConfig_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/MotorConfig/", &RoboyPlexus::MotorConfigService, this);
+    controlMode_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
+    emergencyStop_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/EmergencyStop", &RoboyPlexus::EmergencyStopService,
                                              this);
 
-    setDisplacementForAll_srv = nh->advertiseService("/roboy/middleware/SetDisplacementForAll",
+    setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
-    replayTrajectory_srv = nh->advertiseService("roboy/control/ReplayTrajectory",
+    replayTrajectory_srv = nh->advertiseService("/roboy/" + body_part + "/control/ReplayTrajectory",
                                                     &RoboyPlexus::ReplayTrajectoryService, this);
-    executeActions_srv = nh->advertiseService("roboy/control/ExecuteActions",
+    executeActions_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteActions",
                                                &RoboyPlexus::ExecuteActionsService, this);
-    executeBehavior_srv = nh->advertiseService("roboy/control/ExecuteBehavior",
+    executeBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteBehavior",
                                                &RoboyPlexus::ExecuteBehaviorService, this);
-    listExistingTrajectories_srv = nh->advertiseService("roboy/control/ListExistingTrajectories",
+    listExistingTrajectories_srv = nh->advertiseService("/roboy/" + body_part + "/control/ListExistingTrajectories",
                                                         &RoboyPlexus::ListExistingItemsService, this);
-    listExistingBehaviors_srv = nh->advertiseService("roboy/control/ListExistingBehaviors",
+    listExistingBehaviors_srv = nh->advertiseService("/roboy/" + body_part + "/control/ListExistingBehaviors",
                                                         &RoboyPlexus::ListExistingItemsService, this);
-    expandBehavior_srv = nh->advertiseService("roboy/control/ExpandBehavior",
+    expandBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExpandBehavior",
                                                      &RoboyPlexus::ExpandBehaviorService, this);
 
     motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
@@ -273,6 +274,9 @@ RoboyPlexus::~RoboyPlexus() {
         close(file);
 }
 
+string RoboyPlexus::getBodyPart() {
+    return body_part;
+}
 void RoboyPlexus::gsensorPublisher() {
     ros::Rate rate(100);
     while (keep_publishing) {
@@ -718,8 +722,12 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16
 
 void RoboyPlexus::StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg) {
 
+    if (std::find(msg->body_parts.begin(), msg->body_parts.end(), body_part) != msg->body_parts.end())
+    {
+        return;
+    }
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
-    string name = msg->name;
+    string name = body_part + "_" + msg->name;
     vector<int> idList(begin(msg->idList), end(msg->idList));
     map<int, vector<float>> trajectories;
 
@@ -740,9 +748,11 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_communication_control::Behavior &ms
 
 bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
                              roboy_communication_control::PerformMovement::Response &res) {
-    string file = myoControl->trajectories_folder + req.value;
-    const char *fileName = file.c_str();
-    res.success = myoControl->playTrajectory(fileName);
+//    string file = myoControl->trajectories_folder + req.value;
+//    const char *fileName = file.c_str();
+//    res.success = myoControl->playTrajectory(fileName);
+
+    res.success = executeAction(req.value);
     return res.success;
 }
 
@@ -758,7 +768,7 @@ bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBeh
                                         roboy_communication_control::PerformBehavior::Response &res) {
     vector<string> actions = expandBehavior(req.name);
     res.success = executeActions(actions);
-    ROS_INFO("reset replay");
+//    ROS_INFO("reset replay");
 
     return res.success;
 
@@ -768,21 +778,29 @@ bool RoboyPlexus::executeActions(vector<string> actions) {
 
     bool success;
     for (string actionName: actions) {
-        if (actionName.find("pause") != std::string::npos) {
+        success = executeAction(actionName);
+    }
+    return success;
+}
+
+bool RoboyPlexus::executeAction(string actionName) {
+
+    bool success;
+    if (actionName.find("pause") != std::string::npos) {
             string delimiter = "_";
             int pause = stoi(actionName.substr(0, actionName.find(delimiter)));
             ros::Duration(pause).sleep();
             success = true && success;
-        }
-        else if (actionName.find("relax") != std::string::npos) {
-            myoControl->allToDisplacement(0);
-            success = true && success;
-        }
-        else {
-            actionName = myoControl->trajectories_folder + actionName;
-            success = myoControl->playTrajectory(actionName.c_str()) && success;
-        }
     }
+    else if (actionName.find("relax") != std::string::npos) {
+        myoControl->allToDisplacement(0);
+        success = true && success;
+    }
+    else {
+        actionName = myoControl->trajectories_folder + actionName;
+        success = myoControl->playTrajectory(actionName.c_str()) && success;
+    }
+
     return success;
 }
 
