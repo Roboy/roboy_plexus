@@ -10,8 +10,6 @@
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
-#include <roboy_communication_middleware/HandStatus.h>
-#include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MagneticSensor.h>
 #include <roboy_communication_middleware/MotorAngle.h>
@@ -130,21 +128,10 @@ private:
     void magneticShoulderJointPublisher();
 
     /**
-     * Publishes hand status data
-     */
-    void handStatusPublisher();
-
-    /**
      * Callback for motor command
      * @param msg motor command
      */
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
-
-    /**
-     * Callback for hand command
-     * @param msg hand command
-     */
-    void handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg);
 
     /**
      * Service for changing motor PID parameters
@@ -316,9 +303,9 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
-            handCommand_sub, enablePlayback_sub, predisplacement_sub;
+            enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
-            motorAngle_pub, magneticSensor_pub, handStatus_pub;
+            motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
@@ -328,7 +315,7 @@ private:
     boost::shared_ptr<MyoControl> myoControl;
     HandControlPtr handControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, magneticsShoulderThread, handIMUThread;
+            gsensor_thread, motorAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;

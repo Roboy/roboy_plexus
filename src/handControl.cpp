@@ -1,33 +1,167 @@
 #include "roboy_plexus/handControl.hpp"
 
-HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs):deviceIDs(deviceIDs){
+HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):deviceIDs(deviceIDs), id(id){
+
+    string hand;
+    if(!id)
+        hand = "left";
+    else
+        hand = "right";
+
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, ("handControl_"+hand).c_str());
+        ros::start();
+    }
+
+    nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     i2c = new I2C(i2c_base);
-    int board = 0;
-    for(auto device:deviceIDs
-            ){
+    for(auto device:deviceIDs){
         i2c->write(device,255<<24,1);
         if(!i2c->ack_error()) {
             ROS_INFO("arm board with deviceID %x is active", device);
-            vector<uint8_t> pos = {90,90,90,90,90};
-            command(pos,board);
-            board++;
         }else
             ROS_WARN("arm board with deviceID %x is not active", device);
     }
+    neutralHand();
+
+    handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
+    handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
+    fingerCommand_sub = nh->subscribe("/roboy/middleware/FingerCommand", 1, &HandControl::fingerCommandCB, this);
+
+    handIMUThread = boost::shared_ptr<std::thread>(
+            new std::thread(&HandControl::handStatusPublisher, this));
+    handIMUThread->detach();
+}
+
+HandControl::~HandControl(){
+    keep_publishing = false;
+    if(handIMUThread->joinable()){
+        ROS_INFO("waiting for IMU thread to terminate");
+        handIMUThread->join();
+    }
+}
+
+void HandControl::handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg) {
+    if(msg->id == id){
+        vector<uint8_t> setPoint;
+        stringstream str;
+        str << "hand command: ";
+        for(auto s:msg->setPoint){
+            if(s<20)
+                setPoint.push_back(20);
+            if(s>160)
+                setPoint.push_back(160);
+            if(s>=20 && s<=160)
+                setPoint.push_back(s);
+            str << (int)setPoint.back() << "\t";
+        }
+        ROS_INFO_STREAM(str.str());
+        command(setPoint);
+    }
+}
+
+void HandControl::fingerCommandCB(const roboy_communication_middleware::FingerCommand::ConstPtr &msg){
+    if(msg->id == id){
+        if(msg->finger>3){
+            ROS_ERROR("invalid finger, use THUMB(0), INDEXFINGER(1), MIDDLEFINGER(2), RINGLITTLE(3)");
+            return;
+        }
+        fingerControl(msg->finger, msg->angles[0], msg->angles[1], msg->angles[2], msg->angles[3]);
+    }
+}
+
+void HandControl::handStatusPublisher(){
+    ros::Rate rate(2);
+    while (keep_publishing) {
+        roboy_communication_middleware::HandStatus msg;
+        msg.id = id;
+        vector<HandControl::SensorFrame> sensor_data;
+        readSensorData(sensor_data);
+        for(int arm_board=0;arm_board<sensor_data.size();arm_board++){
+            msg.current.push_back(sensor_data[arm_board].current[0]);
+            msg.current.push_back(sensor_data[arm_board].current[1]);
+            msg.current.push_back(sensor_data[arm_board].current[2]);
+            msg.current.push_back(sensor_data[arm_board].current[3]);
+            msg.current.push_back(sensor_data[arm_board].current[4]);
+            msg.current.push_back(sensor_data[arm_board].current[5]);
+            msg.gyro_x.push_back(sensor_data[arm_board].gyro[0]);
+            msg.gyro_y.push_back(sensor_data[arm_board].gyro[1]);
+            msg.gyro_z.push_back(sensor_data[arm_board].gyro[2]);
+            msg.acc_x.push_back(sensor_data[arm_board].acc[0]);
+            msg.acc_y.push_back(sensor_data[arm_board].acc[1]);
+            msg.acc_z.push_back(sensor_data[arm_board].acc[2]);
+        }
+        handStatus_pub.publish(msg);
+        rate.sleep();
+    }
+}
+
+bool HandControl::fingerControl(uint8_t finger, uint8_t alpha, uint8_t beta, uint8_t gamma, uint8_t zeta){
+    float r_a = 1.43f/2.0f, r_b = 0.9f/2.0, r_c = 0.83f/2.0f;
+    uint8_t motor[4];
+    motor[3] = (alpha * r_a) + (beta * r_b) + (gamma * r_c);
+    motor[2] = (-beta * r_b) + (gamma * r_c);
+    motor[1] = 160 - gamma * r_c;
+    motor[0] = zeta;
+
+    // limit check
+    for(uint i=0;i<4;i++){
+        if(motor[i]<20)
+            motor[i] = 20;
+        if(motor[i]>160)
+            motor[i] = 160;
+    }
+
+    switch(finger){
+        case THUMB:
+            frame[1].angleCommand[3] = motor[3];
+            frame[1].angleCommand[2] = motor[2];
+            frame[1].angleCommand[1] = motor[1];
+            frame[1].angleCommand[0] = motor[0];
+            ROS_INFO("thumb command: %d %d %d %d", motor[0],motor[1],motor[2],motor[3]);
+            return write(frame[1],1);
+        case INDEXFINGER:
+            frame[2].angleCommand[3] = motor[3];
+            frame[2].angleCommand[2] = motor[2];
+            frame[2].angleCommand[1] = motor[1];
+            frame[2].angleCommand[0] = motor[0];
+            ROS_INFO("index finger command: %d %d %d %d", motor[0],motor[1],motor[2],motor[3]);
+            return write(frame[2],2);
+        case MIDDLEFINGER:
+            frame[3].angleCommand[3] = motor[3];
+            frame[3].angleCommand[2] = motor[2];
+            frame[3].angleCommand[1] = motor[1];
+            frame[3].angleCommand[0] = motor[0];
+            ROS_INFO("middle finger command: %d %d %d %d", motor[0],motor[1],motor[2],motor[3]);
+            return write(frame[3],3);
+        case RINGLITTLEFINGER:
+            frame[0].angleCommand[3] = motor[3];
+            frame[0].angleCommand[2] = motor[2];
+            frame[0].angleCommand[1] = motor[1];
+            frame[0].angleCommand[0] = motor[0];
+            ROS_INFO("ring little finger command: %d %d %d %d", motor[0],motor[1],motor[2],motor[3]);
+            return write(frame[0],0);
+    }
+}
+
+void HandControl::neutralHand(){
+    vector<uint8_t> pos = {90,90,90,90,110,90,90,90,90,125,90,90,90,90,80,90,90,90,90,130};
+    command(pos);
 }
 
 bool HandControl::command(vector<uint8_t> &setPoint){
     int j=0;
     vector<HandControl::CommandFrame> commands;
     for(int i=0;i<setPoint.size()/5;i++){
-        HandControl::CommandFrame frame;
-        frame.angleCommand[0] = setPoint[j];
-        frame.angleCommand[1] = setPoint[j+1];
-        frame.angleCommand[2] = setPoint[j+2];
-        frame.angleCommand[3] = setPoint[j+3];
-        frame.angleCommand[4] = setPoint[j+4];
-        commands.push_back(frame);
+        frame[i].angleCommand[0] = setPoint[j];
+        frame[i].angleCommand[1] = setPoint[j+1];
+        frame[i].angleCommand[2] = setPoint[j+2];
+        frame[i].angleCommand[3] = setPoint[j+3];
+        frame[i].angleCommand[4] = setPoint[j+4];
+        commands.push_back(frame[i]);
         j+=5;
     }
     return write(commands);
@@ -35,14 +169,13 @@ bool HandControl::command(vector<uint8_t> &setPoint){
 
 bool HandControl::command(vector<uint8_t> &setPoint, int board){
     int j=0;
-    HandControl::CommandFrame frame;
-    frame.angleCommand[0] = setPoint[j];
-    frame.angleCommand[1] = setPoint[j+1];
-    frame.angleCommand[2] = setPoint[j+2];
-    frame.angleCommand[3] = setPoint[j+3];
-    frame.angleCommand[4] = setPoint[j+4];
+    frame[board].angleCommand[0] = setPoint[j];
+    frame[board].angleCommand[1] = setPoint[j+1];
+    frame[board].angleCommand[2] = setPoint[j+2];
+    frame[board].angleCommand[3] = setPoint[j+3];
+    frame[board].angleCommand[4] = setPoint[j+4];
     j+=5;
-    return write(frame,board);
+    return write(frame[board],board);
 }
 
 bool HandControl::readSensorData(vector<SensorFrame> &sensor_data){

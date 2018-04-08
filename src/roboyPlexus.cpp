@@ -88,9 +88,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         case SHOULDER_LEFT: {
-            handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &RoboyPlexus::handCommandCB, this);
-            handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",
-                                                                                       1);
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
@@ -100,9 +97,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 handControl.reset(new HandControl(i2c_base[4], deviceIDs));
-                handIMUThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::handStatusPublisher, this));
-                handIMUThread->detach();
             }
             { // start motor angle publisher for two myoBricks
                 vector<uint8_t> deviceIDs = {0xC,0xD};
@@ -114,9 +108,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         case SHOULDER_RIGHT: {
-            handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &RoboyPlexus::handCommandCB, this);
-            handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",
-                                                                                       1);
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
@@ -126,9 +117,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 handControl.reset(new HandControl(i2c_base[4], deviceIDs));
-                handIMUThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::handStatusPublisher, this));
-                handIMUThread->detach();
             }
             { // start motor angle publisher for two myoBricks
                 vector<uint8_t> deviceIDs = {0xC,0xD};
@@ -534,32 +522,6 @@ void RoboyPlexus::magneticShoulderJointPublisher(){
     }
 }
 
-void RoboyPlexus::handStatusPublisher(){
-    ros::Rate rate(60);
-    while (keep_publishing) {
-        roboy_communication_middleware::HandStatus msg;
-        msg.id = id;
-        vector<HandControl::SensorFrame> sensor_data;
-        handControl->readSensorData(sensor_data);
-        for(int arm_board=0;arm_board<sensor_data.size();arm_board++){
-            msg.current.push_back(sensor_data[arm_board].current[0]);
-            msg.current.push_back(sensor_data[arm_board].current[1]);
-            msg.current.push_back(sensor_data[arm_board].current[2]);
-            msg.current.push_back(sensor_data[arm_board].current[3]);
-            msg.current.push_back(sensor_data[arm_board].current[4]);
-            msg.current.push_back(sensor_data[arm_board].current[5]);
-            msg.gyro_x.push_back(sensor_data[arm_board].gyro[0]);
-            msg.gyro_y.push_back(sensor_data[arm_board].gyro[1]);
-            msg.gyro_z.push_back(sensor_data[arm_board].gyro[2]);
-            msg.acc_x.push_back(sensor_data[arm_board].acc[0]);
-            msg.acc_y.push_back(sensor_data[arm_board].acc[1]);
-            msg.acc_z.push_back(sensor_data[arm_board].acc[2]);
-        }
-        handStatus_pub.publish(msg);
-        rate.sleep();
-    }
-}
-
 void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg) {
     if(msg->id==id) {
         uint i = 0;
@@ -580,16 +542,6 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
             }
             i++;
         }
-    }
-}
-
-void RoboyPlexus::handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg) {
-    if(msg->id == id){
-        vector<uint8_t> setPoint;
-        for(auto s:msg->setPoint){
-            setPoint.push_back(s);
-        }
-        handControl->command(setPoint);
     }
 }
 

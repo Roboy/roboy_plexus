@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 
 
 ////
-//    vector<uint8_t> deviceIDs = {0x50,0x51,0x52,0x53};
+//    vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
 //    HandControl handControl(h2p_lw_i2c_addr[4],deviceIDs);
 //    handControl.test();
 
