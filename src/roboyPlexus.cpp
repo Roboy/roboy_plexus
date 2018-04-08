@@ -722,10 +722,12 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16
 
 void RoboyPlexus::StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg) {
 
-    if (std::find(msg->body_parts.begin(), msg->body_parts.end(), body_part) != msg->body_parts.end())
+    if (std::find(msg->body_parts.begin(), msg->body_parts.end(), body_part) == msg->body_parts.end())
     {
+        ROS_INFO_STREAM("Not my call, not recording!");
         return;
     }
+    ROS_INFO_STREAM("Recording a trajectory");
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
     string name = body_part + "_" + msg->name;
     vector<int> idList(begin(msg->idList), end(msg->idList));
