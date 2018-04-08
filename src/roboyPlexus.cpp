@@ -180,6 +180,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1, &RoboyPlexus::StopRecordTrajectoryCB, this);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
     enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
+    predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB, this);
 
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
     controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
@@ -787,6 +788,10 @@ bool RoboyPlexus::executeActions(vector<string> actions) {
 
 void RoboyPlexus::EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg) {
     myoControl->setReplay(msg->data);
+}
+
+void RoboyPlexus::PredisplacementCB(const std_msgs::Int32 &msg) {
+    myoControl->setPredisplacement(msg.data);
 }
 
 
