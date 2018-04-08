@@ -35,7 +35,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
     ifile.close();
-    string node_name = "roboy_fpga_" + ethaddr;
+    string node_name = "roboy_fpga_" + body_part + "_" + ethaddr;
     replace(node_name.begin(), node_name.end(), ':', '_');
 
     if (!ros::isInitialized()) {
@@ -50,11 +50,41 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         case HEAD:{
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
-            vector<uint8_t> deviceIDs = {0xC};
+            vector<uint8_t> deviceIDs = {0xC, 0xD, 0xE, 0xF};
             motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
             motorAngleThread = boost::shared_ptr<std::thread>(
                     new std::thread(&RoboyPlexus::motorAnglePublisher, this));
             motorAngleThread->detach();
+            break;
+        }
+
+        case SPINE_LEFT: {
+            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+                                                                                       1);
+            { // start motor angle publisher for three myoBricks
+                vector<uint8_t> deviceIDs = {0xC,0xD,0xE};
+                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
+                motorAngleThread = boost::shared_ptr<std::thread>(
+                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+                motorAngleThread->detach();
+            }
+            break;
+        }
+        case SPINE_RIGHT: {
+            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+                                                                                       1);
+            { // start motor angle publisher for three myoBricks
+                vector<uint8_t> deviceIDs = {0xC,0xD,0xE};
+                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
+                motorAngleThread = boost::shared_ptr<std::thread>(
+                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+                motorAngleThread->detach();
+            }
+            break;
+        }
+        case LEGS: {
+            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
+                    "/roboy/middleware/JointStatus", 1);
             break;
         }
         case SHOULDER_LEFT: {
@@ -76,18 +106,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             { // start motor angle publisher for two myoBricks
                 vector<uint8_t> deviceIDs = {0xC,0xD};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
-            }
-            break;
-        }
-        case SPINE_LEFT: {
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                       1);
-            { // start motor angle publisher for three myoBricks
-                vector<uint8_t> deviceIDs = {0xC,0xD,0xE};
                 motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
                 motorAngleThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
@@ -119,23 +137,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
                 motorAngleThread->detach();
             }
-            break;
-        }
-        case SPINE_RIGHT: {
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                       1);
-            { // start motor angle publisher for three myoBricks
-                vector<uint8_t> deviceIDs = {0xC,0xD,0xE};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
-            }
-            break;
-        }
-        case LEGS: {
-            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
-                    "/roboy/middleware/JointStatus", 1);
             break;
         }
         default: {
