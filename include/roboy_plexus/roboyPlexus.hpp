@@ -48,6 +48,7 @@
 #include <dirent.h>
 //#include "roboy_plexus/udpServer.hpp"
 #include "roboy_plexus/handControl.hpp"
+#include <sys/stat.h>
 
 
 #define NUM_SENSORS 32
@@ -85,6 +86,8 @@ public:
                 int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
 
     ~RoboyPlexus();
+
+    string getBodyPart();
 
 private:
     /**
@@ -361,9 +364,13 @@ private:
 
     boost::shared_ptr<TLV493D> tlv493D0[2];
 
+    bool executeAction(string actions);
     bool executeActions(vector<string> actions);
 
     vector<string> expandBehavior(string name);
+
+    string body_part;
+
 };
 
 /** @} */ // end of group1
