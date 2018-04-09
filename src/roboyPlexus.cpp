@@ -821,6 +821,11 @@ bool RoboyPlexus::ListExistingItemsService(roboy_communication_control::ListItem
     // read filenames in the specified folder
     DIR* dirp = opendir(req.name.c_str());
     struct dirent * dp;
+    if (!dirp) {
+        mkdir(req.name.c_str(), S_IRWXU|S_IRWXG|S_IRWXO);
+        ROS_INFO("created trajectories folder");
+        dirp = opendir(req.name.c_str());
+    }
     while ((dp = readdir(dirp)) != NULL) {
         if(dp->d_type!=DT_DIR) {
             res.items.push_back(dp->d_name);

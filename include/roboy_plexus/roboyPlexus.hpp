@@ -50,6 +50,7 @@
 #include <dirent.h>
 //#include "roboy_plexus/udpServer.hpp"
 #include "roboy_plexus/handControl.hpp"
+#include <sys/stat.h>
 
 
 #define NUM_SENSORS 32
