@@ -3,7 +3,10 @@
 A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs){
     i2c = new I2C(i2c_base);
     for(auto device:deviceIDs){
-        clearStatusRegisters(device);
+        if(!clearStatusRegisters(device))
+            ROS_WARN("failed to clear status register for A1335 with deviceID %x", device);
+        else
+            ROS_INFO("motor angle sensor active with deviceID %x", device);
     }
 }
 

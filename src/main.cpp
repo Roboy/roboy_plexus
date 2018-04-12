@@ -88,14 +88,14 @@ int main(int argc, char *argv[]) {
     h2p_lw_darkroom_ootx_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOMOOTXDECODER_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
-//    if (!ros::isInitialized()) {
-//        int argc = 0;
-//        char **argv = NULL;
-//        ros::init(argc, argv, "roboy_plexus");
-//        ros::start();
-//    }
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "roboy_plexus");
+        ros::start();
+    }
 //
-//    I2C i2c(h2p_lw_i2c_addr[3]);
+//    I2C i2c(h2p_lw_i2c_addr[4]);
 //    vector<uint8_t> active_devices;
 //    i2c.checkAddressSpace(0,127,active_devices);
 //    ROS_INFO("found %ld active devices", active_devices.size());
@@ -104,24 +104,24 @@ int main(int argc, char *argv[]) {
 //    cout << endl;
 //
 //    vector<uint8_t> deviceIDs = {0xC,0xD,0xE,0xF};
-//    A1335 motorAngle(h2p_lw_i2c_addr[3],deviceIDs);
+//    A1335 motorAngle(h2p_lw_i2c_addr[4],deviceIDs);
 //    while(ros::ok()) {
 //        vector<A1335State> state;
 //        motorAngle.readAngleData(state);
 //        stringstream str;
 //        str<<endl;
 //        for (auto s:state) {
-////            str << "Motor Angle Sensor on i2C address " << (int) s.address << " is " << (s.isOK ? "ok" : "not ok")
-////                << endl;
+//            str << "Motor Angle Sensor on i2C address " << (int) s.address << " is " << (s.isOK ? "ok" : "not ok")
+//                << endl;
 //            str << "angle:         " << s.angle << endl;
-////            str << "angle_flags:   " << motorAngle.decodeFlag(s.angle_flags, ANGLES_FLAGS) << endl;
-////            str << "err_flags:     " << motorAngle.decodeFlag(s.err_flags, ERROR_FLAGS) << endl;
-////            str << "fieldStrength: " << s.fieldStrength << endl;
-////            str << "status_flags:  " << motorAngle.decodeFlag(s.status_flags, STATUS_FLAGS) << endl;
-////            str << "xerr_flags:    " << motorAngle.decodeFlag(s.xerr_flags, XERROR_FLAGS) << endl;
+//            str << "angle_flags:   " << motorAngle.decodeFlag(s.angle_flags, ANGLES_FLAGS) << endl;
+//            str << "err_flags:     " << motorAngle.decodeFlag(s.err_flags, ERROR_FLAGS) << endl;
+//            str << "fieldStrength: " << s.fieldStrength << endl;
+//            str << "status_flags:  " << motorAngle.decodeFlag(s.status_flags, STATUS_FLAGS) << endl;
+//            str << "xerr_flags:    " << motorAngle.decodeFlag(s.xerr_flags, XERROR_FLAGS) << endl;
 ////            msg.temperature.push_back(s.temp);
 //        }
-//        ROS_INFO_STREAM_THROTTLE(0.1,str.str());
+//        ROS_INFO_STREAM_THROTTLE(1,str.str());
 //    }
 
 

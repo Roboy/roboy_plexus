@@ -12,7 +12,6 @@ HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):
         int argc = 0;
         char **argv = NULL;
         ros::init(argc, argv, ("handControl_"+hand).c_str());
-        ros::start();
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
