@@ -45,21 +45,41 @@ HandControl::~HandControl(){
 }
 
 void HandControl::handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg) {
-    if(msg->id == id){
-        vector<uint8_t> setPoint;
+    if(msg->id == id) {
+        vector <uint8_t> setPoint;
         stringstream str;
         str << "hand command: ";
-        for(auto s:msg->setPoint){
-            if(s<20)
-                setPoint.push_back(20);
-            if(s>160)
-                setPoint.push_back(160);
-            if(s>=20 && s<=160)
-                setPoint.push_back(s);
-            str << (int)setPoint.back() << "\t";
+        if (msg->motorid.empty()) {
+            for (auto s:msg->setPoint) {
+                if (s < 20)
+                    setPoint.push_back(20);
+                if (s > 160)
+                    setPoint.push_back(160);
+                if (s >= 20 && s <= 160)
+                    setPoint.push_back(s);
+                str << (int) setPoint.back() << "\t";
+                ROS_INFO_STREAM(str.str());
+
+            }
+            command(setPoint);
+        }else{
+            if(msg->motorid.size()==msg->setPoint.size()) {
+                int i = 0;
+                bool update[] = {false,false,false,false};
+                for (auto m:msg->motorid) {
+                    frame[m / 20].angleCommand[m % 5] = msg->setPoint[i];
+                    str << "motor " << (int) m << ": " << (int) msg->setPoint[i] << "\t";
+                    update[m / 20] = true;
+                    i++;
+                }
+                ROS_INFO_STREAM(str.str());
+                for(int i=0;i<4;i++)
+                    if(update[i])
+                        write(frame[i],i);
+            }else{
+                ROS_ERROR("motorid and setpoint must have the same size!!!");
+            }
         }
-        ROS_INFO_STREAM(str.str());
-        command(setPoint);
     }
 }
 
@@ -148,7 +168,7 @@ bool HandControl::fingerControl(uint8_t finger, uint8_t alpha, uint8_t beta, uin
 }
 
 void HandControl::neutralHand(){
-    vector<uint8_t> pos = {90,90,90,90,110,90,90,90,90,125,90,90,90,90,80,90,90,90,90,130};
+    vector<uint8_t> pos = {90,90,90,90,90,90,90,90,90,90,90,90,90,90,90,90,90,90,90,90};
     command(pos);
 }
 
