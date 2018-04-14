@@ -552,7 +552,6 @@ void MyoControl::setReplay(bool status) {
 
 bool MyoControl::playTrajectory(const char *file) {
 
-    ROS_INFO_STREAM(file);
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
         ROS_ERROR("could not load xml trajectory %s", file);
@@ -566,7 +565,7 @@ bool MyoControl::playTrajectory(const char *file) {
 
     // Constructs the myoMuscles by parsing custom xml.
 
-    ROS_INFO_STREAM("Found trajectory " + string(file));
+//    ROS_INFO_STREAM("Found trajectory " + string(file));
 
     TiXmlElement *trajectory_it = NULL;
 
