@@ -173,6 +173,15 @@ private:
                               std_srvs::SetBool::Response &res);
 
     /**
+     * Service for system check
+     * @param req
+     * @param res
+     * @return
+     */
+    bool SystemCheckService(roboy_communication_middleware::SystemCheckService::Request &req,
+                                 roboy_communication_middleware::SystemCheckService::Response &res);
+
+    /**
      * Motor setpoints trajectory recording callback.
      * @param msg
      * @return

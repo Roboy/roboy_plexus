@@ -66,9 +66,9 @@ void HandControl::handCommandCB(const roboy_communication_middleware::HandComman
                 int i = 0;
                 bool update[] = {false,false,false,false};
                 for (auto m:msg->motorid) {
-                    frame[m / 20].angleCommand[m % 5] = msg->setPoint[i];
+                    frame[m / 5].angleCommand[m % 5] = msg->setPoint[i];
                     str << "motor " << (int) m << ": " << (int) msg->setPoint[i] << "\t";
-                    update[m / 20] = true;
+                    update[m / 5] = true;
                     i++;
                 }
                 ROS_INFO_STREAM(str.str());
@@ -119,7 +119,7 @@ void HandControl::handStatusPublisher(){
 }
 
 bool HandControl::fingerControl(uint8_t finger, uint8_t alpha, uint8_t beta, uint8_t gamma, uint8_t zeta){
-    float r_a = 1.43f/2.0f, r_b = 0.9f/2.0, r_c = 0.83f/2.0f;
+    float r_a = 1.43f, r_b = 0.9f, r_c = 0.83f;
     uint8_t motor[4];
     motor[3] = (alpha * r_a) + (beta * r_b) + (gamma * r_c);
     motor[2] = (-beta * r_b) + (gamma * r_c);

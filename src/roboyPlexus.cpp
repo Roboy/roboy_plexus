@@ -96,15 +96,15 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/MagneticSensor", 1, this);
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[1], deviceIDs));
+                handControl.reset(new HandControl(i2c_base[3], deviceIDs));
             }
-//            { // start motor angle publisher for two myoBricks
-//                vector<uint8_t> deviceIDs = {0xC,0xD};
-//                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-//                motorAngleThread = boost::shared_ptr<std::thread>(
-//                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-//                motorAngleThread->detach();
-//            }
+            { // start motor angle publisher for two myoBricks
+                vector<uint8_t> deviceIDs = {0xC,0xD};
+                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], deviceIDs)));
+                motorAngleThread = boost::shared_ptr<std::thread>(
+                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+                motorAngleThread->detach();
+            }
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -182,7 +182,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
     predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB, this);
 
-    motorConfig_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/MotorConfig/", &RoboyPlexus::MotorConfigService, this);
+    motorConfig_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/MotorConfig", &RoboyPlexus::MotorConfigService, this);
     controlMode_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/ControlMode", &RoboyPlexus::ControlModeService, this);
     emergencyStop_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/EmergencyStop", &RoboyPlexus::EmergencyStopService,
                                              this);
@@ -675,6 +675,74 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         emergency_stop = false;
     }
     return true;
+}
+
+bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheckService::Request &req,
+                                    roboy_communication_middleware::SystemCheckService::Response &res){
+    vector<uint8_t> motorIDs;
+    if(req.motorIDs.empty()) {
+        motorIDs.resize(NUMBER_OF_MOTORS_PER_FPGA);
+        int i=0;
+        for(auto &m:motorIDs){
+            m = i;
+            i++;
+        }
+    }else{
+        motorIDs = req.motorIDs;
+    }
+    bool system_check_successful = true;
+    for(auto &m:motorIDs){
+        if(myoControl->getCurrent(m)==0){
+            system_check_successful = false;
+            res.position.push_back(false);
+            res.displacement.push_back(false);
+        }else{
+            // check position control
+            bool position_control = true;
+            int32_t current_pos = myoControl->getPosition(m);
+            // run positive direction
+            myoControl->setPosition(m, current_pos+5000);
+            ros::Duration wait_for_position(0.01);
+            wait_for_position.sleep();
+            if(abs(myoControl->getPosition(m) - (current_pos+5000))>1000){
+                system_check_successful = false;
+                position_control = false;
+            }
+            // run negative direction
+            myoControl->setPosition(m, current_pos-5000);
+            wait_for_position.sleep();
+            if(abs(myoControl->getPosition(m) - (current_pos-5000))>1000){
+                system_check_successful = false;
+                position_control = false;
+            }
+            // reset to start position
+            myoControl->setPosition(m, current_pos);
+
+            // check displacement control
+            bool displacement_control = true;
+            int32_t current_displacement = myoControl->getDisplacement(m);
+            // run positive direction
+            myoControl->setDisplacement(m, current_displacement+10);
+            ros::Duration wait_for_displacement(1);
+            wait_for_displacement.sleep();
+            if(abs(myoControl->getDisplacement(m) - (current_displacement+10))>3){
+                system_check_successful = false;
+                displacement_control = false;
+            }
+            // run negative direction
+            myoControl->setDisplacement(m, current_displacement-10);
+            wait_for_displacement.sleep();
+            if(abs(myoControl->getDisplacement(m) - (current_displacement+10))>3){
+                system_check_successful = false;
+                displacement_control = false;
+            }
+            // reset to start displacement
+            myoControl->setDisplacement(m, current_displacement);
+            res.position.push_back(position_control);
+            res.displacement.push_back(displacement_control);
+        }
+    }
+    return system_check_successful;
 }
 
 bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
