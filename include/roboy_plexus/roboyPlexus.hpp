@@ -21,6 +21,7 @@
 #include <roboy_communication_control/Behavior.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
 //#include <roboy_communication_control/StopRecordTrajectory.h>
+#include <roboy_communication_middleware/SystemCheck.h>
 #include <roboy_communication_control/PerformMovement.h>
 #include <roboy_communication_control/PerformBehavior.h>
 #include <roboy_communication_control/PerformActions.h>
@@ -178,8 +179,8 @@ private:
      * @param res
      * @return
      */
-    bool SystemCheckService(roboy_communication_middleware::SystemCheckService::Request &req,
-                                 roboy_communication_middleware::SystemCheckService::Response &res);
+    bool SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
+                                 roboy_communication_middleware::SystemCheck::Response &res);
 
     /**
      * Motor setpoints trajectory recording callback.

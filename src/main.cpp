@@ -88,12 +88,12 @@ int main(int argc, char *argv[]) {
     h2p_lw_darkroom_ootx_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOMOOTXDECODER_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
-    if (!ros::isInitialized()) {
-        int argc = 0;
-        char **argv = NULL;
-        ros::init(argc, argv, "roboy_plexus");
-        ros::start();
-    }
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "roboy_plexus");
+//        ros::start();
+//    }
 //
 //    I2C i2c(h2p_lw_i2c_addr[4]);
 //    vector<uint8_t> active_devices;

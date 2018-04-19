@@ -166,7 +166,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1522860986
+#define SYSID_QSYS_TIMESTAMP 1524054963
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -178,7 +178,7 @@
 #define JTAG_UART_BASE 0x2000
 #define JTAG_UART_SPAN 8
 #define JTAG_UART_END 0x2007
-#define JTAG_UART_IRQ 2
+#define JTAG_UART_IRQ 0
 #define JTAG_UART_READ_DEPTH 64
 #define JTAG_UART_READ_THRESHOLD 8
 #define JTAG_UART_WRITE_DEPTH 64

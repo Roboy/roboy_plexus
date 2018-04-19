@@ -62,7 +62,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             { // start motor angle publisher for three myoBricks
-                vector<uint8_t> deviceIDs = {0xC,0xD,0xE};
+                vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
                 motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
                 motorAngleThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
@@ -74,7 +74,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             { // start motor angle publisher for three myoBricks
-                vector<uint8_t> deviceIDs = {0xC,0xD,0xE};
+                vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
                 motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
                 motorAngleThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
@@ -677,8 +677,8 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
     return true;
 }
 
-bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheckService::Request &req,
-                                    roboy_communication_middleware::SystemCheckService::Response &res){
+bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
+                                    roboy_communication_middleware::SystemCheck::Response &res){
     vector<uint8_t> motorIDs;
     if(req.motorIDs.empty()) {
         motorIDs.resize(NUMBER_OF_MOTORS_PER_FPGA);
