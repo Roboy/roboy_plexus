@@ -220,6 +220,10 @@ uint16_t MyoControl::getControlMode(int motor) {
                             motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
 }
 
+bool MyoControl::getPowerSense(){
+    return (bool)MYO_READ_power_sense(myo_base[0]);
+}
+
 int16_t MyoControl::getPWM(int motor) {
     return MYO_READ_pwmRef(myo_base[motor / MOTORS_PER_MYOCONTROL],
                            motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
