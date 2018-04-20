@@ -88,7 +88,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/MagneticSensor", 1, this);
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[3], deviceIDs));
+                handControl.reset(new HandControl(i2c_base[4], deviceIDs));
             }
             { // start motor angle publisher for two myoBricks
                 vector<uint8_t> deviceIDs = {0xC,0xD};
