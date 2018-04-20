@@ -22,9 +22,6 @@
 #include <roboy_communication_control/StartRecordTrajectory.h>
 //#include <roboy_communication_control/StopRecordTrajectory.h>
 #include <roboy_communication_middleware/SystemCheck.h>
-#include <roboy_communication_control/PerformMovement.h>
-#include <roboy_communication_control/PerformBehavior.h>
-#include <roboy_communication_control/PerformActions.h>
 #include <roboy_communication_control/ListItems.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Bool.h>
@@ -215,8 +212,8 @@ private:
      * @param res
      * @return
      */
-    bool ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
-                                 roboy_communication_control::PerformMovement::Response &res);
+//    bool ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
+//                                 roboy_communication_control::PerformMovement::Response &res);
 
     /**
      * Service executes behavior (a set of trajectories possibly combined with pauses)
@@ -224,8 +221,8 @@ private:
      * @param res
      * @return
      */
-    bool ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
-                               roboy_communication_control::PerformActions::Response &res);
+//    bool ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
+//                               roboy_communication_control::PerformActions::Response &res);
 
     /**
      * Service executes behavior (by name)
@@ -233,8 +230,8 @@ private:
      * @param res
      * @return
      */
-    bool ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
-                                roboy_communication_control::PerformBehavior::Response &res);
+//    bool ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
+//                                roboy_communication_control::PerformBehavior::Response &res);
 
     /**
      * Stops replaying the trajectory

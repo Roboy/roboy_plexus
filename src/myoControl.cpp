@@ -401,13 +401,14 @@ float MyoControl::recordTrajectories(
     timer.start();
     do {
         dt = elapsedTime;
-        for (uint motor = 0; motor < idList.size(); motor++) {
-            if (controlmode[motor] == POSITION)
-                trajectories[idList[motor]].push_back(getPosition(motor));
-            else if (controlmode[motor] == VELOCITY)
-                trajectories[idList[motor]].push_back(getVelocity(motor));
-            else if (controlmode[motor] == FORCE)
-                trajectories[idList[motor]].push_back(getDisplacement(motor));
+//        for (uint motor = 0; motor < idList.size(); motor++) {
+        for(auto it = idList.begin(); it != idList.end(); it++ ) {
+            if (controlmode[*it] == POSITION)
+                trajectories[idList[*it]].push_back(getPosition(*it));
+            else if (controlmode[*it] == VELOCITY)
+                trajectories[idList[*it]].push_back(getVelocity(*it));
+            else if (controlmode[*it] == FORCE)
+                trajectories[idList[*it]].push_back(getDisplacement(*it));
         }
         sample++;
         elapsedTime = timer.elapsedTime();
@@ -482,15 +483,16 @@ float MyoControl::startRecordTrajectories(
     // start recording
     do {
         dt = elapsedTime;
-        for (uint motor = 0; motor < idList.size(); motor++) {
-            trajectories[idList[motor]].push_back(getPosition(motor));
+        for(auto it:  idList)//.begin(); it != idList.end(); it++ ) {
+        {
+            trajectories[it].push_back(getPosition(it));
         }
         sample++;
         rate.sleep();
     } while (recording);
 
-    // set force to zero
-    allToDisplacement(0);
+
+    allToDisplacement(predisplacement/2);
 
     // done recording
 
