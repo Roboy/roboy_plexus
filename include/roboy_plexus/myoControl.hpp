@@ -72,6 +72,7 @@
 #define MYO_READ_displacement(base,motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
 #define MYO_READ_pwmRef(base,motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
 #define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
+#define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
 
 #define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -162,6 +163,11 @@ public:
 	 * @param motor for this motor
 	 */
 	uint16_t getControlMode(int motor);
+	/**
+	 * Get the power sense
+	 * @return true (power on), false (power off)
+	 */
+	bool getPowerSense();
 	/**
 	 * Gets the current pwm of a motor
 	 * @param motor for this motor

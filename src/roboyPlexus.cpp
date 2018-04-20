@@ -5,7 +5,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base),darkroom_ootx_addr(darkroom_ootx_addr),
         adc_base(adc_base), myoControl(myoControl), switches_base(switches_base){
 
-    id = IORD(switches_base,0);
+    id = IORD(switches_base,0)&0x7;
 //    string body_part;
     switch(id){
         case HEAD:
@@ -22,9 +22,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         case SPINE_RIGHT:
             body_part = "spine_right";
-            break;
-        case LEGS:
-            body_part = "legs";
             break;
         default:
             body_part = "unknown";
@@ -82,11 +79,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             break;
         }
-        case LEGS: {
-            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
-                    "/roboy/middleware/JointStatus", 1);
-            break;
-        }
         case SHOULDER_LEFT: {
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
@@ -100,7 +92,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             { // start motor angle publisher for two myoBricks
                 vector<uint8_t> deviceIDs = {0xC,0xD};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], deviceIDs)));
+                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
                 motorAngleThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
                 motorAngleThread->detach();
@@ -513,6 +505,7 @@ void RoboyPlexus::motorStatusPublisher() {
     while (keep_publishing) {
         roboy_communication_middleware::MotorStatus msg;
         msg.id = id;
+        msg.power_sense = myoControl->getPowerSense();
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             msg.pwmRef.push_back(myoControl->getPWM(motor));
             msg.position.push_back(myoControl->getPosition(motor));

@@ -50,20 +50,11 @@
 //#include "roboy_plexus/udpServer.hpp"
 #include "roboy_plexus/handControl.hpp"
 #include <sys/stat.h>
+#include <common_utilities/CommonDefinitions.h>
 
 
 #define NUM_SENSORS 32
 #define NUMBER_OF_LOADCELLS 8
-
-#define HEAD 0
-#define SPINE_LEFT 1
-#define SPINE_RIGHT 2
-#define LEGS 3
-// the two shoulders have to have these ids, because the right shoulder has mirrored motor units, which results in
-// negative displacement on compression of the spring and needs to be dealt with in fpga PID controllers
-#define SHOULDER_LEFT 4
-#define SHOULDER_RIGHT 5
-
 
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
 
