@@ -736,3 +736,7 @@ void MyoControl::polynomialRegression(int degree, vector<double> &x, vector<doub
     for (i = 0; i < degree; i++)
         coeffs.push_back(a[i]);    //the values of x^0,x^1,x^2,x^3,....
 }
+
+void MyoControl::gpioControl(bool power){
+    MYO_WRITE_gpio(myo_base[0],power);
+}

@@ -89,9 +89,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 handControl.reset(new HandControl(i2c_base[4], deviceIDs));
+                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
+                                                     &RoboyPlexus::HandPower, this);
             }
             { // start motor angle publisher for two myoBricks
-                vector<uint8_t> deviceIDs = {0xC,0xD};
+                vector<uint8_t> deviceIDs = {0xE,0xD};
                 motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
                 motorAngleThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
@@ -120,6 +122,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 handControl.reset(new HandControl(i2c_base[4], deviceIDs));
+                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
+                                                     &RoboyPlexus::HandPower, this);
             }
             { // start motor angle publisher for two myoBricks
                 vector<uint8_t> deviceIDs = {0xC,0xD};
@@ -551,6 +555,11 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
             i++;
         }
     }
+}
+
+bool RoboyPlexus::HandPower(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res){
+    myoControl->gpioControl(req.data);
+    return true;
 }
 
 bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,

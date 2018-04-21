@@ -73,6 +73,7 @@
 #define MYO_READ_pwmRef(base,motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
 #define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
 #define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
+#define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
 
 #define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -89,6 +90,7 @@
 #define MYO_WRITE_spi_activated(base,data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
 #define MYO_WRITE_reset_controller(base,motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
 #define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
+#define MYO_WRITE_gpio(base, data) IOWR(base, (uint32_t)(0x0F<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2790 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
@@ -329,6 +331,9 @@ public:
 	 */
 	void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
 			vector<float> &coeffs);
+
+
+    void gpioControl(bool power);
 
 
 	map<int,map<int,control_Parameters_t>> control_params;

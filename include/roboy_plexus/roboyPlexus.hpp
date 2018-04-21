@@ -129,6 +129,15 @@ private:
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
 
     /**
+     * Service for turning on/off hand
+     * @param req
+     * @param res
+     * @return success
+     */
+    bool HandPower(std_srvs::SetBool::Request &req,
+                   std_srvs::SetBool::Response &res);
+
+    /**
      * Service for changing motor PID parameters
      * @param req PID parameters
      * @param res success
@@ -311,7 +320,7 @@ private:
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
-            replayTrajectory_srv, executeActions_srv, executeBehavior_srv,
+            replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
     map<int, int> setPoint_backup;
     map<int, map<int, control_Parameters_t>> control_params_backup;
