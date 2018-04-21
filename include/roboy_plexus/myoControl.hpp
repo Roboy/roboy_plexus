@@ -349,7 +349,7 @@ private:
 	int iter = 0;
     bool recording = false; // keeps track of recording status
 	bool replay = true;
-	int predisplacement = 50;
+	int predisplacement = 100;
 
 };
 

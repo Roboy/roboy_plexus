@@ -2,7 +2,6 @@
 
 HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):deviceIDs(deviceIDs), id(id){
 
-    string hand;
     if(!id)
         hand = "left";
     else
@@ -29,7 +28,8 @@ HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
     handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
     fingerCommand_sub = nh->subscribe("/roboy/middleware/FingerCommand", 1, &HandControl::fingerCommandCB, this);
-
+    setMode_srv = nh->advertiseService("/roboy/control/hand/" + hand,
+                                       &HandControl::setHandModeService, this);
     handIMUThread = boost::shared_ptr<std::thread>(
             new std::thread(&HandControl::handStatusPublisher, this));
     handIMUThread->detach();
@@ -89,6 +89,44 @@ void HandControl::fingerCommandCB(const roboy_communication_middleware::FingerCo
             return;
         }
         fingerControl(msg->finger, msg->angles[0], msg->angles[1], msg->angles[2], msg->angles[3]);
+    }
+}
+
+bool HandControl::setHandModeService(roboy_communication_control::SetModeRequest &req,
+                            roboy_communication_control::SetModeResponse &res) {
+
+    if (req.id!=id) {
+        return 0;
+    }
+    switch (req.mode) {
+        case CLOSE:
+            closeHand();
+            break;
+        case OPEN:
+            openHand();
+            break;
+        default:
+            ROS_INFO_STREAM("Unknown id for hand mode");
+
+    }
+
+}
+
+void HandControl::closeHand() {
+    vector<uint8_t > order = {RINGLITTLEFINGER, MIDDLEFINGER, INDEXFINGER, THUMB};
+    ros::Duration d(1);
+    for (auto finger: order) {
+        fingerControl(finger, 90, 110, 90, 90);
+        d.sleep();
+    }
+}
+
+void HandControl::openHand() {
+    vector<uint8_t > order = {THUMB, INDEXFINGER, MIDDLEFINGER, RINGLITTLEFINGER};
+    ros::Duration d(1);
+    for (auto finger: order) {
+        fingerControl(finger, 0, 0, 0, 90);
+        d.sleep();
     }
 }
 

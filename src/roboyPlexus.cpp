@@ -185,12 +185,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
-    replayTrajectory_srv = nh->advertiseService("/roboy/" + body_part + "/control/ReplayTrajectory",
-                                                    &RoboyPlexus::ReplayTrajectoryService, this);
-    executeActions_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteActions",
-                                               &RoboyPlexus::ExecuteActionsService, this);
-    executeBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteBehavior",
-                                               &RoboyPlexus::ExecuteBehaviorService, this);
+//    replayTrajectory_srv = nh->advertiseService("/roboy/" + body_part + "/control/ReplayTrajectory",
+//                                                    &RoboyPlexus::ReplayTrajectoryService, this);
+//    executeActions_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteActions",
+//                                               &RoboyPlexus::ExecuteActionsService, this);
+//    executeBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteBehavior",
+//                                               &RoboyPlexus::ExecuteBehaviorService, this);
     listExistingTrajectories_srv = nh->advertiseService("/roboy/" + body_part + "/control/ListExistingTrajectories",
                                                         &RoboyPlexus::ListExistingItemsService, this);
     listExistingBehaviors_srv = nh->advertiseService("/roboy/" + body_part + "/control/ListExistingBehaviors",
@@ -781,33 +781,33 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_communication_control::Behavior &ms
     std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
 }
 
-bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
-                             roboy_communication_control::PerformMovement::Response &res) {
-//    string file = myoControl->trajectories_folder + req.value;
-//    const char *fileName = file.c_str();
-//    res.success = myoControl->playTrajectory(fileName);
+//bool RoboyPlexus::ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
+//                             roboy_communication_control::PerformMovement::Response &res) {
+////    string file = myoControl->trajectories_folder + req.value;
+////    const char *fileName = file.c_str();
+////    res.success = myoControl->playTrajectory(fileName);
+//
+//    res.success = executeAction(req.value);
+//    return res.success;
+//}
 
-    res.success = executeAction(req.value);
-    return res.success;
-}
-
-bool RoboyPlexus::ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
-                                         roboy_communication_control::PerformActions::Response &res) {
-    res.success = executeActions(req.actions);
-
-    return res.success;
-
-}
-
-bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
-                                        roboy_communication_control::PerformBehavior::Response &res) {
-    vector<string> actions = expandBehavior(req.name);
-    res.success = executeActions(actions);
-//    ROS_INFO("reset replay");
-
-    return res.success;
-
-}
+//bool RoboyPlexus::ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
+//                                         roboy_communication_control::PerformActions::Response &res) {
+//    res.success = executeActions(req.actions);
+//
+//    return res.success;
+//
+//}
+//
+//bool RoboyPlexus::ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
+//                                        roboy_communication_control::PerformBehavior::Response &res) {
+//    vector<string> actions = expandBehavior(req.name);
+//    res.success = executeActions(actions);
+////    ROS_INFO("reset replay");
+//
+//    return res.success;
+//
+//}
 
 bool RoboyPlexus::executeActions(vector<string> actions) {
 

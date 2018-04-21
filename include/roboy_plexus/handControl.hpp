@@ -6,11 +6,15 @@
 #include <roboy_communication_middleware/FingerCommand.h>
 #include <roboy_communication_middleware/HandStatus.h>
 #include <roboy_communication_middleware/HandCommand.h>
+#include <roboy_communication_control/SetMode.h>
 
 #define THUMB 0
 #define INDEXFINGER 1
 #define MIDDLEFINGER 2
 #define RINGLITTLEFINGER 3
+
+#define OPEN 0
+#define CLOSE 1
 
 class HandControl{
 public:
@@ -48,6 +52,13 @@ public:
     void fingerCommandCB(const roboy_communication_middleware::FingerCommand::ConstPtr &msg);
 
     /**
+     * Service to close/open hand
+     * @param req
+     * @param res
+     */
+    bool setHandModeService(roboy_communication_control::SetModeRequest &req,
+                   roboy_communication_control::SetModeResponse &res);
+    /**
      * Publishes hand status data
      */
     void handStatusPublisher();
@@ -55,6 +66,8 @@ public:
     bool fingerControl(uint8_t finger, uint8_t alpha, uint8_t beta, uint8_t gamma, uint8_t zeta = 90);
 
     void neutralHand();
+    void closeHand();
+    void openHand();
 
     bool command(vector<uint8_t> &setPoint);
     bool command(vector<uint8_t> &setPoint, int board);
@@ -68,12 +81,14 @@ private:
     ros::NodeHandlePtr nh;
     ros::Subscriber handCommand_sub, fingerCommand_sub;
     ros::Publisher handStatus_pub;
+    ros::ServiceServer setMode_srv;
     boost::shared_ptr<std::thread> handIMUThread;
     bool keep_publishing = true;
     I2C *i2c;
     vector<uint8_t> deviceIDs;
     uint8_t id = 0;
     HandControl::CommandFrame frame[4];
+    string hand;
 };
 
 typedef boost::shared_ptr<HandControl> HandControlPtr;
