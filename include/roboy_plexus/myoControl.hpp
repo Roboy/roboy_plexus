@@ -74,6 +74,9 @@
 #define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
 #define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
 #define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
+#define MYO_READ_angle(base,motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
+#define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
+#define MYO_READ_myo_brick_device_id(base,motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -91,6 +94,8 @@
 #define MYO_WRITE_reset_controller(base,motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
 #define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
 #define MYO_WRITE_gpio(base, data) IOWR(base, (uint32_t)(0x0F<<8|0), data )
+#define MYO_WRITE_myo_brick(base, data) IOWR(base, (uint32_t)(0x10<<8|0), data )
+#define MYO_WRITE_myo_brick_device_id(base,motor,data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2790 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
@@ -165,6 +170,12 @@ public:
 	 * @param motor for this motor
 	 */
 	uint16_t getControlMode(int motor);
+    /**
+     * Gets the motor angle of a myo brick
+     * @param motor
+     * @return angle in ticks
+     */
+    int32_t getMotorAngle(int motor);
 	/**
 	 * Get the power sense
 	 * @return true (power on), false (power off)
@@ -205,6 +216,12 @@ public:
      * @param motor for this motor
      */
     void setDisplacement(int motor, int16_t setPoint);
+    /**
+     * Configures motors to be handled as myoBricks
+     * @param motorIDs these are the ids of the motors
+     * @param deviceIDs these are the i2c addresses of the motor angle sensors (A1335)
+     */
+    bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs);
 	/**
 	 * Gets the current in Ampere
 	 * @param motor for this motor

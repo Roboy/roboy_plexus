@@ -128,9 +128,9 @@ int main(int argc, char *argv[]) {
 
 
 ////
-    u_int8_t id = IORD(h2p_lw_switches_addr,0)&0x7;
-    vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-    HandControl handControl(h2p_lw_i2c_addr[4], deviceIDs, id);
+//    u_int8_t id = IORD(h2p_lw_switches_addr,0)&0x7;
+//    vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//    HandControl handControl(h2p_lw_i2c_addr[4], deviceIDs, id);
 //    handControl.test();
 
     MyoControlPtr myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));

@@ -47,7 +47,7 @@ void HandControl::handCommandCB(const roboy_communication_middleware::HandComman
     if(msg->id == id) {
         vector <uint8_t> setPoint;
         stringstream str;
-        str << "hand command: ";
+        str << "hand " << (id?"right":"left") << " command:";
         if (msg->motorid.empty()) {
             for (auto s:msg->setPoint) {
                 if (s < 20)

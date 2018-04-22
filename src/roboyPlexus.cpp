@@ -47,8 +47,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         case HEAD:{
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
+            vector<uint8_t> motorIDs = {0,1,2,3};
             vector<uint8_t> deviceIDs = {0xC, 0xD, 0xE, 0xF};
-            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], deviceIDs)));
+            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
             motorAngleThread = boost::shared_ptr<std::thread>(
                     new std::thread(&RoboyPlexus::motorAnglePublisher, this));
             motorAngleThread->detach();
@@ -59,11 +60,21 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             { // start motor angle publisher for three myoBricks
-                vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
+//                vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
+//                vector<uint8_t> motorIDs = {0,1,2};
+//                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+//                    ROS_ERROR("could not configure myoBricks");
+//                while(ros::ok()){
+//                    ROS_INFO_STREAM_THROTTLE(1,myoControl->getMotorAngle(0));
+//                }
+
+//                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
+//                motorAngleThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//                motorAngleThread->detach();
+//                for(auto m:motorIDs){
+//                    rotationCounter[m] = 0;
+//                }
             }
             break;
         }
@@ -71,11 +82,14 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             { // start motor angle publisher for three myoBricks
-                vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
+//                vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
+//                vector<uint8_t> motorIDs = {0,1,2};
+//                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+//                    ROS_ERROR("could not configure myoBricks");
+//                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
+//                motorAngleThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//                motorAngleThread->detach();
             }
             break;
         }
@@ -88,17 +102,18 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/MagneticSensor", 1, this);
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[4], deviceIDs));
+                handControl.reset(new HandControl(i2c_base[4], deviceIDs, false));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
-            { // start motor angle publisher for two myoBricks
-                vector<uint8_t> deviceIDs = {0xE,0xD};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
-            }
+//            { // start motor angle publisher for two myoBricks
+//                vector<uint8_t> motorIDs = {0,1};
+//                vector<uint8_t> deviceIDs = {0xE,0xD};
+//                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], motorIDs, deviceIDs)));
+//                motorAngleThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//                motorAngleThread->detach();
+//            }
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -121,17 +136,18 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/MagneticSensor", 1, this);
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[4], deviceIDs));
+                handControl.reset(new HandControl(i2c_base[4], deviceIDs, true));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
-            { // start motor angle publisher for two myoBricks
-                vector<uint8_t> deviceIDs = {0xC,0xD};
-                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
-            }
+//            { // start motor angle publisher for two myoBricks
+//                vector<uint8_t> motorIDs = {0,1};
+//                vector<uint8_t> deviceIDs = {0xC,0xD};
+//                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], motorIDs, deviceIDs)));
+//                motorAngleThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//                motorAngleThread->detach();
+//            }
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -555,6 +571,53 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
             i++;
         }
     }
+}
+
+void RoboyPlexus::motorAnglePID(){
+//    ros::Rate rate(100);
+//    while (keep_publishing) {
+//        roboy_communication_middleware::MotorAngle msg;
+//        msg.id = id;
+//        vector<A1335State> state;
+//        motorAngle[0]->readAngleData(state);
+//        stringstream str;
+//        int i=0;
+//        for(auto s:state){
+//            msg.angles.push_back(s.angle);
+//            msg.magneticFieldStrength.push_back(s.fieldStrength);
+////            msg.temperature.push_back(s.temp);
+//            if(motorData[ANGLE].back()>340 && msg->angles[0] <20){ // increase rotation counter
+//                rotationCounter[0]++;
+//            }
+//            if(motorData[ANGLE].back()<20 && msg->angles[0] > 340){ // decrease rotation counter
+//                rotationCounter[0]--;
+//            }
+//        }
+//        motorAngle_pub.publish(msg);
+//
+//
+//
+//        motorData[ANGLE].push_back(msg->angles[0]);
+//        if (motorData[ANGLE].size() > samples_per_plot) {
+//            motorData[ANGLE].pop_front();
+//        }
+//
+//        motorData[ANGLEABSOLUT].push_back(msg->angles[0]+rotationCounter[0]*360.0f+offset[ANGLE]);
+//        if (motorData[ANGLEABSOLUT].size() > samples_per_plot) {
+//            motorData[ANGLEABSOLUT].pop_front();
+//        }
+//
+//        motorData[SPRING].push_back(motorData[POSITIONABSOLUT].back()-motorData[ANGLEABSOLUT].back());
+//        if (motorData[SPRING].size() > samples_per_plot) {
+//            motorData[SPRING].pop_front();
+//        }
+//
+//        if (timeMotorData[ANGLE].size() > samples_per_plot)
+//            timeMotorData[ANGLE].pop_front();
+//
+//        rate.sleep();
+//
+//    }
 }
 
 bool RoboyPlexus::HandPower(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res){

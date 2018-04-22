@@ -220,6 +220,10 @@ uint16_t MyoControl::getControlMode(int motor) {
                             motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
 }
 
+int32_t MyoControl::getMotorAngle(int motor){
+    return MYO_READ_angle(myo_base[motor / MOTORS_PER_MYOCONTROL],motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
+}
+
 bool MyoControl::getPowerSense(){
     return (bool)MYO_READ_power_sense(myo_base[0]);
 }
@@ -258,6 +262,21 @@ void MyoControl::setVelocity(int motor, int16_t setPoint){
 void MyoControl::setDisplacement(int motor, int16_t setPoint){
     MYO_WRITE_sp(myo_base[motor / MOTORS_PER_MYOCONTROL],
                  motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), (int32_t)setPoint);
+}
+
+bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs){
+    if(motorIDs.size()!=deviceIDs.size())
+        return false;
+    uint32_t myo_brick = 0;
+    uint i = 0;
+    for(auto motor:motorIDs){
+        myo_brick |= (1<<motor);
+        MYO_WRITE_myo_brick_device_id(myo_base[0],motor,deviceIDs[i]);
+        i++;
+    }
+    // TODO: for now only first SPI bus can be used for myoBricks
+    MYO_WRITE_myo_brick(myo_base[0],myo_brick);
+    return true;
 }
 
 int16_t MyoControl::getCurrent(int motor) {

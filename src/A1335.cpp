@@ -1,6 +1,6 @@
 #include "roboy_plexus/A1335.hpp"
 
-A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs){
+A1335::A1335(int32_t* i2c_base, vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs):motorIDs(motorIDs),deviceIDs(deviceIDs){
     i2c = new I2C(i2c_base);
     for(auto device:deviceIDs){
         if(!clearStatusRegisters(device))

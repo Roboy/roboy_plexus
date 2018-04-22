@@ -124,7 +124,10 @@ private:
      * @param msg motor command
      */
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
-
+    /**
+     * Motor Angle PID controller
+     */
+    void motorAnglePID();
     /**
      * Service for turning on/off hand
      * @param req
@@ -322,6 +325,8 @@ private:
     map<int, int> setPoint_backup;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
+    map<int,int> rotationCounter;
+    map<int,float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
     HandControlPtr handControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
