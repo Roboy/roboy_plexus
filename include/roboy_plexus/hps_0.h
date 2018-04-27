@@ -20,26 +20,15 @@
  */
 
 /*
- * Macros for device 'DarkRoom_0', class 'DarkRoom'
- * The macros are prefixed with 'DARKROOM_0_'.
+ * Macros for device 'I2C_0', class 'I2C'
+ * The macros are prefixed with 'I2C_0_'.
  * The prefix is the slave descriptor.
  */
-#define DARKROOM_0_COMPONENT_TYPE DarkRoom
-#define DARKROOM_0_COMPONENT_NAME DarkRoom_0
-#define DARKROOM_0_BASE 0x0
-#define DARKROOM_0_SPAN 512
-#define DARKROOM_0_END 0x1ff
-
-/*
- * Macros for device 'DarkRoomOOTXdecoder_0', class 'DarkRoomOOTXdecoder'
- * The macros are prefixed with 'DARKROOMOOTXDECODER_0_'.
- * The prefix is the slave descriptor.
- */
-#define DARKROOMOOTXDECODER_0_COMPONENT_TYPE DarkRoomOOTXdecoder
-#define DARKROOMOOTXDECODER_0_COMPONENT_NAME DarkRoomOOTXdecoder_0
-#define DARKROOMOOTXDECODER_0_BASE 0x200
-#define DARKROOMOOTXDECODER_0_SPAN 256
-#define DARKROOMOOTXDECODER_0_END 0x2ff
+#define I2C_0_COMPONENT_TYPE I2C
+#define I2C_0_COMPONENT_NAME I2C_0
+#define I2C_0_BASE 0x0
+#define I2C_0_SPAN 32
+#define I2C_0_END 0x1f
 
 /*
  * Macros for device 'I2C_4', class 'I2C'
@@ -48,20 +37,9 @@
  */
 #define I2C_4_COMPONENT_TYPE I2C
 #define I2C_4_COMPONENT_NAME I2C_4
-#define I2C_4_BASE 0x300
+#define I2C_4_BASE 0x20
 #define I2C_4_SPAN 32
-#define I2C_4_END 0x31f
-
-/*
- * Macros for device 'I2C_3', class 'I2C'
- * The macros are prefixed with 'I2C_3_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_3_COMPONENT_TYPE I2C
-#define I2C_3_COMPONENT_NAME I2C_3
-#define I2C_3_BASE 0x320
-#define I2C_3_SPAN 32
-#define I2C_3_END 0x33f
+#define I2C_4_END 0x3f
 
 /*
  * Macros for device 'I2C_2', class 'I2C'
@@ -70,9 +48,9 @@
  */
 #define I2C_2_COMPONENT_TYPE I2C
 #define I2C_2_COMPONENT_NAME I2C_2
-#define I2C_2_BASE 0x340
+#define I2C_2_BASE 0x40
 #define I2C_2_SPAN 32
-#define I2C_2_END 0x35f
+#define I2C_2_END 0x5f
 
 /*
  * Macros for device 'I2C_1', class 'I2C'
@@ -81,20 +59,9 @@
  */
 #define I2C_1_COMPONENT_TYPE I2C
 #define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x360
+#define I2C_1_BASE 0x60
 #define I2C_1_SPAN 32
-#define I2C_1_END 0x37f
-
-/*
- * Macros for device 'I2C_0', class 'I2C'
- * The macros are prefixed with 'I2C_0_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_0_COMPONENT_TYPE I2C
-#define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x380
-#define I2C_0_SPAN 32
-#define I2C_0_END 0x39f
+#define I2C_1_END 0x7f
 
 /*
  * Macros for device 'SWITCHES', class 'altera_avalon_pio'
@@ -103,9 +70,9 @@
  */
 #define SWITCHES_COMPONENT_TYPE altera_avalon_pio
 #define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x3a0
+#define SWITCHES_BASE 0x80
 #define SWITCHES_SPAN 16
-#define SWITCHES_END 0x3af
+#define SWITCHES_END 0x8f
 #define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
 #define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SWITCHES_CAPTURE 0
@@ -127,9 +94,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x3b0
+#define LED_BASE 0x90
 #define LED_SPAN 16
-#define LED_END 0x3bf
+#define LED_END 0x9f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -151,9 +118,9 @@
  */
 #define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
 #define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
-#define ADC_LTC2308_0_BASE 0x3c0
+#define ADC_LTC2308_0_BASE 0xa0
 #define ADC_LTC2308_0_SPAN 8
-#define ADC_LTC2308_0_END 0x3c7
+#define ADC_LTC2308_0_END 0xa7
 
 /*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
@@ -166,7 +133,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1524389359
+#define SYSID_QSYS_TIMESTAMP 1524767136
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

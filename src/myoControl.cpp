@@ -285,8 +285,8 @@ int16_t MyoControl::getCurrent(int motor) {
 }
 
 void MyoControl::getDefaultControlParams(control_Parameters_t *params, int control_mode) {
-    params->outputPosMax = 1000;
-    params->outputNegMax = -1000;
+    params->outputPosMax = 500;
+    params->outputNegMax = -500;
 
     params->radPerEncoderCount = 2 * 3.14159265359 / (2000.0 * 53.0);
 

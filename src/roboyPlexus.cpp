@@ -49,10 +49,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
             vector<uint8_t> motorIDs = {0,1,2,3};
             vector<uint8_t> deviceIDs = {0xC, 0xD, 0xE, 0xF};
-            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
-            motorAngleThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-            motorAngleThread->detach();
+            if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+                ROS_ERROR("could not configure myoBricks");
+//            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
+//            motorAngleThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//            motorAngleThread->detach();
             break;
         }
 
@@ -60,12 +62,24 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             { // start motor angle publisher for three myoBricks
-//                vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
-//                vector<uint8_t> motorIDs = {0,1,2};
-//                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
-//                    ROS_ERROR("could not configure myoBricks");
+                vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
+                vector<uint8_t> motorIDs = {0,1,2};
+                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+                    ROS_ERROR("could not configure myoBricks");
 //                while(ros::ok()){
 //                    ROS_INFO_STREAM_THROTTLE(1,myoControl->getMotorAngle(0));
+//                }
+
+//                vector<uint8_t> deviceIDs = {0xC};
+//                vector<uint8_t> motorIDs = {0};
+//                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+//                    ROS_ERROR("could not configure myoBricks");
+//                int motor = 0;
+//                while(ros::ok()){
+//                    ROS_INFO_STREAM_THROTTLE(1,myoControl->getMotorAngle(motor));
+////                    motor++;
+////                    if(motor>6)
+////                        motor = 0;
 //                }
 
 //                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
@@ -82,10 +96,10 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             { // start motor angle publisher for three myoBricks
-//                vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
-//                vector<uint8_t> motorIDs = {0,1,2};
-//                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
-//                    ROS_ERROR("could not configure myoBricks");
+                vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
+                vector<uint8_t> motorIDs = {0,1,2};
+                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+                    ROS_ERROR("could not configure myoBricks");
 //                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
 //                motorAngleThread = boost::shared_ptr<std::thread>(
 //                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
@@ -812,6 +826,21 @@ bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck
 
 bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
                                         roboy_communication_middleware::SetInt16::Request &res) {
+    if(id==HEAD){
+        myoControl->allToDisplacement(req.setpoint);
+        ros::Duration d(5);
+        d.sleep();
+        int pos[4] = {0,0,0,0};
+        pos[0] = myoControl->getPosition(0);
+        pos[1] = myoControl->getPosition(1);
+        pos[2] = myoControl->getPosition(2);
+        pos[3] = myoControl->getPosition(3);
+        myoControl->allToPosition(0);
+        myoControl->setPosition(0,pos[0]);
+        myoControl->setPosition(1,pos[1]);
+        myoControl->setPosition(2,pos[2]);
+        myoControl->setPosition(3,pos[3]);
+    }
     myoControl->allToDisplacement(req.setpoint);
     return true;
 }
