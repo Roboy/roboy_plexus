@@ -50,7 +50,7 @@
 #include <common_utilities/CommonDefinitions.h>
 
 
-#define NUM_SENSORS 32
+#define NUM_SENSORS 8
 #define NUMBER_OF_LOADCELLS 8
 
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
