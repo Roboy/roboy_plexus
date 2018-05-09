@@ -10,6 +10,7 @@
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
+#include <roboy_communication_middleware/DarkRoomStatus.h>
 #include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MagneticSensor.h>
 #include <roboy_communication_middleware/MotorAngle.h>
@@ -50,7 +51,7 @@
 #include <common_utilities/CommonDefinitions.h>
 
 
-#define NUM_SENSORS 8
+#define NUM_SENSORS 12
 #define NUMBER_OF_LOADCELLS 8
 
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
@@ -317,7 +318,7 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
-    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, jointStatus_pub, adc_pub, gsensor_pub,
+    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, jointStatus_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,

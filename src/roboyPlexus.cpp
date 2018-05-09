@@ -182,6 +182,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                                                                                    1);
             darkroom_ootx_pub = nh->advertise<roboy_communication_middleware::DarkRoomOOTX>(
                     "/roboy/middleware/DarkRoom/ootx", 1);
+            darkroom_status_pub = nh->advertise<roboy_communication_middleware::DarkRoomStatus>(
+                    "/roboy/middleware/DarkRoom/status", 1);
             adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
             if (darkroom_base != nullptr) {
                 darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
@@ -365,7 +367,6 @@ void RoboyPlexus::darkRoomPublisher() {
                 active_sensors++;
         }
         darkroom_pub.publish(msg);
-        ROS_INFO_THROTTLE(10, "lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
         rate.sleep();
     }
 }
@@ -486,6 +487,19 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
                 IOWR(darkroom_ootx_addr[decoder], 0, ootx_sensor_channel);
             }
         }
+
+        roboy_communication_middleware::DarkRoomStatus status_msg;
+        status_msg.objectID = ethaddr;
+        uint active_sensors = 0;
+        for (uint8_t i = 0; i < NUM_SENSORS; i++) {
+            int32_t val = IORD(darkroom_base, (1<<8|i));
+            status_msg.sensor_state.push_back(val&0xF);
+            if(status_msg.sensor_state.back()==1)
+                active_sensors++;
+        }
+        ROS_INFO("lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
+        darkroom_status_pub.publish(status_msg);
+
         rate.sleep();
     }
 }
