@@ -45,11 +45,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     switch(id){
         case HEAD:{
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
-            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
-            vector<uint8_t> motorIDs = {0,1,2,3};
+            //motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
+            //magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
+            vector<uint8_t> motorIDs = {0,3,2,1};
             vector<uint8_t> deviceIDs = {0xC, 0xD, 0xE, 0xF};
-            if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+            vector<uint8_t> gearBoxRatio = {63, 63, 63, 63};
+            if(!myoControl->configureMyoBricks(motorIDs,deviceIDs,gearBoxRatio))
                 ROS_ERROR("could not configure myoBricks");
 //            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
 //            motorAngleThread = boost::shared_ptr<std::thread>(
@@ -64,7 +65,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start motor angle publisher for three myoBricks
                 vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
                 vector<uint8_t> motorIDs = {0,1,2};
-                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+                vector<uint8_t> gearBoxRatio = {63, 63, 63};
+                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs,gearBoxRatio))
                     ROS_ERROR("could not configure myoBricks");
 //                while(ros::ok()){
 //                    ROS_INFO_STREAM_THROTTLE(1,myoControl->getMotorAngle(0));
@@ -98,7 +100,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start motor angle publisher for three myoBricks
                 vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
                 vector<uint8_t> motorIDs = {0,1,2};
-                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs))
+                vector<uint8_t> gearBoxRatio = {63, 63, 63};
+                if(!myoControl->configureMyoBricks(motorIDs,deviceIDs,gearBoxRatio))
                     ROS_ERROR("could not configure myoBricks");
 //                motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[3], deviceIDs)));
 //                motorAngleThread = boost::shared_ptr<std::thread>(

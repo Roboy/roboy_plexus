@@ -95,16 +95,16 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     }
     reset();
 
-    // set measure number for ADC convert
-    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
-
-    // start measure
-    for (uint channel = 0; channel < 8; channel++) {
-        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
-        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-        usleep(1);
-    }
+//    // set measure number for ADC convert
+//    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
+//
+//    // start measure
+//    for (uint channel = 0; channel < 8; channel++) {
+//        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+//        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
+//        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+//        usleep(1);
+//    }
 
 }
 
@@ -264,16 +264,24 @@ void MyoControl::setDisplacement(int motor, int16_t setPoint){
                  motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), (int32_t)setPoint);
 }
 
-bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs){
+bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<uint8_t> &gearBoxRatio){
     if(motorIDs.size()!=deviceIDs.size())
         return false;
     uint32_t myo_brick = 0;
     uint i = 0;
+    stringstream str;
+    str << "configuring myoBricks\\ni2c device ID | gear box ratio";
     for(auto motor:motorIDs){
         myo_brick |= (1<<motor);
         MYO_WRITE_myo_brick_device_id(myo_base[0],motor,deviceIDs[i]);
+        MYO_WRITE_myo_brick_gear_box_ratio(myo_base[0],motor,gearBoxRatio[i]);
+        uint ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[0],motor);
+        if(ratio!=gearBoxRatio[i]) // if the value was not written correctly, we abort!
+            return false;
+        str << deviceIDs[i] << "\t| " << ratio << endl;
         i++;
     }
+    ROS_INFO_STREAM(str.str());
     // TODO: for now only first SPI bus can be used for myoBricks
     MYO_WRITE_myo_brick(myo_base[0],myo_brick);
     return true;

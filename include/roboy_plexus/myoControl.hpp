@@ -77,6 +77,8 @@
 #define MYO_READ_angle(base,motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
 #define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
 #define MYO_READ_myo_brick_device_id(base,motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
+#define MYO_READ_myo_brick_device_id(base,motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
+#define MYO_READ_myo_brick_gear_box_ratio(base,motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -96,6 +98,7 @@
 #define MYO_WRITE_gpio(base, data) IOWR(base, (uint32_t)(0x0F<<8|0), data )
 #define MYO_WRITE_myo_brick(base, data) IOWR(base, (uint32_t)(0x10<<8|0), data )
 #define MYO_WRITE_myo_brick_device_id(base,motor,data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
+#define MYO_WRITE_myo_brick_gear_box_ratio(base,motor,data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2790 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
@@ -220,8 +223,9 @@ public:
      * Configures motors to be handled as myoBricks
      * @param motorIDs these are the ids of the motors
      * @param deviceIDs these are the i2c addresses of the motor angle sensors (A1335)
+     * @param gearBoxRatio the ratio of the gear box for each myoBrick
      */
-    bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs);
+    bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<uint8_t> &gearBoxRatio);
 	/**
 	 * Gets the current in Ampere
 	 * @param motor for this motor
