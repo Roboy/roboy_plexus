@@ -20,6 +20,72 @@
  */
 
 /*
+ * Macros for device 'DarkRoom_0', class 'DarkRoom'
+ * The macros are prefixed with 'DARKROOM_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define DARKROOM_0_COMPONENT_TYPE DarkRoom
+#define DARKROOM_0_COMPONENT_NAME DarkRoom_0
+#define DARKROOM_0_BASE 0x0
+#define DARKROOM_0_SPAN 2048
+#define DARKROOM_0_END 0x7ff
+
+/*
+ * Macros for device 'DarkRoomOOTXdecoder_0', class 'DarkRoomOOTXdecoder'
+ * The macros are prefixed with 'DARKROOMOOTXDECODER_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define DARKROOMOOTXDECODER_0_COMPONENT_TYPE DarkRoomOOTXdecoder
+#define DARKROOMOOTXDECODER_0_COMPONENT_NAME DarkRoomOOTXdecoder_0
+#define DARKROOMOOTXDECODER_0_BASE 0x800
+#define DARKROOMOOTXDECODER_0_SPAN 256
+#define DARKROOMOOTXDECODER_0_END 0x8ff
+
+/*
+ * Macros for device 'I2C_0', class 'I2C'
+ * The macros are prefixed with 'I2C_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_0_COMPONENT_TYPE I2C
+#define I2C_0_COMPONENT_NAME I2C_0
+#define I2C_0_BASE 0x900
+#define I2C_0_SPAN 32
+#define I2C_0_END 0x91f
+
+/*
+ * Macros for device 'I2C_1', class 'I2C'
+ * The macros are prefixed with 'I2C_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_1_COMPONENT_TYPE I2C
+#define I2C_1_COMPONENT_NAME I2C_1
+#define I2C_1_BASE 0x920
+#define I2C_1_SPAN 32
+#define I2C_1_END 0x93f
+
+/*
+ * Macros for device 'I2C_2', class 'I2C'
+ * The macros are prefixed with 'I2C_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_2_COMPONENT_TYPE I2C
+#define I2C_2_COMPONENT_NAME I2C_2
+#define I2C_2_BASE 0x940
+#define I2C_2_SPAN 32
+#define I2C_2_END 0x95f
+
+/*
+ * Macros for device 'I2C_3', class 'I2C'
+ * The macros are prefixed with 'I2C_3_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_3_COMPONENT_TYPE I2C
+#define I2C_3_COMPONENT_NAME I2C_3
+#define I2C_3_BASE 0x960
+#define I2C_3_SPAN 32
+#define I2C_3_END 0x97f
+
+/*
  * Macros for device 'SWITCHES', class 'altera_avalon_pio'
  * The macros are prefixed with 'SWITCHES_'.
  * The prefix is the slave descriptor.
@@ -68,6 +134,17 @@
 #define LED_RESET_VALUE 0
 
 /*
+ * Macros for device 'adc_ltc2308_0', class 'adc_ltc2308'
+ * The macros are prefixed with 'ADC_LTC2308_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
+#define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
+#define ADC_LTC2308_0_BASE 0x9a0
+#define ADC_LTC2308_0_SPAN 8
+#define ADC_LTC2308_0_END 0x9a7
+
+/*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
  * The macros are prefixed with 'SYSID_QSYS_'.
  * The prefix is the slave descriptor.
@@ -78,7 +155,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1526502663
+#define SYSID_QSYS_TIMESTAMP 1526650869
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -97,26 +174,26 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
- * Macros for device 'MYOControl_1', class 'MYOControl'
- * The macros are prefixed with 'MYOCONTROL_1_'.
- * The prefix is the slave descriptor.
- */
-#define MYOCONTROL_1_COMPONENT_TYPE MYOControl
-#define MYOCONTROL_1_COMPONENT_NAME MYOControl_1
-#define MYOCONTROL_1_BASE 0x40000
-#define MYOCONTROL_1_SPAN 262144
-#define MYOCONTROL_1_END 0x7ffff
-
-/*
  * Macros for device 'MYOControl_0', class 'MYOControl'
  * The macros are prefixed with 'MYOCONTROL_0_'.
  * The prefix is the slave descriptor.
  */
 #define MYOCONTROL_0_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_0_COMPONENT_NAME MYOControl_0
-#define MYOCONTROL_0_BASE 0x80000
+#define MYOCONTROL_0_BASE 0x40000
 #define MYOCONTROL_0_SPAN 262144
-#define MYOCONTROL_0_END 0xbffff
+#define MYOCONTROL_0_END 0x7ffff
+
+/*
+ * Macros for device 'MYOControl_1', class 'MYOControl'
+ * The macros are prefixed with 'MYOCONTROL_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define MYOCONTROL_1_COMPONENT_TYPE MYOControl
+#define MYOCONTROL_1_COMPONENT_NAME MYOControl_1
+#define MYOCONTROL_1_BASE 0x80000
+#define MYOCONTROL_1_SPAN 262144
+#define MYOCONTROL_1_END 0xbffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */
