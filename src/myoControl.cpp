@@ -270,7 +270,7 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
     uint32_t myo_brick = 0;
     uint i = 0;
     stringstream str;
-    str << "configuring myoBricks\\ni2c device ID | gear box ratio";
+    str << "configuring myoBricks\ni2c device ID | gear box ratio";
     for(auto motor:motorIDs){
         myo_brick |= (1<<motor);
         MYO_WRITE_myo_brick_device_id(myo_base[0],motor,deviceIDs[i]);
@@ -278,7 +278,7 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
         uint ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[0],motor);
         if(ratio!=gearBoxRatio[i]) // if the value was not written correctly, we abort!
             return false;
-        str << deviceIDs[i] << "\t| " << ratio << endl;
+        str << (int)deviceIDs[i] << "\t| " << ratio << endl;
         i++;
     }
     ROS_INFO_STREAM(str.str());
