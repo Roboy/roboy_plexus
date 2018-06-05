@@ -221,7 +221,7 @@ uint16_t MyoControl::getControlMode(int motor) {
 }
 
 int32_t MyoControl::getMotorAngle(int motor){
-    return MYO_READ_angle(myo_base[motor / MOTORS_PER_MYOCONTROL],motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
+    return MYO_READ_myo_brick_motor_angle(myo_base[motor / MOTORS_PER_MYOCONTROL],motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
 }
 
 bool MyoControl::getPowerSense(){

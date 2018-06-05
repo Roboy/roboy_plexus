@@ -74,7 +74,7 @@
 #define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
 #define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
 #define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
-#define MYO_READ_angle(base,motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_angle(base,motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
 #define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
 #define MYO_READ_myo_brick_device_id(base,motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
 #define MYO_READ_myo_brick_device_id(base,motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
