@@ -48,8 +48,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             //motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             //magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
 //            vector<uint8_t> motorIDs = {0,3,2,1};
-            vector<uint8_t> deviceIDs = {0xC, 0xF, 0xE, 0xD};
-            vector<uint8_t> gearBoxRatio = {62, 62, 62, 62};
+            vector<uint8_t> deviceIDs = {0xF, 0xE, 0xC, 0xD};
+            vector<uint8_t> gearBoxRatio = {53, 53, 53, 53};
             if(!myoControl->configureMyoBricks(myo_bricks[HEAD],deviceIDs,gearBoxRatio))
                 ROS_ERROR("could not configure myoBricks");
 //            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
@@ -92,7 +92,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/MagneticSensor", 1, this);
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[3], deviceIDs, false));
+                handControl.reset(new HandControl(i2c_base[0], deviceIDs, false));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
@@ -118,7 +118,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/MagneticSensor", 1, this);
             { // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[3], deviceIDs, true));
+                handControl.reset(new HandControl(i2c_base[0], deviceIDs, true));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
