@@ -115,23 +115,24 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-//    if (!ros::isInitialized()) {
-//        int argc = 0;
-//        char **argv = NULL;
-//        ros::init(argc, argv, "roboy_plexus");
-//        ros::start();
-//    }
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "roboy_plexus");
+        ros::start();
+    }
 //
-//    I2C i2c(h2p_lw_i2c_addr[4]);
+//    I2C i2c(h2p_lw_i2c_addr[0]);
 //    vector<uint8_t> active_devices;
 //    i2c.checkAddressSpace(0,127,active_devices);
 //    ROS_INFO("found %ld active devices", active_devices.size());
 //    for(auto device:active_devices)
 //        printf("%x\t",device);
 //    cout << endl;
-//
-//    vector<uint8_t> deviceIDs = {0xC,0xD,0xE,0xF};
-//    A1335 motorAngle(h2p_lw_i2c_addr[4],deviceIDs);
+
+//    vector<uint8_t> deviceIDs = {0xF};
+//    vector<uint8_t> motorids = {0};
+//    A1335 motorAngle(h2p_lw_i2c_addr[0],motorids,deviceIDs);
 //    while(ros::ok()) {
 //        vector<A1335State> state;
 //        motorAngle.readAngleData(state);

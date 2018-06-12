@@ -1,3 +1,4 @@
+#include <common_utilities/CommonDefinitions.h>
 #include "roboy_plexus/myoControl.hpp"
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
@@ -131,6 +132,7 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
     MYO_WRITE_IntegralNegMax(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, params.IntegralNegMax);
     MYO_WRITE_outputPosMax(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, params.outputPosMax);
     MYO_WRITE_outputNegMax(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, params.outputNegMax);
+    MYO_WRITE_outputDivider(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, params.outputDivider);
 }
 
 void MyoControl::changeControl(int motor, int mode) {
@@ -152,6 +154,7 @@ void MyoControl::changeControl(int motor, int mode) {
     MYO_WRITE_outputNegMax(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset,
                            control_params[motor][mode].outputNegMax);
     MYO_WRITE_control(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, mode);
+    MYO_WRITE_outputDivider(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, control_params[motor][mode].outputDivider);
 }
 
 void MyoControl::changeControl(int mode) {
@@ -174,7 +177,12 @@ void MyoControl::changeControl(int mode) {
         MYO_WRITE_outputNegMax(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset,
                                control_params[motor][mode].outputNegMax);
         MYO_WRITE_control(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, mode);
+        MYO_WRITE_outputDivider(myo_base[motor / MOTORS_PER_MYOCONTROL], motor - motorOffset, control_params[motor][mode].outputDivider);
     }
+}
+
+void MyoControl::changeControlParameters(int motor, control_Parameters_t &params){
+    control_params[motor][params.control_mode] = params;
 }
 
 void MyoControl::reset() {
@@ -264,21 +272,24 @@ void MyoControl::setDisplacement(int motor, int16_t setPoint){
                  motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0), (int32_t)setPoint);
 }
 
-bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<uint8_t> &gearBoxRatio){
+bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<int32_t> &encoderMultiplier,
+                                    vector<int32_t> &gearBoxRatio){
     if(motorIDs.size()!=deviceIDs.size())
         return false;
     uint32_t myo_brick = 0;
     uint i = 0;
     stringstream str;
-    str << "configuring myoBricks\ni2c device ID | gear box ratio";
+    str << "configuring myoBricks\ni2c device ID | gear box ratio | encoder multiplier" << endl;
     for(auto motor:motorIDs){
         myo_brick |= (1<<motor);
         MYO_WRITE_myo_brick_device_id(myo_base[0],motor,deviceIDs[i]);
         MYO_WRITE_myo_brick_gear_box_ratio(myo_base[0],motor,gearBoxRatio[i]);
-        uint ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[0],motor);
-        if(ratio!=gearBoxRatio[i]) // if the value was not written correctly, we abort!
+        MYO_WRITE_myo_brick_encoder_multiplier(myo_base[0],motor,encoderMultiplier[i]);
+        int ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[0],motor);
+        int multiplier = MYO_READ_myo_brick_encoder_multiplier(myo_base[0],motor);
+        if(ratio!=gearBoxRatio[i] || multiplier!=encoderMultiplier[i]) // if the value was not written correctly, we abort!
             return false;
-        str << (int)deviceIDs[i] << "\t| " << ratio << endl;
+        str << (int)deviceIDs[i] << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
         i++;
     }
     ROS_INFO_STREAM(str.str());
@@ -304,13 +315,14 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 //            params->outputNegMax = -4000;
             params->spPosMax = 10000000;
             params->spNegMax = -10000000;
-            params->Kp = 1;
+            params->Kp = 100;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
             params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = -100;
+            params->outputDivider = 100;
             break;
         case VELOCITY:
             params->spPosMax = 100;
@@ -322,6 +334,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = -100;
+            params->outputDivider = 1;
             break;
         case DISPLACEMENT:
             params->spPosMax = 0;
@@ -333,6 +346,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->deadBand = 1;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = 0;
+            params->outputDivider = 1;
             break;
         default:
             ROS_ERROR("unknown control mode");

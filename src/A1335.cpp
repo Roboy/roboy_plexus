@@ -3,10 +3,37 @@
 A1335::A1335(int32_t* i2c_base, vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs):motorIDs(motorIDs),deviceIDs(deviceIDs){
     i2c = new I2C(i2c_base);
     for(auto device:deviceIDs){
-        if(!clearStatusRegisters(device))
-            ROS_WARN("failed to clear status register for A1335 with deviceID %x", device);
-        else
-            ROS_INFO("motor angle sensor active with deviceID %x", device);
+//        if(!clearStatusRegisters(device))
+//            ROS_WARN("failed to clear status register for A1335 with deviceID %x", device);
+//        else {
+//            ROS_INFO("motor angle sensor active with deviceID %x", device);
+            // enter KEYCODE
+            i2c->write(device,(0x1F<<24|0x46<<16),2);
+            // set to IDLE
+            i2c->write(device,(0x1E<<24|0x80<<16),2);
+            usleep(500); // takes a1335 up to 128us to transition to IDLE from RUN
+            vector<uint8_t> data;
+            i2c->read(device,0x23, 1, data);
+            ROS_INFO("STA register %x", data[0]);
+            // configure output rate
+            i2c->write(device,(0x03<<24|0xff<<16),2);
+            i2c->write(device,(0x02<<24|0xd0<<16),2);
+            i2c->write(device,(0x04<<24|0x0<<16),2);
+            i2c->write(device,(0x05<<24|0x0<<16),2);
+            i2c->write(device,(0x06<<24|0xE0<<16),2);
+            i2c->write(device,(0x08<<24|0x08<<16),2);
+            usleep(500);
+            i2c->read(device,0x09, 1, data);
+            ROS_INFO("EWCS register %x", data[0]);
+            // enter KEYCODE
+            i2c->write(device,(0x1F<<24|0xB9<<16),2);
+            // set to RUN
+            i2c->write(device,(0x1E<<24|0x10<<16),2);
+            usleep(500); // takes a1335 up to 128us to transition to IDLE from RUN
+            data.clear();
+            i2c->read(device,0x23, 1, data);
+            ROS_INFO("STA register %x", data[0]);
+//        }
     }
 }
 

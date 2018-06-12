@@ -1,4 +1,5 @@
 #include <roboy_plexus/roboyPlexus.hpp>
+#include <common_utilities/CommonDefinitions.h>
 
 RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,  int32_t *darkroom_base,
                          vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base) :
@@ -49,8 +50,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             //magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
 //            vector<uint8_t> motorIDs = {0,3,2,1};
             vector<uint8_t> deviceIDs = {0xF, 0xE, 0xC, 0xD};
-            vector<uint8_t> gearBoxRatio = {53, 53, 53, 53};
-            if(!myoControl->configureMyoBricks(myo_bricks[HEAD],deviceIDs,gearBoxRatio))
+            vector<int32_t> gearBoxRatio = {84, 84, 84, 84};
+            vector<int32_t> encoderMultiplier = {4, 4, 4, 4};
+            if(!myoControl->configureMyoBricks(myo_bricks[HEAD],deviceIDs,encoderMultiplier,gearBoxRatio))
                 ROS_ERROR("could not configure myoBricks");
 //            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
 //            motorAngleThread = boost::shared_ptr<std::thread>(
@@ -65,8 +67,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start motor angle publisher for three myoBricks
                 vector<uint8_t> deviceIDs = {0xE,0xD,0xC};
 //                vector<uint8_t> motorIDs = {0,1,2};
-                vector<uint8_t> gearBoxRatio = {62, 62, 62};
-                if(!myoControl->configureMyoBricks(myo_bricks[SPINE_LEFT],deviceIDs,gearBoxRatio))
+                vector<int32_t> gearBoxRatio = {62, 62, 62};
+                vector<int32_t> encoderMultiplier = {1, 1, 1};
+                if(!myoControl->configureMyoBricks(myo_bricks[SPINE_LEFT],deviceIDs,encoderMultiplier,gearBoxRatio))
                     ROS_ERROR("could not configure myoBricks");
             }
             break;
@@ -77,8 +80,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start motor angle publisher for three myoBricks
                 vector<uint8_t> deviceIDs = {0xE,0xC,0xD};
 //                vector<uint8_t> motorIDs = {0,1,2};
-                vector<uint8_t> gearBoxRatio = {62, 62, 62};
-                if(!myoControl->configureMyoBricks(myo_bricks[SPINE_RIGHT],deviceIDs,gearBoxRatio))
+                vector<int32_t> gearBoxRatio = {62, 62, 62};
+                vector<int32_t> encoderMultiplier = {1, 1, 1};
+                if(!myoControl->configureMyoBricks(myo_bricks[SPINE_RIGHT],deviceIDs,encoderMultiplier,gearBoxRatio))
                     ROS_ERROR("could not configure myoBricks");
             }
             break;
@@ -90,7 +94,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/JointStatus", 1);
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
                     "/roboy/middleware/MagneticSensor", 1, this);
-            { // start hand IMU publisher
+            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 handControl.reset(new HandControl(i2c_base[0], deviceIDs, false));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
@@ -116,7 +120,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/JointStatus", 1);
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
                     "/roboy/middleware/MagneticSensor", 1, this);
-            { // start hand IMU publisher
+            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 handControl.reset(new HandControl(i2c_base[0], deviceIDs, true));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
@@ -616,17 +620,19 @@ bool RoboyPlexus::HandPower(std_srvs::SetBool::Request &req, std_srvs::SetBool::
 
 bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,
                                      roboy_communication_middleware::MotorConfigService::Response &res) {
-    if (req.setPoints.size() != req.config.motors.size()) {
-        ROS_ERROR("the number of setpoints do not match the number of motor configs");
-        return false;
-    }
-
-    ROS_INFO("serving motor config service for %d motors", req.config.motors.size());
+    string str = "INVALID";
+    if(req.config.control_mode[0]==POSITION)
+        str = "POSITION";
+    if(req.config.control_mode[0]==VELOCITY)
+        str = "VELOCITY";
+    if(req.config.control_mode[0]==DISPLACEMENT)
+        str = "DISPLACEMENT";
+    ROS_INFO("serving motor config service for %s control", str.c_str());
     control_Parameters_t params;
     uint i = 0;
     for (auto motor:req.config.motors) {
         if (req.config.control_mode[i] < POSITION || req.config.control_mode[i] > DISPLACEMENT) {
-            ROS_ERROR("trying to set an invalid control mode %d, available control modes: "
+            ROS_ERROR("trying to change control to an invalid control mode %d, available control modes: "
                               "[0]Position [1]Velocity [2]Displacement", req.config.control_mode[i]);
             continue;
         }
@@ -641,10 +647,14 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         params.deadBand = req.config.deadBand[i];
         params.IntegralPosMax = req.config.IntegralPosMax[i];
         params.IntegralNegMax = req.config.IntegralNegMax[i];
-        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
-        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
-                 req.setPoints[i]);
-        control_mode[motor] = req.config.control_mode[i];
+        params.control_mode = req.config.control_mode[i];
+        params.outputDivider = req.config.outputDivider[i];
+        myoControl->changeControlParameters(motor,params);
+        res.mode.push_back(params.control_mode);
+//        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
+//        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
+//                 req.setPoints[i]);
+//        control_mode[motor] = req.config.control_mode[i];
         i++;
     }
     return true;
