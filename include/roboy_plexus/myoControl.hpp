@@ -49,7 +49,7 @@
 #include <roboy_plexus/timer.hpp>
 #include <ros/ros.h>
 
-#define MOTORS_PER_MYOCONTROL 7
+#define MOTORS_PER_MYOCONTROL 9
 
 #define IORD(base,reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base,reg,data) (*(((volatile int32_t*)base)+reg)=data)
@@ -105,7 +105,7 @@
 #define MYO_WRITE_outputDivider(base,motor,data) IOWR(base, (uint32_t)(0x14<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
-#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2790 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
+#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
 
 using namespace std;
 using namespace std::chrono;

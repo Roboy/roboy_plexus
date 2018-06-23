@@ -79,6 +79,11 @@ public:
 
     string getBodyPart();
 
+    /**
+     * Publishes information about motors
+     */
+    void motorStatusPublisher();
+
 private:
     /**
      * Publishes IMU data
@@ -109,11 +114,6 @@ private:
      * Publishes motor angles
      */
     void motorAnglePublisher();
-
-    /**
-     * Publishes information about motors
-     */
-    void motorStatusPublisher();
 
     /**
      * Publishes 3d magnetic information about shoulder joint

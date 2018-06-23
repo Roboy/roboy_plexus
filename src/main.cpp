@@ -115,12 +115,12 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-    if (!ros::isInitialized()) {
-        int argc = 0;
-        char **argv = NULL;
-        ros::init(argc, argv, "roboy_plexus");
-        ros::start();
-    }
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "roboy_plexus");
+//        ros::start();
+//    }
 //
 //    I2C i2c(h2p_lw_i2c_addr[0]);
 //    vector<uint8_t> active_devices;
