@@ -60,7 +60,7 @@ void HandControl::handCommandCB(const roboy_communication_middleware::HandComman
                 ROS_INFO_STREAM(str.str());
 
             }
-            command(setPoint);
+            ROS_INFO("%s",(command(setPoint)?"success":"failed"));
         }else{
             if(msg->motorid.size()==msg->setPoint.size()) {
                 int i = 0;
@@ -73,8 +73,9 @@ void HandControl::handCommandCB(const roboy_communication_middleware::HandComman
                 }
                 ROS_INFO_STREAM(str.str());
                 for(int i=0;i<4;i++)
-                    if(update[i])
-                        write(frame[i],i);
+                    if(update[i]) {
+                        ROS_INFO("%s",(write(frame[i], i)?"success":"failed"));
+                    }
             }else{
                 ROS_ERROR("motorid and setpoint must have the same size!!!");
             }
