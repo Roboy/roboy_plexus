@@ -1,0 +1,22 @@
+#!/bin/bash
+if [ "$#" -ne 1 ]; then
+   echo "USAGE:     ./openhand left/right"
+else
+  if [ $1 -eq 0 ]; then 
+rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+finger: 0
+angles: [20,20,20,90]"&
+rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+finger: 1
+angles: [20,20,20,90]"&
+rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+finger: 2
+angles: [20,20,20,90]"&
+rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+finger: 3
+angles: [20,20,20,90]"&
+  else
+    ./handCommand 20 1  
+  fi
+fi
+
