@@ -7,6 +7,8 @@
 #include <roboy_communication_middleware/HandStatus.h>
 #include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_control/SetMode.h>
+#include <std_msgs/Float32.h>
+#include "roboy_plexus/A1335.hpp"
 
 #define THUMB 0
 #define INDEXFINGER 1
@@ -80,7 +82,7 @@ public:
 private:
     ros::NodeHandlePtr nh;
     ros::Subscriber handCommand_sub, fingerCommand_sub;
-    ros::Publisher handStatus_pub;
+    ros::Publisher handStatus_pub, joint_angle_pub;
     ros::ServiceServer setMode_srv;
     boost::shared_ptr<std::thread> handIMUThread;
     bool keep_publishing = true;
@@ -88,6 +90,8 @@ private:
     vector<uint8_t> deviceIDs;
     uint8_t id = 0;
     HandControl::CommandFrame frame[4];
+    A1335Ptr joint_angle;
+    float elbow_joint_angle = 0;
     string hand;
 };
 

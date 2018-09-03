@@ -183,3 +183,5 @@ private:
     uint8_t deviceID;
     string str;
 };
+
+typedef boost::shared_ptr<A1335> A1335Ptr;

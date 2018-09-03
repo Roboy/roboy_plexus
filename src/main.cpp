@@ -115,20 +115,24 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-//    if (!ros::isInitialized()) {
-//        int argc = 0;
-//        char **argv = NULL;
-//        ros::init(argc, argv, "roboy_plexus");
-//        ros::start();
-//    }
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "roboy_plexus");
+        ros::start();
+    }
 //
-//    I2C i2c(h2p_lw_i2c_addr[0]);
-//    vector<uint8_t> active_devices;
-//    i2c.checkAddressSpace(0,127,active_devices);
-//    ROS_INFO("found %ld active devices", active_devices.size());
-//    for(auto device:active_devices)
-//        printf("%x\t",device);
-//    cout << endl;
+//    ros::Duration d(0.1);
+//    while(ros::ok()) {
+//        I2C i2c(h2p_lw_i2c_addr[0]);
+//        vector <uint8_t> active_devices;
+//        i2c.checkAddressSpace(0, 127, active_devices);
+//        ROS_INFO("found %ld active devices", active_devices.size());
+//        for (auto device:active_devices)
+//            printf("%x\t", device);
+//        cout << endl;
+//        d.sleep();
+//    }
 
 //    vector<uint8_t> deviceIDs = {0xF};
 //    vector<uint8_t> motorids = {0};
@@ -156,10 +160,10 @@ int main(int argc, char *argv[]) {
 
 
 ////
-    u_int8_t id = IORD(h2p_lw_switches_addr,0)&0x7;
-    vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-    HandControl handControl(h2p_lw_i2c_addr[0], deviceIDs, id);
-    handControl.test();
+//    u_int8_t id = IORD(h2p_lw_switches_addr,0)&0x7;
+//    vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//    HandControl handControl(h2p_lw_i2c_addr[0], deviceIDs, id);
+//    handControl.test();
 
     MyoControlPtr myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
 ////

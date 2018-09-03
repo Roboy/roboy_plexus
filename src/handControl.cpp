@@ -2,11 +2,11 @@
 
 HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):deviceIDs(deviceIDs), id(id){
 
-    if(!id)
+    if(!id) {
         hand = "left";
-    else
+    }else {
         hand = "right";
-
+    }
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
@@ -27,6 +27,15 @@ HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):
 
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
     handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
+    vector<uint8_t> deviceIDs2 = {0xF};
+    vector<uint8_t> motorids = {0};
+    joint_angle.reset(new A1335(i2c_base,motorids,deviceIDs2));
+    if(!id) {
+        joint_angle_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/joint_angle/elbow_left",1);
+    }else {
+        joint_angle_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/joint_angle/elbow_right",1);
+    }
+
     fingerCommand_sub = nh->subscribe("/roboy/middleware/FingerCommand", 1, &HandControl::fingerCommandCB, this);
     setMode_srv = nh->advertiseService("/roboy/control/hand/" + hand,
                                        &HandControl::setHandModeService, this);
@@ -132,7 +141,7 @@ void HandControl::openHand() {
 }
 
 void HandControl::handStatusPublisher(){
-    ros::Rate rate(2);
+    ros::Rate rate(30);
     while (keep_publishing) {
         roboy_communication_middleware::HandStatus msg;
         msg.id = id;
@@ -153,6 +162,14 @@ void HandControl::handStatusPublisher(){
             msg.acc_z.push_back(sensor_data[arm_board].acc[2]);
         }
         handStatus_pub.publish(msg);
+        std_msgs::Float32 msg2;
+
+        vector<A1335State> state;
+        joint_angle->readAngleData(state);
+        elbow_joint_angle = (elbow_joint_angle*0.9-((state.front().angle-50.0)/180.0*M_PI)*0.1);
+        msg2.data = elbow_joint_angle;
+        joint_angle_pub.publish(msg2);
+
         rate.sleep();
     }
 }
