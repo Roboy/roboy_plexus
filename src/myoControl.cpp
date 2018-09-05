@@ -281,20 +281,23 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
     stringstream str;
     str << "configuring myoBricks\ni2c device ID | gear box ratio | encoder multiplier" << endl;
     for(auto motor:motorIDs){
-        myo_brick |= (1<<motor);
-        MYO_WRITE_myo_brick_device_id(myo_base[0],motor,deviceIDs[i]);
-        MYO_WRITE_myo_brick_gear_box_ratio(myo_base[0],motor,gearBoxRatio[i]);
-        MYO_WRITE_myo_brick_encoder_multiplier(myo_base[0],motor,encoderMultiplier[i]);
-        int ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[0],motor);
-        int multiplier = MYO_READ_myo_brick_encoder_multiplier(myo_base[0],motor);
-        if(ratio!=gearBoxRatio[i] || multiplier!=encoderMultiplier[i]) // if the value was not written correctly, we abort!
+        int myoControlMotor = motor - NUMBER_OF_MOTORS_MYOCONTROL_0;
+        myo_brick |= (1<<myoControlMotor);
+        MYO_WRITE_myo_brick_device_id(myo_base[1],myoControlMotor,deviceIDs[i]);
+        MYO_WRITE_myo_brick_gear_box_ratio(myo_base[1],myoControlMotor,gearBoxRatio[i]);
+        MYO_WRITE_myo_brick_encoder_multiplier(myo_base[1],myoControlMotor,encoderMultiplier[i]);
+        int id = MYO_READ_myo_brick_device_id(myo_base[1],myoControlMotor);
+        int ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[1],myoControlMotor);
+        int multiplier = MYO_READ_myo_brick_encoder_multiplier(myo_base[1],myoControlMotor);
+        if(ratio!=gearBoxRatio[i] || multiplier!=encoderMultiplier[i]) { // if the value was not written correctly, we abort!
+            ROS_INFO("id %d, ratio %d, multiplier %d", id, ratio, multiplier);
             return false;
+        }
         str << (int)deviceIDs[i] << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
         i++;
     }
     ROS_INFO_STREAM(str.str());
-    // TODO: for now only first SPI bus can be used for myoBricks
-    MYO_WRITE_myo_brick(myo_base[0],myo_brick);
+    MYO_WRITE_myo_brick(myo_base[1],myo_brick);
     return true;
 }
 

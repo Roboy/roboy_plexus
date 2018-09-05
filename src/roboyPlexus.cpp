@@ -70,7 +70,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                 vector<int32_t> gearBoxRatio = {62, 62, 62};
                 vector<int32_t> encoderMultiplier = {1, 1, 1};
                 if(!myoControl->configureMyoBricks(myo_bricks[SPINE_LEFT],deviceIDs,encoderMultiplier,gearBoxRatio))
-                    ROS_ERROR("could not configure myoBricks");
+                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
             }
             break;
         }
@@ -83,11 +83,17 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                 vector<int32_t> gearBoxRatio = {62, 62, 62};
                 vector<int32_t> encoderMultiplier = {1, 1, 1};
                 if(!myoControl->configureMyoBricks(myo_bricks[SPINE_RIGHT],deviceIDs,encoderMultiplier,gearBoxRatio))
-                    ROS_ERROR("could not configure myoBricks");
+                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
             }
             break;
         }
         case SHOULDER_LEFT: {
+//            vector<uint8_t> deviceIDs = {0xD, 0xC};
+//            vector<int32_t> gearBoxRatio = {84, 84};
+//            vector<int32_t> encoderMultiplier = {4, 4};
+//            if(!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT],deviceIDs,encoderMultiplier,gearBoxRatio))
+//                ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
+
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                        1);
             jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
@@ -520,10 +526,18 @@ void RoboyPlexus::motorStatusPublisher() {
         msg.power_sense = myoControl->getPowerSense();
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             msg.pwmRef.push_back(myoControl->getPWM(motor));
-            msg.position.push_back(myoControl->getPosition(motor));
-            msg.velocity.push_back(myoControl->getVelocity(motor));
-            msg.displacement.push_back(myoControl->getDisplacement(motor));
-            msg.current.push_back(myoControl->getCurrent(motor));
+            int16_t current = myoControl->getCurrent(motor);
+            if(current>=0) {
+                msg.position.push_back(myoControl->getPosition(motor));
+                msg.velocity.push_back(myoControl->getVelocity(motor));
+                msg.displacement.push_back(myoControl->getDisplacement(motor));
+                msg.current.push_back(current);
+            }else{
+                msg.position.push_back(0);
+                msg.velocity.push_back(0);
+                msg.displacement.push_back(0);
+                msg.current.push_back(0);
+            }
             msg.angle.push_back(myoControl->getMotorAngle(motor));
         }
         motorStatus_pub.publish(msg);
