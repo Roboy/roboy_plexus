@@ -6,6 +6,7 @@
 #include "roboy_plexus/controlActions.hpp"
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
+#include <roboy_soli/roboySoli.hpp>
 #include <roboy_communication_middleware/ADCvalue.h>
 #include <roboy_communication_middleware/ControlMode.h>
 #include <roboy_communication_middleware/DarkRoom.h>
@@ -21,7 +22,6 @@
 #include <roboy_communication_middleware/SetInt16.h>
 #include <roboy_communication_control/Behavior.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
-//#include <roboy_communication_control/StopRecordTrajectory.h>
 #include <roboy_communication_middleware/SystemCheck.h>
 #include <roboy_communication_control/ListItems.h>
 #include <std_srvs/SetBool.h>
@@ -45,7 +45,6 @@
 #include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-//#include "roboy_plexus/udpServer.hpp"
 #include "roboy_plexus/handControl.hpp"
 #include <sys/stat.h>
 #include <common_utilities/CommonDefinitions.h>
@@ -125,10 +124,12 @@ private:
      * @param msg motor command
      */
     void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
+
     /**
      * Motor Angle PID controller
      */
     void motorAnglePID();
+
     /**
      * Service for turning on/off hand
      * @param req
@@ -181,7 +182,7 @@ private:
      * @return
      */
     bool SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
-                                 roboy_communication_middleware::SystemCheck::Response &res);
+                            roboy_communication_middleware::SystemCheck::Response &res);
 
     /**
      * Motor setpoints trajectory recording callback.
@@ -322,12 +323,15 @@ private:
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
-            setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
+            setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
+            soliGetData_srv, soli_srv, soliGetFrameFormat_srv, soliSetFrameFormat_srv, soliGetAdcSamplerate_srv,
+            soliSetAdcSamplerate_srv, soliGetChirpDuration_srv, soliSetFMCWConfiguration_srv, soliGetFMCWConfiguration_srv,
+            soliGetFrameInfo_srv;
     map<int, int> setPoint_backup;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
-    map<int,int> rotationCounter;
-    map<int,float> motorAngles;
+    map<int, int> rotationCounter;
+    map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
     HandControlPtr handControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
@@ -375,9 +379,10 @@ private:
 
     string ethaddr;
 
-    boost::shared_ptr<TLV493D> tlv493D0[2];
+    vector<boost::shared_ptr<TLV493D>> tlv493D0;
 
     bool executeAction(string actions);
+
     bool executeActions(vector<string> actions);
 
     vector<string> expandBehavior(string name);

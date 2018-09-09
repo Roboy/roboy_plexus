@@ -106,6 +106,20 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
+
+            soliInitSensor();
+
+            soliGetData_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetData", soliGetData);
+            soli_srv = nh->advertiseService("/roboy/middleware/leftHand/soli", soli);
+            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameFormat", soliGetFrameFormat);
+            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFrameFormat", soliSetFrameFormat);
+            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
+            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
+            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetChirpDuration", soliGetChirpDuration);
+            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
+            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
+            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
+
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -117,6 +131,16 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            magneticsShoulderThread = boost::shared_ptr<std::thread>(
 //                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //            magneticsShoulderThread->detach();
+
+            vector<uint8_t> deviceaddress = {0b1001010};//
+            vector<int> devicepins = {255};
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
+
+            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+            magneticsShoulderThread->detach();
             break;
         }
         case SHOULDER_RIGHT: {
@@ -132,6 +156,20 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
+
+            soliInitSensor();
+
+            soliGetData_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetData", soliGetData);
+            soli_srv = nh->advertiseService("/roboy/middleware/rightHand/soli", soli);
+            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameFormat", soliGetFrameFormat);
+            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFrameFormat", soliSetFrameFormat);
+            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
+            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
+            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetChirpDuration", soliGetChirpDuration);
+            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
+            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
+            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameInfo", soliGetFrameInfo);
+
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -143,6 +181,16 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            magneticsShoulderThread = boost::shared_ptr<std::thread>(
 //                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //            magneticsShoulderThread->detach();
+
+            vector<uint8_t> deviceaddress = {0b1001010};//
+            vector<int> devicepins = {255};
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
+
+            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+            magneticsShoulderThread->detach();
             break;
         }
         default: {
@@ -550,8 +598,9 @@ void RoboyPlexus::magneticShoulderJointPublisher(){
     while (keep_publishing) {
         roboy_communication_middleware::MagneticSensor msg;
         msg.id = id;
-        tlv493D0[0]->read(msg.x,msg.y,msg.z);
-        tlv493D0[1]->read(msg.x,msg.y,msg.z);
+        for(auto tlv:tlv493D0) {
+            tlv->read(msg.x, msg.y, msg.z);
+        }
         magneticSensor_pub.publish(msg);
         rate.sleep();
     }

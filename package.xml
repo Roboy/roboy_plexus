@@ -15,6 +15,7 @@
   <depend>roboy_communication_middleware</depend>
   <depend>roboy_communication_control</depend>
   <depend>common_utilities</depend>
+  <depend>roboy_soli</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

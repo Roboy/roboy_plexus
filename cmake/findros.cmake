@@ -10,6 +10,7 @@ set(ros_LIBRARIES
         ${ROS_ROOT_DIR}/lib/librostime.so
         ${ROS_ROOT_DIR}/lib/libroscpp_serialization.so
         ${ROS_ROOT_DIR}/lib/libactionlib.so
+        ${ROS_ROOT_DIR}/lib/libroboy_soli.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libboost_system.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libboost_thread.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/liblog4cxx.so

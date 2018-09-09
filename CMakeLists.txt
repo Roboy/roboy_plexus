@@ -17,8 +17,19 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     # Dependencies
     #==============================================================================
-    find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation rviz tf tf_conversions
-            visualization_msgs roboy_communication_middleware roboy_communication_control common_utilities)
+    find_package(catkin REQUIRED COMPONENTS
+            roscpp
+            std_msgs
+            message_generation
+            rviz
+            tf
+            tf_conversions
+            visualization_msgs
+            roboy_communication_middleware
+            roboy_communication_control
+            common_utilities
+            roboy_soli
+            )
     include(findros)
     # Eigen
     find_package(PkgConfig REQUIRED)
@@ -29,7 +40,13 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     pkg_check_modules(yaml-cpp REQUIRED yaml-cpp)
     include_directories(${yaml-cpp_INCLUDE_DIRS})
 
-    catkin_package(CATKIN_DEPENDS message_runtime roboy_communication_middleware roboy_communication_control common_utilities)
+    catkin_package(CATKIN_DEPENDS
+            message_runtime
+            roboy_communication_middleware
+            roboy_communication_control
+            common_utilities
+            roboy_soli
+            )
 
     SET(ALT_DEVICE_FAMILY soc_cv_av)
     add_definitions(-D${ALT_DEVICE_FAMILY})
@@ -68,7 +85,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/controlActions.hpp
             include/roboy_plexus/handControl.hpp
             )
-    add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp)
+    add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp roboy_soli_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
 
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
