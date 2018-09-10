@@ -94,12 +94,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            if(!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT],deviceIDs,encoderMultiplier,gearBoxRatio))
 //                ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
 
-            if(i2c_base[0]!=nullptr){ // start hand
-                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[1], deviceIDs, false));
-                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
-                                                     &RoboyPlexus::HandPower, this);
-            }
+//            if(i2c_base[0]!=nullptr){ // start hand
+//                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//                handControl.reset(new HandControl(i2c_base[1], deviceIDs, false));
+//                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
+//                                                     &RoboyPlexus::HandPower, this);
+//            }
 
 //            soliInitSensor();
 //
@@ -678,22 +678,22 @@ bool RoboyPlexus::HandPower(std_srvs::SetBool::Request &req, std_srvs::SetBool::
 
 bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,
                                      roboy_communication_middleware::MotorConfigService::Response &res) {
-    string str = "INVALID";
-    if(req.config.control_mode[0]==POSITION)
-        str = "POSITION";
-    if(req.config.control_mode[0]==VELOCITY)
-        str = "VELOCITY";
-    if(req.config.control_mode[0]==DISPLACEMENT)
-        str = "DISPLACEMENT";
-    ROS_INFO("serving motor config service for %s control", str.c_str());
+    stringstream str;
     control_Parameters_t params;
     uint i = 0;
-    for (auto motor:req.config.motors) {
+    for (int motor:req.config.motors) {
         if (req.config.control_mode[i] < POSITION || req.config.control_mode[i] > DISPLACEMENT) {
             ROS_ERROR("trying to change control to an invalid control mode %d, available control modes: "
                               "[0]Position [1]Velocity [2]Displacement", req.config.control_mode[i]);
+            i++;
             continue;
         }
+        if(req.config.control_mode[i]==POSITION)
+            str << "\t" << (int)motor <<": POSITION";
+        if(req.config.control_mode[i]==VELOCITY)
+            str << "\t" << (int)motor <<": VELOCITY";
+        if(req.config.control_mode[i]==DISPLACEMENT)
+            str << "\t" << (int)motor <<": DISPLACEMENT";
         params.outputPosMax = req.config.outputPosMax[i];
         params.outputNegMax = req.config.outputNegMax[i];
         params.spPosMax = req.config.spPosMax[i];
@@ -709,12 +709,13 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         params.outputDivider = req.config.outputDivider[i];
         myoControl->changeControlParameters(motor,params);
         res.mode.push_back(params.control_mode);
-//        myoControl->changeControl(motor, req.config.control_mode[i], params, req.setPoints[i]);
-//        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
-//                 req.setPoints[i]);
-//        control_mode[motor] = req.config.control_mode[i];
+        myoControl->changeControl(motor, req.config.control_mode[i], params, 0);
+        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i], 30);
+        control_mode[motor] = req.config.control_mode[i];
         i++;
     }
+
+    ROS_INFO("serving motor config service for %s control", str.str().c_str());
     return true;
 }
 

@@ -165,7 +165,7 @@ void HandControl::handStatusPublisher(){
 
         vector<A1335State> state;
         joint_angle->readAngleData(state);
-        elbow_joint_angle = (elbow_joint_angle*0.9-((state.front().angle-50.0)/180.0*M_PI)*0.1);
+        elbow_joint_angle = elbow_joint_angle*0.97+(state.front().angle-50.0)*0.03;
         msg2.data = elbow_joint_angle;
         joint_angle_pub.publish(msg2);
 

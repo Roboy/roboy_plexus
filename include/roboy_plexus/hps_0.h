@@ -20,50 +20,6 @@
  */
 
 /*
- * Macros for device 'I2C_3', class 'I2C'
- * The macros are prefixed with 'I2C_3_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_3_COMPONENT_TYPE I2C
-#define I2C_3_COMPONENT_NAME I2C_3
-#define I2C_3_BASE 0x0
-#define I2C_3_SPAN 32
-#define I2C_3_END 0x1f
-
-/*
- * Macros for device 'I2C_2', class 'I2C'
- * The macros are prefixed with 'I2C_2_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_2_COMPONENT_TYPE I2C
-#define I2C_2_COMPONENT_NAME I2C_2
-#define I2C_2_BASE 0x20
-#define I2C_2_SPAN 32
-#define I2C_2_END 0x3f
-
-/*
- * Macros for device 'I2C_1', class 'I2C'
- * The macros are prefixed with 'I2C_1_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_1_COMPONENT_TYPE I2C
-#define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x40
-#define I2C_1_SPAN 32
-#define I2C_1_END 0x5f
-
-/*
- * Macros for device 'I2C_0', class 'I2C'
- * The macros are prefixed with 'I2C_0_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_0_COMPONENT_TYPE I2C
-#define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x60
-#define I2C_0_SPAN 32
-#define I2C_0_END 0x7f
-
-/*
  * Macros for device 'SWITCHES', class 'altera_avalon_pio'
  * The macros are prefixed with 'SWITCHES_'.
  * The prefix is the slave descriptor.
@@ -112,17 +68,6 @@
 #define LED_RESET_VALUE 0
 
 /*
- * Macros for device 'adc_ltc2308_0', class 'adc_ltc2308'
- * The macros are prefixed with 'ADC_LTC2308_0_'.
- * The prefix is the slave descriptor.
- */
-#define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
-#define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
-#define ADC_LTC2308_0_BASE 0xa0
-#define ADC_LTC2308_0_SPAN 8
-#define ADC_LTC2308_0_END 0xa7
-
-/*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
  * The macros are prefixed with 'SYSID_QSYS_'.
  * The prefix is the slave descriptor.
@@ -133,7 +78,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1536574184
+#define SYSID_QSYS_TIMESTAMP 1536620238
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
