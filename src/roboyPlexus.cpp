@@ -88,38 +88,34 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         case SHOULDER_LEFT: {
-//            vector<uint8_t> deviceIDs = {0xD, 0xC};
-//            vector<int32_t> gearBoxRatio = {84, 84};
-//            vector<int32_t> encoderMultiplier = {4, 4};
+//            vector<uint8_t> deviceIDs = {0xC};
+//            vector<int32_t> gearBoxRatio = {62};
+//            vector<int32_t> encoderMultiplier = {4};
 //            if(!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT],deviceIDs,encoderMultiplier,gearBoxRatio))
 //                ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
 
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                       1);
-            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
-                    "/roboy/middleware/JointStatus", 1);
-            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-                    "/roboy/middleware/MagneticSensor", 1, this);
-            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
+            if(i2c_base[0]!=nullptr){ // start hand
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[0], deviceIDs, false));
+                handControl.reset(new HandControl(i2c_base[1], deviceIDs, false));
                 handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
                                                      &RoboyPlexus::HandPower, this);
             }
 
-            soliInitSensor();
+//            soliInitSensor();
+//
+//            soliGetData_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetData", soliGetData);
+//            soli_srv = nh->advertiseService("/roboy/middleware/leftHand/soli", soli);
+//            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameFormat", soliGetFrameFormat);
+//            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFrameFormat", soliSetFrameFormat);
+//            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
+//            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
+//            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetChirpDuration", soliGetChirpDuration);
+//            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
+//            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
+//            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
 
-            soliGetData_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetData", soliGetData);
-            soli_srv = nh->advertiseService("/roboy/middleware/leftHand/soli", soli);
-            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameFormat", soliGetFrameFormat);
-            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFrameFormat", soliSetFrameFormat);
-            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
-            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
-            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetChirpDuration", soliGetChirpDuration);
-            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
-            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
-            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
-
+//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+//                    "/roboy/middleware/MagneticSensor", 1, this);
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -132,15 +128,15 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //            magneticsShoulderThread->detach();
 
-            vector<uint8_t> deviceaddress = {0b1001010};//
-            vector<int> devicepins = {255};
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
+//            vector<uint8_t> deviceaddress = {0b1001010};//
+//            vector<int> devicepins = {255};
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
 
-            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-            magneticsShoulderThread->detach();
+//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//            magneticsShoulderThread->detach();
             break;
         }
         case SHOULDER_RIGHT: {
@@ -157,18 +153,18 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                                                      &RoboyPlexus::HandPower, this);
             }
 
-            soliInitSensor();
-
-            soliGetData_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetData", soliGetData);
-            soli_srv = nh->advertiseService("/roboy/middleware/rightHand/soli", soli);
-            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameFormat", soliGetFrameFormat);
-            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFrameFormat", soliSetFrameFormat);
-            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
-            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
-            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetChirpDuration", soliGetChirpDuration);
-            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
-            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
-            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameInfo", soliGetFrameInfo);
+//            soliInitSensor();
+//
+//            soliGetData_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetData", soliGetData);
+//            soli_srv = nh->advertiseService("/roboy/middleware/rightHand/soli", soli);
+//            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameFormat", soliGetFrameFormat);
+//            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFrameFormat", soliSetFrameFormat);
+//            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
+//            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
+//            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetChirpDuration", soliGetChirpDuration);
+//            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
+//            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
+//            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameInfo", soliGetFrameInfo);
 
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
@@ -182,15 +178,15 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //            magneticsShoulderThread->detach();
 
-            vector<uint8_t> deviceaddress = {0b1001010};//
-            vector<int> devicepins = {255};
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
+//            vector<uint8_t> deviceaddress = {0b1001010};//
+//            vector<int> devicepins = {255};
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
 
-            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-            magneticsShoulderThread->detach();
+//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//            magneticsShoulderThread->detach();
             break;
         }
         default: {
@@ -528,12 +524,11 @@ void RoboyPlexus::jointStatusPublisher() {
     while (keep_publishing) {
         roboy_communication_middleware::JointStatus msg;
         msg.id = id;
+        vector<A1335State> jointState;
         for (uint i = 0; i < jointAngle.size(); i++) {
-            jointAngle[i]->readAbsAngle(msg.absAngles);
-            jointAngle[i]->readRelAngle(msg.relAngles);
-            jointAngle[i]->readMagnetStatus(msg.tooFar, msg.tooClose);
-            jointAngle[i]->readTacho(msg.tacho);
-            jointAngle[i]->readAgcGain(msg.agcGain);
+            jointAngle[i]->readAngleData(jointState);
+            msg.absAngles.push_back(jointState[i].angle);
+            msg.relAngles.push_back(jointState[i].angle);
         }
         jointStatus_pub.publish(msg);
         rate.sleep();

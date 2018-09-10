@@ -229,7 +229,10 @@ uint16_t MyoControl::getControlMode(int motor) {
 }
 
 int32_t MyoControl::getMotorAngle(int motor){
-    return MYO_READ_myo_brick_motor_angle(myo_base[motor / MOTORS_PER_MYOCONTROL],motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
+    if(MYO_READ_myo_brick_i2c_ack_error(myo_base[motor / MOTORS_PER_MYOCONTROL],motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0)))
+        return 69;
+    else
+        return MYO_READ_myo_brick_motor_angle(myo_base[motor / MOTORS_PER_MYOCONTROL],motor - (motor >= MOTORS_PER_MYOCONTROL ? MOTORS_PER_MYOCONTROL : 0));
 }
 
 bool MyoControl::getPowerSense(){
@@ -274,16 +277,18 @@ void MyoControl::setDisplacement(int motor, int16_t setPoint){
 
 bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<int32_t> &encoderMultiplier,
                                     vector<int32_t> &gearBoxRatio){
-    if(motorIDs.size()!=deviceIDs.size())
+    if(motorIDs.size()<deviceIDs.size()) {
+        cerr << "provided " << deviceIDs.size() << " deviceIDs but only " << motorIDs.size() << " motorIDs";
         return false;
+    }
     uint32_t myo_brick = 0;
     uint i = 0;
     stringstream str;
     str << "configuring myoBricks\ni2c device ID | gear box ratio | encoder multiplier" << endl;
-    for(auto motor:motorIDs){
-        int myoControlMotor = motor - NUMBER_OF_MOTORS_MYOCONTROL_0;
+    for(auto device:deviceIDs){
+        int myoControlMotor = motorIDs[i] - NUMBER_OF_MOTORS_MYOCONTROL_0;
         myo_brick |= (1<<myoControlMotor);
-        MYO_WRITE_myo_brick_device_id(myo_base[1],myoControlMotor,deviceIDs[i]);
+        MYO_WRITE_myo_brick_device_id(myo_base[1],myoControlMotor,device);
         MYO_WRITE_myo_brick_gear_box_ratio(myo_base[1],myoControlMotor,gearBoxRatio[i]);
         MYO_WRITE_myo_brick_encoder_multiplier(myo_base[1],myoControlMotor,encoderMultiplier[i]);
         int id = MYO_READ_myo_brick_device_id(myo_base[1],myoControlMotor);
@@ -293,7 +298,7 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
             ROS_INFO("id %d, ratio %d, multiplier %d", id, ratio, multiplier);
             return false;
         }
-        str << (int)deviceIDs[i] << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
+        str << (int)device << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
         i++;
     }
     ROS_INFO_STREAM(str.str());

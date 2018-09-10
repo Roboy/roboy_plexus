@@ -26,12 +26,9 @@ bool TLV493D::initTLV(uint8_t &deviceaddress, int devicepin) {
     if (devicepin == 255){
         ADDR_pin = false;
         IICAddr  = 0;
-        setaddr  = 0b1011110;
-        ROS_INFO("No device power pin selected, asuming device is on and continuing with the default address: %x .\n"
-                         "Triggering general reset to make sure device is configured correctly",setaddr);
-        IOWR(i2c_base, i2c->GPIO_CONTROL, (gpioreg|0b10000)); // pull sda line high
-        i2c->write(0,1,1);   // Clock in address 0 to reset 'ALL' devices. And write 1,
-        // very important to keep SDA line up or else address changes to 0b00011111
+        setaddr  = deviceaddress;
+        IOWR(i2c_base, i2c->GPIO_CONTROL, (gpioreg|0b00000));
+        i2c->write(0,1,1);
     }else{
         ADDR_pin = bitRead(deviceaddress,6);
         IICAddr  = (!bitRead(deviceaddress,4)<<1)|(!bitRead(deviceaddress,2));

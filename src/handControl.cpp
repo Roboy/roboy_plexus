@@ -28,8 +28,7 @@ HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
     handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
     vector<uint8_t> deviceIDs2 = {0xF};
-    vector<uint8_t> motorids = {0};
-    joint_angle.reset(new A1335(i2c_base,motorids,deviceIDs2));
+    joint_angle.reset(new A1335(i2c_base,deviceIDs2));
     if(!id) {
         joint_angle_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/joint_angle/elbow_left",1);
     }else {

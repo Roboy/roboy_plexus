@@ -335,13 +335,12 @@ private:
     boost::shared_ptr<MyoControl> myoControl;
     HandControlPtr handControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, magneticsShoulderThread;
+            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
     bool emergency_stop = false;
-    vector<boost::shared_ptr<AM4096>> jointAngle; // joint angle sensors
-    vector<boost::shared_ptr<A1335>> motorAngle; // motor angle of new motor units
+    vector<boost::shared_ptr<A1335>> motorAngle, jointAngle; // motor angle of new motor units
     int file;
     const char *filename = "/dev/i2c-0";
     uint8_t id;

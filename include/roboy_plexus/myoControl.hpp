@@ -80,6 +80,7 @@
 #define MYO_READ_myo_brick_gear_box_ratio(base,motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
 #define MYO_READ_myo_brick_encoder_multiplier(base,motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
 #define MYO_READ_outputDivider(base,motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
+#define MYO_READ_myo_brick_i2c_ack_error(base,motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )

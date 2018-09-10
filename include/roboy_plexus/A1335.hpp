@@ -66,10 +66,9 @@ public:
     /**
      * Constructor
      * @param i2c_base i2c base (cf hps_0.h )
-     * @param motorIDs active motor ids
      * @param deviceIDs active device ids
      */
-    A1335(int32_t* i2c_base, vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs);
+    A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs);
 
     ~A1335();
     /**
@@ -97,8 +96,6 @@ private:
     bool readDeviceState(uint8_t deviceaddress, A1335State* state);
 
     bool searchAddressSpace();
-public:
-    vector<uint8_t> motorIDs;
 
 private:
     vector<uint8_t> deviceIDs;
