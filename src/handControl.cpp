@@ -1,6 +1,7 @@
 #include "roboy_plexus/handControl.hpp"
 
-HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):deviceIDs(deviceIDs), id(id){
+HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_t> handDeviceIDs, bool id):
+        myo_base(myo_base), handDeviceIDs(handDeviceIDs), elbowDeviceID(elbowDeviceID), id(id){
 
     if(!id) {
         hand = "left";
@@ -15,24 +16,79 @@ HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    i2c = new I2C(i2c_base);
-    for(auto device:deviceIDs){
-        i2c->write(device,255<<24,1);
-        if(!i2c->ack_error()) {
-            ROS_INFO("arm board with deviceID %x is active", device);
-        }else
-            ROS_WARN("arm board with deviceID %x is not active", device);
+    MYO_WRITE_elbow_Kp_joint_angle(myo_base,100);
+    MYO_WRITE_elbow_Kd_joint_angle(myo_base,0);
+    MYO_WRITE_elbow_agonist(myo_base,agonist);
+    MYO_WRITE_elbow_antagonist(myo_base,antagonist);
+    MYO_WRITE_Kp(myo_base,agonist,60);
+    MYO_WRITE_outputDivider(myo_base,agonist,100);
+    MYO_WRITE_Kp(myo_base,antagonist,60);
+    MYO_WRITE_outputDivider(myo_base,antagonist,100);
+    MYO_WRITE_Kd(myo_base,agonist,0);
+    MYO_WRITE_Kd(myo_base,antagonist,0);
+    MYO_WRITE_elbow_joint_angle_offset(myo_base,-600);
+    MYO_WRITE_elbow_joint_pretension(myo_base,120);
+    MYO_WRITE_elbow_joint_deadband(myo_base,0);
+    MYO_WRITE_elbow_joint_angle_setpoint(myo_base,0);
+    MYO_WRITE_elbow_joint_angle_device_id(myo_base,elbowDeviceID);
+    MYO_WRITE_elbow_joint_control(myo_base,1);
+
+    ROS_INFO("Configuring elbow joint with"
+                     "\nKp %d\nKd %d\nagonist %d"
+                     "\nantagonist %d\njoint_angle_offset %d"
+                     "\njoint_angle_setpoint %d\njoint_angle_device_id %x",
+             MYO_READ_elbow_Kp_joint_angle(myo_base),MYO_READ_elbow_Kd_joint_angle(myo_base),
+             MYO_READ_elbow_antagonist(myo_base),MYO_READ_elbow_agonist(myo_base),
+             MYO_READ_elbow_joint_angle_offset(myo_base),MYO_READ_elbow_joint_angle_setpoint(myo_base),
+             MYO_READ_elbow_joint_angle_device_id(myo_base));
+
+    MYO_WRITE_arm_board_device_id(myo_base,0,0x50);
+    MYO_WRITE_arm_board_device_id(myo_base,1,0x51);
+    MYO_WRITE_arm_board_device_id(myo_base,2,0x52);
+    MYO_WRITE_arm_board_device_id(myo_base,3,0x53);
+    for(int board = 0; board<4; board++) {
+        MYO_WRITE_motor0(myo_base, board, 60);
+        MYO_WRITE_motor1(myo_base, board, 60);
+        MYO_WRITE_motor2(myo_base, board, 60);
+        MYO_WRITE_motor3(myo_base, board, 60);
+        MYO_WRITE_motor4(myo_base, board, 60);
     }
-    neutralHand();
+    MYO_WRITE_hand_control(myo_base,0);
+
+    ROS_INFO("Enableing hand control with"
+                     "\nboard 0: %x setpoints %d %d %d %d %d"
+                     "\nboard 1: %x setpoints %d %d %d %d %d"
+                     "\nboard 2: %x setpoints %d %d %d %d %d"
+                     "\nboard 3: %x setpoints %d %d %d %d %d",
+             MYO_READ_arm_board_device_id(myo_base,0),
+             MYO_READ_motor0(myo_base,0),MYO_READ_motor1(myo_base,0),MYO_READ_motor2(myo_base,0),MYO_READ_motor3(myo_base,0),MYO_READ_motor4(myo_base,0),
+             MYO_READ_arm_board_device_id(myo_base,1),
+             MYO_READ_motor0(myo_base,1),MYO_READ_motor1(myo_base,1),MYO_READ_motor2(myo_base,1),MYO_READ_motor3(myo_base,1),MYO_READ_motor4(myo_base,1),
+             MYO_READ_arm_board_device_id(myo_base,2),
+             MYO_READ_motor0(myo_base,2),MYO_READ_motor1(myo_base,2),MYO_READ_motor2(myo_base,2),MYO_READ_motor3(myo_base,2),MYO_READ_motor4(myo_base,2),
+             MYO_READ_arm_board_device_id(myo_base,3),
+             MYO_READ_motor0(myo_base,3),MYO_READ_motor1(myo_base,3),MYO_READ_motor2(myo_base,3),MYO_READ_motor3(myo_base,3),MYO_READ_motor4(myo_base,3)
+    );
+
+    bool hand_control_enabled = MYO_READ_hand_control(myo_base);
+    int board_active = MYO_READ_arm_board_ack_error(myo_base);
+    ROS_INFO(
+            "board %s\n"
+            "board %s\n"
+            "board %s\n"
+            "board %s",
+            (((board_active>>0)&&hand_control_enabled)?"offline":"online"),
+            (((board_active>>1)&&hand_control_enabled)?"offline":"online"),
+            (((board_active>>2)&&hand_control_enabled)?"offline":"online"),
+            (((board_active>>3)&&hand_control_enabled)?"offline":"online")
+    );
 
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
     handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
-    vector<uint8_t> deviceIDs2 = {0xF};
-    joint_angle.reset(new A1335(i2c_base,deviceIDs2));
     if(!id) {
-        joint_angle_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/joint_angle/elbow_left",1);
+        elbowCommand_sub = nh->subscribe("/roboy/middleware/joint_angle/elbow_left", 1, &HandControl::elbowCommandCB, this);
     }else {
-        joint_angle_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/joint_angle/elbow_right",1);
+        elbowCommand_sub = nh->subscribe("/roboy/middleware/joint_angle/elbow_right", 1, &HandControl::elbowCommandCB, this);
     }
 
     fingerCommand_sub = nh->subscribe("/roboy/middleware/FingerCommand", 1, &HandControl::fingerCommandCB, this);
@@ -44,6 +100,8 @@ HandControl::HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id):
 }
 
 HandControl::~HandControl(){
+    MYO_WRITE_hand_control(myo_base,0);
+    MYO_WRITE_elbow_joint_control(myo_base,0);
     keep_publishing = false;
     if(handIMUThread->joinable()){
         ROS_INFO("waiting for IMU thread to terminate");
@@ -89,6 +147,12 @@ void HandControl::handCommandCB(const roboy_communication_middleware::HandComman
             }
         }
     }
+}
+
+void HandControl::elbowCommandCB(const std_msgs::Float32::ConstPtr &msg){
+    // convert to joint angle ticks
+    int32_t encoderTicks = (msg->data*4096/360.0);
+    MYO_WRITE_elbow_joint_angle_setpoint(myo_base,encoderTicks);
 }
 
 void HandControl::fingerCommandCB(const roboy_communication_middleware::FingerCommand::ConstPtr &msg){
@@ -160,14 +224,14 @@ void HandControl::handStatusPublisher(){
             msg.acc_y.push_back(sensor_data[arm_board].acc[1]);
             msg.acc_z.push_back(sensor_data[arm_board].acc[2]);
         }
-        handStatus_pub.publish(msg);
-        std_msgs::Float32 msg2;
 
-        vector<A1335State> state;
-        joint_angle->readAngleData(state);
-        elbow_joint_angle = elbow_joint_angle*0.97+(state.front().angle-50.0)*0.03;
-        msg2.data = elbow_joint_angle;
-        joint_angle_pub.publish(msg2);
+        msg.elbow_joint_angle = 360.0*MYO_READ_elbow_joint_angle(myo_base)/4096.0;
+        msg.elbow_joint_angle_setpoint = 360.0*MYO_READ_elbow_joint_angle_setpoint(myo_base)/4096.0;
+        msg.agonist_setpoint = MYO_READ_sp(myo_base, agonist);
+        msg.antagonist_setpoint = MYO_READ_sp(myo_base, antagonist);
+//        ROS_INFO_THROTTLE(1,"error %d",MYO_READ_joint_angle_error(myo_base));
+
+        handStatus_pub.publish(msg);
 
         rate.sleep();
     }
@@ -253,123 +317,123 @@ bool HandControl::command(vector<uint8_t> &setPoint, int board){
 }
 
 bool HandControl::readSensorData(vector<SensorFrame> &sensor_data){
-    bool ack_error = false;
-    int i = 0;
-    sensor_data.resize(deviceIDs.size());
-    for(auto device:deviceIDs){
-        vector<uint8_t> data;
-        i2c->read(device,0,12,data);
-        i2c->read(device,1,12,data);
-        i2c->read(device,2,12,data);
-        sensor_data[i].current[0] = (uint16_t)(data[1]<<8|data[0]);
-        sensor_data[i].current[1] = (uint16_t)(data[3]<<8|data[2]);
-        sensor_data[i].current[2] = (uint16_t)(data[5]<<8|data[4]);
-        sensor_data[i].current[3] = (uint16_t)(data[7]<<8|data[6]);
-        sensor_data[i].current[4] = (uint16_t)(data[9]<<8|data[8]);
-        sensor_data[i].current[5] = (uint16_t)(data[11]<<8|data[10]);
-
-        sensor_data[i].gyro[0] = ((int32_t)(data[15]<<24|data[14]<<16|data[13]<<8|data[12])*250.0f) / 32768.0f;
-        sensor_data[i].gyro[1] = ((int32_t)(data[19]<<24|data[18]<<16|data[17]<<8|data[16])*250.0f) / 32768.0f;
-        sensor_data[i].gyro[2] = ((int32_t)(data[23]<<24|data[22]<<16|data[21]<<8|data[20])*250.0f) / 32768.0f;
-        sensor_data[i].acc[0] = ((int32_t)(data[27]<<24|data[26]<<16|data[25]<<8|data[24])*2.0f) / 32768.0f;
-        sensor_data[i].acc[1] = ((int32_t)(data[31]<<24|data[30]<<16|data[29]<<8|data[28])*2.0f) / 32768.0f;
-        sensor_data[i].acc[2] = ((int32_t)(data[35]<<24|data[34]<<16|data[33]<<8|data[32])*2.0f) / 32768.0f;
-        if(i2c->ack_error())
-            ack_error = true;
-        i++;
-    }
-    return !ack_error;
+//    bool ack_error = false;
+//    int i = 0;
+//    sensor_data.resize(deviceIDs.size());
+//    for(auto device:deviceIDs){
+//        vector<uint8_t> data;
+//        i2c->read(device,0,12,data);
+//        i2c->read(device,1,12,data);
+//        i2c->read(device,2,12,data);
+//        sensor_data[i].current[0] = (uint16_t)(data[1]<<8|data[0]);
+//        sensor_data[i].current[1] = (uint16_t)(data[3]<<8|data[2]);
+//        sensor_data[i].current[2] = (uint16_t)(data[5]<<8|data[4]);
+//        sensor_data[i].current[3] = (uint16_t)(data[7]<<8|data[6]);
+//        sensor_data[i].current[4] = (uint16_t)(data[9]<<8|data[8]);
+//        sensor_data[i].current[5] = (uint16_t)(data[11]<<8|data[10]);
+//
+//        sensor_data[i].gyro[0] = ((int32_t)(data[15]<<24|data[14]<<16|data[13]<<8|data[12])*250.0f) / 32768.0f;
+//        sensor_data[i].gyro[1] = ((int32_t)(data[19]<<24|data[18]<<16|data[17]<<8|data[16])*250.0f) / 32768.0f;
+//        sensor_data[i].gyro[2] = ((int32_t)(data[23]<<24|data[22]<<16|data[21]<<8|data[20])*250.0f) / 32768.0f;
+//        sensor_data[i].acc[0] = ((int32_t)(data[27]<<24|data[26]<<16|data[25]<<8|data[24])*2.0f) / 32768.0f;
+//        sensor_data[i].acc[1] = ((int32_t)(data[31]<<24|data[30]<<16|data[29]<<8|data[28])*2.0f) / 32768.0f;
+//        sensor_data[i].acc[2] = ((int32_t)(data[35]<<24|data[34]<<16|data[33]<<8|data[32])*2.0f) / 32768.0f;
+//        if(i2c->ack_error())
+//            ack_error = true;
+//        i++;
+//    }
+//    return !ack_error;
 }
 
 bool HandControl::readSensorData(SensorFrame &sensor_data, int board){
-    bool ack_error = false;
-    if(board>deviceIDs.size()||board<0) {
-        ROS_ERROR("invalid board, only configured for %ld boards", deviceIDs.size());
-        return false;
-    }
-    vector<uint8_t> data;
-    i2c->read(deviceIDs[board],0,12,data);
-    i2c->read(deviceIDs[board],1,12,data);
-    i2c->read(deviceIDs[board],2,12,data);
-    sensor_data.current[0] = (uint16_t)(data[1]<<8|data[0]);
-    sensor_data.current[1] = (uint16_t)(data[3]<<8|data[2]);
-    sensor_data.current[2] = (uint16_t)(data[5]<<8|data[4]);
-    sensor_data.current[3] = (uint16_t)(data[7]<<8|data[6]);
-    sensor_data.current[4] = (uint16_t)(data[9]<<8|data[8]);
-    sensor_data.current[5] = (uint16_t)(data[11]<<8|data[10]);
-
-    sensor_data.gyro[0] = ((int32_t)(data[15]<<24|data[14]<<16|data[13]<<8|data[12])*250.0f) / 32768.0f;
-    sensor_data.gyro[1] = ((int32_t)(data[19]<<24|data[18]<<16|data[17]<<8|data[16])*250.0f) / 32768.0f;
-    sensor_data.gyro[2] = ((int32_t)(data[23]<<24|data[22]<<16|data[21]<<8|data[20])*250.0f) / 32768.0f;
-    sensor_data.acc[0] = ((int32_t)(data[27]<<24|data[26]<<16|data[25]<<8|data[24])*2.0f) / 32768.0f;
-    sensor_data.acc[1] = ((int32_t)(data[31]<<24|data[30]<<16|data[29]<<8|data[28])*2.0f) / 32768.0f;
-    sensor_data.acc[2] = ((int32_t)(data[35]<<24|data[34]<<16|data[33]<<8|data[32])*2.0f) / 32768.0f;
-    if(i2c->ack_error())
-        ack_error = true;
-    return !ack_error;
+//    bool ack_error = false;
+//    if(board>deviceIDs.size()||board<0) {
+//        ROS_ERROR("invalid board, only configured for %ld boards", deviceIDs.size());
+//        return false;
+//    }
+//    vector<uint8_t> data;
+//    i2c->read(deviceIDs[board],0,12,data);
+//    i2c->read(deviceIDs[board],1,12,data);
+//    i2c->read(deviceIDs[board],2,12,data);
+//    sensor_data.current[0] = (uint16_t)(data[1]<<8|data[0]);
+//    sensor_data.current[1] = (uint16_t)(data[3]<<8|data[2]);
+//    sensor_data.current[2] = (uint16_t)(data[5]<<8|data[4]);
+//    sensor_data.current[3] = (uint16_t)(data[7]<<8|data[6]);
+//    sensor_data.current[4] = (uint16_t)(data[9]<<8|data[8]);
+//    sensor_data.current[5] = (uint16_t)(data[11]<<8|data[10]);
+//
+//    sensor_data.gyro[0] = ((int32_t)(data[15]<<24|data[14]<<16|data[13]<<8|data[12])*250.0f) / 32768.0f;
+//    sensor_data.gyro[1] = ((int32_t)(data[19]<<24|data[18]<<16|data[17]<<8|data[16])*250.0f) / 32768.0f;
+//    sensor_data.gyro[2] = ((int32_t)(data[23]<<24|data[22]<<16|data[21]<<8|data[20])*250.0f) / 32768.0f;
+//    sensor_data.acc[0] = ((int32_t)(data[27]<<24|data[26]<<16|data[25]<<8|data[24])*2.0f) / 32768.0f;
+//    sensor_data.acc[1] = ((int32_t)(data[31]<<24|data[30]<<16|data[29]<<8|data[28])*2.0f) / 32768.0f;
+//    sensor_data.acc[2] = ((int32_t)(data[35]<<24|data[34]<<16|data[33]<<8|data[32])*2.0f) / 32768.0f;
+//    if(i2c->ack_error())
+//        ack_error = true;
+//    return !ack_error;
 }
 
 bool HandControl::write(vector<CommandFrame> &command){
-    int i=0;
-    bool ack_error = false;
-    for(auto device:deviceIDs){
-        i2c->write(device,(1<<24|command[i].data[2]<<16|command[i].data[1]<<8|command[i].data[0]),4);
-        i2c->write(device,(2<<24|command[i].data[5]<<16|command[i].data[4]<<8|command[i].data[3]),4);
-        i2c->write(device,(3<<24|command[i].data[8]<<16|command[i].data[7]<<8|command[i].data[6]),4);
-        i2c->write(device,(4<<24|0<<16|command[i].data[10]<<8|command[i].data[9]),4);
-        i++;
-        if(i2c->ack_error())
-            ack_error = true;
-    }
-    return !ack_error;
+//    int i=0;
+//    bool ack_error = false;
+//    for(auto device:deviceIDs){
+//        i2c->write(device,(1<<24|command[i].data[2]<<16|command[i].data[1]<<8|command[i].data[0]),4);
+//        i2c->write(device,(2<<24|command[i].data[5]<<16|command[i].data[4]<<8|command[i].data[3]),4);
+//        i2c->write(device,(3<<24|command[i].data[8]<<16|command[i].data[7]<<8|command[i].data[6]),4);
+//        i2c->write(device,(4<<24|0<<16|command[i].data[10]<<8|command[i].data[9]),4);
+//        i++;
+//        if(i2c->ack_error())
+//            ack_error = true;
+//    }
+//    return !ack_error;
 }
 
 bool HandControl::write(CommandFrame &command, int board){
-    int i=0;
-    bool ack_error = false;
-    if(board>deviceIDs.size()||board<0) {
-        ROS_ERROR("invalid board, only configured for %ld boards", deviceIDs.size());
-        return false;
-    }
-    i2c->write(deviceIDs[board],(1<<24|command.data[2]<<16|command.data[1]<<8|command.data[0]),4);
-    i2c->write(deviceIDs[board],(2<<24|command.data[5]<<16|command.data[4]<<8|command.data[3]),4);
-    i2c->write(deviceIDs[board],(3<<24|command.data[8]<<16|command.data[7]<<8|command.data[6]),4);
-    i2c->write(deviceIDs[board],(4<<24|0<<16|command.data[10]<<8|command.data[9]),4);
-    i++;
-    if(i2c->ack_error())
-        ack_error = true;
-    return !ack_error;
+//    int i=0;
+//    bool ack_error = false;
+//    if(board>deviceIDs.size()||board<0) {
+//        ROS_ERROR("invalid board, only configured for %ld boards", deviceIDs.size());
+//        return false;
+//    }
+//    i2c->write(deviceIDs[board],(1<<24|command.data[2]<<16|command.data[1]<<8|command.data[0]),4);
+//    i2c->write(deviceIDs[board],(2<<24|command.data[5]<<16|command.data[4]<<8|command.data[3]),4);
+//    i2c->write(deviceIDs[board],(3<<24|command.data[8]<<16|command.data[7]<<8|command.data[6]),4);
+//    i2c->write(deviceIDs[board],(4<<24|0<<16|command.data[10]<<8|command.data[9]),4);
+//    i++;
+//    if(i2c->ack_error())
+//        ack_error = true;
+//    return !ack_error;
 }
 
 void HandControl::test(){
-    vector<bool> success(deviceIDs.size(),true);
-    for(int board=0;board<deviceIDs.size();board++) {
-        for(int motor = 0; motor<5; motor++) {
-            for (uint8_t pos = 10; pos < 170; pos+=5) {
-                vector<uint8_t> setPoint = {150, 150, 150, 150, 150};
-                setPoint[motor] = pos;
-
-                HandControl::SensorFrame sensor_data;
-                success[board] = readSensorData(sensor_data, board) && command(setPoint, board);
-                if (!success[board])
-                    continue;
-                else {
-                    ROS_INFO("board %d motor %d current: %d", board, motor, sensor_data.current[motor]);
-                    ROS_INFO_THROTTLE(1, "\ncurrent: %d\t%d\t%d\t%d\t%d\t%d\n gyro: %f\t%f\t%f\n acc: %f\t%f\t%f",
-                                      sensor_data.current[0], sensor_data.current[1],
-                                      sensor_data.current[2], sensor_data.current[3], sensor_data.current[4],
-                                      sensor_data.current[5],
-                                      sensor_data.gyro[0], sensor_data.gyro[1], sensor_data.gyro[2],
-                                      sensor_data.acc[0], sensor_data.acc[1], sensor_data.acc[2]);
-                }
-                usleep(10000);
-            }
-        }
-    }
-    for(int board=0;board<deviceIDs.size();board++) {
-        if(!success[board])
-            ROS_ERROR("test FAILED for arm board %d with deviceID %x, check cableing!", board, deviceIDs[board]);
-        else
-            ROS_INFO("test SUCCESS for arm board %d with deviceID %x!", board, deviceIDs[board]);
-    }
+//    vector<bool> success(deviceIDs.size(),true);
+//    for(int board=0;board<deviceIDs.size();board++) {
+//        for(int motor = 0; motor<5; motor++) {
+//            for (uint8_t pos = 10; pos < 170; pos+=5) {
+//                vector<uint8_t> setPoint = {150, 150, 150, 150, 150};
+//                setPoint[motor] = pos;
+//
+//                HandControl::SensorFrame sensor_data;
+//                success[board] = readSensorData(sensor_data, board) && command(setPoint, board);
+//                if (!success[board])
+//                    continue;
+//                else {
+//                    ROS_INFO("board %d motor %d current: %d", board, motor, sensor_data.current[motor]);
+//                    ROS_INFO_THROTTLE(1, "\ncurrent: %d\t%d\t%d\t%d\t%d\t%d\n gyro: %f\t%f\t%f\n acc: %f\t%f\t%f",
+//                                      sensor_data.current[0], sensor_data.current[1],
+//                                      sensor_data.current[2], sensor_data.current[3], sensor_data.current[4],
+//                                      sensor_data.current[5],
+//                                      sensor_data.gyro[0], sensor_data.gyro[1], sensor_data.gyro[2],
+//                                      sensor_data.acc[0], sensor_data.acc[1], sensor_data.acc[2]);
+//                }
+//                usleep(10000);
+//            }
+//        }
+//    }
+//    for(int board=0;board<deviceIDs.size();board++) {
+//        if(!success[board])
+//            ROS_ERROR("test FAILED for arm board %d with deviceID %x, check cableing!", board, deviceIDs[board]);
+//        else
+//            ROS_INFO("test SUCCESS for arm board %d with deviceID %x!", board, deviceIDs[board]);
+//    }
 }

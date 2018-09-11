@@ -37,6 +37,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <signal.h>
+#include <stdlib.h>
 #include "hwlib.h"
 #include "socal/hps.h"
 #include "roboy_plexus/hps_0.h"
@@ -49,16 +51,68 @@ using namespace std;
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
+int32_t *h2p_lw_led_addr;
+int32_t *h2p_lw_adc_addr;
+int32_t *h2p_lw_switches_addr;
+int32_t *h2p_lw_darkroom_addr;
+vector<int32_t*> h2p_lw_darkroom_ootx_addr;
+vector<int32_t*> h2p_lw_myo_addr;
+vector<int32_t*> h2p_lw_i2c_addr;
+
+MyoControlPtr myoControl;
+
+void SigintHandler(int sig)
+{
+    cout << "shutting down" << endl;
+    if(h2p_lw_myo_addr[0]!=nullptr) {
+        MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[0], 0);
+        MYO_WRITE_hand_control(h2p_lw_myo_addr[0], 0);
+    }
+    if(h2p_lw_myo_addr[1]!=nullptr) {
+        MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[1], 0);
+        MYO_WRITE_hand_control(h2p_lw_myo_addr[1], 0);
+    }
+    if(myoControl!= nullptr){
+        // switch to displacement
+        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+            myoControl->changeControl(motor, DISPLACEMENT);
+        }
+        // relax the springs
+        ros::Rate rate(100);
+        bool toggle = true;
+        for(int decrements = 99; decrements>=0; decrements-=1){
+            if(toggle)
+                *h2p_lw_led_addr = 0xFF;
+            else
+                *h2p_lw_led_addr = 0x00;
+
+            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                int displacement = myoControl->getDisplacement(motor);
+                if(displacement<=0)
+                    continue;
+                else
+                    myoControl->setDisplacement(motor,displacement*(decrements/100.0));
+            }
+            rate.sleep();
+            if(decrements%15==0) {
+                toggle = !toggle;
+                cout << "." << endl;
+            }
+        }
+    }
+
+    if(h2p_lw_led_addr!=nullptr)
+        *h2p_lw_led_addr = 0;
+
+    // All the default sigint handler does is call shutdown()
+    ros::shutdown();
+    *h2p_lw_led_addr = 0x00;
+    system("fortune");
+}
+
 int main(int argc, char *argv[]) {
     void *virtual_base;
     int fd;
-    int32_t *h2p_lw_led_addr;
-    int32_t *h2p_lw_adc_addr;
-    int32_t *h2p_lw_switches_addr;
-    int32_t *h2p_lw_darkroom_addr;
-    vector<int32_t*> h2p_lw_darkroom_ootx_addr;
-    vector<int32_t*> h2p_lw_myo_addr;
-    vector<int32_t*> h2p_lw_i2c_addr;
 
 //     map the address space for all registers into user space so we can interact with them.
 //     we'll actually map in the entire CSR span of the HPS since we want to access various registers within that span
@@ -74,11 +128,26 @@ int main(int argc, char *argv[]) {
         close( fd );
         return( 1 );
     }
-
+#ifdef LED_BASE
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_led_addr = nullptr;
+#endif
+#ifdef SWITCHES_BASE
     h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_switches_addr = nullptr;
+#endif
+#ifdef MYOCONTROL_0_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_myo_addr.push_back(nullptr);
+#endif
+#ifdef MYOCONTROL_1_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_myo_addr.push_back(nullptr);
+#endif
 #ifdef I2C_0_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
@@ -115,12 +184,12 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-    if (!ros::isInitialized()) {
-        int argc = 0;
-        char **argv = NULL;
-        ros::init(argc, argv, "roboy_plexus");
-        ros::start();
-    }
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "roboy_plexus");
+//        ros::start();
+//    }
 //
 //    ros::Duration d(0.1);
 //    while(ros::ok()) {
@@ -165,13 +234,13 @@ int main(int argc, char *argv[]) {
 //    HandControl handControl(h2p_lw_i2c_addr[0], deviceIDs, id);
 //    handControl.test();
 
-    MyoControlPtr myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
-////
+    myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
                             h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
-//
     PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
+
+    signal(SIGINT, SigintHandler);
 
     uint8_t mask = 0x1;
     ros::Rate rate(30);

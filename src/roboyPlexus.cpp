@@ -6,7 +6,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base),darkroom_ootx_addr(darkroom_ootx_addr),
         adc_base(adc_base), myoControl(myoControl), switches_base(switches_base){
 
-    id = IORD(switches_base,0)&0x7;
+    id = SHOULDER_LEFT;//IORD(switches_base,0)&0x7;
 //    string body_part;
     switch(id){
         case HEAD:
@@ -39,7 +39,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
-        ros::init(argc, argv, node_name);
+        ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
@@ -94,12 +94,10 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            if(!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT],deviceIDs,encoderMultiplier,gearBoxRatio))
 //                ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
 
-//            if(i2c_base[0]!=nullptr){ // start hand
-//                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-//                handControl.reset(new HandControl(i2c_base[1], deviceIDs, false));
-//                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
-//                                                     &RoboyPlexus::HandPower, this);
-//            }
+            vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+            handControl.reset(new HandControl(myo_base[1], 0xF, deviceIDs, false));
+            handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
+                                                 &RoboyPlexus::HandPower, this);
 
 //            soliInitSensor();
 //
@@ -146,12 +144,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     "/roboy/middleware/JointStatus", 1);
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
                     "/roboy/middleware/MagneticSensor", 1, this);
-            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
-                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                handControl.reset(new HandControl(i2c_base[0], deviceIDs, true));
-                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
-                                                     &RoboyPlexus::HandPower, this);
-            }
+//            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
+//                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//                handControl.reset(new HandControl(i2c_base[0], deviceIDs, true));
+//                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
+//                                                     &RoboyPlexus::HandPower, this);
+//            }
 
 //            soliInitSensor();
 //
@@ -775,6 +773,19 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
 
     if (req.data == 1) {
         ROS_INFO("emergency stop service called");
+        // switch to displacement
+        ros::Rate rate(100);
+        for(int decrements = 99; decrements>=0; decrements-=1){
+            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                int displacement = myoControl->getDisplacement(motor);
+                if(displacement<=0)
+                    continue;
+                else
+                    myoControl->setDisplacement(motor,displacement*(decrements/100.0));
+            }
+            rate.sleep();
+        }
+
         control_mode_backup = control_mode;
         control_params_backup = myoControl->control_params;
         control_Parameters_t params;

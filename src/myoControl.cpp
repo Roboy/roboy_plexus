@@ -345,8 +345,8 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->outputDivider = 1;
             break;
         case DISPLACEMENT:
-            params->spPosMax = 0;
-            params->spNegMax = -200;
+            params->spPosMax = 200;
+            params->spNegMax = 0;
             params->Kp = 100;
             params->Ki = 0;
             params->Kd = 0;

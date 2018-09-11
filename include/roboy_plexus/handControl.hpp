@@ -1,6 +1,5 @@
 #pragma once
 
-#include "roboy_plexus/i2c.hpp"
 #include <ros/ros.h>
 #include <thread>
 #include <roboy_communication_middleware/FingerCommand.h>
@@ -8,7 +7,7 @@
 #include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_control/SetMode.h>
 #include <std_msgs/Float32.h>
-#include "roboy_plexus/A1335.hpp"
+#include "roboy_plexus/myoControl.hpp"
 
 #define THUMB 0
 #define INDEXFINGER 1
@@ -20,7 +19,7 @@
 
 class HandControl{
 public:
-    HandControl(int32_t *i2c_base, vector<uint8_t> deviceIDs, bool id = false);
+    HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_t> handDeviceIDs, bool id = false);
 
     ~HandControl();
 
@@ -46,6 +45,12 @@ public:
      * @param msg hand command
      */
     void handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg);
+
+    /**
+     * Callback for elbow joint
+     * @param msg elbow joint angle command
+     */
+    void elbowCommandCB(const std_msgs::Float32::ConstPtr &msg);
 
     /**
      * Callback for finger command
@@ -81,16 +86,17 @@ public:
 
 private:
     ros::NodeHandlePtr nh;
-    ros::Subscriber handCommand_sub, fingerCommand_sub;
-    ros::Publisher handStatus_pub, joint_angle_pub;
+    ros::Subscriber handCommand_sub, fingerCommand_sub, elbowCommand_sub;
+    ros::Publisher handStatus_pub;
     ros::ServiceServer setMode_srv;
     boost::shared_ptr<std::thread> handIMUThread;
     bool keep_publishing = true;
-    I2C *i2c;
-    vector<uint8_t> deviceIDs;
+    int32_t *myo_base;
+    int agonist = 1, antagonist = 0;
+    uint8_t elbowDeviceID;
+    vector<uint8_t> handDeviceIDs;
     uint8_t id = 0;
     HandControl::CommandFrame frame[4];
-    A1335Ptr joint_angle;
     float elbow_joint_angle = 0;
     string hand;
 };
