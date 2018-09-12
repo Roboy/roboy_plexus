@@ -16,7 +16,7 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    MYO_WRITE_elbow_Kp_joint_angle(myo_base,100);
+    MYO_WRITE_elbow_Kp_joint_angle(myo_base,10);
     MYO_WRITE_elbow_Kd_joint_angle(myo_base,0);
     MYO_WRITE_elbow_agonist(myo_base,agonist);
     MYO_WRITE_elbow_antagonist(myo_base,antagonist);
@@ -27,11 +27,11 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
     MYO_WRITE_Kd(myo_base,agonist,0);
     MYO_WRITE_Kd(myo_base,antagonist,0);
     MYO_WRITE_elbow_joint_angle_offset(myo_base,-600);
-    MYO_WRITE_elbow_joint_pretension(myo_base,120);
+    MYO_WRITE_elbow_joint_pretension(myo_base,200);
     MYO_WRITE_elbow_joint_deadband(myo_base,0);
     MYO_WRITE_elbow_joint_angle_setpoint(myo_base,0);
     MYO_WRITE_elbow_joint_angle_device_id(myo_base,elbowDeviceID);
-    MYO_WRITE_elbow_joint_control(myo_base,1);
+    MYO_WRITE_elbow_joint_control(myo_base,true);
 
     ROS_INFO("Configuring elbow joint with"
                      "\nKp %d\nKd %d\nagonist %d"
@@ -53,7 +53,7 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
         MYO_WRITE_motor3(myo_base, board, 60);
         MYO_WRITE_motor4(myo_base, board, 60);
     }
-    MYO_WRITE_hand_control(myo_base,0);
+    MYO_WRITE_hand_control(myo_base,false);
 
     ROS_INFO("Enableing hand control with"
                      "\nboard 0: %x setpoints %d %d %d %d %d"
@@ -86,9 +86,13 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
     handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
     if(!id) {
-        elbowCommand_sub = nh->subscribe("/roboy/middleware/joint_angle/elbow_left", 1, &HandControl::elbowCommandCB, this);
+        elbowCommand_sub = nh->subscribe("/roboy/middleware/elbow_left/JointAngle", 1, &HandControl::elbowCommandCB, this);
+        jointController_srv = nh->advertiseService("/roboy/middleware/elbow_left/JointController",
+                                                   &HandControl::JointControllerService, this);
     }else {
-        elbowCommand_sub = nh->subscribe("/roboy/middleware/joint_angle/elbow_right", 1, &HandControl::elbowCommandCB, this);
+        elbowCommand_sub = nh->subscribe("/roboy/middleware/elbow_right/JointAngle", 1, &HandControl::elbowCommandCB, this);
+        jointController_srv = nh->advertiseService("/roboy/middleware/elbow_right/JointController",
+                                                   &HandControl::JointControllerService, this);
     }
 
     fingerCommand_sub = nh->subscribe("/roboy/middleware/FingerCommand", 1, &HandControl::fingerCommandCB, this);
@@ -183,6 +187,18 @@ bool HandControl::setHandModeService(roboy_communication_control::SetModeRequest
 
     }
 
+}
+
+bool HandControl::JointControllerService(roboy_communication_middleware::JointControllerRequest &req,
+                            roboy_communication_middleware::JointControllerResponse &res){
+    MYO_WRITE_elbow_Kp_joint_angle(myo_base,req.Kp_joint);
+    MYO_WRITE_elbow_Kd_joint_angle(myo_base,req.Kd_joint);
+    MYO_WRITE_Kp(myo_base,agonist,req.Kp_agonist);
+    MYO_WRITE_Kp(myo_base,antagonist,req.Kp_antagonist);
+    MYO_WRITE_Kd(myo_base,agonist,req.Kd_agonist);
+    MYO_WRITE_Kd(myo_base,antagonist,req.Kd_agonist);
+    MYO_WRITE_elbow_joint_pretension(myo_base,req.pretension);
+    MYO_WRITE_elbow_joint_deadband(myo_base,req.deadband);
 }
 
 void HandControl::closeHand() {

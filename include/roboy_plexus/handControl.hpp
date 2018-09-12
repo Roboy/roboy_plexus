@@ -5,6 +5,7 @@
 #include <roboy_communication_middleware/FingerCommand.h>
 #include <roboy_communication_middleware/HandStatus.h>
 #include <roboy_communication_middleware/HandCommand.h>
+#include <roboy_communication_middleware/JointController.h>
 #include <roboy_communication_control/SetMode.h>
 #include <std_msgs/Float32.h>
 #include "roboy_plexus/myoControl.hpp"
@@ -65,6 +66,14 @@ public:
      */
     bool setHandModeService(roboy_communication_control::SetModeRequest &req,
                    roboy_communication_control::SetModeResponse &res);
+
+   /**
+     * Service to close/open hand
+     * @param req
+     * @param res
+     */
+    bool JointControllerService(roboy_communication_middleware::JointControllerRequest &req,
+                                roboy_communication_middleware::JointControllerResponse &res);
     /**
      * Publishes hand status data
      */
@@ -88,7 +97,7 @@ private:
     ros::NodeHandlePtr nh;
     ros::Subscriber handCommand_sub, fingerCommand_sub, elbowCommand_sub;
     ros::Publisher handStatus_pub;
-    ros::ServiceServer setMode_srv;
+    ros::ServiceServer setMode_srv, jointController_srv;
     boost::shared_ptr<std::thread> handIMUThread;
     bool keep_publishing = true;
     int32_t *myo_base;

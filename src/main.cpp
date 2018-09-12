@@ -184,24 +184,58 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-//    if (!ros::isInitialized()) {
-//        int argc = 0;
-//        char **argv = NULL;
-//        ros::init(argc, argv, "roboy_plexus");
-//        ros::start();
-//    }
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "roboy_plexus");
+        ros::start();
+    }
 //
+    I2C i2c0(h2p_lw_i2c_addr[0]), i2c1(h2p_lw_i2c_addr[1]), i2c(h2p_lw_i2c_addr[2]);
 //    ros::Duration d(0.1);
 //    while(ros::ok()) {
-//        I2C i2c(h2p_lw_i2c_addr[0]);
-//        vector <uint8_t> active_devices;
-//        i2c.checkAddressSpace(0, 127, active_devices);
-//        ROS_INFO("found %ld active devices", active_devices.size());
-//        for (auto device:active_devices)
-//            printf("%x\t", device);
-//        cout << endl;
+//        vector<uint8_t> data;
+//        i2c2.read(0x5e,0,1,data);
+//        if(i2c0.ack_error())
+//            ROS_ERROR("ack");
+//        else
+//            ROS_INFO("yea");
+////        {
+////            vector <uint8_t> active_devices;
+////            i2c0.checkAddressSpace(0, 127, active_devices);
+////            ROS_INFO("i2c 0 found %ld active devices", active_devices.size());
+////            for (auto device:active_devices)
+////                printf("%x\t", device);
+////            cout << endl;
+////        }
+////        {
+////            vector <uint8_t> active_devices;
+////            i2c1.checkAddressSpace(0, 127, active_devices);
+////            ROS_INFO("i2c 1 found %ld active devices", active_devices.size());
+////            for (auto device:active_devices)
+////                printf("%x\t", device);
+////            cout << endl;
+////        }
+////        {
+////            vector <uint8_t> active_devices;
+////            i2c2.checkAddressSpace(0, 127, active_devices);
+////            ROS_INFO("i2c 2 found %ld active devices", active_devices.size());
+////            for (auto device:active_devices)
+////                printf("%x\t", device);
+////            cout << endl;
+////        }
 //        d.sleep();
 //    }
+
+//    vector<uint8_t > deviceIDs = {0x5e};
+//    vector<int> devicePin = {255};
+//    TLV493D tlv493D(h2p_lw_i2c_addr[2],deviceIDs,devicePin);
+//    while(ros::ok()){
+//        vector<float> x,y,z;
+//        tlv493D.read(x,y,z);
+//        ROS_INFO_THROTTLE(1,"%f\t%f\t%f", x[0],y[0],z[0]);
+//    }
+//    return 0;
 
 //    vector<uint8_t> deviceIDs = {0xF};
 //    vector<uint8_t> motorids = {0};
