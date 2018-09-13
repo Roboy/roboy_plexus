@@ -31,7 +31,7 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
     MYO_WRITE_elbow_joint_deadband(myo_base,0);
     MYO_WRITE_elbow_joint_angle_setpoint(myo_base,0);
     MYO_WRITE_elbow_joint_angle_device_id(myo_base,elbowDeviceID);
-    MYO_WRITE_elbow_joint_control(myo_base,true);
+    MYO_WRITE_elbow_joint_control(myo_base,false);
 
     ROS_INFO("Configuring elbow joint with"
                      "\nKp %d\nKd %d\nagonist %d"
@@ -53,7 +53,7 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
         MYO_WRITE_motor3(myo_base, board, 60);
         MYO_WRITE_motor4(myo_base, board, 60);
     }
-    MYO_WRITE_hand_control(myo_base,false);
+    MYO_WRITE_hand_control(myo_base,true);
 
     ROS_INFO("Enableing hand control with"
                      "\nboard 0: %x setpoints %d %d %d %d %d"

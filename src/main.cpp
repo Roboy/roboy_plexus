@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
         ros::start();
     }
 //
-    I2C i2c0(h2p_lw_i2c_addr[0]), i2c1(h2p_lw_i2c_addr[1]), i2c(h2p_lw_i2c_addr[2]);
+//    I2C i2c0(h2p_lw_i2c_addr[0]), i2c1(h2p_lw_i2c_addr[1]), i2c(h2p_lw_i2c_addr[2]);
 //    ros::Duration d(0.1);
 //    while(ros::ok()) {
 //        vector<uint8_t> data;
