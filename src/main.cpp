@@ -100,6 +100,9 @@ void SigintHandler(int sig)
             }
         }
     }
+    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+        myoControl->setDisplacement(motor,0);
+    }
 
     if(h2p_lw_led_addr!=nullptr)
         *h2p_lw_led_addr = 0;

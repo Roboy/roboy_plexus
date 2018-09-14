@@ -114,8 +114,8 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     changeControl(DISPLACEMENT);
 
     for (uint i = 0; i < myo_base.size(); i++) {
-//        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
-        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
+        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
+//        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
         ROS_INFO("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
     }
