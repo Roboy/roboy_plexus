@@ -405,7 +405,7 @@ public:
 
     void gpioControl(bool power);
 
-
+	int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
 	map<int,map<int,control_Parameters_t>> control_params;
 	int32_t* adc_base;
 	float weight_offset = 0;

@@ -148,6 +148,11 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_myo_addr.push_back(nullptr);
 #endif
+#ifdef MYOCONTROL_2_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_myo_addr.push_back(nullptr);
+#endif
 #ifdef I2C_0_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else

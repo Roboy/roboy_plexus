@@ -111,7 +111,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1536773799
+#define SYSID_QSYS_TIMESTAMP 1536929424
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -130,15 +130,26 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
+ * Macros for device 'MYOControl_2', class 'MYOControl'
+ * The macros are prefixed with 'MYOCONTROL_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define MYOCONTROL_2_COMPONENT_TYPE MYOControl
+#define MYOCONTROL_2_COMPONENT_NAME MYOControl_2
+#define MYOCONTROL_2_BASE 0x40000
+#define MYOCONTROL_2_SPAN 262144
+#define MYOCONTROL_2_END 0x7ffff
+
+/*
  * Macros for device 'MYOControl_0', class 'MYOControl'
  * The macros are prefixed with 'MYOCONTROL_0_'.
  * The prefix is the slave descriptor.
  */
 #define MYOCONTROL_0_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_0_COMPONENT_NAME MYOControl_0
-#define MYOCONTROL_0_BASE 0x40000
+#define MYOCONTROL_0_BASE 0x80000
 #define MYOCONTROL_0_SPAN 262144
-#define MYOCONTROL_0_END 0x7ffff
+#define MYOCONTROL_0_END 0xbffff
 
 /*
  * Macros for device 'MYOControl_1', class 'MYOControl'
@@ -147,9 +158,9 @@
  */
 #define MYOCONTROL_1_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_1_COMPONENT_NAME MYOControl_1
-#define MYOCONTROL_1_BASE 0x80000
+#define MYOCONTROL_1_BASE 0xc0000
 #define MYOCONTROL_1_SPAN 262144
-#define MYOCONTROL_1_END 0xbffff
+#define MYOCONTROL_1_END 0xfffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */
