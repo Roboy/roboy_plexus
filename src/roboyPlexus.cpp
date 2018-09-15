@@ -48,16 +48,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         case HEAD:{
             //motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             //magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1, this);
-//            vector<uint8_t> motorIDs = {0,3,2,1};
-//            vector<uint8_t> deviceIDs = {0xF, 0xE, 0xC, 0xD};
-//            vector<int32_t> gearBoxRatio = {84, 84, 84, 84};
-//            vector<int32_t> encoderMultiplier = {4, 4, 4, 4};
-//            if(!myoControl->configureMyoBricks(myo_bricks[HEAD],deviceIDs,encoderMultiplier,gearBoxRatio))
-//                ROS_ERROR("could not configure myoBricks");
-//            motorAngle.push_back(boost::shared_ptr<A1335>(new A1335(i2c_base[4], motorIDs, deviceIDs)));
-//            motorAngleThread = boost::shared_ptr<std::thread>(
-//                    new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-//            motorAngleThread->detach();
+            vector<uint8_t> motorIDs = {9,10,11,13,14,15};
+            vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
+            vector<int32_t> gearBoxRatio = {35,62,35,35,62,35};
+            vector<int32_t> encoderMultiplier = {16,4,16,16,4,16};
+            if(!myoControl->configureMyoBricks(motorIDs,deviceIDs,encoderMultiplier,gearBoxRatio))
+                ROS_ERROR("could not configure myoBricks");
             break;
         }
 
