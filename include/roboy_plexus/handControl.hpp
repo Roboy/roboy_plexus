@@ -106,6 +106,7 @@ private:
     vector<uint8_t> handDeviceIDs;
     uint8_t id = 0;
     HandControl::CommandFrame frame[4];
+    bool hand_control_active = true, elbow_joint_controller_active = false;
     float elbow_joint_angle = 0;
     string hand;
 };

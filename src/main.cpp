@@ -267,7 +267,10 @@ int main(int argc, char *argv[]) {
 //        ROS_INFO_STREAM_THROTTLE(1,str.str());
 //    }
 
-
+    vector<uint8_t> deviceIDs = {0x50, 0x51,0x52,0x53};
+    HandControl hand(h2p_lw_myo_addr[1],0xF,deviceIDs);
+    hand.test();
+    return 0;
 
 
 ////

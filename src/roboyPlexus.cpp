@@ -126,15 +126,15 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //            magneticsShoulderThread->detach();
 
-            vector<uint8_t> deviceaddress = {0x5e};
-            vector<int> devicepins = {255};
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-
-            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-            magneticsShoulderThread->detach();
+//            vector<uint8_t> deviceaddress = {0x5e};
+//            vector<int> devicepins = {255};
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+//
+//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//            magneticsShoulderThread->detach();
             break;
         }
         case SHOULDER_RIGHT: {

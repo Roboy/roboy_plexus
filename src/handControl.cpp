@@ -16,72 +16,80 @@ HandControl::HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    MYO_WRITE_elbow_Kp_joint_angle(myo_base,10);
-    MYO_WRITE_elbow_Kd_joint_angle(myo_base,0);
-    MYO_WRITE_elbow_agonist(myo_base,agonist);
-    MYO_WRITE_elbow_antagonist(myo_base,antagonist);
-    MYO_WRITE_Kp(myo_base,agonist,60);
-    MYO_WRITE_outputDivider(myo_base,agonist,100);
-    MYO_WRITE_Kp(myo_base,antagonist,60);
-    MYO_WRITE_outputDivider(myo_base,antagonist,100);
-    MYO_WRITE_Kd(myo_base,agonist,0);
-    MYO_WRITE_Kd(myo_base,antagonist,0);
-    MYO_WRITE_elbow_joint_angle_offset(myo_base,-600);
-    MYO_WRITE_elbow_joint_pretension(myo_base,200);
-    MYO_WRITE_elbow_joint_deadband(myo_base,0);
-    MYO_WRITE_elbow_joint_angle_setpoint(myo_base,0);
-    MYO_WRITE_elbow_joint_angle_device_id(myo_base,elbowDeviceID);
-    MYO_WRITE_elbow_joint_control(myo_base,false);
+    if(elbow_joint_controller_active) {
+        MYO_WRITE_elbow_Kp_joint_angle(myo_base, 10);
+        MYO_WRITE_elbow_Kd_joint_angle(myo_base, 0);
+        MYO_WRITE_elbow_agonist(myo_base, agonist);
+        MYO_WRITE_elbow_antagonist(myo_base, antagonist);
+        MYO_WRITE_Kp(myo_base, agonist, 60);
+        MYO_WRITE_outputDivider(myo_base, agonist, 100);
+        MYO_WRITE_Kp(myo_base, antagonist, 60);
+        MYO_WRITE_outputDivider(myo_base, antagonist, 100);
+        MYO_WRITE_Kd(myo_base, agonist, 0);
+        MYO_WRITE_Kd(myo_base, antagonist, 0);
+        MYO_WRITE_elbow_joint_angle_offset(myo_base, -600);
+        MYO_WRITE_elbow_joint_pretension(myo_base, 200);
+        MYO_WRITE_elbow_joint_deadband(myo_base, 0);
+        MYO_WRITE_elbow_joint_angle_setpoint(myo_base, 0);
+        MYO_WRITE_elbow_joint_angle_device_id(myo_base, elbowDeviceID);
+        MYO_WRITE_elbow_joint_control(myo_base, elbow_joint_controller_active);
 
-    ROS_INFO("Configuring elbow joint with"
-                     "\nKp %d\nKd %d\nagonist %d"
-                     "\nantagonist %d\njoint_angle_offset %d"
-                     "\njoint_angle_setpoint %d\njoint_angle_device_id %x",
-             MYO_READ_elbow_Kp_joint_angle(myo_base),MYO_READ_elbow_Kd_joint_angle(myo_base),
-             MYO_READ_elbow_antagonist(myo_base),MYO_READ_elbow_agonist(myo_base),
-             MYO_READ_elbow_joint_angle_offset(myo_base),MYO_READ_elbow_joint_angle_setpoint(myo_base),
-             MYO_READ_elbow_joint_angle_device_id(myo_base));
-
-    MYO_WRITE_arm_board_device_id(myo_base,0,0x50);
-    MYO_WRITE_arm_board_device_id(myo_base,1,0x51);
-    MYO_WRITE_arm_board_device_id(myo_base,2,0x52);
-    MYO_WRITE_arm_board_device_id(myo_base,3,0x53);
-    for(int board = 0; board<4; board++) {
-        MYO_WRITE_motor0(myo_base, board, 60);
-        MYO_WRITE_motor1(myo_base, board, 60);
-        MYO_WRITE_motor2(myo_base, board, 60);
-        MYO_WRITE_motor3(myo_base, board, 60);
-        MYO_WRITE_motor4(myo_base, board, 60);
+        ROS_INFO("Configuring elbow joint with"
+                         "\nKp %d\nKd %d\nagonist %d"
+                         "\nantagonist %d\njoint_angle_offset %d"
+                         "\njoint_angle_setpoint %d\njoint_angle_device_id %x",
+                 MYO_READ_elbow_Kp_joint_angle(myo_base), MYO_READ_elbow_Kd_joint_angle(myo_base),
+                 MYO_READ_elbow_antagonist(myo_base), MYO_READ_elbow_agonist(myo_base),
+                 MYO_READ_elbow_joint_angle_offset(myo_base), MYO_READ_elbow_joint_angle_setpoint(myo_base),
+                 MYO_READ_elbow_joint_angle_device_id(myo_base));
     }
-    MYO_WRITE_hand_control(myo_base,true);
+    if(hand_control_active) {
 
-    ROS_INFO("Enableing hand control with"
-                     "\nboard 0: %x setpoints %d %d %d %d %d"
-                     "\nboard 1: %x setpoints %d %d %d %d %d"
-                     "\nboard 2: %x setpoints %d %d %d %d %d"
-                     "\nboard 3: %x setpoints %d %d %d %d %d",
-             MYO_READ_arm_board_device_id(myo_base,0),
-             MYO_READ_motor0(myo_base,0),MYO_READ_motor1(myo_base,0),MYO_READ_motor2(myo_base,0),MYO_READ_motor3(myo_base,0),MYO_READ_motor4(myo_base,0),
-             MYO_READ_arm_board_device_id(myo_base,1),
-             MYO_READ_motor0(myo_base,1),MYO_READ_motor1(myo_base,1),MYO_READ_motor2(myo_base,1),MYO_READ_motor3(myo_base,1),MYO_READ_motor4(myo_base,1),
-             MYO_READ_arm_board_device_id(myo_base,2),
-             MYO_READ_motor0(myo_base,2),MYO_READ_motor1(myo_base,2),MYO_READ_motor2(myo_base,2),MYO_READ_motor3(myo_base,2),MYO_READ_motor4(myo_base,2),
-             MYO_READ_arm_board_device_id(myo_base,3),
-             MYO_READ_motor0(myo_base,3),MYO_READ_motor1(myo_base,3),MYO_READ_motor2(myo_base,3),MYO_READ_motor3(myo_base,3),MYO_READ_motor4(myo_base,3)
-    );
+        MYO_WRITE_arm_board_device_id(myo_base, 0, 0x50);
+        MYO_WRITE_arm_board_device_id(myo_base, 1, 0x51);
+        MYO_WRITE_arm_board_device_id(myo_base, 2, 0x52);
+        MYO_WRITE_arm_board_device_id(myo_base, 3, 0x53);
+        for (int board = 0; board < 4; board++) {
+            MYO_WRITE_motor0(myo_base, board, 60);
+            MYO_WRITE_motor1(myo_base, board, 60);
+            MYO_WRITE_motor2(myo_base, board, 60);
+            MYO_WRITE_motor3(myo_base, board, 60);
+            MYO_WRITE_motor4(myo_base, board, 60);
+        }
+        MYO_WRITE_hand_control(myo_base, hand_control_active);
 
-    bool hand_control_enabled = MYO_READ_hand_control(myo_base);
-    int board_active = MYO_READ_arm_board_ack_error(myo_base);
-    ROS_INFO(
-            "board %s\n"
-            "board %s\n"
-            "board %s\n"
-            "board %s",
-            (((board_active>>0)&&hand_control_enabled)?"offline":"online"),
-            (((board_active>>1)&&hand_control_enabled)?"offline":"online"),
-            (((board_active>>2)&&hand_control_enabled)?"offline":"online"),
-            (((board_active>>3)&&hand_control_enabled)?"offline":"online")
-    );
+        ROS_INFO("Enableing hand control with"
+                         "\nboard 0: %x setpoints %d %d %d %d %d"
+                         "\nboard 1: %x setpoints %d %d %d %d %d"
+                         "\nboard 2: %x setpoints %d %d %d %d %d"
+                         "\nboard 3: %x setpoints %d %d %d %d %d",
+                 MYO_READ_arm_board_device_id(myo_base, 0),
+                 MYO_READ_motor0(myo_base, 0), MYO_READ_motor1(myo_base, 0), MYO_READ_motor2(myo_base, 0),
+                 MYO_READ_motor3(myo_base, 0), MYO_READ_motor4(myo_base, 0),
+                 MYO_READ_arm_board_device_id(myo_base, 1),
+                 MYO_READ_motor0(myo_base, 1), MYO_READ_motor1(myo_base, 1), MYO_READ_motor2(myo_base, 1),
+                 MYO_READ_motor3(myo_base, 1), MYO_READ_motor4(myo_base, 1),
+                 MYO_READ_arm_board_device_id(myo_base, 2),
+                 MYO_READ_motor0(myo_base, 2), MYO_READ_motor1(myo_base, 2), MYO_READ_motor2(myo_base, 2),
+                 MYO_READ_motor3(myo_base, 2), MYO_READ_motor4(myo_base, 2),
+                 MYO_READ_arm_board_device_id(myo_base, 3),
+                 MYO_READ_motor0(myo_base, 3), MYO_READ_motor1(myo_base, 3), MYO_READ_motor2(myo_base, 3),
+                 MYO_READ_motor3(myo_base, 3), MYO_READ_motor4(myo_base, 3)
+        );
+
+        bool hand_control_enabled = MYO_READ_hand_control(myo_base);
+        int board_active = MYO_READ_arm_board_ack_error(myo_base);
+        ROS_INFO(
+                "board %s\n"
+                        "board %s\n"
+                        "board %s\n"
+                        "board %s",
+                (((board_active >> 0) && hand_control_enabled) ? "offline" : "online"),
+                (((board_active >> 1) && hand_control_enabled) ? "offline" : "online"),
+                (((board_active >> 2) && hand_control_enabled) ? "offline" : "online"),
+                (((board_active >> 3) && hand_control_enabled) ? "offline" : "online")
+        );
+    }
 
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &HandControl::handCommandCB, this);
     handStatus_pub = nh->advertise<roboy_communication_middleware::HandStatus>("/roboy/middleware/HandStatus",1);
@@ -422,34 +430,15 @@ bool HandControl::write(CommandFrame &command, int board){
 }
 
 void HandControl::test(){
-//    vector<bool> success(deviceIDs.size(),true);
-//    for(int board=0;board<deviceIDs.size();board++) {
-//        for(int motor = 0; motor<5; motor++) {
-//            for (uint8_t pos = 10; pos < 170; pos+=5) {
-//                vector<uint8_t> setPoint = {150, 150, 150, 150, 150};
-//                setPoint[motor] = pos;
-//
-//                HandControl::SensorFrame sensor_data;
-//                success[board] = readSensorData(sensor_data, board) && command(setPoint, board);
-//                if (!success[board])
-//                    continue;
-//                else {
-//                    ROS_INFO("board %d motor %d current: %d", board, motor, sensor_data.current[motor]);
-//                    ROS_INFO_THROTTLE(1, "\ncurrent: %d\t%d\t%d\t%d\t%d\t%d\n gyro: %f\t%f\t%f\n acc: %f\t%f\t%f",
-//                                      sensor_data.current[0], sensor_data.current[1],
-//                                      sensor_data.current[2], sensor_data.current[3], sensor_data.current[4],
-//                                      sensor_data.current[5],
-//                                      sensor_data.gyro[0], sensor_data.gyro[1], sensor_data.gyro[2],
-//                                      sensor_data.acc[0], sensor_data.acc[1], sensor_data.acc[2]);
-//                }
-//                usleep(10000);
-//            }
-//        }
-//    }
-//    for(int board=0;board<deviceIDs.size();board++) {
-//        if(!success[board])
-//            ROS_ERROR("test FAILED for arm board %d with deviceID %x, check cableing!", board, deviceIDs[board]);
-//        else
-//            ROS_INFO("test SUCCESS for arm board %d with deviceID %x!", board, deviceIDs[board]);
-//    }
+    vector<bool> success(handDeviceIDs.size(),true);
+    for(int board=0;board<4;board++) {
+        for (uint8_t pos = 10; pos < 170; pos+=5) {
+            MYO_WRITE_motor0(myo_base,board,pos);
+            MYO_WRITE_motor1(myo_base,board,pos);
+            MYO_WRITE_motor2(myo_base,board,pos);
+            MYO_WRITE_motor3(myo_base,board,pos);
+            MYO_WRITE_motor4(myo_base,board,pos);
+            usleep(100000);
+        }
+    }
 }
