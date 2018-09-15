@@ -8,6 +8,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
     numberOfMotors = (myo_base.size() == 0 ? NUMBER_OF_MOTORS_MYOCONTROL_0 :
                       (myo_base.size() == 1 ? NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 :
                        NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 + NUMBER_OF_MOTORS_MYOCONTROL_2));
+    ROS_INFO("initializing myoControl for %d spi buses with %d motors in total", myo_base.size(), numberOfMotors);
     // initialize all controllers with default values
     control_Parameters_t params;
     getDefaultControlParams(&params, POSITION);
@@ -23,12 +24,16 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
         control_params[motor][DISPLACEMENT] = params;
     }
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        myo_base_of_motor[motor] = (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 ? 0 :
-                                    (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 ? 1 :
-                                     2));
-        motor_offset[motor] = (myo_base_of_motor[motor] == 0 ? 0 :
-                               (myo_base_of_motor[motor] == 1 ? NUMBER_OF_MOTORS_MYOCONTROL_0 :
-                                NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1));
+        if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0){
+            myo_base_of_motor[motor] = 0;
+            motor_offset[motor] = 0;
+        }else if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1){
+            myo_base_of_motor[motor] = 1;
+            motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0;
+        }else{
+            myo_base_of_motor[motor] = 2;
+            motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1;
+        }
     }
 
     changeControl(DISPLACEMENT);
@@ -87,6 +92,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     numberOfMotors = (myo_base.size() == 0 ? NUMBER_OF_MOTORS_MYOCONTROL_0 :
                       (myo_base.size() == 1 ? NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 :
                        NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 + NUMBER_OF_MOTORS_MYOCONTROL_2));
+    ROS_INFO("initializing myoControl for %d spi buses with %d motors in total", myo_base.size(), numberOfMotors);
     // initialize all controllers with default values
     control_Parameters_t params;
     getDefaultControlParams(&params, POSITION);
@@ -103,12 +109,16 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     }
 
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        myo_base_of_motor[motor] = (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 ? 0 :
-                                    (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 ? 1 :
-                                     2));
-        motor_offset[motor] = (myo_base_of_motor[motor] == 0 ? 0 :
-                               (myo_base_of_motor[motor] == 1 ? NUMBER_OF_MOTORS_MYOCONTROL_0 :
-                                NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1));
+        if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0){
+            myo_base_of_motor[motor] = 0;
+            motor_offset[motor] = 0;
+        }else if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1){
+            myo_base_of_motor[motor] = 1;
+            motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0;
+        }else{
+            myo_base_of_motor[motor] = 2;
+            motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1;
+        }
     }
 
     changeControl(DISPLACEMENT);
@@ -117,7 +127,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
         MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
 //        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
-        ROS_INFO("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
+        ROS_INFO("bus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
     }
     reset();
 
@@ -301,24 +311,26 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
     stringstream str;
     str << "configuring myoBricks\ni2c device ID | gear box ratio | encoder multiplier" << endl;
     for (auto device:deviceIDs) {
-        int myoControlMotor = motorIDs[i] - NUMBER_OF_MOTORS_MYOCONTROL_0;
+        int myoBaseOfMotor = myo_base_of_motor[motorIDs[i]];
+        int myoControlMotor = motorIDs[i] - motor_offset[motorIDs[i]];
+        ROS_INFO("myoBrick %d of myoControl %d", myoControlMotor, myoBaseOfMotor);
         myo_brick |= (1 << myoControlMotor);
-        MYO_WRITE_myo_brick_device_id(myo_base[1], myoControlMotor, device);
-        MYO_WRITE_myo_brick_gear_box_ratio(myo_base[1], myoControlMotor, gearBoxRatio[i]);
-        MYO_WRITE_myo_brick_encoder_multiplier(myo_base[1], myoControlMotor, encoderMultiplier[i]);
-        int id = MYO_READ_myo_brick_device_id(myo_base[1], myoControlMotor);
-        int ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[1], myoControlMotor);
-        int multiplier = MYO_READ_myo_brick_encoder_multiplier(myo_base[1], myoControlMotor);
+        MYO_WRITE_myo_brick_device_id(myo_base[myoBaseOfMotor], myoControlMotor, device);
+        MYO_WRITE_myo_brick_gear_box_ratio(myo_base[myoBaseOfMotor], myoControlMotor, gearBoxRatio[i]);
+        MYO_WRITE_myo_brick_encoder_multiplier(myo_base[myoBaseOfMotor], myoControlMotor, encoderMultiplier[i]);
+        int id = MYO_READ_myo_brick_device_id(myo_base[myoBaseOfMotor], myoControlMotor);
+        int ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[myoBaseOfMotor], myoControlMotor);
+        int multiplier = MYO_READ_myo_brick_encoder_multiplier(myo_base[myoBaseOfMotor], myoControlMotor);
         if (ratio != gearBoxRatio[i] ||
             multiplier != encoderMultiplier[i]) { // if the value was not written correctly, we abort!
             ROS_INFO("id %d, ratio %d, multiplier %d", id, ratio, multiplier);
             return false;
         }
         str << (int) device << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
+        MYO_WRITE_myo_brick(myo_base[myoBaseOfMotor], myo_brick);
         i++;
     }
     ROS_INFO_STREAM(str.str());
-    MYO_WRITE_myo_brick(myo_base[1], myo_brick);
     return true;
 }
 
