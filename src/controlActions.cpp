@@ -1,5 +1,4 @@
 #include "roboy_plexus/controlActions.hpp"
-#include <actionlib_tutorials/FibonacciAction.h>
 
 PerformMovementAction::PerformMovementAction(boost::shared_ptr<MyoControl> myoControl_, string name) :
         myoControl(myoControl_),

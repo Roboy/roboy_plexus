@@ -212,33 +212,6 @@ private:
     void PredisplacementCB(const std_msgs::Int32 &msg);
 
     /**
-     * Service replays the trajectory
-     * @param req
-     * @param res
-     * @return
-     */
-//    bool ReplayTrajectoryService(roboy_communication_control::PerformMovement::Request &req,
-//                                 roboy_communication_control::PerformMovement::Response &res);
-
-    /**
-     * Service executes behavior (a set of trajectories possibly combined with pauses)
-     * @param req
-     * @param res
-     * @return
-     */
-//    bool ExecuteActionsService(roboy_communication_control::PerformActions::Request &req,
-//                               roboy_communication_control::PerformActions::Response &res);
-
-    /**
-     * Service executes behavior (by name)
-     * @param req
-     * @param res
-     * @return
-     */
-//    bool ExecuteBehaviorService(roboy_communication_control::PerformBehavior::Request &req,
-//                                roboy_communication_control::PerformBehavior::Response &res);
-
-    /**
      * Stops replaying the trajectory
      * @param msg
      */
