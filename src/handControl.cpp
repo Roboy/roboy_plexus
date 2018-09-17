@@ -431,14 +431,41 @@ bool HandControl::write(CommandFrame &command, int board){
 
 void HandControl::test(){
     vector<bool> success(handDeviceIDs.size(),true);
+//    int board =0;
     for(int board=0;board<4;board++) {
-        for (uint8_t pos = 10; pos < 170; pos+=5) {
+        for (uint8_t pos = 70; pos < 110; pos+=5) {
             MYO_WRITE_motor0(myo_base,board,pos);
+            uint8_t pos_0 = MYO_READ_motor0(myo_base,board);
+            ROS_INFO("board %d motor %d pos %d", board, 0, pos_0);
             MYO_WRITE_motor1(myo_base,board,pos);
+            uint8_t pos_1 = MYO_READ_motor1(myo_base,board);
+            ROS_INFO("board %d motor %d pos %d", board, 1, pos_1);
             MYO_WRITE_motor2(myo_base,board,pos);
+            uint8_t pos_2 = MYO_READ_motor1(myo_base,board);
+            ROS_INFO("board %d motor %d pos %d", board, 2, pos_2);
             MYO_WRITE_motor3(myo_base,board,pos);
+            uint8_t pos_3 = MYO_READ_motor1(myo_base,board);
+            ROS_INFO("board %d motor %d pos %d", board, 3, pos_3);
             MYO_WRITE_motor4(myo_base,board,pos);
+            uint8_t pos_4 = MYO_READ_motor1(myo_base,board);
+            ROS_INFO("board %d motor %d pos %d", board, 4, pos_4);
             usleep(100000);
         }
+//        for (uint8_t pos = 70; pos < 110; pos+=5) {
+//            MYO_WRITE_motor1(myo_base,board,pos);
+//            usleep(100000);
+//        }
+//        for (uint8_t pos = 70; pos < 110; pos+=5) {
+//            MYO_WRITE_motor2(myo_base,board,pos);
+//            usleep(100000);
+//        }
+//        for (uint8_t pos = 70; pos < 110; pos+=5) {
+//            MYO_WRITE_motor3(myo_base,board,pos);
+//            usleep(100000);
+//        }
+//        for (uint8_t pos = 70; pos < 110; pos+=5) {
+//            MYO_WRITE_motor4(myo_base,board,pos);
+//            usleep(100000);
+//        }
     }
 }

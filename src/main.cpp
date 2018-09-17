@@ -267,20 +267,12 @@ int main(int argc, char *argv[]) {
 //        ROS_INFO_STREAM_THROTTLE(1,str.str());
 //    }
 
-//    while(ros::ok()) {
-//        vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-//        HandControl hand(h2p_lw_myo_addr[1], 0xF, deviceIDs);
-//        hand.test();
-//        usleep(1000000);
-//    }
-//    return 0;
 
+        vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+        HandControl hand(h2p_lw_myo_addr[1], 0xF, deviceIDs);
+        hand.test();
+    return 0;
 
-////
-//    u_int8_t id = IORD(h2p_lw_switches_addr,0)&0x7;
-//    vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-//    HandControl handControl(h2p_lw_i2c_addr[0], deviceIDs, id);
-//    handControl.test();
 
     myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
