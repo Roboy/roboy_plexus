@@ -66,10 +66,12 @@ void SigintHandler(int sig)
     cout << "shutting down" << endl;
     if(h2p_lw_myo_addr[0]!=nullptr) {
         MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[0], 0);
+        MYO_WRITE_wrist_joint_control(h2p_lw_myo_addr[0], 0);
         MYO_WRITE_hand_control(h2p_lw_myo_addr[0], 0);
     }
     if(h2p_lw_myo_addr[1]!=nullptr) {
         MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[1], 0);
+        MYO_WRITE_wrist_joint_control(h2p_lw_myo_addr[1], 0);
         MYO_WRITE_hand_control(h2p_lw_myo_addr[1], 0);
     }
     if(myoControl!= nullptr){
@@ -268,10 +270,10 @@ int main(int argc, char *argv[]) {
 //    }
 
 
-        vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-        HandControl hand(h2p_lw_myo_addr[1], 0xF, deviceIDs);
-        hand.test();
-    return 0;
+//        vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//        HandControl hand(h2p_lw_myo_addr[1], 0xF, deviceIDs);
+//        hand.test();
+//    return 0;
 
 
     myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));

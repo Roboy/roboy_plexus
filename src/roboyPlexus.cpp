@@ -90,9 +90,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
 
             vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-            handControl.reset(new HandControl(myo_base[1], 0xF, deviceIDs, false));
-            handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
-                                                 &RoboyPlexus::HandPower, this);
+            armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false));
 
 //            soliInitSensor();
 //

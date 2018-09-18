@@ -3,7 +3,7 @@
 #include <ros/ros.h>
 #include <thread>
 #include <roboy_communication_middleware/FingerCommand.h>
-#include <roboy_communication_middleware/HandStatus.h>
+#include <roboy_communication_middleware/ArmStatus.h>
 #include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_middleware/JointController.h>
 #include <roboy_communication_control/SetMode.h>
@@ -18,22 +18,23 @@
 #define OPEN 0
 #define CLOSE 1
 
-class HandControl{
+class ArmControl {
 public:
-    HandControl(int32_t *myo_base, uint8_t elbowDeviceID, vector<uint8_t> handDeviceIDs, bool id = false);
+    ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDeviceID, vector<uint8_t> handDeviceIDs,
+                bool id = false);
 
-    ~HandControl();
+    ~ArmControl();
 
-    union CommandFrame{
-        struct{
+    union CommandFrame {
+        struct {
             uint8_t angleCommand[5];
             uint8_t gpioControl[6];
         };
-        uint8_t data[11] = {0,0,0,0,0,0,0,0,0,0,0};
+        uint8_t data[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     };
 
-    union SensorFrame{
-        struct{
+    union SensorFrame {
+        struct {
             uint16_t current[6];
             float gyro[3];
             float acc[3];
@@ -54,6 +55,12 @@ public:
     void elbowCommandCB(const std_msgs::Float32::ConstPtr &msg);
 
     /**
+     * Callback for wrist joint
+     * @param msg wrist joint angle command
+     */
+    void wristCommandCB(const std_msgs::Float32::ConstPtr &msg);
+
+    /**
      * Callback for finger command
      * @param msg finger command
      */
@@ -65,50 +72,55 @@ public:
      * @param res
      */
     bool setHandModeService(roboy_communication_control::SetModeRequest &req,
-                   roboy_communication_control::SetModeResponse &res);
+                            roboy_communication_control::SetModeResponse &res);
 
-   /**
-     * Service to close/open hand
-     * @param req
-     * @param res
-     */
+    /**
+      * Service to close/open hand
+      * @param req
+      * @param res
+      */
     bool JointControllerService(roboy_communication_middleware::JointControllerRequest &req,
                                 roboy_communication_middleware::JointControllerResponse &res);
+
     /**
      * Publishes hand status data
      */
-    void handStatusPublisher();
+    void armStatusPublisher();
 
     bool fingerControl(uint8_t finger, uint8_t alpha, uint8_t beta, uint8_t gamma, uint8_t zeta = 90);
 
     void neutralHand();
+
     void closeHand();
+
     void openHand();
 
     bool command(vector<uint8_t> &setPoint);
+
     bool command(vector<uint8_t> &setPoint, int board);
+
     bool readSensorData(vector<SensorFrame> &data);
+
     bool readSensorData(SensorFrame &data, int board);
-    bool write(vector<CommandFrame> &command);
-    bool write(CommandFrame &command, int board);
-    void test();
+
+    bool test();
 
 private:
     ros::NodeHandlePtr nh;
-    ros::Subscriber handCommand_sub, fingerCommand_sub, elbowCommand_sub;
-    ros::Publisher handStatus_pub;
+    ros::Subscriber handCommand_sub, fingerCommand_sub, elbowCommand_sub, wristCommand_sub;
+    ros::Publisher armStatus_pub;
     ros::ServiceServer setMode_srv, jointController_srv;
-    boost::shared_ptr<std::thread> handIMUThread;
+    boost::shared_ptr<std::thread> armStatusThread;
     bool keep_publishing = true;
     int32_t *myo_base;
-    int agonist = 1, antagonist = 0;
-    uint8_t elbowDeviceID;
+    int elbow_agonist = 1, elbow_antagonist = 0, wrist_agonist = 3, wrist_antagonist = 2;
+    uint8_t elbowDeviceID, wristDeviceID;
     vector<uint8_t> handDeviceIDs;
     uint8_t id = 0;
-    HandControl::CommandFrame frame[4];
-    bool hand_control_active = true, elbow_joint_controller_active = false;
+    ArmControl::CommandFrame frame[4];
+    bool hand_control_active = true, elbow_joint_controller_active = true, wrist_joint_controller_active = true;
     float elbow_joint_angle = 0;
     string hand;
 };
 
-typedef boost::shared_ptr<HandControl> HandControlPtr;
+typedef boost::shared_ptr<ArmControl> ArmControlPtr;

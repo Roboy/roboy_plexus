@@ -1,4 +1,3 @@
-#include <common_utilities/CommonDefinitions.h>
 #include "roboy_plexus/myoControl.hpp"
 
 MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
@@ -350,7 +349,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 //            params->outputNegMax = -4000;
             params->spPosMax = 10000000;
             params->spNegMax = -10000000;
-            params->Kp = 100;
+            params->Kp = 50;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
