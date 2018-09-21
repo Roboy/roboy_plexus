@@ -1,7 +1,10 @@
 #include "roboy_plexus/armControl.hpp"
 
 ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDeviceID, vector<uint8_t> handDeviceIDs,
-                         bool id) : myo_base(myo_base), handDeviceIDs(handDeviceIDs), wristDeviceID(wristDeviceID), id(id) {
+                         bool id, bool hand_control_active , bool elbow_joint_controller_active ,
+                       bool wrist_joint_controller_active ) :
+        myo_base(myo_base), handDeviceIDs(handDeviceIDs), wristDeviceID(wristDeviceID), id(id), hand_control_active(hand_control_active),
+        elbow_joint_controller_active(elbow_joint_controller_active), wrist_joint_controller_active(wrist_joint_controller_active){
 
     if (!id) {
         hand = "left";

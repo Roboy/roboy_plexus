@@ -105,8 +105,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
 //            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
 
-            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-                    "/roboy/middleware/MagneticSensor", 1, this);
+//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+//                    "/roboy/middleware/MagneticSensor", 1, this);
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -131,12 +131,14 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         case SHOULDER_RIGHT: {
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                       1);
-            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
-                    "/roboy/middleware/JointStatus", 1);
-            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-                    "/roboy/middleware/MagneticSensor", 1, this);
+            vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+            armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, false));
+//            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+//                                                                                       1);
+//            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
+//                    "/roboy/middleware/JointStatus", 1);
+//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+//                    "/roboy/middleware/MagneticSensor", 1, this);
 //            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
 //                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
 //                handControl.reset(new HandControl(i2c_base[0], deviceIDs, true));

@@ -21,7 +21,8 @@
 class ArmControl {
 public:
     ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDeviceID, vector<uint8_t> handDeviceIDs,
-                bool id = false);
+                bool id = false, bool hand_control_active = true, bool elbow_joint_controller_active = true,
+               bool wrist_joint_controller_active = true );
 
     ~ArmControl();
 
@@ -118,7 +119,7 @@ private:
     vector<uint8_t> handDeviceIDs;
     uint8_t id = 0;
     ArmControl::CommandFrame frame[4];
-    bool hand_control_active = true, elbow_joint_controller_active = true, wrist_joint_controller_active = true;
+    bool hand_control_active = false, elbow_joint_controller_active = true, wrist_joint_controller_active = true;
     float elbow_joint_angle = 0;
     string hand;
 };
