@@ -20,19 +20,19 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     if (elbow_joint_controller_active) {
-        MYO_WRITE_elbow_Kp_joint_angle(myo_base, 10);
-        MYO_WRITE_elbow_Kd_joint_angle(myo_base, 0);
+        MYO_WRITE_elbow_Kp_joint_angle(myo_base, 1);
+        MYO_WRITE_elbow_Kd_joint_angle(myo_base, -1);
         MYO_WRITE_elbow_agonist(myo_base, elbow_agonist);
         MYO_WRITE_elbow_antagonist(myo_base, elbow_antagonist);
-        MYO_WRITE_Kp(myo_base, elbow_agonist, 40);
+        MYO_WRITE_Kp(myo_base, elbow_agonist, 5);
         MYO_WRITE_outputDivider(myo_base, elbow_agonist, 100);
-        MYO_WRITE_Kp(myo_base, elbow_antagonist, 40);
+        MYO_WRITE_Kp(myo_base, elbow_antagonist, 5);
         MYO_WRITE_outputDivider(myo_base, elbow_antagonist, 100);
         MYO_WRITE_Kd(myo_base, elbow_agonist, 0);
         MYO_WRITE_Kd(myo_base, elbow_antagonist, 0);
         MYO_WRITE_elbow_joint_angle_offset(myo_base, -600);
-        MYO_WRITE_elbow_joint_pretension(myo_base, 200);
-        MYO_WRITE_elbow_joint_deadband(myo_base, 0);
+        MYO_WRITE_elbow_joint_pretension(myo_base, 30);
+        MYO_WRITE_elbow_joint_deadband(myo_base, 100);
         MYO_WRITE_elbow_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_elbow_joint_angle_device_id(myo_base, elbowDeviceID);
         MYO_WRITE_elbow_joint_control(myo_base, elbow_joint_controller_active);
@@ -47,19 +47,23 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
                  MYO_READ_elbow_joint_angle_device_id(myo_base));
     }
     if (wrist_joint_controller_active) {
-        MYO_WRITE_wrist_Kp_joint_angle(myo_base, 10); // negative because the angle is flipped
-        MYO_WRITE_wrist_Kd_joint_angle(myo_base, 0); // negative because the angle is flipped
+        MYO_WRITE_wrist_Kp_joint_angle(myo_base, 1);
+        MYO_WRITE_wrist_Kd_joint_angle(myo_base, -1);
         MYO_WRITE_wrist_agonist(myo_base, wrist_agonist);
         MYO_WRITE_wrist_antagonist(myo_base, wrist_antagonist);
         MYO_WRITE_Kp(myo_base, wrist_agonist, 1);
-        MYO_WRITE_outputDivider(myo_base, wrist_agonist, 1000);
+        MYO_WRITE_outputDivider(myo_base, wrist_agonist, 1);
+        MYO_WRITE_outputPosMax(myo_base, wrist_agonist, 1);
+        MYO_WRITE_outputNegMax(myo_base, wrist_agonist, -1);
         MYO_WRITE_Kp(myo_base, wrist_antagonist, 1);
-        MYO_WRITE_outputDivider(myo_base, wrist_antagonist, 1000);
+        MYO_WRITE_outputDivider(myo_base, wrist_antagonist, 1);
+        MYO_WRITE_outputPosMax(myo_base, wrist_antagonist, 1);
+        MYO_WRITE_outputNegMax(myo_base, wrist_antagonist, -1);
         MYO_WRITE_Kd(myo_base, wrist_agonist, 0);
         MYO_WRITE_Kd(myo_base, wrist_antagonist, 0);
         MYO_WRITE_wrist_joint_angle_offset(myo_base, -1274);
         MYO_WRITE_wrist_joint_pretension(myo_base, 0);
-        MYO_WRITE_wrist_joint_deadband(myo_base, 0);
+        MYO_WRITE_wrist_joint_deadband(myo_base, 100);
         MYO_WRITE_wrist_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_wrist_joint_angle_device_id(myo_base, wristDeviceID);
         MYO_WRITE_wrist_joint_control(myo_base, wrist_joint_controller_active);
