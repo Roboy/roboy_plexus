@@ -749,8 +749,8 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
         params.outputDivider = req.config.outputDivider[i];
         myoControl->changeControlParameters(motor, params);
         res.mode.push_back(params.control_mode);
-        myoControl->changeControl(motor, req.config.control_mode[i], params, 0);
-        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i], 30);
+        myoControl->changeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i], req.config.setpoint[i]);
         control_mode[motor] = req.config.control_mode[i];
         i++;
     }

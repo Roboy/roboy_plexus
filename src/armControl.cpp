@@ -20,13 +20,13 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     if (elbow_joint_controller_active) {
-        MYO_WRITE_elbow_Kp_joint_angle(myo_base, 1);
-        MYO_WRITE_elbow_Kd_joint_angle(myo_base, -1);
+        MYO_WRITE_elbow_Kp_joint_angle(myo_base, 10);
+        MYO_WRITE_elbow_Kd_joint_angle(myo_base, -5);
         MYO_WRITE_elbow_agonist(myo_base, elbow_agonist);
         MYO_WRITE_elbow_antagonist(myo_base, elbow_antagonist);
-        MYO_WRITE_Kp(myo_base, elbow_agonist, 5);
+        MYO_WRITE_Kp(myo_base, elbow_agonist, 30);
         MYO_WRITE_outputDivider(myo_base, elbow_agonist, 100);
-        MYO_WRITE_Kp(myo_base, elbow_antagonist, 5);
+        MYO_WRITE_Kp(myo_base, elbow_antagonist, 30);
         MYO_WRITE_outputDivider(myo_base, elbow_antagonist, 100);
         MYO_WRITE_Kd(myo_base, elbow_agonist, 0);
         MYO_WRITE_Kd(myo_base, elbow_antagonist, 0);
@@ -47,18 +47,18 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
                  MYO_READ_elbow_joint_angle_device_id(myo_base));
     }
     if (wrist_joint_controller_active) {
-        MYO_WRITE_wrist_Kp_joint_angle(myo_base, 1);
-        MYO_WRITE_wrist_Kd_joint_angle(myo_base, -1);
+        MYO_WRITE_wrist_Kp_joint_angle(myo_base, 10);
+        MYO_WRITE_wrist_Kd_joint_angle(myo_base, 5);
         MYO_WRITE_wrist_agonist(myo_base, wrist_agonist);
         MYO_WRITE_wrist_antagonist(myo_base, wrist_antagonist);
-        MYO_WRITE_Kp(myo_base, wrist_agonist, 1);
-        MYO_WRITE_outputDivider(myo_base, wrist_agonist, 1);
-        MYO_WRITE_outputPosMax(myo_base, wrist_agonist, 1);
-        MYO_WRITE_outputNegMax(myo_base, wrist_agonist, -1);
-        MYO_WRITE_Kp(myo_base, wrist_antagonist, 1);
-        MYO_WRITE_outputDivider(myo_base, wrist_antagonist, 1);
-        MYO_WRITE_outputPosMax(myo_base, wrist_antagonist, 1);
-        MYO_WRITE_outputNegMax(myo_base, wrist_antagonist, -1);
+        MYO_WRITE_Kp(myo_base, wrist_agonist, 30);
+        MYO_WRITE_outputDivider(myo_base, wrist_agonist, 100);
+//        MYO_WRITE_outputPosMax(myo_base, wrist_agonist, 100);
+//        MYO_WRITE_outputNegMax(myo_base, wrist_agonist, -100);
+        MYO_WRITE_Kp(myo_base, wrist_antagonist, 30);
+        MYO_WRITE_outputDivider(myo_base, wrist_antagonist, 100);
+//        MYO_WRITE_outputPosMax(myo_base, wrist_antagonist, 100);
+//        MYO_WRITE_outputNegMax(myo_base, wrist_antagonist, -100);
         MYO_WRITE_Kd(myo_base, wrist_agonist, 0);
         MYO_WRITE_Kd(myo_base, wrist_antagonist, 0);
         MYO_WRITE_wrist_joint_angle_offset(myo_base, -1274);
@@ -125,6 +125,8 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
                     (((board_active >> 2) && hand_control_enabled) ? "offline" : "online"),
                     (((board_active >> 3) && hand_control_enabled) ? "offline" : "online")
             );
+        }else{
+            openHand();
         }
     }
 
@@ -281,19 +283,23 @@ bool ArmControl::JointControllerService(roboy_communication_middleware::JointCon
 
 void ArmControl::closeHand() {
     vector<uint8_t> order = {RINGLITTLEFINGER, MIDDLEFINGER, INDEXFINGER, THUMB};
-    ros::Duration d(1);
     for (auto finger: order) {
-        fingerControl(finger, 90, 110, 90, 90);
-        d.sleep();
+        MYO_WRITE_motor0(myo_base,finger,10);
+        MYO_WRITE_motor1(myo_base,finger,160);
+        MYO_WRITE_motor2(myo_base,finger,160);
+        MYO_WRITE_motor3(myo_base,finger,160);
+        MYO_WRITE_motor4(myo_base,finger,160);
     }
 }
 
 void ArmControl::openHand() {
     vector<uint8_t> order = {THUMB, INDEXFINGER, MIDDLEFINGER, RINGLITTLEFINGER};
-    ros::Duration d(1);
     for (auto finger: order) {
-        fingerControl(finger, 0, 0, 0, 90);
-        d.sleep();
+        MYO_WRITE_motor0(myo_base,finger,160);
+        MYO_WRITE_motor1(myo_base,finger,10);
+        MYO_WRITE_motor2(myo_base,finger,10);
+        MYO_WRITE_motor3(myo_base,finger,10);
+        MYO_WRITE_motor4(myo_base,finger,10);
     }
 }
 
