@@ -75,6 +75,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/controlActions.cpp
             src/armControl.cpp
             src/UDPSocket.cpp
+            src/xl320.cpp
             include/roboy_plexus/myoControl.hpp
             include/roboy_plexus/i2c.hpp
             include/roboy_plexus/roboyPlexus.hpp
@@ -84,6 +85,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/tlv493d.hpp
             include/roboy_plexus/controlActions.hpp
             include/roboy_plexus/armControl.hpp
+            include/roboy_plexus/xl320.hpp
             )
     add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp roboy_soli_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
