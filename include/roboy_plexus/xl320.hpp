@@ -58,6 +58,7 @@ private:
 private:
     ros::NodeHandlePtr nh;
     ros::Subscriber motor_command;
+    boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::ServiceServer xl320_srv;
     int32_t *xl320_base;
     int id = 5;

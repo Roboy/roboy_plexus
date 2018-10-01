@@ -10,16 +10,23 @@ XL320::XL320(int32_t* xl320_base):xl320_base(xl320_base){
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
     motor_command = nh->subscribe("/roboy/middleware/MotorCommand", 1, &XL320::MotorCommandCB, this);
     xl320_srv = nh->advertiseService("/xl320",&XL320::Service, this);
+    for(int i=0;i<8;i++)
+        write(i,Address::GOAL_POSITION,512);
+
+    spinner.reset(new ros::AsyncSpinner(0));
+    spinner->start();
 }
 
+
 void XL320::write(uint8_t motor, Address address, int16_t value){
+    XL320_write(xl320_base,motor,(int16_t)address,value);
     XL320_write(xl320_base,motor,(int16_t)address,value);
 }
 
 void XL320::MotorCommandCB(const roboy_communication_middleware::MotorCommandConstPtr &msg){
     if(msg->id==id){
         for(int i=0;i<msg->motors.size();i++){
-            write(msg->motors[i],Address::GOAL_POSITION,msg->setPoints[i]);
+            write((uint8_t)msg->motors[i],Address::GOAL_POSITION,(int16_t)msg->setPoints[i]);
         }
     }
 }

@@ -44,6 +44,8 @@
 #include "roboy_plexus/hps_0.h"
 #include <ros/ros.h>
 #include "roboy_plexus/xl320.hpp"
+#include "roboy_plexus/tlv493d.hpp"
+#include <roboy_communication_middleware/MagneticSensor.h>
 
 using namespace std;
 
@@ -52,7 +54,7 @@ using namespace std;
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
-int32_t *xl320_addr, *h2p_lw_led_addr, *h2p_lw_switch_addr;
+int32_t *xl320_addr, *h2p_lw_led_addr, *h2p_lw_switch_addr, *h2p_lw_i2c0_addr, *h2p_lw_i2c1_addr, *h2p_lw_i2c2_addr;
 
 
 void SigintHandler(int sig)
@@ -87,14 +89,83 @@ int main(int argc, char *argv[]) {
 
     xl320_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + XL320_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+    h2p_lw_i2c0_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+    h2p_lw_i2c1_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+    h2p_lw_i2c2_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     h2p_lw_switch_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
     signal(SIGINT, SigintHandler);
 
+    ros::NodeHandle nh;
+
     XL320 xl320(xl320_addr);
 
+    vector<boost::shared_ptr<TLV493D>> tlv;
+    vector<uint8_t> deviceIDs = {0x5e};
+    vector<int> pins = {255};
+    boost::shared_ptr<TLV493D> t0 = boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c0_addr,deviceIDs,pins));
+    boost::shared_ptr<TLV493D> t1 = boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c1_addr,deviceIDs,pins));
+    boost::shared_ptr<TLV493D> t2 = boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c2_addr,deviceIDs,pins));
+    tlv.push_back(t0);
+    tlv.push_back(t1);
+    tlv.push_back(t2);
+
+    ros::Publisher magnetic_sensor_pub;
+    magnetic_sensor_pub = nh.advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
+
+    ros::Rate r(10);
+    while(ros::ok()){
+        vector<float> x,y,z;
+        for(auto t:tlv){
+            t->read(x,y,z);
+        }
+        roboy_communication_middleware::MagneticSensor msg;
+        msg.x = x;
+        msg.y = y;
+        msg.z = z;
+        magnetic_sensor_pub.publish(msg);
+        ROS_INFO("\n%.3f %.3f %.3f\n%.3f %.3f %.3f\n%.3f %.3f %.3f", x[0], y[0], z[0], x[1], y[1], z[1], x[2], y[2], z[2]);
+        r.sleep();
+    }
+
+//    I2C i2c0(h2p_lw_i2c0_addr), i2c1(h2p_lw_i2c1_addr), i2c2(h2p_lw_i2c2_addr);
+//    ros::Duration d(0.1);
+//    while(ros::ok()) {
+////        vector<uint8_t> data;
+////        i2c2.read(0x5e,0,1,data);
+////        if(i2c0.ack_error())
+////            ROS_ERROR("ack");
+////        else
+////            ROS_INFO("yea");
+//        {
+//            vector <uint8_t> active_devices;
+//            i2c0.checkAddressSpace(0, 127, active_devices);
+//            ROS_INFO("i2c 0 found %ld active devices", active_devices.size());
+//            for (auto device:active_devices)
+//                printf("%x\t", device);
+//            cout << endl;
+//        }
+//        {
+//            vector <uint8_t> active_devices;
+//            i2c1.checkAddressSpace(0, 127, active_devices);
+//            ROS_INFO("i2c 1 found %ld active devices", active_devices.size());
+//            for (auto device:active_devices)
+//                printf("%x\t", device);
+//            cout << endl;
+//        }
+//        {
+//            vector <uint8_t> active_devices;
+//            i2c2.checkAddressSpace(0, 127, active_devices);
+//            ROS_INFO("i2c 2 found %ld active devices", active_devices.size());
+//            for (auto device:active_devices)
+//                printf("%x\t", device);
+//            cout << endl;
+//        }
+//        d.sleep();
+//    }
+
     uint8_t mask = 0x1;
-    ros::Rate rate(30);
+    ros::Rate rate(100);
     bool dir = 1;
     while(ros::ok()){
         if(dir)

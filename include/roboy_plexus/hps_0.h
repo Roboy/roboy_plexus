@@ -20,15 +20,48 @@
  */
 
 /*
+ * Macros for device 'I2C_2', class 'I2C'
+ * The macros are prefixed with 'I2C_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_2_COMPONENT_TYPE I2C
+#define I2C_2_COMPONENT_NAME I2C_2
+#define I2C_2_BASE 0x0
+#define I2C_2_SPAN 32
+#define I2C_2_END 0x1f
+
+/*
+ * Macros for device 'I2C_1', class 'I2C'
+ * The macros are prefixed with 'I2C_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_1_COMPONENT_TYPE I2C
+#define I2C_1_COMPONENT_NAME I2C_1
+#define I2C_1_BASE 0x20
+#define I2C_1_SPAN 32
+#define I2C_1_END 0x3f
+
+/*
+ * Macros for device 'I2C_0', class 'I2C'
+ * The macros are prefixed with 'I2C_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_0_COMPONENT_TYPE I2C
+#define I2C_0_COMPONENT_NAME I2C_0
+#define I2C_0_BASE 0x40
+#define I2C_0_SPAN 32
+#define I2C_0_END 0x5f
+
+/*
  * Macros for device 'SWITCHES', class 'altera_avalon_pio'
  * The macros are prefixed with 'SWITCHES_'.
  * The prefix is the slave descriptor.
  */
 #define SWITCHES_COMPONENT_TYPE altera_avalon_pio
 #define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x0
+#define SWITCHES_BASE 0x60
 #define SWITCHES_SPAN 16
-#define SWITCHES_END 0xf
+#define SWITCHES_END 0x6f
 #define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
 #define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SWITCHES_CAPTURE 0
@@ -50,9 +83,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x10
+#define LED_BASE 0x70
 #define LED_SPAN 16
-#define LED_END 0x1f
+#define LED_END 0x7f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -78,7 +111,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1538324169
+#define SYSID_QSYS_TIMESTAMP 1538416744
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
