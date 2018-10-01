@@ -96,6 +96,12 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, SigintHandler);
 
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "magnetic_shoulder", ros::init_options::NoSigintHandler);
+    }
+
     ros::NodeHandle nh;
 
     XL320 xl320(xl320_addr);
@@ -113,7 +119,7 @@ int main(int argc, char *argv[]) {
     ros::Publisher magnetic_sensor_pub;
     magnetic_sensor_pub = nh.advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
 
-    ros::Rate r(10);
+    ros::Rate r(100);
     while(ros::ok()){
         vector<float> x,y,z;
         for(auto t:tlv){
