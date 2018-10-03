@@ -23,6 +23,10 @@ void XL320::write(uint8_t motor, Address address, int16_t value){
     XL320_write(xl320_base,motor,(int16_t)address,value);
 }
 
+int16_t XL320::read(uint8_t motor, Address address){
+    return XL320_read(xl320_base,motor,(int16_t)address);
+}
+
 void XL320::MotorCommandCB(const roboy_communication_middleware::MotorCommandConstPtr &msg){
     if(msg->id==id){
         for(int i=0;i<msg->motors.size();i++){

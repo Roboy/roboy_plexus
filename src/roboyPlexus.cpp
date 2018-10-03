@@ -629,16 +629,16 @@ void RoboyPlexus::motorStatusPublisher() {
 }
 
 void RoboyPlexus::magneticShoulderJointPublisher() {
-    ros::Rate rate(60);
-    while (keep_publishing) {
-        roboy_communication_middleware::MagneticSensor msg;
-        msg.id = id;
-        for (auto tlv:tlv493D0) {
-            tlv->read(msg.x, msg.y, msg.z);
-        }
-        magneticSensor_pub.publish(msg);
-        rate.sleep();
-    }
+//    ros::Rate rate(60);
+//    while (keep_publishing) {
+//        roboy_communication_middleware::MagneticSensor msg;
+//        msg.id = id;
+//        for (auto tlv:tlv493D0) {
+//            tlv->read(msg.x, msg.y, msg.z);
+//        }
+//        magneticSensor_pub.publish(msg);
+//        rate.sleep();
+//    }
 }
 
 void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg) {

@@ -51,6 +51,7 @@ public:
     };
 
     void write(uint8_t motor, Address address, int16_t value);
+    int16_t read(uint8_t motor, Address address);
 private:
     void MotorCommandCB(const roboy_communication_middleware::MotorCommandConstPtr &msg);
     bool Service(roboy_communication_middleware::XL320::Request &req,

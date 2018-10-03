@@ -105,32 +105,42 @@ int main(int argc, char *argv[]) {
     ros::NodeHandle nh;
 
     XL320 xl320(xl320_addr);
+//    xl320.read(0,XL320::Address::PRESENT_POSITION);
+//    while(ros::ok()){
+//        ROS_INFO("%d", xl320.read(0,XL320::Address::PRESENT_POSITION));
+//    }
 
     vector<boost::shared_ptr<TLV493D>> tlv;
     vector<uint8_t> deviceIDs = {0x5e};
     vector<int> pins = {255};
-    boost::shared_ptr<TLV493D> t0 = boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c0_addr,deviceIDs,pins));
-    boost::shared_ptr<TLV493D> t1 = boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c1_addr,deviceIDs,pins));
-    boost::shared_ptr<TLV493D> t2 = boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c2_addr,deviceIDs,pins));
-    tlv.push_back(t0);
-    tlv.push_back(t1);
-    tlv.push_back(t2);
+    tlv.push_back(boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c0_addr,deviceIDs,pins)));
+    tlv.push_back(boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c1_addr,deviceIDs,pins)));
+    tlv.push_back(boost::shared_ptr<TLV493D>(new TLV493D(h2p_lw_i2c2_addr,deviceIDs,pins)));
 
     ros::Publisher magnetic_sensor_pub;
     magnetic_sensor_pub = nh.advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
 
     ros::Rate r(100);
     while(ros::ok()){
-        vector<float> x,y,z;
-        for(auto t:tlv){
-            t->read(x,y,z);
-        }
         roboy_communication_middleware::MagneticSensor msg;
-        msg.x = x;
-        msg.y = y;
-        msg.z = z;
-        magnetic_sensor_pub.publish(msg);
-        ROS_INFO("\n%.3f %.3f %.3f\n%.3f %.3f %.3f\n%.3f %.3f %.3f", x[0], y[0], z[0], x[1], y[1], z[1], x[2], y[2], z[2]);
+        float fx,fy,fz;
+        for(int i=0;i<tlv.size();i++){
+            ros::Time start_time = ros::Time::now();
+            bool success = false;
+            do{
+                success = tlv[i]->read(fx,fy,fz);
+                if(success) {
+                    msg.sensor_id.push_back(i);
+                    msg.x.push_back(fx);
+                    msg.y.push_back(fy);
+                    msg.z.push_back(fz);
+//                    ROS_INFO("sensor %d %.6f\t%.6f\t%.6f", i, fx, fy, fz);
+                }
+            }while(!success && (ros::Time::now()-start_time).toSec()<0.1);
+        }
+        if(msg.sensor_id.size()==tlv.size())
+            magnetic_sensor_pub.publish(msg);
+
         r.sleep();
     }
 
@@ -170,21 +180,21 @@ int main(int argc, char *argv[]) {
 //        d.sleep();
 //    }
 
-    uint8_t mask = 0x1;
-    ros::Rate rate(100);
-    bool dir = 1;
-    while(ros::ok()){
-        if(dir)
-            mask<<=1;
-        else
-            mask>>=1;
-        *h2p_lw_led_addr = mask;
-        rate.sleep();
-        if(mask==0x80)
-            dir = 0;
-        if(mask==0x1)
-            dir = 1;
-    }
+//    uint8_t mask = 0x1;
+//    ros::Rate rate(100);
+//    bool dir = 1;
+//    while(ros::ok()){
+//        if(dir)
+//            mask<<=1;
+//        else
+//            mask>>=1;
+//        *h2p_lw_led_addr = mask;
+//        rate.sleep();
+//        if(mask==0x80)
+//            dir = 0;
+//        if(mask==0x1)
+//            dir = 1;
+//    }
 
     // clean up our memory mapping and exit
     if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {

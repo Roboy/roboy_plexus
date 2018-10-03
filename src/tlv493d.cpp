@@ -11,14 +11,8 @@ TLV493D::TLV493D(void *i2c_base, vector<uint8_t> &deviceAddress, vector<int> &de
     }
 
     vector<uint8_t> regdata;
-    i2c->read_continuous(0x5e, 10, regdata);
-    if(true) {
-        ROS_DEBUG("register content:");
-        uint i = 0;
-        for (uint8_t val:regdata) {
-            printf("%d\t: " BYTE_TO_BINARY_PATTERN"\n", i++, BYTE_TO_BINARY(val));
-        }
-    }
+    ROS_INFO("before initialization");
+    readAllRegisters(0x5e,regdata,true);
 
     // Begin config
     // Static initial config for now
@@ -33,16 +27,9 @@ TLV493D::TLV493D(void *i2c_base, vector<uint8_t> &deviceAddress, vector<int> &de
     ROS_DEBUG("Writing config now ...");
     i2c->write(0x5e, cfgdata, 4);
 
-    ROS_DEBUG("Reading config now ...");
+    ROS_INFO("Reading config now ...");
     regdata.clear();
-    i2c->read_continuous(0x5e, 10, regdata);
-    if(false) {
-        ROS_DEBUG("register content:");
-        uint i = 0;
-        for (uint8_t val:regdata) {
-            printf("%d\t: " BYTE_TO_BINARY_PATTERN"\n", i++, BYTE_TO_BINARY(val));
-        }
-    }
+    readAllRegisters(0x5e,regdata,true);
 }
 
 TLV493D::~TLV493D() {
@@ -50,20 +37,19 @@ TLV493D::~TLV493D() {
     IOWR(i2c_base, i2c->GPIO_CONTROL, 0);
 }
 
-float TLV493D::convertToMilliTesla(uint8_t data) {
-    float mTs = 0;
-    uint8_t bitmask = 1;
-    for(int i=0; i<7; i++){
-        mTs += (data&bitmask);
-        bitmask <<= 1;
+float TLV493D::convertToMilliTesla(uint8_t MSB, uint8_t LSB) {
+    uint16_t data = (MSB<<8|LSB);
+    int val = 0;
+    for(int i=11;i>=0;i--){
+        if(i==11){
+            if((data>>i)&0x1)
+                val = -2048;
+        }else{
+            if((data>>i)&0x1)
+                val += (1<<i);
+        }
     }
-    mTs -= (data&bitmask);
-    return (mTs*1.56f);
-}
-
-void TLV493D::readTLV_B_MSB(int deviceaddress, vector<uint8_t> &data) {
-    // Read the first 3 registers only. Corresponding to the 8bit MSB values of the magnetic field
-    i2c->read_continuous(deviceaddress,3, data);
+    return val*0.098;
 }
 
 void TLV493D::readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool print){
@@ -77,15 +63,14 @@ void TLV493D::readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool pri
     }
 }
 
-void TLV493D::read(vector<float> &x, vector<float> &y, vector<float> &z){
-    for(uint8_t device:deviceAddress){
-        vector<uint8_t> data;
-        readTLV_B_MSB(device,data);
-        float fx = convertToMilliTesla(data[0]);
-        float fy = convertToMilliTesla(data[1]);
-        float fz = convertToMilliTesla(data[2]);
-        x.push_back(((fabs(fx)-1.55999994)<0.000001?0:fx));
-        y.push_back(((fabs(fy)-1.55999994)<0.000001?0:fy));
-        z.push_back(((fabs(fz)-1.55999994)<0.000001?0:fz));
-    }
+bool TLV493D::read(float &fx, float &fy, float &fz){
+    vector<uint8_t> data;
+    i2c->read_continuous(0x5e,6, data);
+    if((data[3]&0x3)!=0)
+        return false;
+
+    fx = convertToMilliTesla(data[0], (uint8_t)(data[4]>>4));
+    fy = convertToMilliTesla(data[1], (uint8_t)(data[4]&0xF));
+    fz = convertToMilliTesla(data[2], (uint8_t)(data[5]&0xF));
+    return true;
 }
