@@ -38,7 +38,7 @@ TLV493D::~TLV493D() {
 }
 
 float TLV493D::convertToMilliTesla(uint8_t MSB, uint8_t LSB) {
-    uint16_t data = (MSB<<8|LSB);
+    uint16_t data = (MSB<<4|(LSB&0xF));
     int val = 0;
     for(int i=11;i>=0;i--){
         if(i==11){
