@@ -72,5 +72,8 @@ bool TLV493D::read(float &fx, float &fy, float &fz){
     fx = convertToMilliTesla(data[0], (uint8_t)(data[4]>>4));
     fy = convertToMilliTesla(data[1], (uint8_t)(data[4]&0xF));
     fz = convertToMilliTesla(data[2], (uint8_t)(data[5]&0xF));
+//    fx = (uint16_t)(data[0]<<8|(uint8_t)(data[4]>>4));//convertToMilliTesla(data[0], (uint8_t)(data[4]>>4));
+//    fy = (uint16_t)(data[1]<<8|(uint8_t)(data[4]&0xF));
+//    fz = (uint16_t)(data[2]<<8|(uint8_t)(data[5]&0xF));
     return true;
 }

@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
     ros::Publisher magnetic_sensor_pub;
     magnetic_sensor_pub = nh.advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
 
-    ros::Rate r(100);
+    ros::Rate r(10);
     while(ros::ok()){
         roboy_communication_middleware::MagneticSensor msg;
         float fx,fy,fz;
