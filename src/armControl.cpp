@@ -30,7 +30,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_outputDivider(myo_base, elbow_antagonist, 100);
         MYO_WRITE_Kd(myo_base, elbow_agonist, 0);
         MYO_WRITE_Kd(myo_base, elbow_antagonist, 0);
-        MYO_WRITE_elbow_joint_angle_offset(myo_base, -600);
+        MYO_WRITE_elbow_joint_angle_offset(myo_base, -700);
         MYO_WRITE_elbow_joint_pretension(myo_base, 30);
         MYO_WRITE_elbow_joint_deadband(myo_base, 100);
         MYO_WRITE_elbow_joint_angle_setpoint(myo_base, 0);
@@ -84,11 +84,11 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_arm_board_device_id(myo_base, 2, 0x52);
         MYO_WRITE_arm_board_device_id(myo_base, 3, 0x53);
         for (int board = 0; board < 4; board++) {
-            MYO_WRITE_motor0(myo_base, board, 90);
-            MYO_WRITE_motor1(myo_base, board, 90);
-            MYO_WRITE_motor2(myo_base, board, 90);
-            MYO_WRITE_motor3(myo_base, board, 90);
-            MYO_WRITE_motor4(myo_base, board, 90);
+            MYO_WRITE_motor0(myo_base, board, 180);
+            MYO_WRITE_motor1(myo_base, board, 180);
+            MYO_WRITE_motor2(myo_base, board, 180);
+            MYO_WRITE_motor3(myo_base, board, 180);
+            MYO_WRITE_motor4(myo_base, board, 180);
         }
         MYO_WRITE_hand_control(myo_base, hand_control_active);
 
@@ -476,7 +476,7 @@ bool ArmControl::test() {
     vector<bool> success(handDeviceIDs.size(), true);
     bool allBoardsOK = true;
     for (int board = 0; board < handDeviceIDs.size(); board++) {
-        for (uint8_t pos = 70; pos < 90; pos += 5) {
+        for (uint8_t pos = 150; pos <= 180; pos += 5) {
             MYO_WRITE_motor0(myo_base, board, pos);
             uint8_t pos_0 = MYO_READ_motor0(myo_base, board);
             if(pos_0!=pos)

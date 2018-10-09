@@ -125,7 +125,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             {
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, true, false, false));
+                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, true, true, true));
             }
 
 //            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
