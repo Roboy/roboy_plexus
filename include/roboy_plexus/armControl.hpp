@@ -8,6 +8,7 @@
 #include <roboy_communication_middleware/JointController.h>
 #include <roboy_communication_control/SetMode.h>
 #include <std_msgs/Float32.h>
+#include <std_srvs/SetBool.h>
 #include "roboy_plexus/myoControl.hpp"
 
 #define THUMB 0
@@ -83,6 +84,12 @@ public:
     bool JointControllerService(roboy_communication_middleware::JointControllerRequest &req,
                                 roboy_communication_middleware::JointControllerResponse &res);
 
+    bool ElbowJointControllerService(std_srvs::SetBoolRequest &req,
+                                     std_srvs::SetBoolResponse &res);
+
+    bool WristJointControllerService(std_srvs::SetBoolRequest &req,
+                                     std_srvs::SetBoolResponse &res);
+
     /**
      * Publishes hand status data
      */
@@ -110,7 +117,7 @@ private:
     ros::NodeHandlePtr nh;
     ros::Subscriber handCommand_sub, fingerCommand_sub, elbowCommand_sub, wristCommand_sub;
     ros::Publisher armStatus_pub;
-    ros::ServiceServer setMode_srv, jointController_srv;
+    ros::ServiceServer setMode_srv, jointController_srv, elbow_joint_controller_srv, wrist_joint_controller_srv;
     boost::shared_ptr<std::thread> armStatusThread;
     bool keep_publishing = true;
     int32_t *myo_base;

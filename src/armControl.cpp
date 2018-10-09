@@ -35,7 +35,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_elbow_joint_deadband(myo_base, 100);
         MYO_WRITE_elbow_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_elbow_joint_angle_device_id(myo_base, elbowDeviceID);
-        MYO_WRITE_elbow_joint_control(myo_base, elbow_joint_controller_active);
+        MYO_WRITE_elbow_joint_control(myo_base, false);
 
         ROS_INFO("Configuring elbow joint with"
                          "\nKp %d\nKd %d\nagonist %d"
@@ -66,7 +66,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_wrist_joint_deadband(myo_base, 100);
         MYO_WRITE_wrist_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_wrist_joint_angle_device_id(myo_base, wristDeviceID);
-        MYO_WRITE_wrist_joint_control(myo_base, wrist_joint_controller_active);
+        MYO_WRITE_wrist_joint_control(myo_base, false);
 
         ROS_INFO("Configuring wrist joint with"
                          "\nKp %d\nKd %d\nagonist %d"
@@ -137,15 +137,23 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
                                          this);
         wristCommand_sub = nh->subscribe("/roboy/middleware/wrist_left/JointAngle", 1, &ArmControl::wristCommandCB,
                                          this);
-        jointController_srv = nh->advertiseService("/roboy/middleware/elbow_left/JointController",
+        jointController_srv = nh->advertiseService("/roboy/middleware/arm/left/JointControllerConfig",
                                                    &ArmControl::JointControllerService, this);
+        elbow_joint_controller_srv = nh->advertiseService("/roboy/middleware/elbow_left/JointController",
+                                                   &ArmControl::ElbowJointControllerService, this);
+        wrist_joint_controller_srv = nh->advertiseService("/roboy/middleware/wrist_left/JointController",
+                                                          &ArmControl::WristJointControllerService, this);
     } else {
         elbowCommand_sub = nh->subscribe("/roboy/middleware/elbow_right/JointAngle", 1, &ArmControl::elbowCommandCB,
                                          this);
         wristCommand_sub = nh->subscribe("/roboy/middleware/wrist_right/JointAngle", 1, &ArmControl::wristCommandCB,
                                          this);
-        jointController_srv = nh->advertiseService("/roboy/middleware/elbow_right/JointController",
+        jointController_srv = nh->advertiseService("/roboy/middleware/arm/right/JointController",
                                                    &ArmControl::JointControllerService, this);
+        elbow_joint_controller_srv = nh->advertiseService("/roboy/middleware/elbow_right/JointController",
+                                                          &ArmControl::ElbowJointControllerService, this);
+        wrist_joint_controller_srv = nh->advertiseService("/roboy/middleware/wrist_right/JointController",
+                                                          &ArmControl::WristJointControllerService, this);
     }
 
     fingerCommand_sub = nh->subscribe("/roboy/middleware/FingerCommand", 1, &ArmControl::fingerCommandCB, this);
@@ -279,6 +287,16 @@ bool ArmControl::JointControllerService(roboy_communication_middleware::JointCon
     MYO_WRITE_Kd(myo_base, wrist_antagonist, req.Kd_wrist_agonist);
     MYO_WRITE_wrist_joint_pretension(myo_base, req.wrist_pretension);
     MYO_WRITE_wrist_joint_deadband(myo_base, req.wrist_deadband);
+}
+
+bool ArmControl::ElbowJointControllerService(std_srvs::SetBoolRequest &req,
+                                 std_srvs::SetBoolResponse &res){
+    MYO_WRITE_elbow_joint_control(myo_base,req.data);
+}
+
+bool ArmControl::WristJointControllerService(std_srvs::SetBoolRequest &req,
+                                 std_srvs::SetBoolResponse &res){
+    MYO_WRITE_wrist_joint_control(myo_base,req.data);
 }
 
 void ArmControl::closeHand() {
