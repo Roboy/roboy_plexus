@@ -235,7 +235,7 @@ public:
 	 * @param motor for this motor
 	 */
 	void getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
-									int &setPoint, int &setPointMin, int &setPointMax, int motor);
+									int &setPoint, int &outputDivider, int motor);
 	/**
 	 * Get the parameters for the PID controller of a motor
 	 * @param motor for this motor
@@ -286,7 +286,7 @@ public:
      * Sets the current velocity of a motor in radians/seconds
      * @param motor for this motor
      */
-    void setVelocity(int motor, int16_t setPoint);
+    void setVelocity(int motor, int32_t setPoint);
     /**
      * Set the displacement in encoder ticks
      * @param motor for this motor

@@ -23,13 +23,13 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
         control_params[motor][DISPLACEMENT] = params;
     }
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0){
+        if (motor < NUMBER_OF_MOTORS_MYOCONTROL_0) {
             myo_base_of_motor[motor] = 0;
             motor_offset[motor] = 0;
-        }else if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1){
+        } else if (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1) {
             myo_base_of_motor[motor] = 1;
             motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0;
-        }else{
+        } else {
             myo_base_of_motor[motor] = 2;
             motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1;
         }
@@ -41,6 +41,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
         MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
+        usleep(10000);
         ROS_INFO("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
 //        for(uint motor=0; motor<7; motor++){
 //            printf(        "Kp             %d\n"
@@ -108,13 +109,13 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     }
 
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0){
+        if (motor < NUMBER_OF_MOTORS_MYOCONTROL_0) {
             myo_base_of_motor[motor] = 0;
             motor_offset[motor] = 0;
-        }else if(motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1){
+        } else if (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1) {
             myo_base_of_motor[motor] = 1;
             motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0;
-        }else{
+        } else {
             myo_base_of_motor[motor] = 2;
             motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1;
         }
@@ -123,9 +124,10 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     changeControl(DISPLACEMENT);
 
     for (uint i = 0; i < myo_base.size(); i++) {
-        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
-//        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
+//        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
+        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
+        usleep(10000);
         ROS_INFO("bus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
     }
     reset();
@@ -150,6 +152,10 @@ MyoControl::~MyoControl() {
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
     changeControl(motor, mode, params);
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], setPoint);
+    int kp, ki, kd, fg, db, sp, od;
+    getPIDcontrollerParams(kp, ki, kd, fg, db, sp, od, motor);
+    ROS_INFO( "change control motor %d (Kp: %d, Kd %d, Ki %d, ForwardGain %d, deadband %d, "
+                    "OutputDivider %d, setPoint %d)", motor, kp, ki, kd, fg, db, od, sp);
 }
 
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params) {
@@ -232,15 +238,14 @@ bool MyoControl::setSPIactive(int motor, bool active) {
 }
 
 void MyoControl::getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
-                                        int &setPoint, int &setPointMin, int &setPointMax, int motor) {
+                                        int &setPoint, int &outputDivider, int motor) {
     Pgain = MYO_READ_Kp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     Igain = MYO_READ_Ki(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     Dgain = MYO_READ_Kd(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     forwardGain = MYO_READ_forwardGain(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     deadband = MYO_READ_deadBand(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     setPoint = MYO_READ_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
-    setPointMin = 0;
-    setPointMax = 0;
+    outputDivider = MYO_READ_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 void MyoControl::setPIDcontrollerParams(uint16_t Pgain, uint16_t Igain, uint16_t Dgain, uint16_t forwardGain,
@@ -289,9 +294,9 @@ void MyoControl::setPosition(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], (int32_t) setPoint);
 }
 
-void MyoControl::setVelocity(int motor, int16_t setPoint) {
+void MyoControl::setVelocity(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
-                 (int32_t) (setPoint / MOTOR_BOARD_COMMUNICATION_FREQUENCY));
+                 (int32_t) (setPoint/MOTOR_BOARD_COMMUNICATION_FREQUENCY));
 }
 
 void MyoControl::setDisplacement(int motor, int16_t setPoint) {
@@ -359,9 +364,9 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->outputDivider = 100;
             break;
         case VELOCITY:
-            params->spPosMax = 100;
-            params->spNegMax = -100;
-            params->Kp = 100;
+            params->spPosMax = 100000;
+            params->spNegMax = -100000;
+            params->Kp = 30;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
