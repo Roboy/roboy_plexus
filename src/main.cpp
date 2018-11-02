@@ -46,6 +46,7 @@
 #include "roboy_plexus/xl320.hpp"
 #include "roboy_plexus/tlv493d.hpp"
 #include <roboy_communication_middleware/MagneticSensor.h>
+#include "roboy_plexus/pwm.hpp"
 
 using namespace std;
 
@@ -54,8 +55,15 @@ using namespace std;
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
-int32_t *xl320_addr, *h2p_lw_led_addr, *h2p_lw_switch_addr, *h2p_lw_i2c0_addr, *h2p_lw_i2c1_addr, *h2p_lw_i2c2_addr;
+int32_t *xl320_addr, *h2p_lw_led_addr, *h2p_lw_switch_addr, *h2p_lw_i2c0_addr, *h2p_lw_i2c1_addr, *h2p_lw_i2c2_addr, *h2p_lw_pwm_addr;
 
+boost::shared_ptr<PWM> pwm;
+
+void MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg){
+    for(int i=0;i<msg->motors.size();i++){
+        pwm->set(msg->motors[i],msg->setPoints[i]);
+    }
+}
 
 void SigintHandler(int sig)
 {
@@ -93,6 +101,7 @@ int main(int argc, char *argv[]) {
     h2p_lw_i2c1_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     h2p_lw_i2c2_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     h2p_lw_switch_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+    h2p_lw_pwm_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + PWM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 
     signal(SIGINT, SigintHandler);
 
@@ -103,6 +112,11 @@ int main(int argc, char *argv[]) {
     }
 
     ros::NodeHandle nh;
+
+    pwm.reset(new PWM(h2p_lw_pwm_addr));
+
+    ros::Subscriber motor_command;
+    motor_command = nh.subscribe("/roboy/middleware/MotorCommand",1,&MotorCommand);
 
     XL320 xl320(xl320_addr);
 //    xl320.read(0,XL320::Address::PRESENT_POSITION);
