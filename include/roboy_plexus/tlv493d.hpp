@@ -26,10 +26,9 @@ public:
     TLV493D(void *i2c_base, vector<uint8_t> &deviceAddress, vector<int> &devicePin);
     ~TLV493D();
     bool initTLV(uint8_t &deviceaddress, int devicepin);
-    float convertToMilliTesla(uint8_t data);
-    void readTLV_B_MSB(int deviceaddress, vector<uint8_t> &data);
+    float convertToMilliTesla(uint8_t MSB, uint8_t LSB) ;
     void readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool print=true);
-    void read(vector<float> &x, vector<float> &y, vector<float> &z);
+    bool read(float &fx, float &fy, float &fz);
 private:
     vector<uint8_t> deviceAddress;
     uint8_t gpioreg = 0;

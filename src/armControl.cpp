@@ -35,7 +35,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_elbow_joint_deadband(myo_base, 100);
         MYO_WRITE_elbow_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_elbow_joint_angle_device_id(myo_base, elbowDeviceID);
-        MYO_WRITE_elbow_joint_control(myo_base, false);
+        MYO_WRITE_elbow_joint_control(myo_base, elbow_joint_controller_active);
 
         ROS_INFO("Configuring elbow joint with"
                          "\nKp %d\nKd %d\nagonist %d"
@@ -66,7 +66,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_wrist_joint_deadband(myo_base, 100);
         MYO_WRITE_wrist_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_wrist_joint_angle_device_id(myo_base, wristDeviceID);
-        MYO_WRITE_wrist_joint_control(myo_base, false);
+        MYO_WRITE_wrist_joint_control(myo_base, elbow_joint_controller_active);
 
         ROS_INFO("Configuring wrist joint with"
                          "\nKp %d\nKd %d\nagonist %d"
