@@ -125,11 +125,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             {
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-<<<<<<< HEAD
                 armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, false));
-=======
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, true, true));
->>>>>>> 5f4f6e43176354000819c06282fefa6f42b7b26c
             }
 //            {
 //                if(i2c_base.size()>=3) {
