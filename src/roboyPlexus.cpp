@@ -125,8 +125,24 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             {
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+<<<<<<< HEAD
                 armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, false));
+=======
+                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, true, true));
+>>>>>>> 5f4f6e43176354000819c06282fefa6f42b7b26c
             }
+//            {
+//                if(i2c_base.size()>=3) {
+//                    vector<uint8_t> deviceIDs = {0x5e};
+//                    vector<int> pins = {255};
+//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceIDs, pins)));
+//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceIDs, pins)));
+//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceIDs, pins)));
+//                    magneticsShoulderThread = boost::shared_ptr<std::thread>(
+//                            new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//                    magneticsShoulderThread->detach();
+//                }
+//            }
 
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
                     "/roboy/middleware/MagneticSensor", 1, this);
@@ -563,7 +579,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
 
 void RoboyPlexus::jointStatusPublisher() {
     ros::Rate rate(50);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::JointStatus msg;
         msg.id = id;
         vector<A1335State> jointState;
@@ -579,7 +595,7 @@ void RoboyPlexus::jointStatusPublisher() {
 
 void RoboyPlexus::motorAnglePublisher() {
     ros::Rate rate(60);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MotorAngle msg;
         msg.id = id;
         for (int motor:myo_bricks[id]) {
@@ -592,7 +608,7 @@ void RoboyPlexus::motorAnglePublisher() {
 
 void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(200);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MotorStatus msg;
         msg.id = id;
         msg.power_sense = myoControl->getPowerSense();
@@ -619,16 +635,15 @@ void RoboyPlexus::motorStatusPublisher() {
 
 void RoboyPlexus::magneticShoulderJointPublisher() {
     ros::Rate rate(60);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MagneticSensor msg;
-        msg.id = id;
-        int i =0;
-        for (auto tlv:tlv493D0) {
-            float fx,fy,fz;
+
+        float fx,fy,fz;
+        for(int i=0;i<tlv493D0.size();i++){
             ros::Time start_time = ros::Time::now();
             bool success = false;
             do{
-                success = tlv->read(fx,fy,fz);
+                success = tlv493D0[i]->read(fx,fy,fz);
                 if(success) {
                     msg.sensor_id.push_back(i);
                     msg.x.push_back(fx);
@@ -637,7 +652,6 @@ void RoboyPlexus::magneticShoulderJointPublisher() {
 //                    ROS_INFO("sensor %d %.6f\t%.6f\t%.6f", i, fx, fy, fz);
                 }
             }while(!success && (ros::Time::now()-start_time).toSec()<0.1);
-            i++;
         }
         if(msg.sensor_id.size()==tlv493D0.size())
             magneticSensor_pub.publish(msg);
