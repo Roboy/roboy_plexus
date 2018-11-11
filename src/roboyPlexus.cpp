@@ -125,11 +125,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             {
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, true, true, true));
+                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, true));
             }
 
-//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-//                    "/roboy/middleware/MagneticSensor", 1, this);
+            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+                    "/roboy/middleware/MagneticSensor", 1, this);
 //            // Look in the device's user manual for allowed addresses! (Table 6)
 //            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
 //            vector<uint8_t> deviceaddress1 = {0b1001010};//
@@ -142,32 +142,32 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
 //            magneticsShoulderThread->detach();
 
-//            vector<uint8_t> deviceaddress = {0x5e};
-//            vector<int> devicepins = {255};
-//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
-//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-//
-//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-//            magneticsShoulderThread->detach();
+            vector<uint8_t> deviceaddress = {0x5e};
+            vector<int> devicepins = {255};
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+
+            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+            magneticsShoulderThread->detach();
             break;
         }
         case SHOULDER_RIGHT: {
             {
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                           1);
-                vector<uint8_t> deviceIDs = {0xF, 0xE};
-                vector<int32_t> gearBoxRatio = {62, 62};
-                vector<int32_t> encoderMultiplier = {1, 1};
-                if (!myoControl->configureMyoBricks(myo_bricks[SHOULDER_RIGHT], deviceIDs, encoderMultiplier,
-                                                    gearBoxRatio)) {
-                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
-                } else {
-                    motorAngleThread = boost::shared_ptr<std::thread>(
-                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                    motorAngleThread->detach();
-                }
+//                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+//                                                                                           1);
+//                vector<uint8_t> deviceIDs = {0xF, 0xE};
+//                vector<int32_t> gearBoxRatio = {62, 62};
+//                vector<int32_t> encoderMultiplier = {1, 1};
+//                if (!myoControl->configureMyoBricks(myo_bricks[SHOULDER_RIGHT], deviceIDs, encoderMultiplier,
+//                                                    gearBoxRatio)) {
+//                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
+//                } else {
+//                    motorAngleThread = boost::shared_ptr<std::thread>(
+//                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//                    motorAngleThread->detach();
+//                }
             }
             {
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};

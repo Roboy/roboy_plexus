@@ -289,7 +289,7 @@ void MyoControl::setPosition(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], (int32_t) setPoint);
 }
 
-void MyoControl::setVelocity(int motor, int16_t setPoint) {
+void MyoControl::setVelocity(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                  (int32_t) (setPoint / MOTOR_BOARD_COMMUNICATION_FREQUENCY));
 }
@@ -396,7 +396,7 @@ void MyoControl::allToPosition(int32_t pos) {
     }
 }
 
-void MyoControl::allToVelocity(int16_t vel) {
+void MyoControl::allToVelocity(int32_t vel) {
     changeControl(VELOCITY);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         setVelocity(motor, vel);

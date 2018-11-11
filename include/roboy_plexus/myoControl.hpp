@@ -286,7 +286,7 @@ public:
      * Sets the current velocity of a motor in radians/seconds
      * @param motor for this motor
      */
-    void setVelocity(int motor, int16_t setPoint);
+    void setVelocity(int motor, int32_t setPoint);
     /**
      * Set the displacement in encoder ticks
      * @param motor for this motor
@@ -322,7 +322,7 @@ public:
 	 * Changes the control mode for all motors to Velocity
 	 * @param pos new setPoint
 	 */
-	void allToVelocity(int16_t vel);
+	void allToVelocity(int32_t vel);
 	/**
 	 * Changes the control mode for all motors to Displacement
 	 * @param force new setPoint

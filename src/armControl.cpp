@@ -35,7 +35,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_elbow_joint_deadband(myo_base, 100);
         MYO_WRITE_elbow_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_elbow_joint_angle_device_id(myo_base, elbowDeviceID);
-        MYO_WRITE_elbow_joint_control(myo_base, false);
+        MYO_WRITE_elbow_joint_control(myo_base, true);
 
         ROS_INFO("Configuring elbow joint with"
                          "\nKp %d\nKd %d\nagonist %d"
@@ -66,7 +66,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
         MYO_WRITE_wrist_joint_deadband(myo_base, 100);
         MYO_WRITE_wrist_joint_angle_setpoint(myo_base, 0);
         MYO_WRITE_wrist_joint_angle_device_id(myo_base, wristDeviceID);
-        MYO_WRITE_wrist_joint_control(myo_base, false);
+        MYO_WRITE_wrist_joint_control(myo_base, true);
 
         ROS_INFO("Configuring wrist joint with"
                          "\nKp %d\nKd %d\nagonist %d"
@@ -291,12 +291,23 @@ bool ArmControl::JointControllerService(roboy_communication_middleware::JointCon
 
 bool ArmControl::ElbowJointControllerService(std_srvs::SetBoolRequest &req,
                                  std_srvs::SetBoolResponse &res){
-    MYO_WRITE_elbow_joint_control(myo_base,req.data);
+    ROS_INFO("%s elbow controller", (req.data?"enableing":"disabeling" ));
+    MYO_WRITE_elbow_joint_control(myo_base,((bool)req.data));
+    return true;
 }
 
 bool ArmControl::WristJointControllerService(std_srvs::SetBoolRequest &req,
                                  std_srvs::SetBoolResponse &res){
-    MYO_WRITE_wrist_joint_control(myo_base,req.data);
+    ROS_INFO("%s wrist controller", (req.data?"enableing":"disabeling" ));
+    if(req.data){
+        MYO_WRITE_Kp(myo_base, wrist_agonist, 30);
+        MYO_WRITE_Kp(myo_base, wrist_antagonist, 30);
+    }else{
+        MYO_WRITE_Kp(myo_base, wrist_agonist, 0);
+        MYO_WRITE_Kp(myo_base, wrist_antagonist, 0);
+    }
+    MYO_WRITE_wrist_joint_control(myo_base,((bool)req.data));
+    return true;
 }
 
 void ArmControl::closeHand() {
