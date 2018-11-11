@@ -235,7 +235,7 @@ public:
 	 * @param motor for this motor
 	 */
 	void getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
-									int &setPoint, int &setPointMin, int &setPointMax, int motor);
+									int &setPoint, int &outputDivider, int motor);
 	/**
 	 * Get the parameters for the PID controller of a motor
 	 * @param motor for this motor

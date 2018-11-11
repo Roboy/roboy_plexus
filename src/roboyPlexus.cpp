@@ -127,20 +127,21 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                 vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
                 armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, true));
             }
+//            {
+//                if(i2c_base.size()>=3) {
+//                    vector<uint8_t> deviceIDs = {0x5e};
+//                    vector<int> pins = {255};
+//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceIDs, pins)));
+//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceIDs, pins)));
+//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceIDs, pins)));
+//                    magneticsShoulderThread = boost::shared_ptr<std::thread>(
+//                            new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//                    magneticsShoulderThread->detach();
+//                }
+//            }
 
             magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
                     "/roboy/middleware/MagneticSensor", 1, this);
-//            // Look in the device's user manual for allowed addresses! (Table 6)
-//            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
-//            vector<uint8_t> deviceaddress1 = {0b1001010};//
-//            vector<int> devicepins0 = {0, 1};
-//            vector<int> devicepins1 = {0};
-//            tlv493D0[0].reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
-//            tlv493D0[1].reset(new TLV493D(i2c_base[1], deviceaddress1, devicepins1));
-//
-//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-//            magneticsShoulderThread->detach();
 
             vector<uint8_t> deviceaddress = {0x5e};
             vector<int> devicepins = {255};
@@ -574,7 +575,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
 
 void RoboyPlexus::jointStatusPublisher() {
     ros::Rate rate(50);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::JointStatus msg;
         msg.id = id;
         vector<A1335State> jointState;
@@ -590,7 +591,7 @@ void RoboyPlexus::jointStatusPublisher() {
 
 void RoboyPlexus::motorAnglePublisher() {
     ros::Rate rate(60);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MotorAngle msg;
         msg.id = id;
         for (int motor:myo_bricks[id]) {
@@ -603,7 +604,7 @@ void RoboyPlexus::motorAnglePublisher() {
 
 void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(200);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MotorStatus msg;
         msg.id = id;
         msg.power_sense = myoControl->getPowerSense();
@@ -630,13 +631,26 @@ void RoboyPlexus::motorStatusPublisher() {
 
 void RoboyPlexus::magneticShoulderJointPublisher() {
     ros::Rate rate(60);
-    while (keep_publishing) {
+    while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MagneticSensor msg;
-        msg.id = id;
-        for (auto tlv:tlv493D0) {
-            tlv->read(msg.x, msg.y, msg.z);
+
+        float fx,fy,fz;
+        for(int i=0;i<tlv493D0.size();i++){
+            ros::Time start_time = ros::Time::now();
+            bool success = false;
+            do{
+                success = tlv493D0[i]->read(fx,fy,fz);
+                if(success) {
+                    msg.sensor_id.push_back(i);
+                    msg.x.push_back(fx);
+                    msg.y.push_back(fy);
+                    msg.z.push_back(fz);
+//                    ROS_INFO("sensor %d %.6f\t%.6f\t%.6f", i, fx, fy, fz);
+                }
+            }while(!success && (ros::Time::now()-start_time).toSec()<0.1);
         }
-        magneticSensor_pub.publish(msg);
+        if(msg.sensor_id.size()==tlv493D0.size())
+            magneticSensor_pub.publish(msg);
         rate.sleep();
     }
 }
@@ -762,28 +776,34 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
 bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode::Request &req,
                                      roboy_communication_middleware::ControlMode::Response &res) {
     if (!emergency_stop) {
-        uint i = 0;
-        switch (req.control_mode) {
-            case POSITION:
-                ROS_INFO("switch to POSITION control");
-                for (auto &mode:control_mode)
-                    mode.second = POSITION;
-                myoControl->allToPosition(req.setPoint);
-                break;
-            case VELOCITY:
-                ROS_INFO("switch to VELOCITY control");
-                for (auto &mode:control_mode)
-                    mode.second = VELOCITY;
-                myoControl->allToVelocity(req.setPoint);
-                break;
-            case DISPLACEMENT:
-                ROS_INFO("switch to DISPLACEMENT control");
-                for (auto &mode:control_mode)
-                    mode.second = DISPLACEMENT;
-                myoControl->allToDisplacement(req.setPoint);
-                break;
-            default:
-                return false;
+        if(req.motorId.empty()) {
+            switch (req.control_mode) {
+                case POSITION:
+                    ROS_INFO("switch to POSITION control");
+                    for (auto &mode:control_mode)
+                        mode.second = POSITION;
+                    myoControl->allToPosition(req.setPoint);
+                    break;
+                case VELOCITY:
+                    ROS_INFO("switch to VELOCITY control");
+                    for (auto &mode:control_mode)
+                        mode.second = VELOCITY;
+                    myoControl->allToVelocity(req.setPoint);
+                    break;
+                case DISPLACEMENT:
+                    ROS_INFO("switch to DISPLACEMENT control");
+                    for (auto &mode:control_mode)
+                        mode.second = DISPLACEMENT;
+                    myoControl->allToDisplacement(req.setPoint);
+                    break;
+                default:
+                    return false;
+            }
+        }else{
+            for(int motor:req.motorId){
+                myoControl->changeControl(motor,req.control_mode);
+                control_mode[motor] = req.control_mode;
+            }
         }
         return true;
     } else {
