@@ -263,10 +263,7 @@ uint16_t MyoControl::getControlMode(int motor) {
 }
 
 int32_t MyoControl::getMotorAngle(int motor) {
-    if (MYO_READ_myo_brick_i2c_ack_error(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]))
-        return 0;
-    else
-        return MYO_READ_myo_brick_motor_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+    return MYO_READ_myo_brick_motor_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 bool MyoControl::getPowerSense() {

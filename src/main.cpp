@@ -55,6 +55,7 @@ int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
+int32_t *h2p_lw_a1339_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
 vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_i2c_addr;
@@ -143,20 +144,25 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_switches_addr = nullptr;
 #endif
+#ifdef A1339_0_BASE
+    h2p_lw_a1339_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + A1339_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_a1339_addr = nullptr;
+#endif
 #ifdef MYOCONTROL_0_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
-    h2p_lw_myo_addr.push_back(nullptr);
+//    h2p_lw_myo_addr.push_back(nullptr);
 #endif
 #ifdef MYOCONTROL_1_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
-    h2p_lw_myo_addr.push_back(nullptr);
+//    h2p_lw_myo_addr.push_back(nullptr);
 #endif
 #ifdef MYOCONTROL_2_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
-    h2p_lw_myo_addr.push_back(nullptr);
+//    h2p_lw_myo_addr.push_back(nullptr);
 #endif
 #ifdef I2C_0_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
@@ -194,6 +200,21 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "roboy_plexus");
+//        ros::start();
+//    }
+//
+//    ros::Duration d(1);
+//    while(ros::ok()){
+//        int32_t angle = IORD(h2p_lw_a1339_addr,0);
+//        ROS_INFO_STREAM((angle/4096.0)*360.0);
+//        d.sleep();
+//    }
+//
+//    return 0;
 //    if (!ros::isInitialized()) {
 //        int argc = 0;
 //        char **argv = NULL;
