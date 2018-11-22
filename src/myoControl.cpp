@@ -159,7 +159,10 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
 }
 
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params) {
-    MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+    if(find(myo_bricks.begin(),myo_bricks.end(),motor)!=myo_bricks.end() && mode==DISPLACEMENT)
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
+    else
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
     MYO_WRITE_reset_controller(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     MYO_WRITE_Kp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.Kp);
     MYO_WRITE_Kd(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.Kd);
@@ -190,7 +193,10 @@ void MyoControl::changeControl(int motor, int mode) {
                            control_params[motor][mode].outputPosMax);
     MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                            control_params[motor][mode].outputNegMax);
-    MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+    if(find(myo_bricks.begin(),myo_bricks.end(),motor)!=myo_bricks.end() && mode==DISPLACEMENT)
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
+    else
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
     MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                             control_params[motor][mode].outputDivider);
 }
@@ -213,7 +219,10 @@ void MyoControl::changeControl(int mode) {
                                control_params[motor][mode].outputPosMax);
         MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                                control_params[motor][mode].outputNegMax);
-        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+        if(find(myo_bricks.begin(),myo_bricks.end(),motor)!=myo_bricks.end() && mode==DISPLACEMENT)
+            MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
+        else
+            MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
         MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                                 control_params[motor][mode].outputDivider);
     }
@@ -283,7 +292,7 @@ int32_t MyoControl::getVelocity(int motor) {
     return ((int32_t) vel) * MOTOR_BOARD_COMMUNICATION_FREQUENCY;
 }
 
-int16_t MyoControl::getDisplacement(int motor) {
+int32_t MyoControl::getDisplacement(int motor) {
     return MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
@@ -307,6 +316,7 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
         cerr << "provided " << deviceIDs.size() << " deviceIDs but only " << motorIDs.size() << " motorIDs";
         return false;
     }
+    myo_bricks = motorIDs;
     uint32_t myo_brick = 0;
     uint i = 0;
     stringstream str;

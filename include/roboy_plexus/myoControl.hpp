@@ -276,7 +276,7 @@ public:
 	 * Gets the displacement in encoder ticks
 	 * @param motor for this motor
 	 */
-	int16_t getDisplacement(int motor);
+	int32_t getDisplacement(int motor);
     /**
 	 * Sets the position of a motor in radians
 	 * @param motor for this motor
@@ -433,6 +433,7 @@ public:
 
 	int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
 	map<int,map<int,control_Parameters_t>> control_params;
+	vector<uint8_t> myo_bricks;
 	int32_t* adc_base;
 	float weight_offset = 0;
 	float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y

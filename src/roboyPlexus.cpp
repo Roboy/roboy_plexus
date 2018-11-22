@@ -48,8 +48,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         case HEAD: {
             motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
-            vector<int32_t> gearBoxRatio = {35, 62, 35, 35, 62, 35};
-            vector<int32_t> encoderMultiplier = {16, 4, 16, 16, 4, 16};
+            vector<int32_t> gearBoxRatio = {62, 62, 62, 62, 62, 62};
+            vector<int32_t> encoderMultiplier = {4, 4, 4, 4, 4, 4};
             if (!myoControl->configureMyoBricks(myo_bricks[HEAD], deviceIDs, encoderMultiplier, gearBoxRatio)) {
                 ROS_ERROR("could not configure myoBricks");
             }else {
