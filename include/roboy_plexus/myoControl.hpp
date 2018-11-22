@@ -51,36 +51,36 @@
 
 #define MOTORS_PER_MYOCONTROL 9
 
-#define IORD(base,reg) (*(((volatile int32_t*)base)+reg))
-#define IOWR(base,reg,data) (*(((volatile int32_t*)base)+reg)=data)
+#define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
+#define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
 // the upper 8 bit define which value, the lower 8 bit define which motor
-#define MYO_READ_Kp(base,motor) IORD(base, (uint32_t)(0x00<<8|motor&0xff) )
-#define MYO_READ_Ki(base,motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
-#define MYO_READ_Kd(base,motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
-#define MYO_READ_sp(base,motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
-#define MYO_READ_forwardGain(base,motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
-#define MYO_READ_outputPosMax(base,motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
-#define MYO_READ_outputNegMax(base,motor) IORD(base, (uint32_t)(0x06<<8|motor&0xff) )
-#define MYO_READ_IntegralPosMax(base,motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
-#define MYO_READ_IntegralNegMax(base,motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
-#define MYO_READ_deadBand(base,motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
-#define MYO_READ_control(base,motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
-#define MYO_READ_position(base,motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
-#define MYO_READ_velocity(base,motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
-#define MYO_READ_current(base,motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
-#define MYO_READ_displacement(base,motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
-#define MYO_READ_pwmRef(base,motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
+#define MYO_READ_Kp(base, motor) IORD(base, (uint32_t)(0x00<<8|motor&0xff) )
+#define MYO_READ_Ki(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
+#define MYO_READ_Kd(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
+#define MYO_READ_sp(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
+#define MYO_READ_forwardGain(base, motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
+#define MYO_READ_outputPosMax(base, motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
+#define MYO_READ_outputNegMax(base, motor) IORD(base, (uint32_t)(0x06<<8|motor&0xff) )
+#define MYO_READ_IntegralPosMax(base, motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
+#define MYO_READ_IntegralNegMax(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
+#define MYO_READ_deadBand(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
+#define MYO_READ_control(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
+#define MYO_READ_position(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
+#define MYO_READ_velocity(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
+#define MYO_READ_current(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
+#define MYO_READ_displacement(base, motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
+#define MYO_READ_pwmRef(base, motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
 #define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
 #define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
 #define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
-#define MYO_READ_myo_brick_motor_angle(base,motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_angle(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
 #define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
-#define MYO_READ_myo_brick_device_id(base,motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
-#define MYO_READ_myo_brick_gear_box_ratio(base,motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
-#define MYO_READ_myo_brick_encoder_multiplier(base,motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
-#define MYO_READ_outputDivider(base,motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
-#define MYO_READ_myo_brick_i2c_ack_error(base,motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
+#define MYO_READ_myo_brick_device_id(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
+#define MYO_READ_myo_brick_gear_box_ratio(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
+#define MYO_READ_myo_brick_encoder_multiplier(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
+#define MYO_READ_outputDivider(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
+#define MYO_READ_myo_brick_i2c_ack_error(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 #define MYO_READ_elbow_joint_angle_error(base) IORD(base, (uint32_t)(0x1A<<8|0) )
 #define MYO_READ_elbow_Kp_joint_angle(base) IORD(base, (uint32_t)(0x1B<<8|0) )
 #define MYO_READ_elbow_Kd_joint_angle(base) IORD(base, (uint32_t)(0x1C<<8|0) )
@@ -94,12 +94,12 @@
 #define MYO_READ_elbow_joint_pretension(base) IORD(base, (uint32_t)(0x24<<8|0) )
 #define MYO_READ_elbow_joint_deadband(base) IORD(base, (uint32_t)(0x25<<8|0) )
 #define MYO_READ_hand_control(base) IORD(base, (uint32_t)(0x26<<8|0) )
-#define MYO_READ_arm_board_device_id(base,motor) IORD(base, (uint32_t)(0x27<<8|motor&0xff) )
-#define MYO_READ_motor0(base,board) IORD(base, (uint32_t)(0x28<<8|board&0xff) )
-#define MYO_READ_motor1(base,board) IORD(base, (uint32_t)(0x29<<8|board&0xff) )
-#define MYO_READ_motor2(base,board) IORD(base, (uint32_t)(0x2A<<8|board&0xff) )
-#define MYO_READ_motor3(base,board) IORD(base, (uint32_t)(0x2B<<8|board&0xff) )
-#define MYO_READ_motor4(base,board) IORD(base, (uint32_t)(0x2C<<8|board&0xff) )
+#define MYO_READ_arm_board_device_id(base, motor) IORD(base, (uint32_t)(0x27<<8|motor&0xff) )
+#define MYO_READ_motor0(base, board) IORD(base, (uint32_t)(0x28<<8|board&0xff) )
+#define MYO_READ_motor1(base, board) IORD(base, (uint32_t)(0x29<<8|board&0xff) )
+#define MYO_READ_motor2(base, board) IORD(base, (uint32_t)(0x2A<<8|board&0xff) )
+#define MYO_READ_motor3(base, board) IORD(base, (uint32_t)(0x2B<<8|board&0xff) )
+#define MYO_READ_motor4(base, board) IORD(base, (uint32_t)(0x2C<<8|board&0xff) )
 #define MYO_READ_arm_board_ack_error(base) IORD(base, (uint32_t)(0x2D<<8|0) )
 #define MYO_READ_elbow_smooth_distance(base) IORD(base, (uint32_t)(0x2E<<8|0) )
 #define MYO_READ_wrist_joint_angle_error(base) IORD(base, (uint32_t)(0x2F<<8|0) )
@@ -115,32 +115,33 @@
 #define MYO_READ_wrist_joint_pretension(base) IORD(base, (uint32_t)(0x39<<8|0) )
 #define MYO_READ_wrist_joint_deadband(base) IORD(base, (uint32_t)(0x3A<<8|0) )
 #define MYO_READ_wrist_smooth_distance(base) IORD(base, (uint32_t)(0x2E<<8|0) )
+#define MYO_READ_myo_brick_motor_raw_angle(base, motor) IORD(base, (uint32_t)(0x3C<<8|motor&0xff) )
 
-#define MYO_WRITE_Kp(base,motor,data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
-#define MYO_WRITE_Ki(base,motor,data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
-#define MYO_WRITE_Kd(base,motor,data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
-#define MYO_WRITE_sp(base,motor,data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
-#define MYO_WRITE_forwardGain(base,motor,data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), data )
-#define MYO_WRITE_outputPosMax(base,motor,data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), data )
-#define MYO_WRITE_outputNegMax(base,motor,data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralPosMax(base,motor,data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralNegMax(base,motor,data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
-#define MYO_WRITE_deadBand(base,motor,data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
-#define MYO_WRITE_control(base,motor,data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
-#define MYO_WRITE_reset_myo_control(base,data) IOWR(base, (uint32_t)(0x0B<<8|0), data )
-#define MYO_WRITE_spi_activated(base,data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
-#define MYO_WRITE_reset_controller(base,motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
+#define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
+#define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
+#define MYO_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
+#define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
+#define MYO_WRITE_forwardGain(base, motor, data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), data )
+#define MYO_WRITE_outputPosMax(base, motor, data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), data )
+#define MYO_WRITE_outputNegMax(base, motor, data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), data )
+#define MYO_WRITE_IntegralPosMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
+#define MYO_WRITE_IntegralNegMax(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
+#define MYO_WRITE_deadBand(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
+#define MYO_WRITE_control(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
+#define MYO_WRITE_reset_myo_control(base, data) IOWR(base, (uint32_t)(0x0B<<8|0), data )
+#define MYO_WRITE_spi_activated(base, data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
+#define MYO_WRITE_reset_controller(base, motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
 #define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
 #define MYO_WRITE_gpio(base, data) IOWR(base, (uint32_t)(0x0F<<8|0), data )
 #define MYO_WRITE_myo_brick(base, data) IOWR(base, (uint32_t)(0x10<<8|0), data )
-#define MYO_WRITE_myo_brick_device_id(base,motor,data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
-#define MYO_WRITE_myo_brick_gear_box_ratio(base,motor,data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
-#define MYO_WRITE_myo_brick_encoder_multiplier(base,motor,data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
-#define MYO_WRITE_outputDivider(base,motor,data) IOWR(base, (uint32_t)(0x14<<8|motor&0xff), data )
+#define MYO_WRITE_myo_brick_device_id(base, motor, data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
+#define MYO_WRITE_myo_brick_gear_box_ratio(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
+#define MYO_WRITE_myo_brick_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
+#define MYO_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x14<<8|motor&0xff), data )
 #define MYO_WRITE_elbow_joint_control(base, data)  IOWR(base, (uint32_t)(0x15<<8|0), data )
-#define MYO_WRITE_elbow_joint_angle_device_id(base,data) IOWR(base, (uint32_t)(0x16<<8|0), data )
-#define MYO_WRITE_elbow_agonist(base,motor) IOWR(base, (uint32_t)(0x17<<8|0), motor )
-#define MYO_WRITE_elbow_antagonist(base,motor) IOWR(base, (uint32_t)(0x18<<8|0), motor )
+#define MYO_WRITE_elbow_joint_angle_device_id(base, data) IOWR(base, (uint32_t)(0x16<<8|0), data )
+#define MYO_WRITE_elbow_agonist(base, motor) IOWR(base, (uint32_t)(0x17<<8|0), motor )
+#define MYO_WRITE_elbow_antagonist(base, motor) IOWR(base, (uint32_t)(0x18<<8|0), motor )
 #define MYO_WRITE_elbow_Kp_joint_angle(base, data)  IOWR(base, (uint32_t)(0x19<<8|0), data )
 #define MYO_WRITE_elbow_Kd_joint_angle(base, data)  IOWR(base, (uint32_t)(0x1A<<8|0), data )
 #define MYO_WRITE_elbow_joint_angle_offset(base, data)  IOWR(base, (uint32_t)(0x1B<<8|0), data )
@@ -148,24 +149,24 @@
 #define MYO_WRITE_elbow_joint_deadband(base, data)  IOWR(base, (uint32_t)(0x1D<<8|0), data )
 #define MYO_WRITE_elbow_joint_angle_setpoint(base, data)  IOWR(base, (uint32_t)(0x1E<<8|0), data )
 #define MYO_WRITE_hand_control(base, data)  IOWR(base, (uint32_t)(0x1F<<8|0), data )
-#define MYO_WRITE_arm_board_device_id(base,board,data) IOWR(base, (uint32_t)(0x20<<8|board&0xff), data )
-#define MYO_WRITE_motor0(base,board,data) IOWR(base, (uint32_t)(0x21<<8|board&0xff), data )
-#define MYO_WRITE_motor1(base,board,data) IOWR(base, (uint32_t)(0x22<<8|board&0xff), data )
-#define MYO_WRITE_motor2(base,board,data) IOWR(base, (uint32_t)(0x23<<8|board&0xff), data )
-#define MYO_WRITE_motor3(base,board,data) IOWR(base, (uint32_t)(0x24<<8|board&0xff), data )
-#define MYO_WRITE_motor4(base,board,data) IOWR(base, (uint32_t)(0x25<<8|board&0xff), data )
-#define MYO_WRITE_elbow_smooth_distance(base,data) IOWR(base, (uint32_t)(0x26<<8|0), data )
+#define MYO_WRITE_arm_board_device_id(base, board, data) IOWR(base, (uint32_t)(0x20<<8|board&0xff), data )
+#define MYO_WRITE_motor0(base, board, data) IOWR(base, (uint32_t)(0x21<<8|board&0xff), data )
+#define MYO_WRITE_motor1(base, board, data) IOWR(base, (uint32_t)(0x22<<8|board&0xff), data )
+#define MYO_WRITE_motor2(base, board, data) IOWR(base, (uint32_t)(0x23<<8|board&0xff), data )
+#define MYO_WRITE_motor3(base, board, data) IOWR(base, (uint32_t)(0x24<<8|board&0xff), data )
+#define MYO_WRITE_motor4(base, board, data) IOWR(base, (uint32_t)(0x25<<8|board&0xff), data )
+#define MYO_WRITE_elbow_smooth_distance(base, data) IOWR(base, (uint32_t)(0x26<<8|0), data )
 #define MYO_WRITE_wrist_joint_control(base, data)  IOWR(base, (uint32_t)(0x27<<8|0), data )
-#define MYO_WRITE_wrist_joint_angle_device_id(base,data) IOWR(base, (uint32_t)(0x28<<8|0), data )
-#define MYO_WRITE_wrist_agonist(base,motor) IOWR(base, (uint32_t)(0x29<<8|0), motor )
-#define MYO_WRITE_wrist_antagonist(base,motor) IOWR(base, (uint32_t)(0x2A<<8|0), motor )
+#define MYO_WRITE_wrist_joint_angle_device_id(base, data) IOWR(base, (uint32_t)(0x28<<8|0), data )
+#define MYO_WRITE_wrist_agonist(base, motor) IOWR(base, (uint32_t)(0x29<<8|0), motor )
+#define MYO_WRITE_wrist_antagonist(base, motor) IOWR(base, (uint32_t)(0x2A<<8|0), motor )
 #define MYO_WRITE_wrist_Kp_joint_angle(base, data)  IOWR(base, (uint32_t)(0x2B<<8|0), data )
 #define MYO_WRITE_wrist_Kd_joint_angle(base, data)  IOWR(base, (uint32_t)(0x2C<<8|0), data )
 #define MYO_WRITE_wrist_joint_angle_offset(base, data)  IOWR(base, (uint32_t)(0x2D<<8|0), data )
 #define MYO_WRITE_wrist_joint_pretension(base, data)  IOWR(base, (uint32_t)(0x2E<<8|0), data )
 #define MYO_WRITE_wrist_joint_deadband(base, data)  IOWR(base, (uint32_t)(0x2F<<8|0), data )
 #define MYO_WRITE_wrist_joint_angle_setpoint(base, data)  IOWR(base, (uint32_t)(0x30<<8|0), data )
-#define MYO_WRITE_wrist_smooth_distance(base,data) IOWR(base, (uint32_t)(0x31<<8|0), data )
+#define MYO_WRITE_wrist_smooth_distance(base, data) IOWR(base, (uint32_t)(0x31<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 10
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
@@ -173,20 +174,23 @@
 using namespace std;
 using namespace std::chrono;
 
-class MyoControl{
+class MyoControl {
 public:
     /**
      * Constructor
      * @param myo_base vector of myo base addresses (cf hps_0.h)
      */
-	MyoControl(vector<int32_t*> &myo_base);
+    MyoControl(vector<int32_t *> &myo_base);
+
     /**
      * Alternative Constructor
      * @param myo_base vector of myo base addresses (cf hps_0.h)
      * @param adc_base adc base address (cf hps_0.h)
      */
-	MyoControl(vector<int32_t*> &myo_base, int32_t *adc_base);
-	~MyoControl();
+    MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base);
+
+    ~MyoControl();
+
     /**
 	 * Changes the controller of a motor
 	 * @param motor for this motor
@@ -195,103 +199,130 @@ public:
      * @param setPoint new setPoint
 	 */
     void changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
-	/**
-	 * Changes the controller of a motor
-	 * @param motor for this motor
-	 * @param mode choose from Position, Velocity or Displacement
-	 * @param params with these controller parameters
-	 */
-	void changeControl(int motor, int mode, control_Parameters_t &params);
-	/**
-	 * Changes the controller of a motor with the saved controller parameters
-	 * @param motor for this motor
-	 * @param mode choose from Position, Velocity or Displacement
-	 */
-	void changeControl(int motor, int mode);
-	/**
-	 * Changes the controller of ALL motors with the saved controller parameters
-	 * @param mode choose from Position, Velocity or Displacement
-	 */
-	void changeControl(int mode);
+
+    /**
+     * Changes the controller of a motor
+     * @param motor for this motor
+     * @param mode choose from Position, Velocity or Displacement
+     * @param params with these controller parameters
+     */
+    void changeControl(int motor, int mode, control_Parameters_t &params);
+
+    /**
+     * Changes the controller of a motor with the saved controller parameters
+     * @param motor for this motor
+     * @param mode choose from Position, Velocity or Displacement
+     */
+    void changeControl(int motor, int mode);
+
+    /**
+     * Changes the controller of ALL motors with the saved controller parameters
+     * @param mode choose from Position, Velocity or Displacement
+     */
+    void changeControl(int mode);
+
     /**
     * Changes the controller parameters of a motor
     * @param motor for this motor
     * @param params with these controller parameters
     */
     void changeControlParameters(int motor, control_Parameters_t &params);
-	/**
-	 * Resets all myo controllers
-	 */
-	void reset();
-	/**
-	 * Sets the spi state for the interface of a motor
-	 * @param motor
-	 * @param active
-	 * @param active/not active
-	 */
-	bool setSPIactive(int motor, bool active);
-	/**
-	 * Get the parameters for the PID controller of a motor
-	 * @param motor for this motor
-	 */
-	void getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
-									int &setPoint, int &outputDivider, int motor);
-	/**
-	 * Get the parameters for the PID controller of a motor
-	 * @param motor for this motor
-	 */
-	void setPIDcontrollerParams(uint16_t Pgain, uint16_t Igain, uint16_t Dgain, uint16_t forwardGain, uint16_t deadband, int motor, int mode);
-	/**
-	 * Gets the current control_mode of a motor
-	 * @param motor for this motor
-	 */
-	uint16_t getControlMode(int motor);
+
+    /**
+     * Resets all myo controllers
+     */
+    void reset();
+
+    /**
+     * Sets the spi state for the interface of a motor
+     * @param motor
+     * @param active
+     * @param active/not active
+     */
+    bool setSPIactive(int motor, bool active);
+
+    /**
+     * Get the parameters for the PID controller of a motor
+     * @param motor for this motor
+     */
+    void getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
+                                int &setPoint, int &outputDivider, int motor);
+
+    /**
+     * Get the parameters for the PID controller of a motor
+     * @param motor for this motor
+     */
+    void setPIDcontrollerParams(uint16_t Pgain, uint16_t Igain, uint16_t Dgain, uint16_t forwardGain, uint16_t deadband,
+                                int motor, int mode);
+
+    /**
+     * Gets the current control_mode of a motor
+     * @param motor for this motor
+     */
+    uint16_t getControlMode(int motor);
+
     /**
      * Gets the motor angle of a myo brick
      * @param motor
      * @return angle in ticks
      */
     int32_t getMotorAngle(int motor);
-	/**
-	 * Get the power sense
-	 * @return true (power on), false (power off)
-	 */
-	bool getPowerSense();
-	/**
-	 * Gets the current pwm of a motor
-	 * @param motor for this motor
-	 */
-	int16_t getPWM(int motor);
-	/**
-	 * Gets the current position of a motor in radians
-	 * @param motor for this motor
-	 */
-	int32_t getPosition(int motor);
-	/**
-	 * Gets the current velocity of a motor in radians/seconds
-	 * @param motor for this motor
-	 */
-	int32_t getVelocity(int motor);
-	/**
-	 * Gets the displacement in encoder ticks
-	 * @param motor for this motor
-	 */
-	int32_t getDisplacement(int motor);
+
+    /**
+     * Gets the raw motor angle of a myo brick
+     * @param motor
+     * @return angle in ticks
+     */
+    int32_t getRawMotorAngle(int motor);
+
+    /**
+     * Get the power sense
+     * @return true (power on), false (power off)
+     */
+    bool getPowerSense();
+
+    /**
+     * Gets the current pwm of a motor
+     * @param motor for this motor
+     */
+    int16_t getPWM(int motor);
+
+    /**
+     * Gets the current position of a motor in radians
+     * @param motor for this motor
+     */
+    int32_t getPosition(int motor);
+
+    /**
+     * Gets the current velocity of a motor in radians/seconds
+     * @param motor for this motor
+     */
+    int32_t getVelocity(int motor);
+
+    /**
+     * Gets the displacement in encoder ticks
+     * @param motor for this motor
+     */
+    int32_t getDisplacement(int motor);
+
     /**
 	 * Sets the position of a motor in radians
 	 * @param motor for this motor
 	 */
     void setPosition(int motor, int32_t setPoint);
+
     /**
      * Sets the current velocity of a motor in radians/seconds
      * @param motor for this motor
      */
     void setVelocity(int motor, int32_t setPoint);
+
     /**
      * Set the displacement in encoder ticks
      * @param motor for this motor
      */
     void setDisplacement(int motor, int16_t setPoint);
+
     /**
      * Configures motors to be handled as myoBricks
      * @param motorIDs these are the ids of the motors
@@ -300,71 +331,80 @@ public:
      * @param gearBoxRatio the ratio of the gear box for each myoBrick
      */
     bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<int32_t> &encoderMultiplier,
-        vector<int32_t> &gearBoxRatio);
-	/**
-	 * Gets the current in Ampere
-	 * @param motor for this motor
-	 */
-	int16_t getCurrent(int motor);
-	/**
-	 * Fills the given params with default values for the corresponding control mode
-	 * @param params pointer to control struct
-	 * @param control_mode Position, Velocity, Force
-	 */
-	void getDefaultControlParams(control_Parameters_t *params, int control_mode);
+                            vector<int32_t> &gearBoxRatio);
 
-	/**
-	 * Changes the control mode for all motors to Position
-	 * @param pos new setPoint
-	 */
-	void allToPosition(int32_t pos);
-	/**
-	 * Changes the control mode for all motors to Velocity
-	 * @param pos new setPoint
-	 */
-	void allToVelocity(int32_t vel);
-	/**
-	 * Changes the control mode for all motors to Displacement
-	 * @param force new setPoint
-	 */
-	void allToDisplacement(int16_t displacement);
-	/**
-	 * Zeros the weight for a load cell
-	 * @param load_cell for this load cell
-	 */
-	void zeroWeight(int load_cell = 0);
+    /**
+     * Gets the current in Ampere
+     * @param motor for this motor
+     */
+    int16_t getCurrent(int motor);
+
+    /**
+     * Fills the given params with default values for the corresponding control mode
+     * @param params pointer to control struct
+     * @param control_mode Position, Velocity, Force
+     */
+    void getDefaultControlParams(control_Parameters_t *params, int control_mode);
+
+    /**
+     * Changes the control mode for all motors to Position
+     * @param pos new setPoint
+     */
+    void allToPosition(int32_t pos);
+
+    /**
+     * Changes the control mode for all motors to Velocity
+     * @param pos new setPoint
+     */
+    void allToVelocity(int32_t vel);
+
+    /**
+     * Changes the control mode for all motors to Displacement
+     * @param force new setPoint
+     */
+    void allToDisplacement(int16_t displacement);
+
+    /**
+     * Zeros the weight for a load cell
+     * @param load_cell for this load cell
+     */
+    void zeroWeight(int load_cell = 0);
+
     /**
 	 * Returns the current adc of the load cell
 	 * @param load_cell for this load cell
      * @return the adc value
 	 */
     uint32_t readADC(int load_cell);
+
     /**
 	 * Returns the current weight according to adc_weight_parameters of a load_cell
 	 * @param load_cell for this load cell
 	 * @return the load
 	 */
     float getWeight(int load_cell);
-	/**
-	 * Returns the current weight according to adc_weight_parameters of a load_cell
-	 * @param load_cell for this load cell
-	 * @param the adc value
-	 * @return the load
-	 */
-	float getWeight(int load_cell, uint32_t &adc_value);
-	/**
-	 * records positions of motors in Displacement mode
-	 * @param samplingTime
-	 * @param recordTime
-	 * @param trajectories will be filled with positions
-	 * @param idList record these motors
-	 * @param controlmode in this mode
-	 * @param name filename
-	 */
-	float recordTrajectories(
-	        float samplingTime, float recordTime,
-			map<int,vector<float>> &trajectories, vector<int> &idList,
-	        vector<int> &controlmode, string name);
+
+    /**
+     * Returns the current weight according to adc_weight_parameters of a load_cell
+     * @param load_cell for this load cell
+     * @param the adc value
+     * @return the load
+     */
+    float getWeight(int load_cell, uint32_t &adc_value);
+
+    /**
+     * records positions of motors in Displacement mode
+     * @param samplingTime
+     * @param recordTime
+     * @param trajectories will be filled with positions
+     * @param idList record these motors
+     * @param controlmode in this mode
+     * @param name filename
+     */
+    float recordTrajectories(
+            float samplingTime, float recordTime,
+            map<int, vector<float>> &trajectories, vector<int> &idList,
+            vector<int> &controlmode, string name);
 
     /**
 	 * starts recording positions of motors in Displacement mode
@@ -374,7 +414,7 @@ public:
 	 * @param name filename
 	 */
     float startRecordTrajectories(
-            float samplingTime, map<int,vector<float>> &trajectories,
+            float samplingTime, map<int, vector<float>> &trajectories,
             vector<int> &idList, string name);
 
     /**
@@ -382,71 +422,91 @@ public:
      */
     void stopRecordTrajectories();
 
-	/**
-	 * Plays back a trajectory
-	 * @param file
-	 * @return success
-	 */
-	bool playTrajectory(const char* file);
+    /**
+     * Plays back a trajectory
+     * @param file
+     * @return success
+     */
+    bool playTrajectory(const char *file);
 
-	/**
-	 * Sets predisplacement for recording trajectories (50 by default)
-	 * @param value
-	 */
-	void setPredisplacement(int value);
+    /**
+     * Sets predisplacement for recording trajectories (50 by default)
+     * @param value
+     */
+    void setPredisplacement(int value);
 
-	/**
-	 * Enables/disables replaying trajectory
-	 * @param replay
-	 */
-	void setReplay(bool status);
+    /**
+     * Enables/disables replaying trajectory
+     * @param replay
+     */
+    void setReplay(bool status);
 
-	/**
-	 * Estimates the spring parameters of a motor by pulling with variable forces
-	 * keeping track of displacement and weight, it will either timeout or stop when the
-	 * requested number of samples was reached
+    /**
+     * Estimates the spring parameters of a motor by pulling with variable forces
+     * keeping track of displacement and weight, it will either timeout or stop when the
+     * requested number of samples was reached
+     * @param motor for this motor
+     * @param degree the degree for the polynomial regression
+     * @param coeffs these are the result from the polynomial regression
+     * @param timeout in milliseconds
+     * @param numberOfDataPoints how many samples do you wanne collect
+     * @param displacement_min the minimal displacement to be sampled from
+     * @param displacement_min the maximal displacement to be sampled from
+     * @param load will be filled with the load cell data
+     * @param displacement will be filled with the displacement
+     */
+    void estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+                                  uint numberOfDataPoints, float displacement_min,
+                                  float displacement_max, vector<double> &load, vector<double> &displacement);
+
+    /**
+	 * Estimates the linearisation parameters of a myobrick by turning the motor and measuring the positions
+     * from the motor angle sensor. The optical encoder data is then used to estimate linearisation parameters
 	 * @param motor for this motor
 	 * @param degree the degree for the polynomial regression
 	 * @param coeffs these are the result from the polynomial regression
 	 * @param timeout in milliseconds
 	 * @param numberOfDataPoints how many samples do you wanne collect
-	 * @param displacement_min the minimal displacement to be sampled from
-	 * @param displacement_min the maximal displacement to be sampled from
-	 * @param load will be filled with the load cell data
-	 * @param displacement will be filled with the displacement
+	 * @param delta_revolution_negative value to turn the motor to into negative direction in degrees
+	 * @param delta_revolution_positive value to turn the motor to into negative direction in degrees
+	 * @param motor_angle will be filled with the a1339 motor_angle data (values between 0-4095)
+	 * @param motor_encoder will be filled with positions from the optical encoder (values between 0-4095)
 	 */
-	void estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
-                                  uint numberOfDataPoints, float displacement_min,
-                                  float displacement_max, vector<double> &load, vector<double> &displacement);
-	/**
-	 * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)
-	 * @param degree (e.g. 2 -> a * x^0 + b * x^1 + c * x^2)
-	 * @param coeffs the estimated coefficients
-	 * @param X the x-data
-	 * @param Y the y-data
-	 */
-	void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
-			vector<float> &coeffs);
+    void estimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+                                                   uint numberOfDataPoints, float delta_revolution_negative,
+                                                   float delta_revolution_positive, vector<double> &motor_angle,
+                                                   vector<double> &motor_encoder);
+
+    /**
+     * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)
+     * @param degree (e.g. 2 -> a * x^0 + b * x^1 + c * x^2)
+     * @param coeffs the estimated coefficients
+     * @param X the x-data
+     * @param Y the y-data
+     */
+    void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
+                              vector<float> &coeffs);
 
 
     void gpioControl(bool power);
 
-	int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
-	map<int,map<int,control_Parameters_t>> control_params;
-	vector<uint8_t> myo_bricks;
-	int32_t* adc_base;
-	float weight_offset = 0;
-	float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y
-	uint numberOfMotors;
-	const string trajectories_folder = "/home/root/trajectories/";
+    int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
+    map<int, map<int, control_Parameters_t>> control_params;
+    vector<uint8_t> myo_bricks;
+    vector<int32_t> myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
+    int32_t *adc_base;
+    float weight_offset = 0;
+    float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y
+    uint numberOfMotors;
+    const string trajectories_folder = "/home/root/trajectories/";
     const string behaviors_folder = "/home/root/behaviors/";
 private:
-	Timer timer;
-	vector<int32_t*> myo_base;
-	int iter = 0;
+    Timer timer;
+    vector<int32_t *> myo_base;
+    int iter = 0;
     bool recording = false; // keeps track of recording status
-	bool replay = true;
-	int predisplacement = 100;
+    bool replay = true;
+    int predisplacement = 100;
 
 };
 

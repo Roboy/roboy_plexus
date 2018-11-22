@@ -56,6 +56,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                 motorAngleThread = boost::shared_ptr<std::thread>(
                         new std::thread(&RoboyPlexus::motorAnglePublisher, this));
                 motorAngleThread->detach();
+                myobrick_calibration_srv = nh->advertiseService("/roboy/middleware/head/MyoBrickMotorCalibration",
+                                                                &RoboyPlexus::MyoBrickCalibrationService, this);
             }
             break;
         }
@@ -594,8 +596,14 @@ void RoboyPlexus::motorAnglePublisher() {
     while (keep_publishing && ros::ok()) {
         roboy_communication_middleware::MotorAngle msg;
         msg.id = id;
-        for (int motor:myo_bricks[id]) {
-            msg.angles.push_back((myoControl->getMotorAngle(motor) / 4096.0 * 360.0));
+        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+            if(find(myo_bricks[id].begin(),myo_bricks[id].end(),motor)!=myo_bricks[id].end()) {
+                msg.angles.push_back((myoControl->getMotorAngle(motor) / 4096.0 * 360.0));
+                msg.raw_angles.push_back(myoControl->getRawMotorAngle(motor));
+            }else {
+                msg.angles.push_back(0);
+                msg.raw_angles.push_back(0);
+            }
         }
         motorAngle_pub.publish(msg);
         rate.sleep();
@@ -819,6 +827,24 @@ bool RoboyPlexus::MotorCalibrationService(roboy_communication_middleware::MotorC
         myoControl->estimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
                                              req.timeout, req.numberOfDataPoints, req.displacement_min,
                                              req.displacement_max, res.load, res.displacement);
+        cout << "coefficients:\t";
+        for (uint i = 0; i < req.degree; i++) {
+            cout << res.estimated_spring_parameters[i] << "\t";
+        }
+        cout << endl;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool RoboyPlexus::MyoBrickCalibrationService(roboy_communication_middleware::MyoBrickCalibrationService::Request &req,
+                                roboy_communication_middleware::MyoBrickCalibrationService::Response &res){
+    if (!emergency_stop) {
+        ROS_INFO("serving myobrick calibration service for motor %d", req.motor);
+        myoControl->estimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
+                                             req.timeout, req.numberOfDataPoints, req.min_degree,
+                                             req.max_degree, res.motor_angle, res.motor_encoder);
         cout << "coefficients:\t";
         for (uint i = 0; i < req.degree; i++) {
             cout << res.estimated_spring_parameters[i] << "\t";

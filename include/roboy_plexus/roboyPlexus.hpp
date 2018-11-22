@@ -54,6 +54,7 @@
 #include <roboy_communication_middleware/MotorCommand.h>
 #include <roboy_communication_middleware/MotorStatus.h>
 #include <roboy_communication_middleware/MotorConfigService.h>
+#include <roboy_communication_middleware/MyoBrickCalibrationService.h>
 #include <roboy_communication_middleware/SetInt16.h>
 #include <roboy_communication_control/Behavior.h>
 #include <roboy_communication_control/StartRecordTrajectory.h>
@@ -202,6 +203,15 @@ private:
                                  roboy_communication_middleware::MotorCalibrationService::Response &res);
 
     /**
+     * Service for calibrating the motor angle sensor
+     * @param req
+     * @param res
+     * @return
+     */
+    bool MyoBrickCalibrationService(roboy_communication_middleware::MyoBrickCalibrationService::Request &req,
+                                 roboy_communication_middleware::MyoBrickCalibrationService::Response &res);
+
+    /**
      * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
      * @param req
      * @param res
@@ -334,7 +344,7 @@ private:
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
             soliGetData_srv, soli_srv, soliGetFrameFormat_srv, soliSetFrameFormat_srv, soliGetAdcSamplerate_srv,
             soliSetAdcSamplerate_srv, soliGetChirpDuration_srv, soliSetFMCWConfiguration_srv, soliGetFMCWConfiguration_srv,
-            soliGetFrameInfo_srv;
+            soliGetFrameInfo_srv, myobrick_calibration_srv;
     map<int, int> setPoint_backup;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
