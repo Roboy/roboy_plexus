@@ -599,10 +599,18 @@ void RoboyPlexus::motorAnglePublisher() {
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             if(find(myo_bricks[id].begin(),myo_bricks[id].end(),motor)!=myo_bricks[id].end()) {
                 msg.angles.push_back((myoControl->getMotorAngle(motor) / 4096.0 * 360.0));
-                msg.raw_angles.push_back(myoControl->getRawMotorAngle(motor));
+                msg.raw_angles.push_back(myoControl->getMotorAngle(motor));
+                msg.raw_angles_prev.push_back(myoControl->getMotorAnglePrev(motor));
+                msg.offset_angles.push_back(myoControl->getMotorAngleOffset(motor));
+                msg.relative_angles.push_back(myoControl->getRelativeMotorAngle(motor));
+                msg.rev_counter.push_back(myoControl->getRevolutionCounter(motor));
             }else {
                 msg.angles.push_back(0);
                 msg.raw_angles.push_back(0);
+                msg.raw_angles_prev.push_back(0);
+                msg.offset_angles.push_back(0);
+                msg.relative_angles.push_back(0);
+                msg.rev_counter.push_back(0);
             }
         }
         motorAngle_pub.publish(msg);

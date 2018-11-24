@@ -116,6 +116,10 @@
 #define MYO_READ_wrist_joint_deadband(base) IORD(base, (uint32_t)(0x3A<<8|0) )
 #define MYO_READ_wrist_smooth_distance(base) IORD(base, (uint32_t)(0x2E<<8|0) )
 #define MYO_READ_myo_brick_motor_raw_angle(base, motor) IORD(base, (uint32_t)(0x3C<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_raw_angle_prev(base, motor) IORD(base, (uint32_t)(0x40<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_offset_angle(base, motor) IORD(base, (uint32_t)(0x3D<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_relative_angle(base, motor) IORD(base, (uint32_t)(0x3E<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_angle_revolution_counter(base, motor) IORD(base, (uint32_t)(0x3F<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -269,11 +273,39 @@ public:
     int32_t getMotorAngle(int motor);
 
     /**
+     * Gets the motor angle of a myo brick
+     * @param motor
+     * @return angle in ticks
+     */
+    int32_t getMotorAnglePrev(int motor);
+
+    /**
      * Gets the raw motor angle of a myo brick
      * @param motor
      * @return angle in ticks
      */
     int32_t getRawMotorAngle(int motor);
+
+    /**
+     * Gets the raw motor angle of a myo brick
+     * @param motor
+     * @return angle in ticks
+     */
+    int32_t getRelativeMotorAngle(int motor);
+
+    /**
+     * Gets the raw motor angle of a myo brick
+     * @param motor
+     * @return angle in ticks
+     */
+    int32_t getMotorAngleOffset(int motor);
+
+    /**
+     * Gets the motor angle revolution counter of a myo brick
+     * @param motor
+     * @return angle in ticks
+     */
+    int32_t getRevolutionCounter(int motor);
 
     /**
      * Get the power sense

@@ -296,8 +296,24 @@ int32_t MyoControl::getMotorAngle(int motor) {
     return MYO_READ_myo_brick_motor_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
+int32_t MyoControl::getMotorAnglePrev(int motor) {
+    return MYO_READ_myo_brick_motor_raw_angle_prev(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
 int32_t MyoControl::getRawMotorAngle(int motor) {
     return MYO_READ_myo_brick_motor_raw_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getRelativeMotorAngle(int motor) {
+    return MYO_READ_myo_brick_motor_relative_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getMotorAngleOffset(int motor) {
+    return MYO_READ_myo_brick_motor_offset_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getRevolutionCounter(int motor) {
+    return MYO_READ_myo_brick_motor_angle_revolution_counter(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 bool MyoControl::getPowerSense() {
