@@ -78,7 +78,10 @@ void SigintHandler(int sig)
     if(myoControl!= nullptr){
         // switch to displacement
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-            myoControl->changeControl(motor, DISPLACEMENT);
+            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+                myoControl->changeControl(motor, VELOCITY);
+            else
+                myoControl->changeControl(motor, DISPLACEMENT);
         }
         // relax the springs
         ros::Rate rate(100);
@@ -90,6 +93,8 @@ void SigintHandler(int sig)
                 *h2p_lw_led_addr = 0x00;
 
             for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+                    continue;
                 int displacement = myoControl->getDisplacement(motor);
                 if(displacement<=0)
                     continue;

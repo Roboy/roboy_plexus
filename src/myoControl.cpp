@@ -35,7 +35,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
         }
     }
 
-    changeControl(DISPLACEMENT);
+    changeControl(VELOCITY);
 
     for (uint i = 0; i < myo_base.size(); i++) {
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
@@ -121,7 +121,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
         }
     }
 
-    changeControl(DISPLACEMENT);
+    changeControl(VELOCITY);
 
     for (uint i = 0; i < myo_base.size(); i++) {
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible

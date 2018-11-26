@@ -84,9 +84,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             { // start motor angle publisher for three myoBricks
                 motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                            1);
-                vector<uint8_t> deviceIDs = {0xE, 0xD};
-                vector<int32_t> gearBoxRatio = {62, 62};
-                vector<int32_t> encoderMultiplier = {1, 1};
+                vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
+                vector<int32_t> gearBoxRatio = {62, 62, 62, 62, 62, 62};
+                vector<int32_t> encoderMultiplier = {4, 4, 4, 4, 4, 4};
                 if (!myoControl->configureMyoBricks(myo_bricks[SPINE_RIGHT], deviceIDs, encoderMultiplier,gearBoxRatio)) {
                     ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
                 }else {
@@ -95,40 +95,40 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                     motorAngleThread->detach();
                 }
             }
-            soliInitSensor();
-
-            soliGetData_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetData", soliGetData);
-            soli_srv = nh->advertiseService("/roboy/middleware/leftHand/soli", soli);
-            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameFormat", soliGetFrameFormat);
-            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFrameFormat", soliSetFrameFormat);
-            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
-            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
-            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetChirpDuration", soliGetChirpDuration);
-            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
-            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
-            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
+//            soliInitSensor();
+//
+//            soliGetData_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetData", soliGetData);
+//            soli_srv = nh->advertiseService("/roboy/middleware/leftHand/soli", soli);
+//            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameFormat", soliGetFrameFormat);
+//            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFrameFormat", soliSetFrameFormat);
+//            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
+//            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
+//            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetChirpDuration", soliGetChirpDuration);
+//            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
+//            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
+//            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
             break;
         }
         case SHOULDER_LEFT: {
-            {
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                           1);
-                vector<uint8_t> deviceIDs = {0xF, 0xE};
-                vector<int32_t> gearBoxRatio = {62, 62};
-                vector<int32_t> encoderMultiplier = {1, 1};
-                if (!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT], deviceIDs, encoderMultiplier,
-                                                    gearBoxRatio)) {
-                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
-                } else {
-                    motorAngleThread = boost::shared_ptr<std::thread>(
-                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                    motorAngleThread->detach();
-                }
-            }
-            {
-                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, true));
-            }
+//            {
+//                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+//                                                                                           1);
+//                vector<uint8_t> deviceIDs = {0xF, 0xE};
+//                vector<int32_t> gearBoxRatio = {62, 62};
+//                vector<int32_t> encoderMultiplier = {1, 1};
+//                if (!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT], deviceIDs, encoderMultiplier,
+//                                                    gearBoxRatio)) {
+//                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
+//                } else {
+//                    motorAngleThread = boost::shared_ptr<std::thread>(
+//                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//                    motorAngleThread->detach();
+//                }
+//            }
+//            {
+//                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, true));
+//            }
 //            {
 //                if(i2c_base.size()>=3) {
 //                    vector<uint8_t> deviceIDs = {0x5e};
@@ -142,22 +142,22 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                }
 //            }
 
-            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-                    "/roboy/middleware/MagneticSensor", 1, this);
-
-            vector<uint8_t> deviceaddress = {0x5e};
-            vector<int> devicepins = {255};
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-
-            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-            magneticsShoulderThread->detach();
+//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+//                    "/roboy/middleware/MagneticSensor", 1, this);
+//
+//            vector<uint8_t> deviceaddress = {0x5e};
+//            vector<int> devicepins = {255};
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
+//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
+//
+//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
+//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
+//            magneticsShoulderThread->detach();
             break;
         }
         case SHOULDER_RIGHT: {
-            {
+//            {
 //                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                           1);
 //                vector<uint8_t> deviceIDs = {0xF, 0xE};
@@ -171,11 +171,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
 //                    motorAngleThread->detach();
 //                }
-            }
-            {
-                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, true, false, false, false));
-            }
+//            }
+//            {
+//                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
+//                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, true, false, false, false));
+//            }
 //            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                       1);
 //            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
@@ -294,9 +294,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     motorStatusThread->detach();
 
     for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++)
-        control_mode[motor] = DISPLACEMENT;
+        control_mode[motor] = VELOCITY;
 
-    myoControl->allToDisplacement(0);
+    myoControl->allToVelocity(0);
 
 //    // open i2c bus for gsensor
 //    if ((file = open(filename, O_RDWR)) < 0) {
