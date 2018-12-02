@@ -331,10 +331,6 @@ RoboyPlexus::~RoboyPlexus() {
 
     if (motorStatusThread->joinable())
         motorStatusThread->join();
-    if (!i2c_base.empty()) {
-        if (jointStatusThread->joinable())
-            jointStatusThread->join();
-    }
     if (bSuccess) {
         if (gsensor_thread->joinable())
             gsensor_thread->join();
@@ -570,23 +566,6 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
         ROS_INFO("lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
         darkroom_status_pub.publish(status_msg);
 
-        rate.sleep();
-    }
-}
-
-
-void RoboyPlexus::jointStatusPublisher() {
-    ros::Rate rate(50);
-    while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::JointStatus msg;
-        msg.id = id;
-        vector<A1335State> jointState;
-        for (uint i = 0; i < jointAngle.size(); i++) {
-            jointAngle[i]->readAngleData(jointState);
-            msg.absAngles.push_back(jointState[i].angle);
-            msg.relAngles.push_back(jointState[i].angle);
-        }
-        jointStatus_pub.publish(msg);
         rate.sleep();
     }
 }

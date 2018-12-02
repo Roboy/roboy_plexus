@@ -47,7 +47,6 @@
 #include <roboy_communication_middleware/DarkRoom.h>
 #include <roboy_communication_middleware/DarkRoomOOTX.h>
 #include <roboy_communication_middleware/DarkRoomStatus.h>
-#include <roboy_communication_middleware/JointStatus.h>
 #include <roboy_communication_middleware/MagneticSensor.h>
 #include <roboy_communication_middleware/MotorAngle.h>
 #include <roboy_communication_middleware/MotorCalibrationService.h>
@@ -139,11 +138,6 @@ private:
      * Publishes decoded lighthouse ootx data
      */
     void darkRoomOOTXPublisher();
-
-    /**
-     * Publishes joint angles
-     */
-    void jointStatusPublisher();
 
     /**
      * Publishes motor angles
@@ -337,7 +331,7 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
-    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, jointStatus_pub, adc_pub, gsensor_pub,
+    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
@@ -352,7 +346,7 @@ private:
     map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
     ArmControlPtr armControl;
-    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
+    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
             gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;

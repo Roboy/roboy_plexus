@@ -88,6 +88,13 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp roboy_soli_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
 
+    add_executable( msj_platform_fpga
+            src/msj_platform.cpp
+            include/roboy_plexus/msj_platform.hpp
+            )
+    add_dependencies(msj_platform_fpga roboy_communication_middleware_gencpp )
+    target_link_libraries( msj_platform_fpga -lpthread -lrt ${ros_LIBRARIES})
+
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
