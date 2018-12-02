@@ -18,7 +18,7 @@
 #define MSJ_READ_sensor_angle_offset(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
 #define MSJ_READ_sensor_angle_relative(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
 #define MSJ_READ_sensor_angle_velocity(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
-#define MSJ_READ_sensor_revolution_counter(base, motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
+#define MSJ_READ_sensor_revolution_counter(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
 #define MSJ_READ_dutys(base, motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
 #define MSJ_READ_zero_speed(base, motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
 
@@ -26,7 +26,7 @@
 #define MSJ_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define MSJ_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
 #define MSJ_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
-#define MSJ_WRITE_reset_control(base, motor, data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), data )
+#define MSJ_WRITE_reset_control(base, data) IOWR(base, (uint32_t)(0x04<<8|0), data )
 #define MSJ_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), data )
 #define MSJ_WRITE_outputPosMax(base, motor, data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), data )
 #define MSJ_WRITE_outputNegMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
