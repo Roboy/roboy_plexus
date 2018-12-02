@@ -57,5 +57,5 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     int32_t *msj_platform_base, *switch_base;
     boost::shared_ptr<std::thread> status_thread;
-    vector<int32_t> zero_speed = {304,303,312,308,305,305,305};
+    vector<int32_t> zero_speed = {304,305,312,312,308,305,312,305};
 };
