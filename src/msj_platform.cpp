@@ -69,12 +69,12 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base):msj_p
 
     for(int i=0;i<NUMBER_OF_MOTORS;i++){
         MSJ_WRITE_zero_speed(msj_platform_base,i,zero_speed[i]);
-        MSJ_WRITE_outputPosMax(msj_platform_base,i,(zero_speed[i]+10));
-        MSJ_WRITE_outputNegMax(msj_platform_base,i,(zero_speed[i]-10));
-        MSJ_WRITE_Kp(msj_platform_base,i,1);
-        MSJ_WRITE_Kd(msj_platform_base,i,0);
-        MSJ_WRITE_outputDivider(msj_platform_base,i,100);
-        MSJ_WRITE_deadBand(msj_platform_base,i,15);
+        MSJ_WRITE_outputPosMax(msj_platform_base,i,(zero_speed[i]+30));
+        MSJ_WRITE_outputNegMax(msj_platform_base,i,(zero_speed[i]-30));
+        MSJ_WRITE_Kp(msj_platform_base,i,20);
+        MSJ_WRITE_Kd(msj_platform_base,i,10);
+        MSJ_WRITE_outputDivider(msj_platform_base,i,6);
+        MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
         MSJ_WRITE_sp(msj_platform_base,i,0);
     }
@@ -96,7 +96,7 @@ void MSJPlatform::publishStatus(){
             int32_t vel = MSJ_READ_sensor_angle_velocity(msj_platform_base,i);
 
             msg.pwmRef.push_back(pwm);
-            msg.position.push_back(msjMeterPerEncoderTick(angle));
+            msg.position.push_back(angle);
             msg.velocity.push_back(vel);
             msg.current.push_back(0);
             msg.displacement.push_back(0);
