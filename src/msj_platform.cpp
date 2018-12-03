@@ -71,8 +71,14 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base):msj_p
         MSJ_WRITE_zero_speed(msj_platform_base,i,zero_speed[i]);
         MSJ_WRITE_outputPosMax(msj_platform_base,i,(zero_speed[i]+30));
         MSJ_WRITE_outputNegMax(msj_platform_base,i,(zero_speed[i]-30));
-        MSJ_WRITE_Kp(msj_platform_base,i,20);
-        MSJ_WRITE_Kd(msj_platform_base,i,10);
+        if(i==7){
+            MSJ_WRITE_Kp(msj_platform_base,i,-20);
+            MSJ_WRITE_Kd(msj_platform_base,i,-10);
+        }else{
+            MSJ_WRITE_Kp(msj_platform_base,i,20);
+            MSJ_WRITE_Kd(msj_platform_base,i,10);
+        }
+
         MSJ_WRITE_outputDivider(msj_platform_base,i,6);
         MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
@@ -104,23 +110,24 @@ void MSJPlatform::publishStatus(){
         }
         motor_status.publish(msg);
         r.sleep();
-        stringstream str;
-        str << "angle           : " << MSJ_READ_sensor_angle(msj_platform_base,5) << endl;
-        str << "angle absolute  : " << MSJ_READ_sensor_angle_absolute(msj_platform_base,5) << endl;
-        str << "angle offset    : " << MSJ_READ_sensor_angle_offset(msj_platform_base,5) << endl;
-        str << "angle relative  : " << MSJ_READ_sensor_angle_relative(msj_platform_base,5) << endl;
-        str << "angle velocity  : " << MSJ_READ_sensor_angle_velocity(msj_platform_base,5) << endl;
-        str << "angle revolution: " << MSJ_READ_sensor_revolution_counter(msj_platform_base,5) << endl;
-        str << "dutys           : " << MSJ_READ_dutys(msj_platform_base,5) << endl;
-        str << "sp              : " << MSJ_READ_sp(msj_platform_base,5) << endl;
-        str << "control mode    : " << MSJ_READ_control_mode(msj_platform_base,5) << endl;
-
-        ROS_INFO_STREAM_THROTTLE(1,str.str());
+//        stringstream str;
+//        str << "angle           : " << MSJ_READ_sensor_angle(msj_platform_base,5) << endl;
+//        str << "angle absolute  : " << MSJ_READ_sensor_angle_absolute(msj_platform_base,5) << endl;
+//        str << "angle offset    : " << MSJ_READ_sensor_angle_offset(msj_platform_base,5) << endl;
+//        str << "angle relative  : " << MSJ_READ_sensor_angle_relative(msj_platform_base,5) << endl;
+//        str << "angle velocity  : " << MSJ_READ_sensor_angle_velocity(msj_platform_base,5) << endl;
+//        str << "angle revolution: " << MSJ_READ_sensor_revolution_counter(msj_platform_base,5) << endl;
+//        str << "dutys           : " << MSJ_READ_dutys(msj_platform_base,5) << endl;
+//        str << "sp              : " << MSJ_READ_sp(msj_platform_base,5) << endl;
+//        str << "control mode    : " << MSJ_READ_control_mode(msj_platform_base,5) << endl;
+//
+//        ROS_INFO_STREAM_THROTTLE(1,str.str());
     }
 }
 
 void MSJPlatform::MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg){
-    ROS_INFO("receving motor command");
+    if(msg->id!=5) // not for me
+        return;
     for(int i=0;i<msg->motors.size();i++) {
 //        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
         MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->setPoints[i]);
