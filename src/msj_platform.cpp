@@ -51,8 +51,8 @@ using namespace std;
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
-MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base):msj_platform_base(msj_platform_base),
-                                                                           switch_base(switch_base){
+MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vector<int32_t *> i2c_base):
+        msj_platform_base(msj_platform_base), switch_base(switch_base), i2c_base(i2c_base){
     if (!ros::isInitialized()) {
         int argc = 0;
         char **argv = NULL;
@@ -61,7 +61,8 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base):msj_p
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
-    motor_status = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus",1);
+    motor_status = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus",1);
+    magnet_status = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
     motor_command = nh->subscribe("/roboy/middleware/MotorCommand", 1, &MSJPlatform::MotorCommand, this);
 
     spinner.reset(new ros::AsyncSpinner(0));
@@ -88,12 +89,22 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base):msj_p
 
     status_thread = boost::shared_ptr<std::thread>( new std::thread(&MSJPlatform::publishStatus, this));
     status_thread->detach();
+
+    for(int i=0;i<i2c_base.size();i++){
+        boost::shared_ptr<TLV493D> t;
+        t.reset(new TLV493D(i2c_base[i]));
+        tlv.push_back(t);
+    }
+    if(!i2c_base.empty()){
+        tlv_thread = boost::shared_ptr<std::thread>( new std::thread(&MSJPlatform::publishTLV, this));
+        tlv_thread->detach();
+    }
 }
 
 void MSJPlatform::publishStatus(){
     ros::Rate r(100);
     while(ros::ok()){
-        roboy_communication_middleware::MotorStatus msg;
+        roboy_middleware_msgs::MotorStatus msg;
         msg.id = 0;
         msg.power_sense = !(IORD(switch_base,0)&0x1);
         for(int i=0; i<NUMBER_OF_MOTORS; i++){
@@ -125,7 +136,33 @@ void MSJPlatform::publishStatus(){
     }
 }
 
-void MSJPlatform::MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg){
+void MSJPlatform::publishTLV(){
+    ros::Rate rate(60);
+    while (ros::ok()) {
+        roboy_middleware_msgs::MagneticSensor msg;
+
+        float fx,fy,fz;
+        for(int i=0;i<tlv.size();i++){
+            ros::Time start_time = ros::Time::now();
+            bool success = false;
+            do{
+                success = tlv[i]->read(fx,fy,fz);
+                if(success) {
+                    msg.sensor_id.push_back(i);
+                    msg.x.push_back(fx);
+                    msg.y.push_back(fy);
+                    msg.z.push_back(fz);
+//                    ROS_INFO("sensor %d %.6f\t%.6f\t%.6f", i, fx, fy, fz);
+                }
+            }while(!success && (ros::Time::now()-start_time).toSec()<0.1);
+        }
+        if(msg.sensor_id.size()==tlv.size())
+            magnet_status.publish(msg);
+        rate.sleep();
+    }
+}
+
+void MSJPlatform::MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr &msg){
     if(msg->id!=5) // not for me
         return;
     for(int i=0;i<msg->motors.size();i++) {
@@ -138,6 +175,7 @@ int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_msj_platform;
+vector<int32_t*> h2p_lw_i2c;
 
 void SigintHandler(int sig)
 {
@@ -185,9 +223,23 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_msj_platform = nullptr;
 #endif
+#ifdef I2C_0_BASE
+    h2p_lw_i2c.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_i2c.push_back(nullptr);
+#endif
+#ifdef I2C_1_BASE
+    h2p_lw_i2c.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_i2c.push_back(nullptr);
+#endif
+#ifdef I2C_2_BASE
+    h2p_lw_i2c.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_i2c.push_back(nullptr);
+#endif
 
-    MSJPlatform msjPlatform(h2p_lw_msj_platform, h2p_lw_switches_addr);
-
+    MSJPlatform msjPlatform(h2p_lw_msj_platform, h2p_lw_switches_addr, h2p_lw_i2c);
 
     uint8_t mask = 0x1;
     ros::Rate rate(30);

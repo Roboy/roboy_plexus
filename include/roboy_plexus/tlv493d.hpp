@@ -57,7 +57,7 @@ using namespace std;
 
 class TLV493D{
 public:
-    TLV493D(void *i2c_base, vector<uint8_t> &deviceAddress, vector<int> &devicePin);
+    TLV493D(int32_t *i2c_base);
     ~TLV493D();
     bool initTLV(uint8_t &deviceaddress, int devicepin);
     float convertToMilliTesla(uint8_t MSB, uint8_t LSB) ;
@@ -68,5 +68,5 @@ private:
     uint8_t gpioreg = 0;
 public:
     boost::shared_ptr<I2C> i2c;
-    void *i2c_base;
+    int32_t *i2c_base;
 };

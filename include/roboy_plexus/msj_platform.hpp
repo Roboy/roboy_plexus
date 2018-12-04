@@ -34,11 +34,13 @@
 #define MSJ_WRITE_zero_speed(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
 
 #include <ros/ros.h>
-#include <roboy_communication_middleware/MotorStatus.h>
-#include <roboy_communication_middleware/MotorCommand.h>
+#include <roboy_middleware_msgs/MagneticSensor.h>
+#include <roboy_middleware_msgs/MotorStatus.h>
+#include <roboy_middleware_msgs/MotorCommand.h>
 #include <std_msgs/Int32.h>
 #include <thread>
 #include <vector>
+#include "roboy_plexus/tlv493d.hpp"
 
 #define msjMeterPerEncoderTick(encoderTicks) (((encoderTicks)/4096.0*2.0*M_PI)*(2.0*M_PI*0.0045))
 
@@ -46,16 +48,19 @@ using namespace std;
 
 class MSJPlatform{
 public:
-    MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base);
+    MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vector<int32_t *> i2c_base);
     void publishStatus();
-    void MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg);
+    void publishTLV();
+    void MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr &msg);
 
 private:
     ros::NodeHandlePtr nh;
-    ros::Publisher motor_status;
+    ros::Publisher motor_status, magnet_status;
     ros::Subscriber motor_command;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     int32_t *msj_platform_base, *switch_base;
-    boost::shared_ptr<std::thread> status_thread;
+    vector<int32_t *> i2c_base;
+    boost::shared_ptr<std::thread> status_thread, tlv_thread;
     vector<int32_t> zero_speed = {304,305,312,312,308,305,312,300};
+    vector<boost::shared_ptr<TLV493D>> tlv;
 };

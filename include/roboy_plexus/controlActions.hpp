@@ -2,8 +2,8 @@
 #include <ros/spinner.h>
 #include <ros/callback_queue.h>
 #include <actionlib/server/simple_action_server.h>
-#include <roboy_communication_control/PerformMovementAction.h>
-#include <roboy_communication_control/PerformMovementsAction.h>
+#include <roboy_control_msgs/PerformMovementAction.h>
+#include <roboy_control_msgs/PerformMovementsAction.h>
 #include <actionlib_tutorials/FibonacciAction.h>
 #include <roboy_plexus/myoControl.hpp>
 
@@ -14,13 +14,13 @@ protected:
     ros::NodeHandle nh_;
     boost::shared_ptr<MyoControl> myoControl;
     string action_name;
-    actionlib::SimpleActionServer<roboy_communication_control::PerformMovementAction> performMovement_as;
-    roboy_communication_control::PerformMovementFeedback feedback;
-    roboy_communication_control::PerformMovementResult result;
+    actionlib::SimpleActionServer<roboy_control_msgs::PerformMovementAction> performMovement_as;
+    roboy_control_msgs::PerformMovementFeedback feedback;
+    roboy_control_msgs::PerformMovementResult result;
 
 public:
     PerformMovementAction(boost::shared_ptr<MyoControl> myoControl, string name);
-    void executeCB(const roboy_communication_control::PerformMovementGoalConstPtr &goal);
+    void executeCB(const roboy_control_msgs::PerformMovementGoalConstPtr &goal);
 };
 
 class PerformMovementsAction {
@@ -28,13 +28,13 @@ protected:
     ros::NodeHandle nh_;
     boost::shared_ptr<MyoControl> myoControl;
     string action_name;
-    actionlib::SimpleActionServer<roboy_communication_control::PerformMovementsAction> performMovements_as;
-    roboy_communication_control::PerformMovementsFeedback feedback;
-    roboy_communication_control::PerformMovementsResult result;
+    actionlib::SimpleActionServer<roboy_control_msgs::PerformMovementsAction> performMovements_as;
+    roboy_control_msgs::PerformMovementsFeedback feedback;
+    roboy_control_msgs::PerformMovementsResult result;
 
 public:
     PerformMovementsAction(boost::shared_ptr<MyoControl> myoControl, string name);
-    void executeCB(const roboy_communication_control::PerformMovementsGoalConstPtr &goal);
+    void executeCB(const roboy_control_msgs::PerformMovementsGoalConstPtr &goal);
 };
 
 //class PerformBehaviorAction {
@@ -42,12 +42,12 @@ public:
 //    ros::NodeHandle nh_;
 //    boost::shared_ptr<MyoControl> myoControl;
 //    string action_name;
-//    actionlib::SimpleActionServer<roboy_communication_control::PerformBehaviorAction> performMovements_as;
-//    roboy_communication_control::PerformBehaviorFeedback feedback;
-//    roboy_communication_control::PerformBehaviorResult result;
+//    actionlib::SimpleActionServer<roboy_control_msgs::PerformBehaviorAction> performMovements_as;
+//    roboy_control_msgs::PerformBehaviorFeedback feedback;
+//    roboy_control_msgs::PerformBehaviorResult result;
 //
 //public:
 //    PerformBehaviorAction(boost::shared_ptr<MyoControl> myoControl, string name);
-//    void executeCB(const roboy_communication_control::PerformBehaviorGoalConstPtr &goal);
+//    void executeCB(const roboy_control_msgs::PerformBehaviorGoalConstPtr &goal);
 //};
 

@@ -46,7 +46,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     switch (id) {
         case HEAD: {
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
+            motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
             vector<int32_t> gearBoxRatio = {62, 62, 62, 62, 62, 62};
             vector<int32_t> encoderMultiplier = {4, 4, 4, 4, 4, 4};
@@ -64,7 +64,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
         case SPINE_LEFT: {
             { // start motor angle publisher for three myoBricks
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+                motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                            1);
                 vector<uint8_t> deviceIDs = {0xE, 0xC};
 //                vector<uint8_t> motorIDs = {0,1,2};
@@ -82,7 +82,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         }
         case SPINE_RIGHT: {
             { // start motor angle publisher for three myoBricks
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+                motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                            1);
                 vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
                 vector<int32_t> gearBoxRatio = {62, 62, 62, 62, 62, 62};
@@ -111,7 +111,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         }
         case SHOULDER_LEFT: {
 //            {
-//                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+//                motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                           1);
 //                vector<uint8_t> deviceIDs = {0xF, 0xE};
 //                vector<int32_t> gearBoxRatio = {62, 62};
@@ -142,7 +142,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                }
 //            }
 
-//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+//            magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>(
 //                    "/roboy/middleware/MagneticSensor", 1, this);
 //
 //            vector<uint8_t> deviceaddress = {0x5e};
@@ -158,7 +158,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         }
         case SHOULDER_RIGHT: {
 //            {
-//                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+//                motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                           1);
 //                vector<uint8_t> deviceIDs = {0xF, 0xE};
 //                vector<int32_t> gearBoxRatio = {62, 62};
@@ -176,11 +176,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
 //                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, true, false, false, false));
 //            }
-//            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
+//            motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                       1);
-//            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
+//            jointStatus_pub = nh->advertise<roboy_middleware_msgs::JointStatus>(
 //                    "/roboy/middleware/JointStatus", 1);
-//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
+//            magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>(
 //                    "/roboy/middleware/MagneticSensor", 1, this);
 //            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
 //                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
@@ -228,13 +228,13 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         default: {
             motorCalibration_srv = nh->advertiseService("/roboy/middleware/MotorCalibration",
                                                         &RoboyPlexus::MotorCalibrationService, this);
-            darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
+            darkroom_pub = nh->advertise<roboy_middleware_msgs::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
                                                                                    1);
-            darkroom_ootx_pub = nh->advertise<roboy_communication_middleware::DarkRoomOOTX>(
+            darkroom_ootx_pub = nh->advertise<roboy_middleware_msgs::DarkRoomOOTX>(
                     "/roboy/middleware/DarkRoom/ootx", 1);
-            darkroom_status_pub = nh->advertise<roboy_communication_middleware::DarkRoomStatus>(
+            darkroom_status_pub = nh->advertise<roboy_middleware_msgs::DarkRoomStatus>(
                     "/roboy/middleware/DarkRoom/status", 1);
-            adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
+            adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
             if (darkroom_base != nullptr) {
                 darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
                 darkRoomThread->detach();
@@ -285,7 +285,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     expandBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExpandBehavior",
                                               &RoboyPlexus::ExpandBehaviorService, this);
 
-    motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+    motorStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
@@ -390,7 +390,7 @@ void RoboyPlexus::gsensorPublisher() {
 void RoboyPlexus::adcPublisher() {
     ros::Rate rate(100);
     while (keep_publishing) {
-        roboy_communication_middleware::ADCvalue msg;
+        roboy_middleware_msgs::ADCvalue msg;
         msg.id = id;
         for (uint i = 0; i < NUMBER_OF_LOADCELLS; i++) {
             uint32_t adcvalue;
@@ -408,7 +408,7 @@ void RoboyPlexus::darkRoomPublisher() {
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     while (keep_publishing) {
         uint active_sensors = 0;
-        roboy_communication_middleware::DarkRoom msg;
+        roboy_middleware_msgs::DarkRoom msg;
         msg.objectID = ethaddr;
         for (uint i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, i);
@@ -477,7 +477,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
 
                 uint32_t crc32checksumCalculated = crc.finalize();
                 if (crc.finalize() == crc32checksum) { // kinda paranoid right...?!
-                    roboy_communication_middleware::DarkRoomOOTX msg;
+                    roboy_middleware_msgs::DarkRoomOOTX msg;
                     msg.lighthouse = lighthouse;
                     msg.fw_version = ootx.frame.fw_version;
                     msg.ID = ootx.frame.ID;
@@ -554,7 +554,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
             }
         }
 
-        roboy_communication_middleware::DarkRoomStatus status_msg;
+        roboy_middleware_msgs::DarkRoomStatus status_msg;
         status_msg.objectID = ethaddr;
         uint active_sensors = 0;
         for (uint8_t i = 0; i < NUM_SENSORS; i++) {
@@ -573,7 +573,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
 void RoboyPlexus::motorAnglePublisher() {
     ros::Rate rate(60);
     while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::MotorAngle msg;
+        roboy_middleware_msgs::MotorAngle msg;
         msg.id = id;
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
             if(find(myo_bricks[id].begin(),myo_bricks[id].end(),motor)!=myo_bricks[id].end()) {
@@ -600,7 +600,7 @@ void RoboyPlexus::motorAnglePublisher() {
 void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::MotorStatus msg;
+        roboy_middleware_msgs::MotorStatus msg;
         msg.id = id;
         msg.power_sense = myoControl->getPowerSense();
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
@@ -627,7 +627,7 @@ void RoboyPlexus::motorStatusPublisher() {
 void RoboyPlexus::magneticShoulderJointPublisher() {
     ros::Rate rate(60);
     while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::MagneticSensor msg;
+        roboy_middleware_msgs::MagneticSensor msg;
 
         float fx,fy,fz;
         for(int i=0;i<tlv493D0.size();i++){
@@ -650,7 +650,7 @@ void RoboyPlexus::magneticShoulderJointPublisher() {
     }
 }
 
-void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg) {
+void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
     if (msg->id == id) {
         uint i = 0;
         for (auto motor:msg->motors) {
@@ -676,7 +676,7 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
 void RoboyPlexus::motorAnglePID() {
 //    ros::Rate rate(100);
 //    while (keep_publishing) {
-//        roboy_communication_middleware::MotorAngle msg;
+//        roboy_middleware_msgs::MotorAngle msg;
 //        msg.id = id;
 //        vector<A1335State> state;
 //        motorAngle[0]->readAngleData(state);
@@ -725,8 +725,8 @@ bool RoboyPlexus::HandPower(std_srvs::SetBool::Request &req, std_srvs::SetBool::
     return true;
 }
 
-bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,
-                                     roboy_communication_middleware::MotorConfigService::Response &res) {
+bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
+                                     roboy_middleware_msgs::MotorConfigService::Response &res) {
     stringstream str;
     control_Parameters_t params;
     uint i = 0;
@@ -768,8 +768,8 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
     return true;
 }
 
-bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode::Request &req,
-                                     roboy_communication_middleware::ControlMode::Response &res) {
+bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
+                                     roboy_middleware_msgs::ControlMode::Response &res) {
     if (!emergency_stop) {
         if(req.motorId.empty()) {
             switch (req.control_mode) {
@@ -807,8 +807,8 @@ bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode
     }
 }
 
-bool RoboyPlexus::MotorCalibrationService(roboy_communication_middleware::MotorCalibrationService::Request &req,
-                                          roboy_communication_middleware::MotorCalibrationService::Response &res) {
+bool RoboyPlexus::MotorCalibrationService(roboy_middleware_msgs::MotorCalibrationService::Request &req,
+                                          roboy_middleware_msgs::MotorCalibrationService::Response &res) {
     if (!emergency_stop) {
         ROS_INFO("serving motor calibration service for motor %d", req.motor);
         myoControl->estimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
@@ -825,8 +825,8 @@ bool RoboyPlexus::MotorCalibrationService(roboy_communication_middleware::MotorC
     }
 }
 
-bool RoboyPlexus::MyoBrickCalibrationService(roboy_communication_middleware::MyoBrickCalibrationService::Request &req,
-                                roboy_communication_middleware::MyoBrickCalibrationService::Response &res){
+bool RoboyPlexus::MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCalibrationService::Request &req,
+                                roboy_middleware_msgs::MyoBrickCalibrationService::Response &res){
     if (!emergency_stop) {
         ROS_INFO("serving myobrick calibration service for motor %d", req.motor);
         myoControl->estimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
@@ -886,8 +886,8 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
     return true;
 }
 
-bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
-                                     roboy_communication_middleware::SystemCheck::Response &res) {
+bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
+                                     roboy_middleware_msgs::SystemCheck::Response &res) {
     vector<uint8_t> motorIDs;
     if (req.motorIDs.empty()) {
         motorIDs.resize(NUMBER_OF_MOTORS_PER_FPGA);
@@ -954,8 +954,8 @@ bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck
     return system_check_successful;
 }
 
-bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
-                                        roboy_communication_middleware::SetInt16::Request &res) {
+bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
+                                        roboy_middleware_msgs::SetInt16::Request &res) {
     if (id == HEAD) {
         myoControl->allToDisplacement(req.setpoint);
         ros::Duration d(5);
@@ -975,7 +975,7 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16
     return true;
 }
 
-void RoboyPlexus::StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg) {
+void RoboyPlexus::StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg) {
 
     if (std::find(msg->body_parts.begin(), msg->body_parts.end(), body_part) == msg->body_parts.end()) {
         ROS_INFO_STREAM("Not my call, not recording!");
@@ -995,7 +995,7 @@ void RoboyPlexus::StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg) {
     myoControl->stopRecordTrajectories();
 }
 
-void RoboyPlexus::SaveBehaviorCB(const roboy_communication_control::Behavior &msg) {
+void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
 
     ofstream output_file(myoControl->behaviors_folder + msg.name);
     ostream_iterator<std::string> output_iterator(output_file, "\n");
@@ -1039,8 +1039,8 @@ void RoboyPlexus::PredisplacementCB(const std_msgs::Int32 &msg) {
 }
 
 
-bool RoboyPlexus::ListExistingItemsService(roboy_communication_control::ListItems::Request &req,
-                                           roboy_communication_control::ListItems::Response &res) {
+bool RoboyPlexus::ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
+                                           roboy_control_msgs::ListItems::Response &res) {
 
     // read filenames in the specified folder
     DIR *dirp = opendir(req.name.c_str());
@@ -1059,8 +1059,8 @@ bool RoboyPlexus::ListExistingItemsService(roboy_communication_control::ListItem
     return true;
 }
 
-bool RoboyPlexus::ExpandBehaviorService(roboy_communication_control::ListItems::Request &req,
-                                        roboy_communication_control::ListItems::Response &res) {
+bool RoboyPlexus::ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
+                                        roboy_control_msgs::ListItems::Response &res) {
 
     res.items = expandBehavior(req.name);
     return true;

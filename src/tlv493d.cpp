@@ -1,6 +1,6 @@
 #include "roboy_plexus/tlv493d.hpp"
 
-TLV493D::TLV493D(void *i2c_base, vector<uint8_t> &deviceAddress, vector<int> &devicePin):i2c_base(i2c_base),deviceAddress(deviceAddress){
+TLV493D::TLV493D(int32_t *i2c_base):i2c_base(i2c_base){
     i2c = boost::shared_ptr<I2C>(new I2C(i2c_base));
     vector<uint8_t> data;
     i2c->read(0x5e, 1, 1, data);
