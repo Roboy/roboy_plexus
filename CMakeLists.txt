@@ -90,6 +90,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
 
     add_executable( msj_platform_fpga
             src/msj_platform.cpp
+            src/i2c.cpp
+            src/tlv493d.cpp
             include/roboy_plexus/msj_platform.hpp
             )
     add_dependencies(msj_platform_fpga roboy_communication_middleware_gencpp )

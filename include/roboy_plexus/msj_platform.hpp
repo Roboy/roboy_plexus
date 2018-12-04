@@ -32,30 +32,42 @@
 #define MSJ_WRITE_outputNegMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
 #define MSJ_WRITE_deadBand(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
 #define MSJ_WRITE_zero_speed(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
+#define MSJ_WRITE_pwm_mute(base, data) IOWR(base, (uint32_t)(0x0A<<8|0), data )
 
 #include <ros/ros.h>
+#include <roboy_communication_middleware/MagneticSensor.h>
 #include <roboy_communication_middleware/MotorStatus.h>
 #include <roboy_communication_middleware/MotorCommand.h>
 #include <std_msgs/Int32.h>
+#include <std_srvs/SetBool.h>
+#include <std_srvs/Empty.h>
 #include <thread>
 #include <vector>
+#include "roboy_plexus/tlv493d.hpp"
 
-#define msjMeterPerEncoderTick(encoderTicks) (((encoderTicks)/4096.0*2.0*M_PI)*(2.0*M_PI*0.0045))
+#define SPINDLE_RADIUS 0.0055
+#define msjMeterPerEncoderTick(encoderTicks) (((encoderTicks)/4096.0*2.0*M_PI)*(2.0*M_PI*SPINDLE_RADIUS))
 
 using namespace std;
 
 class MSJPlatform{
 public:
-    MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base);
+    MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vector<int32_t*> i2c_base);
     void publishStatus();
+    void publishMagneticSensors();
     void MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg);
+    bool EmergencyStop(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+    bool Zero(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 
 private:
     ros::NodeHandlePtr nh;
-    ros::Publisher motor_status;
+    ros::Publisher motor_status, magnetic_sensor;
     ros::Subscriber motor_command;
+    ros::ServiceServer emergency_stop, zero;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     int32_t *msj_platform_base, *switch_base;
-    boost::shared_ptr<std::thread> status_thread;
+    boost::shared_ptr<std::thread> status_thread, magnetic_thread;
     vector<int32_t> zero_speed = {304,305,312,312,308,305,312,300};
+    vector<boost::shared_ptr<TLV493D>> tlv;
+    vector<int32_t*> i2c_base;
 };
