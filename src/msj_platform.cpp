@@ -63,7 +63,7 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
     motor_status = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus",1);
     magnetic_sensor = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
-    motor_command = nh->subscribe("/roboy/middleware/MotorCommand", 1, &MSJPlatform::MotorCommand, this);
+    motor_command = nh->subscribe("/roboy/middleware/MotorCommand", 10, &MSJPlatform::MotorCommand, this);
     emergency_stop = nh->advertiseService("/msj_platform/emergency_stop",&MSJPlatform::EmergencyStop, this);
     zero = nh->advertiseService("/msj_platform/zero",&MSJPlatform::Zero, this);
 
@@ -85,8 +85,9 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
         MSJ_WRITE_outputDivider(msj_platform_base,i,6);
         MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
-        MSJ_WRITE_sp(msj_platform_base,i,0);
+        MSJ_WRITE_sp(msj_platform_base,i,1000);
     }
+    MSJ_WRITE_pwm_mute(msj_platform_base,false);
 
     status_thread = boost::shared_ptr<std::thread>( new std::thread(&MSJPlatform::publishStatus, this));
     status_thread->detach();
@@ -163,6 +164,7 @@ void MSJPlatform::publishMagneticSensors() {
 void MSJPlatform::MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg){
     if(msg->id!=5) // not for me
         return;
+//    ROS_INFO("receiving motor commands");
     for(int i=0;i<msg->motors.size();i++) {
 //        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
         MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->setPoints[i]);
@@ -180,7 +182,6 @@ bool MSJPlatform::EmergencyStop(std_srvs::SetBool::Request &req, std_srvs::SetBo
 
 bool MSJPlatform::Zero(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res){
     MSJ_WRITE_reset_control(msj_platform_base,true);
-//    MSJ_WRITE_reset_control(msj_platform_base,false);
     return true;
 }
 
