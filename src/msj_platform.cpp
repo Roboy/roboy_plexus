@@ -61,8 +61,8 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
-    motor_status = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus",1);
-    magnetic_sensor = nh->advertise<roboy_communication_middleware::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
+    motor_status = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus",1);
+    magnetic_sensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
     motor_command = nh->subscribe("/roboy/middleware/MotorCommand", 10, &MSJPlatform::MotorCommand, this);
     emergency_stop = nh->advertiseService("/msj_platform/emergency_stop",&MSJPlatform::EmergencyStop, this);
     zero = nh->advertiseService("/msj_platform/zero",&MSJPlatform::Zero, this);
@@ -103,7 +103,7 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
 void MSJPlatform::publishStatus(){
     ros::Rate r(100);
     while(ros::ok()){
-        roboy_communication_middleware::MotorStatus msg;
+        roboy_middleware_msgs::MotorStatus msg;
         msg.id = 5;
         msg.power_sense = !(IORD(switch_base,0)&0x1);
         for(int i=0; i<NUMBER_OF_MOTORS; i++){
@@ -111,7 +111,7 @@ void MSJPlatform::publishStatus(){
             int32_t angle = MSJ_READ_sensor_angle_absolute(msj_platform_base,i);
             int32_t vel = MSJ_READ_sensor_angle_velocity(msj_platform_base,i);
 
-            msg.pwmRef.push_back(pwm);
+            msg.pwm_ref.push_back(pwm);
             msg.position.push_back(angle);
             msg.velocity.push_back(vel);
             msg.current.push_back(0);
@@ -138,7 +138,7 @@ void MSJPlatform::publishStatus(){
 void MSJPlatform::publishMagneticSensors() {
     ros::Rate rate(60);
     while (ros::ok()) {
-        roboy_communication_middleware::MagneticSensor msg;
+        roboy_middleware_msgs::MagneticSensor msg;
 
         float fx,fy,fz;
         for(int i=0;i<tlv.size();i++){
@@ -161,13 +161,13 @@ void MSJPlatform::publishMagneticSensors() {
     }
 }
 
-void MSJPlatform::MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg){
+void MSJPlatform::MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr &msg){
     if(msg->id!=5) // not for me
         return;
 //    ROS_INFO("receiving motor commands");
     for(int i=0;i<msg->motors.size();i++) {
 //        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
-        MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->setPoints[i]);
+        MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->set_points[i]);
     }
 }
 

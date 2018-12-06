@@ -131,7 +131,7 @@ ArmControl::ArmControl(int32_t *myo_base, uint8_t elbowDeviceID, uint8_t wristDe
     }
 
     handCommand_sub = nh->subscribe("/roboy/middleware/HandCommand", 1, &ArmControl::handCommandCB, this);
-    armStatus_pub = nh->advertise<roboy_communication_middleware::ArmStatus>("/roboy/middleware/ArmStatus", 1);
+    armStatus_pub = nh->advertise<roboy_middleware_msgs::ArmStatus>("/roboy/middleware/ArmStatus", 1);
     if (!id) {
         elbowCommand_sub = nh->subscribe("/roboy/middleware/elbow_left/JointAngle", 1, &ArmControl::elbowCommandCB,
                                          this);
@@ -175,13 +175,13 @@ ArmControl::~ArmControl() {
     }
 }
 
-void ArmControl::handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg) {
+void ArmControl::handCommandCB(const roboy_middleware_msgs::HandCommand::ConstPtr &msg) {
     if (msg->id == id) {
         vector<uint8_t> setPoint;
         stringstream str;
         str << "hand " << (id ? "right" : "left") << " command:";
         if (msg->motorid.empty()) {
-            for (auto s:msg->setPoint) {
+            for (auto s:msg->set_point) {
                 if (s < 20)
                     setPoint.push_back(20);
                 if (s > 160)
@@ -194,27 +194,27 @@ void ArmControl::handCommandCB(const roboy_communication_middleware::HandCommand
             }
             ROS_INFO("%s", (command(setPoint) ? "success" : "failed"));
         } else {
-            if (msg->motorid.size() == msg->setPoint.size()) {
+            if (msg->motorid.size() == msg->set_point.size()) {
                 int i = 0;
                 for (auto m:msg->motorid) {
                     switch(m%5){
                         case 0:
-                            MYO_WRITE_motor0(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor0(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 1:
-                            MYO_WRITE_motor1(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor1(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 2:
-                            MYO_WRITE_motor2(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor2(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 3:
-                            MYO_WRITE_motor3(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor3(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 4:
-                            MYO_WRITE_motor4(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor4(myo_base,m/5,msg->set_point[i]);
                             break;
                     }
-                    str << "motor " << (int) m << ": " << (int) msg->setPoint[i] << "\t";
+                    str << "motor " << (int) m << ": " << (int) msg->set_point[i] << "\t";
                     i++;
                 }
                 ROS_INFO_STREAM(str.str());
@@ -237,7 +237,7 @@ void ArmControl::wristCommandCB(const std_msgs::Float32::ConstPtr &msg) {
     MYO_WRITE_wrist_joint_angle_setpoint(myo_base, encoderTicks);
 }
 
-void ArmControl::fingerCommandCB(const roboy_communication_middleware::FingerCommand::ConstPtr &msg) {
+void ArmControl::fingerCommandCB(const roboy_middleware_msgs::FingerCommand::ConstPtr &msg) {
     if (msg->id == id) {
         if (msg->finger > 3) {
             ROS_ERROR("invalid finger, use THUMB(0), INDEXFINGER(1), MIDDLEFINGER(2), RINGLITTLE(3)");
@@ -247,8 +247,8 @@ void ArmControl::fingerCommandCB(const roboy_communication_middleware::FingerCom
     }
 }
 
-bool ArmControl::setHandModeService(roboy_communication_control::SetModeRequest &req,
-                                     roboy_communication_control::SetModeResponse &res) {
+bool ArmControl::setHandModeService(roboy_control_msgs::SetModeRequest &req,
+                                     roboy_control_msgs::SetModeResponse &res) {
 
     if (req.id != id) {
         return 0;
@@ -267,24 +267,24 @@ bool ArmControl::setHandModeService(roboy_communication_control::SetModeRequest 
 
 }
 
-bool ArmControl::JointControllerService(roboy_communication_middleware::JointControllerRequest &req,
-                                         roboy_communication_middleware::JointControllerResponse &res) {
+bool ArmControl::JointControllerService(roboy_middleware_msgs::JointControllerRequest &req,
+                                         roboy_middleware_msgs::JointControllerResponse &res) {
     MYO_WRITE_elbow_joint_control(myo_base,req.elbow_control_enable);
-    MYO_WRITE_elbow_Kp_joint_angle(myo_base, req.Kp_elbow_joint);
-    MYO_WRITE_elbow_Kd_joint_angle(myo_base, req.Kd_elbow_joint);
-    MYO_WRITE_Kp(myo_base, elbow_agonist, req.Kp_elbow_agonist);
-    MYO_WRITE_Kp(myo_base, elbow_antagonist, req.Kp_elbow_antagonist);
-    MYO_WRITE_Kd(myo_base, elbow_agonist, req.Kd_elbow_agonist);
-    MYO_WRITE_Kd(myo_base, elbow_antagonist, req.Kd_elbow_agonist);
+    MYO_WRITE_elbow_Kp_joint_angle(myo_base, req.kp_elbow_joint);
+    MYO_WRITE_elbow_Kd_joint_angle(myo_base, req.kd_elbow_joint);
+    MYO_WRITE_Kp(myo_base, elbow_agonist, req.kp_elbow_agonist);
+    MYO_WRITE_Kp(myo_base, elbow_antagonist, req.kp_elbow_antagonist);
+    MYO_WRITE_Kd(myo_base, elbow_agonist, req.kd_elbow_agonist);
+    MYO_WRITE_Kd(myo_base, elbow_antagonist, req.kd_elbow_agonist);
     MYO_WRITE_elbow_joint_pretension(myo_base, req.elbow_pretension);
     MYO_WRITE_elbow_joint_deadband(myo_base, req.elbow_deadband);
     MYO_WRITE_wrist_joint_control(myo_base,req.wrist_control_enable);
-    MYO_WRITE_wrist_Kp_joint_angle(myo_base, req.Kp_wrist_joint);
-    MYO_WRITE_wrist_Kd_joint_angle(myo_base, req.Kd_wrist_joint);
-    MYO_WRITE_Kp(myo_base, wrist_agonist, req.Kp_wrist_agonist);
-    MYO_WRITE_Kp(myo_base, wrist_antagonist, req.Kp_wrist_antagonist);
-    MYO_WRITE_Kd(myo_base, wrist_agonist, req.Kd_wrist_agonist);
-    MYO_WRITE_Kd(myo_base, wrist_antagonist, req.Kd_wrist_agonist);
+    MYO_WRITE_wrist_Kp_joint_angle(myo_base, req.kp_wrist_joint);
+    MYO_WRITE_wrist_Kd_joint_angle(myo_base, req.kd_wrist_joint);
+    MYO_WRITE_Kp(myo_base, wrist_agonist, req.kp_wrist_agonist);
+    MYO_WRITE_Kp(myo_base, wrist_antagonist, req.kp_wrist_antagonist);
+    MYO_WRITE_Kd(myo_base, wrist_agonist, req.kd_wrist_agonist);
+    MYO_WRITE_Kd(myo_base, wrist_antagonist, req.kd_wrist_agonist);
     MYO_WRITE_wrist_joint_pretension(myo_base, req.wrist_pretension);
     MYO_WRITE_wrist_joint_deadband(myo_base, req.wrist_deadband);
 }
@@ -335,7 +335,7 @@ void ArmControl::openHand() {
 void ArmControl::armStatusPublisher() {
     ros::Rate rate(30);
     while (keep_publishing) {
-        roboy_communication_middleware::ArmStatus msg;
+        roboy_middleware_msgs::ArmStatus msg;
         msg.id = id;
         vector<ArmControl::SensorFrame> sensor_data;
         readSensorData(sensor_data);

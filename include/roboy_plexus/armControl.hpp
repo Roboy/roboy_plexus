@@ -2,11 +2,11 @@
 
 #include <ros/ros.h>
 #include <thread>
-#include <roboy_communication_middleware/FingerCommand.h>
-#include <roboy_communication_middleware/ArmStatus.h>
-#include <roboy_communication_middleware/HandCommand.h>
-#include <roboy_communication_middleware/JointController.h>
-#include <roboy_communication_control/SetMode.h>
+#include <roboy_middleware_msgs/FingerCommand.h>
+#include <roboy_middleware_msgs/ArmStatus.h>
+#include <roboy_middleware_msgs/HandCommand.h>
+#include <roboy_middleware_msgs/JointController.h>
+#include <roboy_control_msgs/SetMode.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/SetBool.h>
 #include "roboy_plexus/myoControl.hpp"
@@ -48,7 +48,7 @@ public:
      * Callback for hand command
      * @param msg hand command
      */
-    void handCommandCB(const roboy_communication_middleware::HandCommand::ConstPtr &msg);
+    void handCommandCB(const roboy_middleware_msgs::HandCommand::ConstPtr &msg);
 
     /**
      * Callback for elbow joint
@@ -66,23 +66,23 @@ public:
      * Callback for finger command
      * @param msg finger command
      */
-    void fingerCommandCB(const roboy_communication_middleware::FingerCommand::ConstPtr &msg);
+    void fingerCommandCB(const roboy_middleware_msgs::FingerCommand::ConstPtr &msg);
 
     /**
      * Service to close/open hand
      * @param req
      * @param res
      */
-    bool setHandModeService(roboy_communication_control::SetModeRequest &req,
-                            roboy_communication_control::SetModeResponse &res);
+    bool setHandModeService(roboy_control_msgs::SetModeRequest &req,
+                            roboy_control_msgs::SetModeResponse &res);
 
     /**
       * Service to close/open hand
       * @param req
       * @param res
       */
-    bool JointControllerService(roboy_communication_middleware::JointControllerRequest &req,
-                                roboy_communication_middleware::JointControllerResponse &res);
+    bool JointControllerService(roboy_middleware_msgs::JointControllerRequest &req,
+                                roboy_middleware_msgs::JointControllerResponse &res);
 
     bool ElbowJointControllerService(std_srvs::SetBoolRequest &req,
                                      std_srvs::SetBoolResponse &res);

@@ -35,9 +35,9 @@
 #define MSJ_WRITE_pwm_mute(base, data) IOWR(base, (uint32_t)(0x0A<<8|0), data )
 
 #include <ros/ros.h>
-#include <roboy_communication_middleware/MagneticSensor.h>
-#include <roboy_communication_middleware/MotorStatus.h>
-#include <roboy_communication_middleware/MotorCommand.h>
+#include <roboy_middleware_msgs/MagneticSensor.h>
+#include <roboy_middleware_msgs/MotorStatus.h>
+#include <roboy_middleware_msgs/MotorCommand.h>
 #include <std_msgs/Int32.h>
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Empty.h>
@@ -55,7 +55,7 @@ public:
     MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vector<int32_t*> i2c_base);
     void publishStatus();
     void publishMagneticSensors();
-    void MotorCommand(const roboy_communication_middleware::MotorCommandConstPtr &msg);
+    void MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr &msg);
     bool EmergencyStop(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
     bool Zero(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 

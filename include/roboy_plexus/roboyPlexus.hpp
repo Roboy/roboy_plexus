@@ -42,23 +42,23 @@
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
 #include <roboy_soli/roboySoli.hpp>
-#include <roboy_communication_middleware/ADCvalue.h>
-#include <roboy_communication_middleware/ControlMode.h>
-#include <roboy_communication_middleware/DarkRoom.h>
-#include <roboy_communication_middleware/DarkRoomOOTX.h>
-#include <roboy_communication_middleware/DarkRoomStatus.h>
-#include <roboy_communication_middleware/MagneticSensor.h>
-#include <roboy_communication_middleware/MotorAngle.h>
-#include <roboy_communication_middleware/MotorCalibrationService.h>
-#include <roboy_communication_middleware/MotorCommand.h>
-#include <roboy_communication_middleware/MotorStatus.h>
-#include <roboy_communication_middleware/MotorConfigService.h>
-#include <roboy_communication_middleware/MyoBrickCalibrationService.h>
-#include <roboy_communication_middleware/SetInt16.h>
-#include <roboy_communication_control/Behavior.h>
-#include <roboy_communication_control/StartRecordTrajectory.h>
-#include <roboy_communication_middleware/SystemCheck.h>
-#include <roboy_communication_control/ListItems.h>
+#include <roboy_middleware_msgs/ADCvalue.h>
+#include <roboy_middleware_msgs/ControlMode.h>
+#include <roboy_middleware_msgs/DarkRoom.h>
+#include <roboy_middleware_msgs/DarkRoomOOTX.h>
+#include <roboy_middleware_msgs/DarkRoomStatus.h>
+#include <roboy_middleware_msgs/MagneticSensor.h>
+#include <roboy_middleware_msgs/MotorAngle.h>
+#include <roboy_middleware_msgs/MotorCalibrationService.h>
+#include <roboy_middleware_msgs/MotorCommand.h>
+#include <roboy_middleware_msgs/MotorStatus.h>
+#include <roboy_middleware_msgs/MotorConfigService.h>
+#include <roboy_middleware_msgs/MyoBrickCalibrationService.h>
+#include <roboy_middleware_msgs/SetInt16.h>
+#include <roboy_control_msgs/Behavior.h>
+#include <roboy_control_msgs/StartRecordTrajectory.h>
+#include <roboy_middleware_msgs/SystemCheck.h>
+#include <roboy_control_msgs/ListItems.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
@@ -153,7 +153,7 @@ private:
      * Callback for motor command
      * @param msg motor command
      */
-    void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
+    void motorCommandCB(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg);
 
     /**
      * Motor Angle PID controller
@@ -175,8 +175,8 @@ private:
      * @param res success
      * @return success
      */
-    bool MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,
-                            roboy_communication_middleware::MotorConfigService::Response &res);
+    bool MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
+                            roboy_middleware_msgs::MotorConfigService::Response &res);
 
     /**
      * Service for changing the control mode of motors, perviously set PID parameters are restored
@@ -184,8 +184,8 @@ private:
      * @param res
      * @return success
      */
-    bool ControlModeService(roboy_communication_middleware::ControlMode::Request &req,
-                            roboy_communication_middleware::ControlMode::Response &res);
+    bool ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
+                            roboy_middleware_msgs::ControlMode::Response &res);
 
     /**
      * Service for motor spring calibration, samples the spring space for a requested amount of time and estimates spring coefficients
@@ -193,8 +193,8 @@ private:
      * @param res
      * @return
      */
-    bool MotorCalibrationService(roboy_communication_middleware::MotorCalibrationService::Request &req,
-                                 roboy_communication_middleware::MotorCalibrationService::Response &res);
+    bool MotorCalibrationService(roboy_middleware_msgs::MotorCalibrationService::Request &req,
+                                 roboy_middleware_msgs::MotorCalibrationService::Response &res);
 
     /**
      * Service for calibrating the motor angle sensor
@@ -202,8 +202,8 @@ private:
      * @param res
      * @return
      */
-    bool MyoBrickCalibrationService(roboy_communication_middleware::MyoBrickCalibrationService::Request &req,
-                                 roboy_communication_middleware::MyoBrickCalibrationService::Response &res);
+    bool MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCalibrationService::Request &req,
+                                 roboy_middleware_msgs::MyoBrickCalibrationService::Response &res);
 
     /**
      * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
@@ -220,15 +220,15 @@ private:
      * @param res
      * @return
      */
-    bool SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
-                            roboy_communication_middleware::SystemCheck::Response &res);
+    bool SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
+                            roboy_middleware_msgs::SystemCheck::Response &res);
 
     /**
      * Motor setpoints trajectory recording callback.
      * @param msg
      * @return
      */
-    void StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg);
+    void StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg);
 
     /**
      * Callback stops recording the trajectory
@@ -242,7 +242,7 @@ private:
      * Callback saves behavior
      * @param msg
      */
-    void SaveBehaviorCB(const roboy_communication_control::Behavior &msg);
+    void SaveBehaviorCB(const roboy_control_msgs::Behavior &msg);
 
     /**
      * Callback updates the displacement for recording trajectories
@@ -263,8 +263,8 @@ private:
      * @param res
      * @return
      */
-    bool ListExistingItemsService(roboy_communication_control::ListItems::Request &req,
-                                  roboy_communication_control::ListItems::Response &res);
+    bool ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
+                                  roboy_control_msgs::ListItems::Response &res);
 
     /**
      * Service returns the list of actions in the requested behavior
@@ -272,8 +272,8 @@ private:
      * @param res
      * @return
      */
-    bool ExpandBehaviorService(roboy_communication_control::ListItems::Request &req,
-                               roboy_communication_control::ListItems::Response &res);
+    bool ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
+                               roboy_control_msgs::ListItems::Response &res);
 
 
     /**
@@ -282,8 +282,8 @@ private:
      * @param res
      * @return
      */
-    bool SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
-                               roboy_communication_middleware::SetInt16::Request &res);
+    bool SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
+                               roboy_middleware_msgs::SetInt16::Request &res);
 
 
 private:

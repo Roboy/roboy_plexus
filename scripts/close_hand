@@ -3,16 +3,16 @@ if [ "$#" -ne 1 ]; then
    echo "USAGE:     ./openhand left/right"
 else
   if [ $1 -eq 0 ]; then
-rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+rostopic pub /roboy/middleware/FingerCommand roboy_middleware_msgs/FingerCommand "id: $1
 finger: 0
 angles: [110,120,120,90]"&
-rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+rostopic pub /roboy/middleware/FingerCommand roboy_middleware_msgs/FingerCommand "id: $1
 finger: 1
 angles: [110,120,120,90]"&
-rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+rostopic pub /roboy/middleware/FingerCommand roboy_middleware_msgs/FingerCommand "id: $1
 finger: 2
 angles: [110,120,120,90]"&
-rostopic pub /roboy/middleware/FingerCommand roboy_communication_middleware/FingerCommand "id: $1
+rostopic pub /roboy/middleware/FingerCommand roboy_middleware_msgs/FingerCommand "id: $1
 finger: 3
 angles: [110,120,120,90]"&
   else

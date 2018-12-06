@@ -10,7 +10,7 @@ PerformMovementAction::PerformMovementAction(boost::shared_ptr<MyoControl> myoCo
 }
 
 
-void PerformMovementAction::executeCB(const roboy_communication_control::PerformMovementGoalConstPtr &goal) {
+void PerformMovementAction::executeCB(const roboy_control_msgs::PerformMovementGoalConstPtr &goal) {
     string file = myoControl->trajectories_folder + goal->action;
     const char *fileName = file.c_str();
     result.success = myoControl->playTrajectory(fileName);
@@ -27,7 +27,7 @@ PerformMovementsAction::PerformMovementsAction(boost::shared_ptr<MyoControl> myo
     ROS_INFO_STREAM( action_name + ": started action server");
 }
 
-void PerformMovementsAction::executeCB(const roboy_communication_control::PerformMovementsGoalConstPtr &goal) {
+void PerformMovementsAction::executeCB(const roboy_control_msgs::PerformMovementsGoalConstPtr &goal) {
 
     bool success;
     for (string actionName: goal->actions) {
