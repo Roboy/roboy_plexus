@@ -6,7 +6,7 @@
 #include <roboy_communication_middleware/ArmStatus.h>
 #include <roboy_communication_middleware/HandCommand.h>
 #include <roboy_communication_middleware/JointController.h>
-#include <roboy_communication_control/SetMode.h>
+#include <roboy_control_msgs/SetMode.h>
 #include <std_msgs/Float32.h>
 #include <std_srvs/SetBool.h>
 #include "roboy_plexus/myoControl.hpp"
@@ -73,8 +73,8 @@ public:
      * @param req
      * @param res
      */
-    bool setHandModeService(roboy_communication_control::SetModeRequest &req,
-                            roboy_communication_control::SetModeResponse &res);
+    bool setHandModeService(roboy_control_msgs::SetModeRequest &req,
+                            roboy_control_msgs::SetModeResponse &res);
 
     /**
       * Service to close/open hand

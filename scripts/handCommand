@@ -1,4 +1,4 @@
 #!/bin/bash
-rostopic pub /roboy/middleware/HandCommand roboy_communication_middleware/HandCommand "id: $2
+rostopic pub /roboy/middleware/HandCommand roboy_middleware_msgs/HandCommand "id: $2
 setPoint: [$1,$1,$1,$1,90,$1,$1,$1,$1,90,$1,$1,$1,$1,90,$1,$1,$1,$1,90]"
 
