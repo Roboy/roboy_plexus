@@ -258,6 +258,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                                               &RoboyPlexus::StartRecordTrajectoryCB, this);
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
                                              &RoboyPlexus::StopRecordTrajectoryCB, this);
+    setGPIO_sub = nh->subscribe("/roboy/control/GPIO", 1, &RoboyPlexus::SetGPIOCB, this);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
     enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
     predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB, this);
@@ -1000,6 +1001,12 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
     ofstream output_file(myoControl->behaviors_folder + msg.name);
     ostream_iterator<std::string> output_iterator(output_file, "\n");
     std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
+}
+
+void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
+    volatile bool *pin = (bool*) GPIO_PIN_ADDRESS;
+    *pin = msg->data;
+    ROS_INFO("New pint value: [%d]", *pin);
 }
 
 bool RoboyPlexus::executeActions(vector<string> actions) {

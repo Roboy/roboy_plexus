@@ -88,6 +88,8 @@
 #define NUM_SENSORS 12
 #define NUMBER_OF_LOADCELLS 8
 
+#define GPIO_PIN_ADDRESS (0x28)
+
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
 
 using namespace std;
@@ -245,6 +247,13 @@ private:
     void SaveBehaviorCB(const roboy_control_msgs::Behavior &msg);
 
     /**
+     * Callback that sets GPIO pin
+     * @param msg a std_msgs::Bool containing the boolean value that
+     *            will be assigned to the pin.
+     */
+    void SetGPIOCB(const std_msgs::Bool::ConstPtr& msg);
+
+    /**
      * Callback updates the displacement for recording trajectories
      * @param msg
      */
@@ -330,7 +339,7 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
-            enablePlayback_sub, predisplacement_sub;
+            setGPIO_sub, enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
