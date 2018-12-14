@@ -85,7 +85,7 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
         MSJ_WRITE_outputDivider(msj_platform_base,i,6);
         MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
-        MSJ_WRITE_sp(msj_platform_base,i,1000);
+        MSJ_WRITE_sp(msj_platform_base,i,0);
     }
     MSJ_WRITE_pwm_mute(msj_platform_base,false);
 
