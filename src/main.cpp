@@ -52,6 +52,7 @@ using namespace std;
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int32_t *h2p_lw_led_addr;
+int16_t *h2p_lw_pio_0_add;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
@@ -143,6 +144,11 @@ int main(int argc, char *argv[]) {
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else
     h2p_lw_led_addr = nullptr;
+#endif
+#ifdef PIO_0_BASE
+    h2p_lw_pio_0_add = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + PIO_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_pio_0_add = nullptr;
 #endif
 #ifdef SWITCHES_BASE
     h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
@@ -314,10 +320,14 @@ int main(int argc, char *argv[]) {
     ros::Rate rate(30);
     bool dir = 1;
     while(ros::ok()){
-        if(dir)
+        if(dir){
             mask<<=1;
-        else
+            *h2p_lw_pio_0_add=0xFF;
+          }
+        else{
             mask>>=1;
+            *h2p_lw_pio_0_add=0x00;
+          }
         *h2p_lw_led_addr = mask;
         rate.sleep();
         if(mask==0x80)
