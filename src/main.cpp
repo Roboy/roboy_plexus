@@ -52,7 +52,7 @@ using namespace std;
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int32_t *h2p_lw_led_addr;
-int16_t *h2p_lw_pio_0_add;
+int32_t *h2p_lw_pio_0_add;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
@@ -310,23 +310,24 @@ int main(int argc, char *argv[]) {
 
     myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
-                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr, h2p_lw_pio_0_add);
     PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 
     signal(SIGINT, SigintHandler);
 
+    *h2p_lw_pio_0_add=0b1;
     uint8_t mask = 0x1;
     ros::Rate rate(30);
     bool dir = 1;
     while(ros::ok()){
         if(dir){
             mask<<=1;
-            *h2p_lw_pio_0_add=0xFF;
+            //*h2p_lw_pio_0_add=0b1;
           }
         else{
             mask>>=1;
-            *h2p_lw_pio_0_add=0x00;
+            //*h2p_lw_pio_0_add=0b0;
           }
         *h2p_lw_led_addr = mask;
         rate.sleep();

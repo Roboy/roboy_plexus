@@ -53,15 +53,39 @@
 #define I2C_0_END 0x5f
 
 /*
+ * Macros for device 'pio_0', class 'altera_avalon_pio'
+ * The macros are prefixed with 'PIO_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define PIO_0_COMPONENT_TYPE altera_avalon_pio
+#define PIO_0_COMPONENT_NAME pio_0
+#define PIO_0_BASE 0x60
+#define PIO_0_SPAN 16
+#define PIO_0_END 0x6f
+#define PIO_0_BIT_CLEARING_EDGE_REGISTER 0
+#define PIO_0_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIO_0_CAPTURE 0
+#define PIO_0_DATA_WIDTH 1
+#define PIO_0_DO_TEST_BENCH_WIRING 0
+#define PIO_0_DRIVEN_SIM_VALUE 0
+#define PIO_0_EDGE_TYPE NONE
+#define PIO_0_FREQ 50000000
+#define PIO_0_HAS_IN 0
+#define PIO_0_HAS_OUT 1
+#define PIO_0_HAS_TRI 0
+#define PIO_0_IRQ_TYPE NONE
+#define PIO_0_RESET_VALUE 0
+
+/*
  * Macros for device 'SWITCHES', class 'altera_avalon_pio'
  * The macros are prefixed with 'SWITCHES_'.
  * The prefix is the slave descriptor.
  */
 #define SWITCHES_COMPONENT_TYPE altera_avalon_pio
 #define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x60
+#define SWITCHES_BASE 0x70
 #define SWITCHES_SPAN 16
-#define SWITCHES_END 0x6f
+#define SWITCHES_END 0x7f
 #define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
 #define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SWITCHES_CAPTURE 0
@@ -83,9 +107,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x70
+#define LED_BASE 0x80
 #define LED_SPAN 16
-#define LED_END 0x7f
+#define LED_END 0x8f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -101,30 +125,6 @@
 #define LED_RESET_VALUE 0
 
 /*
- * Macros for device 'pio_0', class 'altera_avalon_pio'
- * The macros are prefixed with 'PIO_0_'.
- * The prefix is the slave descriptor.
- */
-#define PIO_0_COMPONENT_TYPE altera_avalon_pio
-#define PIO_0_COMPONENT_NAME pio_0
-#define PIO_0_BASE 0x80
-#define PIO_0_SPAN 16
-#define PIO_0_END 0x8f
-#define PIO_0_BIT_CLEARING_EDGE_REGISTER 0
-#define PIO_0_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define PIO_0_CAPTURE 0
-#define PIO_0_DATA_WIDTH 1
-#define PIO_0_DO_TEST_BENCH_WIRING 0
-#define PIO_0_DRIVEN_SIM_VALUE 0
-#define PIO_0_EDGE_TYPE NONE
-#define PIO_0_FREQ 50000000
-#define PIO_0_HAS_IN 0
-#define PIO_0_HAS_OUT 1
-#define PIO_0_HAS_TRI 0
-#define PIO_0_IRQ_TYPE NONE
-#define PIO_0_RESET_VALUE 0
-
-/*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
  * The macros are prefixed with 'SYSID_QSYS_'.
  * The prefix is the slave descriptor.
@@ -135,7 +135,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 3735928559
-#define SYSID_QSYS_TIMESTAMP 1545038576
+#define SYSID_QSYS_TIMESTAMP 1545062472
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -160,9 +160,9 @@
  */
 #define MYOCONTROL_0_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_0_COMPONENT_NAME MYOControl_0
-#define MYOCONTROL_0_BASE 0x80000
+#define MYOCONTROL_0_BASE 0x40000
 #define MYOCONTROL_0_SPAN 262144
-#define MYOCONTROL_0_END 0xbffff
+#define MYOCONTROL_0_END 0x7ffff
 
 /*
  * Macros for device 'MYOControl_1', class 'MYOControl'
@@ -171,9 +171,9 @@
  */
 #define MYOCONTROL_1_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_1_COMPONENT_NAME MYOControl_1
-#define MYOCONTROL_1_BASE 0xc0000
+#define MYOCONTROL_1_BASE 0x80000
 #define MYOCONTROL_1_SPAN 262144
-#define MYOCONTROL_1_END 0xfffff
+#define MYOCONTROL_1_END 0xbffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */

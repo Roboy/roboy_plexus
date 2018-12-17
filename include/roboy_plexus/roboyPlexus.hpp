@@ -106,11 +106,15 @@ static vector<vector<int32_t>> DEFAULT_VECTOR_VECTOR;
  */
 class RoboyPlexus {
 public:
-    RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
+RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
                 vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
                 int32_t *darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
-                int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
+                int32_t *adc_base = nullptr, int32_t *switches_base = nullptr, int32_t *gpio_pin_base = nullptr);
 
+/*RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
+            vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
+            int32_t *darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
+            int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);*/
     ~RoboyPlexus();
 
     string getBodyPart();
@@ -358,7 +362,7 @@ private:
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
             gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;
-    int32_t *darkroom_base, *adc_base, *switches_base;
+    int32_t *darkroom_base, *adc_base, *switches_base, *gpio_pin_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
     bool emergency_stop = false;
     vector<boost::shared_ptr<A1335>> motorAngle, jointAngle; // motor angle of new motor units

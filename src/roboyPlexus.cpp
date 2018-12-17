@@ -2,9 +2,11 @@
 
 RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
                          int32_t *darkroom_base,
-                         vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base) :
+                         vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base, int32_t *gpio_pin_base) :
         myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base), darkroom_ootx_addr(darkroom_ootx_addr),
-        adc_base(adc_base), myoControl(myoControl), switches_base(switches_base) {
+        adc_base(adc_base), myoControl(myoControl), switches_base(switches_base), gpio_pin_base(gpio_pin_base){
+
+    ROS_INFO("Debug: %d", (IORD(gpio_pin_base, 0) & 0x1));
 
     id = IORD(switches_base, 0) & 0x7;
 //    string body_part;
@@ -1004,9 +1006,13 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
 }
 
 void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
-    volatile bool *pin = (bool*) GPIO_PIN_ADDRESS;
-    *pin = msg->data;
-    ROS_INFO("New pint value: [%d]", *pin);
+  //*gpio_pin_base|= msg->data;
+  //ROS_INFO("New pint value: [%d]", *gpio_pin_base);
+  bool *pin;
+  pin = (bool*) (IORD(gpio_pin_base, 0) & 0x1);
+  //volatile bool *pin = (bool*) GPIO_PIN_ADDRESS;
+  *pin = msg->data;
+  ROS_INFO("New pint value: [%d]", *pin);
 }
 
 bool RoboyPlexus::executeActions(vector<string> actions) {
