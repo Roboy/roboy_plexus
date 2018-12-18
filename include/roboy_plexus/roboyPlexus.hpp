@@ -88,8 +88,6 @@
 #define NUM_SENSORS 12
 #define NUMBER_OF_LOADCELLS 8
 
-#define GPIO_PIN_ADDRESS (0x28)
-
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
 
 using namespace std;

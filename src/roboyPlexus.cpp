@@ -1006,12 +1006,6 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
 }
 
 void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
-  //*gpio_pin_base|= msg->data;
-  //ROS_INFO("New pint value: [%d]", *gpio_pin_base);
-  //bool pin;
-  //pin = (bool*) (IORD(gpio_pin_base, 0) & 0x1);
-  //volatile bool *pin = (bool*) GPIO_PIN_ADDRESS;
-  //pin = msg->data;
   *gpio_pin_base = msg->data;
   ROS_INFO("New pint value: [%d]", *gpio_pin_base);
 }
