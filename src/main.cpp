@@ -43,6 +43,7 @@
 #include "socal/hps.h"
 #include "roboy_plexus/hps_0.h"
 #include "roboy_plexus/roboyPlexus.hpp"
+#include "roboy_plexus/joy_CTL.hpp"
 
 using namespace std;
 
@@ -311,10 +312,18 @@ int main(int argc, char *argv[]) {
     myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
                             h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr, h2p_lw_pio_0_add);
+    Joy_CTL Joy_CTL(h2p_lw_pio_0_add);
     PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 
     signal(SIGINT, SigintHandler);
+
+
+    //DEBUG JOY control
+
+
+
+
 
     *h2p_lw_pio_0_add=0b1;
     uint8_t mask = 0x1;

@@ -267,7 +267,6 @@ private:
      */
     void EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg);
 
-
     /**
      * Service return a list of files in the requested folder
      * @param req
