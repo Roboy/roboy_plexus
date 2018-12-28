@@ -3,9 +3,11 @@ Installation
 
 Prerequisites
 -------------
-`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install **SoCEDS 17.1** standard edition.
+`Download <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_  ROS
 
-`Download <http://dl.altera.com/?edition=lite>`_ and install **Quartus 17.1** lite edition.
+`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install **SoCEDS 17 (or greater)** standard edition. (! must be installed with sudo)
+
+`Download <http://dl.altera.com/?edition=lite>`_ and install **Quartus 17 (or greater)** lite edition. (Quartus is only needed if you want to change the FPGA core)
 
 Get The GNU C/C++ compilers for armhf architecture
 ::
@@ -22,17 +24,21 @@ The package also depends on the following packages which need to be cloned into 
 
 FPGA
 ----
-If you have a fresh de10-nano soc fpga, `download <http://www.python.org/>`_ the sd card image ``DE10_nano_lxce_4.1.33-ltsi-altera.img``.
+you can download the sd-card image with Ubuntu 16.04, xfce, kernel linux 4.9.78-ltsi from our servers:
+::
+    wget -nv http://bot.roboy.org:8081/~roboy/DE10_nano_lxce_4.9.78-ltsi-altera.md5sum
+    wget -nv http://bot.roboy.org:8081/~roboy/DE10_nano_lxce_4.9.78-ltsi-altera.img
 Plug the sdcard into you reader. In a terminal, find out the name of your sd card device:
 ::
     sudo fdisk -l
-
-Then flash the image onto the sd card using the following command, replacing ``/dev/sdX`` with your sdcard device name:
+flash the image to a min 8GB sd-card: (sdX has to be replaced with the correct device)
 ::
-    sudo dd if=DE10_nano_lxce_4.1.33-ltsi-altera.img of=/dev/sdX bs=1M status=progress
+    sudo dd if=DE10_nano_lxce_4.9.78-ltsi-altera.img of=/dev/sdX bs=1M status=progress
 .. warning::
     The dd command overwrites any device you give it with 'of'. MAKE SURE YOU USE THE CORRECT DEVICE.
-
+    
+FPGA (flashing the old way --obsoleted)
+----
 The flashing procedure takes up to 10 minutes. While your waiting, you can flash the fpga. We will flash it permanently,
 so make sure the dip switches are set to On-Off-On-On-Off-Off, ie configured to flash the fpga on startup from eeprom via jic
 ( read the de10 nano user guide if your don't know what that means ).
@@ -55,3 +61,5 @@ Before building the package make sure you are in an embedded command shell, then
 ::
     ~/intelFPGA/17.1/embedded/embedded_command_shell.sh
     catkin_make
+    
+
