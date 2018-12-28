@@ -56,8 +56,9 @@ Run roboy_plexus on the fpga:
     ./roboy_plexus
       
 if you haven't done this befor add execute the following commands on your computer:
-echo "export ROS_IP=$(hostname -I|head -n1 | awk '{print $1;'})" >> ~/.bashrc
-echo "export ROS_MASTER_URI=http://$ROS_IP:11311" >> ~/.bashrc
+::
+    echo "export ROS_IP=$(hostname -I|head -n1 | awk '{print $1;'})" >> ~/.bashrc
+    echo "export ROS_MASTER_URI=http://$ROS_IP:11311" >> ~/.bashrc
 
 troubleshooting
 ===============
