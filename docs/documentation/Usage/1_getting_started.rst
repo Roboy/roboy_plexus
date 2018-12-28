@@ -32,21 +32,23 @@ Source the ~/.bashrc and make sure ROS_IP and ROS_MASTER_URI are set correctly:
     echo $ROS_IP
     echo $ROS_MASTER_URI
 
-COPY plexus to FPGA
+copy data to FPGA  
 ===============
+copy plexus to FPGA
+----
 Copy the roboy_plexus binary to the fpga:
 ::
     scp <YOUR CATKIN WORKSPACE>/devel/lib/roboy_plexus/roboy_plexus root@10.42.0.1:~
 
-COPY HDL to FPGA 
-===============
+copy HDL to FPGA 
+----
 (only needed if the rbf file was changed)
 
 FireUp the system 
 ===============
 Start the roscore on your host pc.
-----
-::
+
+::    
     roscore
 
 Run roboy_plexus on the fpga:
@@ -57,6 +59,8 @@ if you haven't done this befor add execute the following commands on your comput
 echo "export ROS_IP=$(hostname -I|head -n1 | awk '{print $1;'})" >> ~/.bashrc
 echo "export ROS_MASTER_URI=http://$ROS_IP:11311" >> ~/.bashrc
 
+troubleshooting
+===============
 troubleshooting plexus on PC
 ----
 echo $ROS_MASTER_URI shows the wrong IP even bashrc was eddited 
