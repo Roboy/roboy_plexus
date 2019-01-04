@@ -9,7 +9,7 @@ class Joy_CTL
   public:
     Joy_CTL(int32_t *throttl_GPIO=nullptr);
 
-    ~Joy_CTL();
+    //~Joy_CTL();
 
   private:
     void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
