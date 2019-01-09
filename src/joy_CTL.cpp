@@ -9,6 +9,6 @@ Joy_CTL::Joy_CTL(int32_t *throttl_GPIO):
 }
 
 void Joy_CTL::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
-  ROS_INFO("show it to me baby: %d", joy->buttons[0]);
+  ROS_INFO("show it to me baby: %d", joy->buttons[0]); //test
   ROS_INFO("TODO:");
 }
