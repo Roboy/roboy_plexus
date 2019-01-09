@@ -325,7 +325,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    *h2p_lw_pio_0_add=0b1;
+    *h2p_lw_pio_0_add=0b0;
     uint8_t mask = 0x1;
     ros::Rate rate(30);
     bool dir = 1;
