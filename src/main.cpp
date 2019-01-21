@@ -43,7 +43,7 @@
 #include "socal/hps.h"
 #include "roboy_plexus/hps_0.h"
 #include "roboy_plexus/roboyPlexus.hpp"
-#include "roboy_plexus/joy_CTL.hpp"
+//#include "roboy_plexus/joy_CTL.hpp"
 
 using namespace std;
 
@@ -53,7 +53,7 @@ using namespace std;
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int32_t *h2p_lw_led_addr;
-int32_t *h2p_lw_pio_0_add;
+int32_t *h2p_lw_bike_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
@@ -146,10 +146,10 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_led_addr = nullptr;
 #endif
-#ifdef PIO_0_BASE
-    h2p_lw_pio_0_add = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + PIO_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#ifdef RIKSHAWCONTROL_0_BASE
+    h2p_lw_bike_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + RIKSHAWCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else
-    h2p_lw_pio_0_add = nullptr;
+    h2p_lw_bike_addr = nullptr;
 #endif
 #ifdef SWITCHES_BASE
     h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
@@ -311,7 +311,7 @@ int main(int argc, char *argv[]) {
 
     myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
-                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr, h2p_lw_bike_addr);
     PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 

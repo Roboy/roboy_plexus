@@ -1,21 +1,32 @@
 #pragma once
 
+#include <vector>
+#include <iostream>
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 
-class Joy_CTL
+#ifndef IORD
+  #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
+#endif
+#ifndef IOWR
+  #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
+#endif
+
+class rickshaw_CTL
 {
   public:
-    Joy_CTL(int32_t *throttl_GPIO=nullptr);
+    rickshaw_CTL(int32_t *base_addr = nullptr);
 
-    //~Joy_CTL();
+    int32_t readThrottle(void);
+    int32_t readAngleSensor(void);
+    void writeThrottle(int32_t throttl_GPIO);
 
-  private:
-    void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
+    int32_t *rickshaw_base;
 
-    ros::NodeHandle nh_;
-    ros::Subscriber joy_sub_;
+  //private:
+    //void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
 
-    int32_t *throttl_GPIO;
+    //ros::NodeHandle nh_;
+    //ros::Subscriber joy_sub_;
 };

@@ -1,12 +1,13 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 
+
 RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
                          int32_t *darkroom_base,
-                         vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base) :
+                         vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base, int32_t *h2p_lw_bike_addr) :
         myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base), darkroom_ootx_addr(darkroom_ootx_addr),
         adc_base(adc_base), myoControl(myoControl), switches_base(switches_base){
 
-
+    bike_addr = h2p_lw_bike_addr;
     id = IORD(switches_base, 0) & 0x7;
 //    string body_part;
     switch (id) {
@@ -260,6 +261,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
                                              &RoboyPlexus::StopRecordTrajectoryCB, this);
     setGPIO_sub = nh->subscribe("/roboy/control/GPIO", 1, &RoboyPlexus::SetGPIOCB, this);
+    //AngleStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
     enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
     predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB, this);
@@ -1004,9 +1006,14 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
     std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
 }
 
+//void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
+void RoboyPlexus::motorStatusPublisher() {
+//}
 void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
-  *gpio_pin_base = msg->data;
-  ROS_INFO("New pint value: [%d]", *gpio_pin_base);
+  rickshaw_CTL rickshaw_CTL(bike_addr);
+  rickshaw_CTL.writeThrottle(0xffff & msg->data);
+  ROS_INFO("New pint value: [%d]", (rickshaw_CTL.readThrottle()&0x0001));
+  ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
 }
 
 bool RoboyPlexus::executeActions(vector<string> actions) {

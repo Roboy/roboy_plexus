@@ -83,6 +83,7 @@
 #include "roboy_plexus/armControl.hpp"
 #include <sys/stat.h>
 #include <common_utilities/CommonDefinitions.h>
+#include "roboy_plexus/joy_CTL.hpp"
 
 
 #define NUM_SENSORS 12
@@ -107,7 +108,9 @@ public:
 RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
                 vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
                 int32_t *darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
-                int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
+                int32_t *adc_base = nullptr, int32_t *switches_base = nullptr,int32_t *h2p_lw_bike_addr = nullptr);
+
+            int32_t *bike_addr; 
 
 /*RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
             vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
