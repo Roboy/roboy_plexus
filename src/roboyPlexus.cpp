@@ -1007,7 +1007,7 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
 }
 
 //void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
-void RoboyPlexus::motorStatusPublisher() {
+//void RoboyPlexus::motorStatusPublisher() {
 //}
 void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
   rickshaw_CTL rickshaw_CTL(bike_addr);
