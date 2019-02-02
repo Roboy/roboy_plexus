@@ -409,7 +409,7 @@ void RoboyPlexus::darkRoomPublisher() {
     while (keep_publishing) {
         uint active_sensors = 0;
         roboy_middleware_msgs::DarkRoom msg;
-        msg.objectID = ethaddr;
+        msg.object_id = ethaddr;
         for (uint i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, i);
             high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -480,7 +480,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
                     roboy_middleware_msgs::DarkRoomOOTX msg;
                     msg.lighthouse = lighthouse;
                     msg.fw_version = ootx.frame.fw_version;
-                    msg.ID = ootx.frame.ID;
+                    msg.id = ootx.frame.ID;
                     half fcal_0_phase, fcal_1_phase, fcal_0_tilt, fcal_1_tilt;
                     fcal_0_phase.data_ = ootx.frame.fcal_0_phase;
                     fcal_1_phase.data_ = ootx.frame.fcal_1_phase;
@@ -555,7 +555,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
         }
 
         roboy_middleware_msgs::DarkRoomStatus status_msg;
-        status_msg.objectID = ethaddr;
+        status_msg.object_id = ethaddr;
         uint active_sensors = 0;
         for (uint8_t i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, (1 << 8 | i));
@@ -604,7 +604,7 @@ void RoboyPlexus::motorStatusPublisher() {
         msg.id = id;
         msg.power_sense = myoControl->getPowerSense();
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-            msg.pwmRef.push_back(myoControl->getPWM(motor));
+            msg.pwm_ref.push_back(myoControl->getPWM(motor));
             int16_t current = myoControl->getCurrent(motor);
             if (current >= 0) {
                 msg.position.push_back(myoControl->getPosition(motor));
@@ -656,16 +656,16 @@ void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::Cons
         for (auto motor:msg->motors) {
             switch (control_mode[motor]) {
                 case POSITION:
-                    myoControl->setPosition(motor, msg->setPoints[i]);
+                    myoControl->setPosition(motor, msg->set_points[i]);
                     break;
                 case VELOCITY:
-                    myoControl->setVelocity(motor, msg->setPoints[i]);
+                    myoControl->setVelocity(motor, msg->set_points[i]);
                     break;
                 case DISPLACEMENT:
-                    myoControl->setDisplacement(motor, msg->setPoints[i]);
+                    myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
                 case FORCE:
-                    myoControl->setDisplacement(motor, msg->setPoints[i]);
+                    myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
             }
             i++;
@@ -743,19 +743,19 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
             str << "\t" << (int) motor << ": VELOCITY";
         if (req.config.control_mode[i] == DISPLACEMENT)
             str << "\t" << (int) motor << ": DISPLACEMENT";
-        params.outputPosMax = req.config.outputPosMax[i];
-        params.outputNegMax = req.config.outputNegMax[i];
-        params.spPosMax = req.config.spPosMax[i];
-        params.spNegMax = req.config.spNegMax[i];
-        params.Kp = req.config.Kp[i];
-        params.Ki = req.config.Ki[i];
-        params.Kd = req.config.Kd[i];
-        params.forwardGain = req.config.forwardGain[i];
-        params.deadBand = req.config.deadBand[i];
-        params.IntegralPosMax = req.config.IntegralPosMax[i];
-        params.IntegralNegMax = req.config.IntegralNegMax[i];
+        params.outputPosMax = req.config.output_pos_max[i];
+        params.outputNegMax = req.config.output_neg_max[i];
+        params.spPosMax = req.config.sp_pos_max[i];
+        params.spNegMax = req.config.sp_neg_max[i];
+        params.Kp = req.config.kp[i];
+        params.Ki = req.config.ki[i];
+        params.Kd = req.config.kd[i];
+        params.forwardGain = req.config.forward_gain[i];
+        params.deadBand = req.config.dead_band[i];
+        params.IntegralPosMax = req.config.integral_pos_max[i];
+        params.IntegralNegMax = req.config.integral_neg_max[i];
         params.control_mode = req.config.control_mode[i];
-        params.outputDivider = req.config.outputDivider[i];
+        params.outputDivider = req.config.output_divider[i];
         myoControl->changeControlParameters(motor, params);
         res.mode.push_back(params.control_mode);
         myoControl->changeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
@@ -771,31 +771,31 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
 bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
                                      roboy_middleware_msgs::ControlMode::Response &res) {
     if (!emergency_stop) {
-        if(req.motorId.empty()) {
+        if(req.motor_id.empty()) {
             switch (req.control_mode) {
                 case POSITION:
                     ROS_INFO("switch to POSITION control");
                     for (auto &mode:control_mode)
                         mode.second = POSITION;
-                    myoControl->allToPosition(req.setPoint);
+                    myoControl->allToPosition(req.set_point);
                     break;
                 case VELOCITY:
                     ROS_INFO("switch to VELOCITY control");
                     for (auto &mode:control_mode)
                         mode.second = VELOCITY;
-                    myoControl->allToVelocity(req.setPoint);
+                    myoControl->allToVelocity(req.set_point);
                     break;
                 case DISPLACEMENT:
                     ROS_INFO("switch to DISPLACEMENT control");
                     for (auto &mode:control_mode)
                         mode.second = DISPLACEMENT;
-                    myoControl->allToDisplacement(req.setPoint);
+                    myoControl->allToDisplacement(req.set_point);
                     break;
                 default:
                     return false;
             }
         }else{
-            for(int motor:req.motorId){
+            for(int motor:req.motor_id){
                 myoControl->changeControl(motor,req.control_mode);
                 control_mode[motor] = req.control_mode;
             }
@@ -812,7 +812,7 @@ bool RoboyPlexus::MotorCalibrationService(roboy_middleware_msgs::MotorCalibratio
     if (!emergency_stop) {
         ROS_INFO("serving motor calibration service for motor %d", req.motor);
         myoControl->estimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
-                                             req.timeout, req.numberOfDataPoints, req.displacement_min,
+                                             req.timeout, req.number_of_data_points, req.displacement_min,
                                              req.displacement_max, res.load, res.displacement);
         cout << "coefficients:\t";
         for (uint i = 0; i < req.degree; i++) {
@@ -830,7 +830,7 @@ bool RoboyPlexus::MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCali
     if (!emergency_stop) {
         ROS_INFO("serving myobrick calibration service for motor %d", req.motor);
         myoControl->estimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
-                                             req.timeout, req.numberOfDataPoints, req.min_degree,
+                                             req.timeout, req.number_of_data_points, req.min_degree,
                                              req.max_degree, res.motor_angle, res.motor_encoder);
         cout << "coefficients:\t";
         for (uint i = 0; i < req.degree; i++) {
@@ -889,7 +889,7 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
 bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
                                      roboy_middleware_msgs::SystemCheck::Response &res) {
     vector<uint8_t> motorIDs;
-    if (req.motorIDs.empty()) {
+    if (req.motorids.empty()) {
         motorIDs.resize(NUMBER_OF_MOTORS_PER_FPGA);
         int i = 0;
         for (auto &m:motorIDs) {
@@ -897,7 +897,7 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
             i++;
         }
     } else {
-        motorIDs = req.motorIDs;
+        motorIDs = req.motorids;
     }
     bool system_check_successful = true;
     for (auto &m:motorIDs) {
@@ -984,7 +984,7 @@ void RoboyPlexus::StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordT
     ROS_INFO_STREAM("Recording a trajectory");
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
     string name = body_part + "_" + msg->name;
-    vector<int> idList(begin(msg->idList), end(msg->idList));
+    vector<int> idList(begin(msg->id_list), end(msg->id_list));
     map<int, vector<float>> trajectories;
 
     myoControl->startRecordTrajectories(samplingTime, trajectories, idList, name);

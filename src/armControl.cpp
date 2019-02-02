@@ -181,7 +181,7 @@ void ArmControl::handCommandCB(const roboy_middleware_msgs::HandCommand::ConstPt
         stringstream str;
         str << "hand " << (id ? "right" : "left") << " command:";
         if (msg->motorid.empty()) {
-            for (auto s:msg->setPoint) {
+            for (auto s:msg->set_point) {
                 if (s < 20)
                     setPoint.push_back(20);
                 if (s > 160)
@@ -194,27 +194,27 @@ void ArmControl::handCommandCB(const roboy_middleware_msgs::HandCommand::ConstPt
             }
             ROS_INFO("%s", (command(setPoint) ? "success" : "failed"));
         } else {
-            if (msg->motorid.size() == msg->setPoint.size()) {
+            if (msg->motorid.size() == msg->set_point.size()) {
                 int i = 0;
                 for (auto m:msg->motorid) {
                     switch(m%5){
                         case 0:
-                            MYO_WRITE_motor0(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor0(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 1:
-                            MYO_WRITE_motor1(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor1(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 2:
-                            MYO_WRITE_motor2(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor2(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 3:
-                            MYO_WRITE_motor3(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor3(myo_base,m/5,msg->set_point[i]);
                             break;
                         case 4:
-                            MYO_WRITE_motor4(myo_base,m/5,msg->setPoint[i]);
+                            MYO_WRITE_motor4(myo_base,m/5,msg->set_point[i]);
                             break;
                     }
-                    str << "motor " << (int) m << ": " << (int) msg->setPoint[i] << "\t";
+                    str << "motor " << (int) m << ": " << (int) msg->set_point[i] << "\t";
                     i++;
                 }
                 ROS_INFO_STREAM(str.str());
@@ -270,21 +270,21 @@ bool ArmControl::setHandModeService(roboy_control_msgs::SetModeRequest &req,
 bool ArmControl::JointControllerService(roboy_middleware_msgs::JointControllerRequest &req,
                                          roboy_middleware_msgs::JointControllerResponse &res) {
     MYO_WRITE_elbow_joint_control(myo_base,req.elbow_control_enable);
-    MYO_WRITE_elbow_Kp_joint_angle(myo_base, req.Kp_elbow_joint);
-    MYO_WRITE_elbow_Kd_joint_angle(myo_base, req.Kd_elbow_joint);
-    MYO_WRITE_Kp(myo_base, elbow_agonist, req.Kp_elbow_agonist);
-    MYO_WRITE_Kp(myo_base, elbow_antagonist, req.Kp_elbow_antagonist);
-    MYO_WRITE_Kd(myo_base, elbow_agonist, req.Kd_elbow_agonist);
-    MYO_WRITE_Kd(myo_base, elbow_antagonist, req.Kd_elbow_agonist);
+    MYO_WRITE_elbow_Kp_joint_angle(myo_base, req.kp_elbow_joint);
+    MYO_WRITE_elbow_Kd_joint_angle(myo_base, req.kd_elbow_joint);
+    MYO_WRITE_Kp(myo_base, elbow_agonist, req.kp_elbow_agonist);
+    MYO_WRITE_Kp(myo_base, elbow_antagonist, req.kp_elbow_antagonist);
+    MYO_WRITE_Kd(myo_base, elbow_agonist, req.kd_elbow_agonist);
+    MYO_WRITE_Kd(myo_base, elbow_antagonist, req.kd_elbow_agonist);
     MYO_WRITE_elbow_joint_pretension(myo_base, req.elbow_pretension);
     MYO_WRITE_elbow_joint_deadband(myo_base, req.elbow_deadband);
     MYO_WRITE_wrist_joint_control(myo_base,req.wrist_control_enable);
-    MYO_WRITE_wrist_Kp_joint_angle(myo_base, req.Kp_wrist_joint);
-    MYO_WRITE_wrist_Kd_joint_angle(myo_base, req.Kd_wrist_joint);
-    MYO_WRITE_Kp(myo_base, wrist_agonist, req.Kp_wrist_agonist);
-    MYO_WRITE_Kp(myo_base, wrist_antagonist, req.Kp_wrist_antagonist);
-    MYO_WRITE_Kd(myo_base, wrist_agonist, req.Kd_wrist_agonist);
-    MYO_WRITE_Kd(myo_base, wrist_antagonist, req.Kd_wrist_agonist);
+    MYO_WRITE_wrist_Kp_joint_angle(myo_base, req.kp_wrist_joint);
+    MYO_WRITE_wrist_Kd_joint_angle(myo_base, req.kd_wrist_joint);
+    MYO_WRITE_Kp(myo_base, wrist_agonist, req.kp_wrist_agonist);
+    MYO_WRITE_Kp(myo_base, wrist_antagonist, req.kp_wrist_antagonist);
+    MYO_WRITE_Kd(myo_base, wrist_agonist, req.kd_wrist_agonist);
+    MYO_WRITE_Kd(myo_base, wrist_antagonist, req.kd_wrist_agonist);
     MYO_WRITE_wrist_joint_pretension(myo_base, req.wrist_pretension);
     MYO_WRITE_wrist_joint_deadband(myo_base, req.wrist_deadband);
 }

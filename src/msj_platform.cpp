@@ -112,7 +112,7 @@ void MSJPlatform::publishStatus(){
             int32_t angle = MSJ_READ_sensor_angle_absolute(msj_platform_base,i);
             int32_t vel = MSJ_READ_sensor_angle_velocity(msj_platform_base,i);
 
-            msg.pwmRef.push_back(pwm);
+            msg.pwm_ref.push_back(pwm);
             msg.position.push_back(angle);
             msg.velocity.push_back(vel);
             msg.current.push_back(0);
@@ -167,7 +167,7 @@ void MSJPlatform::MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr
         return;
     for(int i=0;i<msg->motors.size();i++) {
 //        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
-        MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->setPoints[i]);
+        MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->set_points[i]);
     }
 }
 
