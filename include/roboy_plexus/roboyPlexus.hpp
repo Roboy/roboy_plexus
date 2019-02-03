@@ -110,7 +110,7 @@ RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
                 int32_t *darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr, int32_t *switches_base = nullptr,int32_t *h2p_lw_bike_addr = nullptr);
 
-            int32_t *bike_addr; 
+            int32_t *bike_addr;
 
 /*RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
             vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
@@ -150,6 +150,10 @@ private:
      * Publishes motor angles
      */
     void motorAnglePublisher();
+    /**
+     * Publishes Rickshaw angles
+     */
+    void StearingAnglePublisher();
 
     /**
      * Publishes 3d magnetic information about shoulder joint

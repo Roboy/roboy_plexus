@@ -14,10 +14,14 @@ rickshaw_CTL::rickshaw_CTL(int32_t *base_addr)
 }*/
 
 int32_t rickshaw_CTL::readThrottle(void) {
-    return (IORD(rickshaw_base, (uint32_t)(0x00<<8|0)));
+    return (IORD(rickshaw_base, (uint32_t)(0x01<<8|0)));
 }
-int32_t rickshaw_CTL::readAngleSensor(void) {
-    return (IORD(rickshaw_base, (uint32_t)(0x01<<8)));
+int32_t rickshaw_CTL::readAngleSensor_raw(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x00<<8|0)));
+}
+double rickshaw_CTL::readAngleSensor(void) {
+    double angle=(((double)readAngleSensor_raw())/4096.0)*360.0;
+    return angle;
 }
 
 void rickshaw_CTL::writeThrottle(int32_t throttl_GPIO) {

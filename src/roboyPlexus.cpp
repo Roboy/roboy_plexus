@@ -112,6 +112,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         case SHOULDER_LEFT: {
+          StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
+                                                                                     1);
+           StearingAngle_pub = boost::shared_ptr<std::thread>(
+                   new std::thread(&RoboyPlexus::RickshawAnglePublisher, this));
+           StearingAngle_pub->detach();
 //            {
 //                motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                           1);
@@ -261,6 +266,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
                                              &RoboyPlexus::StopRecordTrajectoryCB, this);
     setGPIO_sub = nh->subscribe("/roboy/control/GPIO", 1, &RoboyPlexus::SetGPIOCB, this);
+
     //AngleStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
     enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
@@ -600,6 +606,25 @@ void RoboyPlexus::motorAnglePublisher() {
         rate.sleep();
     }
 }
+void RoboyPlexus::StearingAnglePublisher() {
+    ros::Rate rate(60);
+    while (keep_publishing && ros::ok()) {
+        roboy_middleware_msgs::MotorAngle msg;
+        msg.id = id;
+        msg.angles.push_back((rickshaw_CTL->readAngleSensor_raw(motor) / 4096.0 * 360.0));
+        msg.raw_angles.push_back(rickshaw_CTL->readAngleSensor_raw(motor));
+        msg.raw_angles_prev.push_back(0);
+        msg.offset_angles.push_back(0);
+        msg.relative_angles.push_back(0);
+        msg.rev_counter.push_back(0);
+            
+
+        StearingAngle_pub.publish(msg);
+        rate.sleep();
+    }
+}
+
+
 
 void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(200);
