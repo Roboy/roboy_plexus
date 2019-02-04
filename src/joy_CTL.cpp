@@ -20,7 +20,7 @@ int32_t rickshaw_CTL::readAngleSensor_raw(void) {
     return(IORD(rickshaw_base, (uint32_t)(0x00<<8|0)));
 }
 double rickshaw_CTL::readAngleSensor(void) {
-    double angle=((double)readAngleSensor_raw())/4096.0)*360.0;
+    double angle=double(readAngleSensor_raw()) / 4096.0 * 360.0;
     return angle;
 }
 

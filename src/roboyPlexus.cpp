@@ -114,9 +114,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         case SHOULDER_LEFT: {
           StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                      1);
-           StearingAngle_pub = boost::shared_ptr<std::thread>(
-                   new std::thread(&RoboyPlexus::RickshawAnglePublisher, this));
-           StearingAngle_pub->detach();
+          stearingAngleThread = boost::shared_ptr<std::thread>(
+                   new std::thread(&RoboyPlexus::StearingAnglePublisher, this));
+           stearingAngleThread->detach();
 //            {
 //                motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
 //                                                                                           1);
@@ -607,17 +607,18 @@ void RoboyPlexus::motorAnglePublisher() {
     }
 }
 void RoboyPlexus::StearingAnglePublisher() {
+    rickshaw_CTL rickshaw_CTL(bike_addr);
     ros::Rate rate(60);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorAngle msg;
         msg.id = id;
-        msg.angles.push_back((rickshaw_CTL->readAngleSensor_raw(motor) / 4096.0 * 360.0));
-        msg.raw_angles.push_back(rickshaw_CTL->readAngleSensor_raw(motor));
+        msg.angles.push_back((rickshaw_CTL.readAngleSensor_raw() / 4096.0 * 360.0));
+        msg.raw_angles.push_back(rickshaw_CTL.readAngleSensor_raw());
         msg.raw_angles_prev.push_back(0);
         msg.offset_angles.push_back(0);
         msg.relative_angles.push_back(0);
         msg.rev_counter.push_back(0);
-            
+
 
         StearingAngle_pub.publish(msg);
         rate.sleep();

@@ -349,7 +349,7 @@ private:
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             setGPIO_sub, enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
-            motorAngle_pub, magneticSensor_pub;
+            motorAngle_pub, magneticSensor_pub, StearingAngle_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
@@ -364,7 +364,7 @@ private:
     boost::shared_ptr<MyoControl> myoControl;
     ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
+            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread, stearingAngleThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base, *gpio_pin_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;

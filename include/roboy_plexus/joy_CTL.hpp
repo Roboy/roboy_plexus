@@ -1,9 +1,9 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
+//#include <iostream>
 #include <ros/ros.h>
-#include <geometry_msgs/Twist.h>
+//#include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 
 #ifndef IORD
@@ -19,7 +19,8 @@ class rickshaw_CTL
     rickshaw_CTL(int32_t *base_addr = nullptr);
 
     int32_t readThrottle(void);
-    int32_t readAngleSensor(void);
+    double readAngleSensor(void);
+    int32_t readAngleSensor_raw(void);
     void writeThrottle(int32_t throttl_GPIO);
 
     int32_t *rickshaw_base;
