@@ -148,27 +148,21 @@ void MSJPlatform::publishStatus(){
 }
 
 void MSJPlatform::publishMagneticSensors() {
-    ros::Rate rate(60);
+    ros::Rate rate(200);
     while (ros::ok()) {
         roboy_middleware_msgs::MagneticSensor msg;
-
         float fx,fy,fz;
         for(int i=0;i<tlv.size();i++){
-            ros::Time start_time = ros::Time::now();
-            bool success = false;
-            do{
-                success = tlv[i]->read(fx,fy,fz);
-                if(success) {
-                    msg.sensor_id.push_back(i);
-                    msg.x.push_back(fx);
-                    msg.y.push_back(fy);
-                    msg.z.push_back(fz);
-//                    ROS_INFO("sensor %d %.6f\t%.6f\t%.6f", i, fx, fy, fz);
-                }
-            }while(!success && (ros::Time::now()-start_time).toSec()<0.1);
+            bool success = tlv[i]->read(fx,fy,fz);
+            if(success) {
+                ROS_WARN_THROTTLE(5,"oh oh, magnetic sensor values invalid");
+            }
+            msg.sensor_id.push_back(i);
+            msg.x.push_back(fx);
+            msg.y.push_back(fy);
+            msg.z.push_back(fz);
         }
-        if(msg.sensor_id.size()==tlv.size())
-            magnetic_sensor.publish(msg);
+        magnetic_sensor.publish(msg);
         rate.sleep();
     }
 }

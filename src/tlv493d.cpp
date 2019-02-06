@@ -9,32 +9,35 @@ TLV493D::TLV493D(int32_t *i2c_base):i2c_base(i2c_base){
     }else{
         ROS_ERROR("sensor does not respond on address: %x", 0x5e);
     }
+    reset();
+}
 
+void TLV493D::reset(){
     vector<uint8_t> regdata;
-    ROS_INFO("before initialization");
-    readAllRegisters(0x5e,regdata,true);
+    readAllRegisters(0x5e,regdata);
 
     // Begin config
     // Static initial config for now
     uint32_t cfgdata = 0;
-    cfgdata |=  ((((0b010<<5)|(regdata[9]&0b11111))<<0)|(regdata[8]<<8)|(((0<<5)|((regdata[7]&0b00011000)|0b010))<<16));  // Last 3 bits: INT/FAST/LP
-    ROS_DEBUG("config 0\t: " BYTE_TO_BINARY_PATTERN" \t%x\n",BYTE_TO_BINARY(cfgdata&0xff), cfgdata&0xff);
-    ROS_DEBUG("config 1\t: " BYTE_TO_BINARY_PATTERN" \t%x\n",BYTE_TO_BINARY(((cfgdata>>8)&0xff)), (cfgdata>>8)&0xff);
-    ROS_DEBUG("config 2\t: " BYTE_TO_BINARY_PATTERN" \t%x\n",BYTE_TO_BINARY(((cfgdata>>16)&0xff)), (cfgdata>>16)&0xff);
-    ROS_DEBUG("config 3\t: " BYTE_TO_BINARY_PATTERN" \t%x\n",BYTE_TO_BINARY(((cfgdata>>24)&0xff)), (cfgdata>>24)&0xff);
-
-//    // Write config
-    ROS_DEBUG("Writing config now ...");
+    cfgdata |= (0b011|(regdata[7]&0b11000))<<8;
+    cfgdata |= (regdata[8]<<16);
+    cfgdata |= (0b01000000|(0b11111&regdata[9]))<<24;
+    if(!checkParity(cfgdata))
+        cfgdata |= (0b10000000<<8);
     i2c->write(0x5e, cfgdata, 4);
-
-    ROS_INFO("Reading config now ...");
-    regdata.clear();
-    readAllRegisters(0x5e,regdata,true);
+    ROS_WARN("resetting sensor");
 }
 
 TLV493D::~TLV493D() {
     // deactivate all sensors
     IOWR(i2c_base, i2c->GPIO_CONTROL, 0);
+}
+
+bool TLV493D::checkParity(uint32_t v){
+    v ^= v >> 1;
+    v ^= v >> 2;
+    v = (v & 0x11111111U) * 0x11111111U;
+    return (v >> 28) & 1;
 }
 
 float TLV493D::convertToMilliTesla(uint8_t MSB, uint8_t LSB) {
@@ -65,15 +68,12 @@ void TLV493D::readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool pri
 
 bool TLV493D::read(float &fx, float &fy, float &fz){
     vector<uint8_t> data;
-    i2c->read_continuous(0x5e,6, data);
+    i2c->read_continuous(0x5e,7, data);
     if((data[3]&0x3)!=0)
         return false;
 
     fx = convertToMilliTesla(data[0], (uint8_t)(data[4]>>4));
     fy = convertToMilliTesla(data[1], (uint8_t)(data[4]&0xF));
     fz = convertToMilliTesla(data[2], (uint8_t)(data[5]&0xF));
-//    fx = (uint16_t)(data[0]<<8|(uint8_t)(data[4]>>4));//convertToMilliTesla(data[0], (uint8_t)(data[4]>>4));
-//    fy = (uint16_t)(data[1]<<8|(uint8_t)(data[4]&0xF));
-//    fz = (uint16_t)(data[2]<<8|(uint8_t)(data[5]&0xF));
     return true;
 }

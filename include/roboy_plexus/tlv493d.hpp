@@ -60,12 +60,18 @@ public:
     TLV493D(int32_t *i2c_base);
     ~TLV493D();
     bool initTLV(uint8_t &deviceaddress, int devicepin);
+    void reset();
     float convertToMilliTesla(uint8_t MSB, uint8_t LSB) ;
     void readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool print=true);
     bool read(float &fx, float &fy, float &fz);
 private:
+    /// checks the parity of 32 bit val
+    /// \param val
+    /// \return true if odd, false if even
+    bool checkParity(uint32_t val);
     vector<uint8_t> deviceAddress;
     uint8_t gpioreg = 0;
+    uint8_t frameCounter = 0;
 public:
     boost::shared_ptr<I2C> i2c;
     int32_t *i2c_base;
