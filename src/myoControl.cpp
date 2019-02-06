@@ -404,14 +404,14 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 //            params->outputNegMax = -4000;
             params->spPosMax = 10000000;
             params->spNegMax = -10000000;
-            params->Kp = 300;
+            params->Kp = 1;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
             params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = -100;
-            params->outputDivider = 100;
+            params->outputDivider = 5;
             break;
         case VELOCITY:
             params->spPosMax = 100000;
@@ -423,7 +423,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = -100;
-            params->outputDivider = 1;
+            params->outputDivider = 0;
             break;
         case DISPLACEMENT:
             params->spPosMax = 200;
@@ -435,7 +435,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->deadBand = 1;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = 0;
-            params->outputDivider = 1;
+            params->outputDivider = 0;
             break;
         default:
             ROS_ERROR("unknown control mode");

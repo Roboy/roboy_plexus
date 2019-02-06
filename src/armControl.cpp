@@ -149,6 +149,7 @@ void ArmControl::fingerCommandCB(const roboy_middleware_msgs::FingerCommand::Con
 
 bool ArmControl::setHandModeService(roboy_control_msgs::SetModeRequest &req,
                                      roboy_control_msgs::SetModeResponse &res) {
+
     if (req.id != id) {
         return 0;
     }
@@ -167,26 +168,12 @@ bool ArmControl::setHandModeService(roboy_control_msgs::SetModeRequest &req,
 
 bool ArmControl::JointControllerService(roboy_middleware_msgs::JointControllerRequest &req,
                                          roboy_middleware_msgs::JointControllerResponse &res) {
-    MYO_WRITE_elbow_joint_control(myo_base,req.elbow_control_enable);
-    MYO_WRITE_elbow_Kp_joint_angle(myo_base, req.kp_elbow_joint);
-    MYO_WRITE_elbow_Kd_joint_angle(myo_base, req.kd_elbow_joint);
-    MYO_WRITE_Kp(myo_base, elbow_agonist, req.kp_elbow_agonist);
-    MYO_WRITE_Kp(myo_base, elbow_antagonist, req.kp_elbow_antagonist);
-    MYO_WRITE_Kd(myo_base, elbow_agonist, req.kd_elbow_agonist);
-    MYO_WRITE_Kd(myo_base, elbow_antagonist, req.kd_elbow_agonist);
-    MYO_WRITE_elbow_joint_pretension(myo_base, req.elbow_pretension);
-    MYO_WRITE_elbow_joint_deadband(myo_base, req.elbow_deadband);
-    MYO_WRITE_wrist_joint_control(myo_base,req.wrist_control_enable);
-    MYO_WRITE_wrist_Kp_joint_angle(myo_base, req.kp_wrist_joint);
-    MYO_WRITE_wrist_Kd_joint_angle(myo_base, req.kd_wrist_joint);
-    MYO_WRITE_wrist_joint_pretension(myo_base, req.wrist_pretension);
-    MYO_WRITE_wrist_joint_deadband(myo_base, req.wrist_deadband);
+
 }
 
 bool ArmControl::ElbowJointControllerService(std_srvs::SetBoolRequest &req,
                                  std_srvs::SetBoolResponse &res){
     ROS_INFO("%s elbow controller", (req.data?"enableing":"disabeling" ));
-    MYO_WRITE_elbow_joint_control(myo_base,((bool)req.data));
     return true;
 }
 
