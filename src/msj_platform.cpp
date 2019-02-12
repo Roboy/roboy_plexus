@@ -74,15 +74,11 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
         MSJ_WRITE_zero_speed(msj_platform_base,i,zero_speed[i]);
         MSJ_WRITE_outputPosMax(msj_platform_base,i,(zero_speed[i]+30));
         MSJ_WRITE_outputNegMax(msj_platform_base,i,(zero_speed[i]-30));
-        if(i==7){
-            MSJ_WRITE_Kp(msj_platform_base,i,-20);
-            MSJ_WRITE_Kd(msj_platform_base,i,-10);
-        }else{
-            MSJ_WRITE_Kp(msj_platform_base,i,20);
-            MSJ_WRITE_Kd(msj_platform_base,i,10);
-        }
 
-        MSJ_WRITE_outputDivider(msj_platform_base,i,6);
+        MSJ_WRITE_Kp(msj_platform_base,i,10);
+        MSJ_WRITE_Kd(msj_platform_base,i,0);
+
+        MSJ_WRITE_outputDivider(msj_platform_base,i,1);
         MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
         MSJ_WRITE_sp(msj_platform_base,i,0);
@@ -99,17 +95,17 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
     magnetic_thread = boost::shared_ptr<std::thread>( new std::thread(&MSJPlatform::publishMagneticSensors, this));
     magnetic_thread->detach();
 
-    darkroom_pub = nh->advertise<roboy_middleware_msgs::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
-                                                                  1);
-    darkroom_ootx_pub = nh->advertise<roboy_middleware_msgs::DarkRoomOOTX>(
-            "/roboy/middleware/DarkRoom/ootx", 1);
-    darkroom_status_pub = nh->advertise<roboy_middleware_msgs::DarkRoomStatus>(
-            "/roboy/middleware/DarkRoom/status", 1);
-    darkroom_thread = boost::shared_ptr<std::thread>(new std::thread(&MSJPlatform::darkRoomPublisher, this));
-    darkroom_thread->detach();
-    darkroom_ootx_thread = boost::shared_ptr<std::thread>(
-            new std::thread(&MSJPlatform::darkRoomOOTXPublisher, this));
-    darkroom_ootx_thread->detach();
+//    darkroom_pub = nh->advertise<roboy_middleware_msgs::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
+//                                                                  1);
+//    darkroom_ootx_pub = nh->advertise<roboy_middleware_msgs::DarkRoomOOTX>(
+//            "/roboy/middleware/DarkRoom/ootx", 1);
+//    darkroom_status_pub = nh->advertise<roboy_middleware_msgs::DarkRoomStatus>(
+//            "/roboy/middleware/DarkRoom/status", 1);
+//    darkroom_thread = boost::shared_ptr<std::thread>(new std::thread(&MSJPlatform::darkRoomPublisher, this));
+//    darkroom_thread->detach();
+//    darkroom_ootx_thread = boost::shared_ptr<std::thread>(
+//            new std::thread(&MSJPlatform::darkRoomOOTXPublisher, this));
+//    darkroom_ootx_thread->detach();
 }
 
 void MSJPlatform::publishStatus(){
@@ -170,10 +166,11 @@ void MSJPlatform::publishMagneticSensors() {
 void MSJPlatform::MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr &msg){
     if(msg->id!=5) // not for me
         return;
-//    ROS_INFO("receiving motor commands");
+    ROS_INFO("receiving motor commands");
     for(int i=0;i<msg->motors.size();i++) {
 //        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
         MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->set_points[i]);
+        ROS_INFO_STREAM("motor " << msg->motors[i] << " " << msg->set_points[i]);
     }
 }
 
