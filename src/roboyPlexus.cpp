@@ -112,7 +112,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         case SHOULDER_LEFT: {
-          StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
+          StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/StearingAngle",
                                                                                      1);
           stearingAngleThread = boost::shared_ptr<std::thread>(
                    new std::thread(&RoboyPlexus::StearingAnglePublisher, this));
