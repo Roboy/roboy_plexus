@@ -13,12 +13,29 @@ rickshaw_CTL::rickshaw_CTL(int32_t *base_addr)
   ROS_INFO("TODO:");
 }*/
 
+
 int32_t rickshaw_CTL::readThrottle(void) {
     return (IORD(rickshaw_base, (uint32_t)(0x01<<8|0)));
 }
 int32_t rickshaw_CTL::readAngleSensor_raw(void) {
     return(IORD(rickshaw_base, (uint32_t)(0x00<<8|0)));
 }
+int32_t rickshaw_CTL::readAngleSensor_absolute(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x03<<8|0)));
+}
+int32_t rickshaw_CTL::readAngleSensor_offset(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x04<<8|0)));
+}
+int32_t rickshaw_CTL::readAngleSensor_relative(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x05<<8|0)));
+}
+int32_t rickshaw_CTL::readAngleSensor_velocity(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x06<<8|0)));
+}
+int32_t rickshaw_CTL::readAngleSensor_counter(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x07<<8|0)));
+}
+
 double rickshaw_CTL::readAngleSensor(void) {
     double angle=double(readAngleSensor_raw()) / 4096.0 * 360.0;
     return angle;

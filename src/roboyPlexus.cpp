@@ -614,10 +614,10 @@ void RoboyPlexus::StearingAnglePublisher() {
         msg.id = id;
         msg.angles.push_back((rickshaw_CTL.readAngleSensor_raw() / 4096.0 * 360.0));
         msg.raw_angles.push_back(rickshaw_CTL.readAngleSensor_raw());
-        msg.raw_angles_prev.push_back(0);
-        msg.offset_angles.push_back(0);
-        msg.relative_angles.push_back(0);
-        msg.rev_counter.push_back(0);
+        msg.raw_angles_prev.push_back(rickshaw_CTL.readAngleSensor_velocity());
+        msg.offset_angles.push_back(rickshaw_CTL.readAngleSensor_offset());
+        msg.relative_angles.push_back(rickshaw_CTL.readAngleSensor_relative());
+        msg.rev_counter.push_back(rickshaw_CTL.readAngleSensor_counter());
 
 
         StearingAngle_pub.publish(msg);

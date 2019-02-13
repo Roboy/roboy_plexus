@@ -23,6 +23,12 @@ class rickshaw_CTL
     int32_t readAngleSensor_raw(void);
     void writeThrottle(int32_t throttl_GPIO);
 
+    int32_t readAngleSensor_absolute(void);
+    int32_t readAngleSensor_offset(void);
+    int32_t readAngleSensor_relative(void);
+    int32_t readAngleSensor_velocity(void) ;
+    int32_t readAngleSensor_counter(void);
+
     int32_t *rickshaw_base;
 
   //private:
