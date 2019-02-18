@@ -65,16 +65,6 @@ MyoControlPtr myoControl;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-    if(h2p_lw_myo_addr[0]!=nullptr) {
-        MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[0], 0);
-        MYO_WRITE_wrist_joint_control(h2p_lw_myo_addr[0], 0);
-        MYO_WRITE_hand_control(h2p_lw_myo_addr[0], 0);
-    }
-    if(h2p_lw_myo_addr[1]!=nullptr) {
-        MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[1], 0);
-        MYO_WRITE_wrist_joint_control(h2p_lw_myo_addr[1], 0);
-        MYO_WRITE_hand_control(h2p_lw_myo_addr[1], 0);
-    }
     if(myoControl!= nullptr){
         // switch to displacement
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
