@@ -75,10 +75,13 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
         MSJ_WRITE_outputPosMax(msj_platform_base,i,(zero_speed[i]+30));
         MSJ_WRITE_outputNegMax(msj_platform_base,i,(zero_speed[i]-30));
 
-        MSJ_WRITE_Kp(msj_platform_base,i,10);
+        MSJ_WRITE_Kp(msj_platform_base,i,1);
+        MSJ_WRITE_Ki(msj_platform_base,i,0);
+        MSJ_WRITE_integralPosMax(msj_platform_base,i,0);
+        MSJ_WRITE_integralNegMax(msj_platform_base,i,0);
         MSJ_WRITE_Kd(msj_platform_base,i,0);
 
-        MSJ_WRITE_outputDivider(msj_platform_base,i,1);
+        MSJ_WRITE_outputDivider(msj_platform_base,i,2);
         MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
         MSJ_WRITE_sp(msj_platform_base,i,0);
@@ -168,9 +171,9 @@ void MSJPlatform::MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr
         return;
     ROS_INFO("receiving motor commands");
     for(int i=0;i<msg->motors.size();i++) {
-//        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
+        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
         MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->set_points[i]);
-        ROS_INFO_STREAM("motor " << msg->motors[i] << " " << msg->set_points[i]);
+//        ROS_INFO_STREAM("motor " << msg->motors[i] << " " << msg->set_points[i]);
     }
 }
 

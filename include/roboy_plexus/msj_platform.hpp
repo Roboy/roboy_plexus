@@ -113,7 +113,7 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     int32_t *msj_platform_base, *switch_base, *darkroom_base, *darkroom_ootx_base;
     boost::shared_ptr<std::thread> status_thread, magnetic_thread, darkroom_thread, darkroom_ootx_thread;
-    vector<int32_t> zero_speed = {330,330,330,330,330,330,330,330};
+    vector<int32_t> zero_speed = {330,330,330,330,330,330,333,330};
     vector<boost::shared_ptr<TLV493D>> tlv;
     vector<int32_t*> i2c_base;
     union {
