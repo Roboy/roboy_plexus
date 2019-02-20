@@ -81,7 +81,7 @@ MSJPlatform::MSJPlatform(int32_t *msj_platform_base, int32_t *switch_base, vecto
         MSJ_WRITE_integralNegMax(msj_platform_base,i,0);
         MSJ_WRITE_Kd(msj_platform_base,i,0);
 
-        MSJ_WRITE_outputDivider(msj_platform_base,i,2);
+        MSJ_WRITE_outputDivider(msj_platform_base,i,5);
         MSJ_WRITE_deadBand(msj_platform_base,i,0);
         MSJ_WRITE_control_mode(msj_platform_base,i,0);
         MSJ_WRITE_sp(msj_platform_base,i,0);
@@ -169,9 +169,9 @@ void MSJPlatform::publishMagneticSensors() {
 void MSJPlatform::MotorCommand(const roboy_middleware_msgs::MotorCommandConstPtr &msg){
     if(msg->id!=5) // not for me
         return;
-    ROS_INFO("receiving motor commands");
+    ROS_INFO_THROTTLE(10,"receiving motor commands");
     for(int i=0;i<msg->motors.size();i++) {
-        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
+//        MSJ_WRITE_control_mode(msj_platform_base, msg->motors[i], 2);
         MSJ_WRITE_sp(msj_platform_base, msg->motors[i], (int)msg->set_points[i]);
 //        ROS_INFO_STREAM("motor " << msg->motors[i] << " " << msg->set_points[i]);
     }
