@@ -285,6 +285,15 @@ private:
     bool SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
                                roboy_middleware_msgs::SetInt16::Request &res);
 
+    /**
+     * Service sets displacement for selected motor ids
+     * @param req
+     * @param res
+     * @return
+ */
+    bool SetDisplacementForId(roboy_middleware_msgs::SetInt16::Request &req,
+                               roboy_middleware_msgs::SetInt16::Request &res);
+
 
 private:
     /**
@@ -335,7 +344,7 @@ private:
             motorAngle_pub, magneticSensor_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
-            setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
+            setDisplacementForAll_srv, setDisplacementForId_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
             soliGetData_srv, soli_srv, soliGetFrameFormat_srv, soliSetFrameFormat_srv, soliGetAdcSamplerate_srv,
             soliSetAdcSamplerate_srv, soliGetChirpDuration_srv, soliSetFMCWConfiguration_srv, soliGetFMCWConfiguration_srv,
             soliGetFrameInfo_srv, myobrick_calibration_srv;

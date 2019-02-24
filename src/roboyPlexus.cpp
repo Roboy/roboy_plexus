@@ -275,6 +275,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
+
+    setDisplacementForId_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForId",
+                                                     &RoboyPlexus::SetDisplacementForId, this);
 //    replayTrajectory_srv = nh->advertiseService("/roboy/" + body_part + "/control/ReplayTrajectory",
 //                                                    &RoboyPlexus::ReplayTrajectoryService, this);
 //    executeActions_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExecuteActions",
@@ -974,7 +977,20 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request
 //        myoControl->setPosition(2, pos[2]);
 //        myoControl->setPosition(3, pos[3]);
 //    }
+
     myoControl->allToDisplacement(req.setpoint);
+
+    return true;
+}
+
+bool RoboyPlexus::SetDisplacementForId(roboy_middleware_msgs::SetInt16::Request &req,
+                                        roboy_middleware_msgs::SetInt16::Request &res) {
+
+    for (auto id: req.motors) {
+        myoControl->changeControl(id, FORCE);
+        myoControl->setDisplacement(id, req.setpoint);
+    }
+
     return true;
 }
 
