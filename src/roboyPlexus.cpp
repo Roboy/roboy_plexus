@@ -217,28 +217,40 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
         default: {
-            motorCalibration_srv = nh->advertiseService("/roboy/middleware/MotorCalibration",
-                                                        &RoboyPlexus::MotorCalibrationService, this);
-            darkroom_pub = nh->advertise<roboy_middleware_msgs::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
-                                                                                   1);
-            darkroom_ootx_pub = nh->advertise<roboy_middleware_msgs::DarkRoomOOTX>(
-                    "/roboy/middleware/DarkRoom/ootx", 1);
-            darkroom_status_pub = nh->advertise<roboy_middleware_msgs::DarkRoomStatus>(
-                    "/roboy/middleware/DarkRoom/status", 1);
-            adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
-            if (darkroom_base != nullptr) {
-                darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
-                darkRoomThread->detach();
-            }
-            if (!darkroom_ootx_addr.empty()) {
-                darkRoomOOTXThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::darkRoomOOTXPublisher, this));
-                darkRoomOOTXThread->detach();
-            }
-            if (adc_base != nullptr) {
-                adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
-                adcThread->detach();
-            }
+            soliInitSensor();
+
+            soliGetData_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetData", soliGetData);
+            soli_srv = nh->advertiseService("/roboy/middleware/rightHand/soli", soli);
+            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameFormat", soliGetFrameFormat);
+            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFrameFormat", soliSetFrameFormat);
+            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
+            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
+            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetChirpDuration", soliGetChirpDuration);
+            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
+            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
+            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameInfo", soliGetFrameInfo);
+//            motorCalibration_srv = nh->advertiseService("/roboy/middleware/MotorCalibration",
+//                                                        &RoboyPlexus::MotorCalibrationService, this);
+//            darkroom_pub = nh->advertise<roboy_middleware_msgs::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
+//                                                                                   1);
+//            darkroom_ootx_pub = nh->advertise<roboy_middleware_msgs::DarkRoomOOTX>(
+//                    "/roboy/middleware/DarkRoom/ootx", 1);
+//            darkroom_status_pub = nh->advertise<roboy_middleware_msgs::DarkRoomStatus>(
+//                    "/roboy/middleware/DarkRoom/status", 1);
+//            adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
+//            if (darkroom_base != nullptr) {
+//                darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
+//                darkRoomThread->detach();
+//            }
+//            if (!darkroom_ootx_addr.empty()) {
+//                darkRoomOOTXThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::darkRoomOOTXPublisher, this));
+//                darkRoomOOTXThread->detach();
+//            }
+//            if (adc_base != nullptr) {
+//                adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
+//                adcThread->detach();
+//            }
         }
     }
 
