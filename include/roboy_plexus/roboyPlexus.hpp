@@ -80,7 +80,7 @@
 #include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-#include "roboy_plexus/armControl.hpp"
+//#include "roboy_plexus/armControl.hpp"
 #include <sys/stat.h>
 #include <common_utilities/CommonDefinitions.h>
 
@@ -345,7 +345,7 @@ private:
     map<int, int> rotationCounter;
     map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
-    ArmControlPtr armControl;
+    //ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
             gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
     bool keep_publishing = true;
