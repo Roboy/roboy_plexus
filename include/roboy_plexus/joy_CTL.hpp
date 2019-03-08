@@ -28,6 +28,7 @@ class rickshaw_CTL
     int32_t readAngleSensor_relative(void);
     int32_t readAngleSensor_velocity(void) ;
     int32_t readAngleSensor_counter(void);
+    int32_t readSpeedData(void);
 
     int32_t *rickshaw_base;
 

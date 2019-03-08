@@ -35,6 +35,10 @@ int32_t rickshaw_CTL::readAngleSensor_velocity(void) {
 int32_t rickshaw_CTL::readAngleSensor_counter(void) {
     return(IORD(rickshaw_base, (uint32_t)(0x07<<8|0)));
 }
+int32_t rickshaw_CTL::readSpeedData(void) {
+    return(IORD(rickshaw_base, (uint32_t)(0x08<<8|0)));
+}
+
 
 double rickshaw_CTL::readAngleSensor(void) {
     double angle=double(readAngleSensor_raw()) / 4096.0 * 360.0;

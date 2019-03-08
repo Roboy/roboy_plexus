@@ -1,0 +1,108 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/roboy/BikeToRikshaw/catkin/src/roboy_plexus/testbench/simulation/modelsim
+vclock_divider
+Z1 DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
+Z2 !s110 1551838519
+!i10b 1
+!s100 m?h5=59LGG?3cbhA7Y?eg3
+I0>mQV5NG0PflnB8FBjCIY3
+Z3 VDg1SIo80bB@j0V0VzS_@n1
+Z4 !s105 speed_modul_sv_unit
+S1
+R0
+Z5 w1551838514
+Z6 8/home/roboy/BikeToRikshaw/catkin/src/roboy_plexus/testbench/speed_modul.sv
+Z7 F/home/roboy/BikeToRikshaw/catkin/src/roboy_plexus/testbench/speed_modul.sv
+L0 88
+Z8 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z9 !s108 1551838519.000000
+Z10 !s107 /home/roboy/BikeToRikshaw/catkin/src/roboy_plexus/testbench/speed_modul.sv|
+Z11 !s90 -reportprogress|300|-work|work|/home/roboy/BikeToRikshaw/catkin/src/roboy_plexus/testbench/speed_modul.sv|
+!i113 1
+Z12 o-work work
+Z13 tCvgOpt 0
+vRikshawControl
+R1
+R2
+!i10b 1
+!s100 UfJehg48YEJkPRX7kH1d81
+IcRQU;5HRX7_K57JTAiBB`1
+R3
+R4
+S1
+R0
+R5
+R6
+R7
+L0 1
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13
+n@rikshaw@control
+vRikshawControl_tb
+R1
+R2
+!i10b 1
+!s100 5o:fgnd93O;SeNI^PCW<_2
+I7cBjzZES=hNSIXm<TR=Vk1
+R3
+R4
+S1
+R0
+R5
+R6
+R7
+L0 111
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13
+n@rikshaw@control_tb
+vspeed_sub
+R1
+R2
+!i10b 1
+!s100 T2LkL??4n<HHU1M1A>6fg1
+IObUCdZE[kIZJ;_MZ5STQ=2
+R3
+R4
+S1
+R0
+R5
+R6
+R7
+L0 68
+R8
+r1
+!s85 0
+31
+R9
+R10
+R11
+!i113 1
+R12
+R13

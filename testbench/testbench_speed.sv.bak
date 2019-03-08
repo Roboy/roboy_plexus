@@ -1,0 +1,9 @@
+module basic_and #(parameter WIDTH = 1)(
+    input clk,
+    input  reset,
+    output  out
+  );
+ 
+  assign out = a & b;
+ 
+endmodule
