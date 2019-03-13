@@ -51,6 +51,7 @@ using namespace std;
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
+int32_t *h2p_lw_sysid_addr;
 int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
@@ -129,6 +130,20 @@ int main(int argc, char *argv[]) {
         close( fd );
         return( 1 );
     }
+
+    h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+    if(*h2p_lw_sysid_addr!=0x0001beef){ // if the system id does not match, we abort
+        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, 0x0001beef);
+        // clean up our memory mapping and exit
+        if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
+            printf( "ERROR: munmap() failed...\n" );
+            close( fd );
+            return( 1 );
+        }
+        close( fd );
+        return -1;
+    }
+
 #ifdef LED_BASE
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else

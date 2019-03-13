@@ -31,26 +31,26 @@
 #define I2C_3_END 0x1f
 
 /*
- * Macros for device 'I2C_2', class 'I2C'
- * The macros are prefixed with 'I2C_2_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_2_COMPONENT_TYPE I2C
-#define I2C_2_COMPONENT_NAME I2C_2
-#define I2C_2_BASE 0x20
-#define I2C_2_SPAN 32
-#define I2C_2_END 0x3f
-
-/*
  * Macros for device 'I2C_1', class 'I2C'
  * The macros are prefixed with 'I2C_1_'.
  * The prefix is the slave descriptor.
  */
 #define I2C_1_COMPONENT_TYPE I2C
 #define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x40
+#define I2C_1_BASE 0x20
 #define I2C_1_SPAN 32
-#define I2C_1_END 0x5f
+#define I2C_1_END 0x3f
+
+/*
+ * Macros for device 'I2C_2', class 'I2C'
+ * The macros are prefixed with 'I2C_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_2_COMPONENT_TYPE I2C
+#define I2C_2_COMPONENT_NAME I2C_2
+#define I2C_2_BASE 0x40
+#define I2C_2_SPAN 32
+#define I2C_2_END 0x5f
 
 /*
  * Macros for device 'I2C_0', class 'I2C'
@@ -145,8 +145,8 @@
 #define SYSID_QSYS_BASE 0x1000
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
-#define SYSID_QSYS_ID 48879
-#define SYSID_QSYS_TIMESTAMP 1551899078
+#define SYSID_QSYS_ID 114415
+#define SYSID_QSYS_TIMESTAMP 1552480421
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
