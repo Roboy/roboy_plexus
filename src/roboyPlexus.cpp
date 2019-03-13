@@ -787,23 +787,26 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
 
 bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
                                         roboy_middleware_msgs::SetInt16::Request &res) {
-//    if (id == HEAD) {
-//        myoControl->allToDisplacement(req.setpoint);
-//        ros::Duration d(5);
-//        d.sleep();
-//        int pos[4] = {0, 0, 0, 0};
-//        pos[0] = myoControl->getPosition(0);
-//        pos[1] = myoControl->getPosition(1);
-//        pos[2] = myoControl->getPosition(2);
-//        pos[3] = myoControl->getPosition(3);
-//        myoControl->allToPosition(0);
-//        myoControl->setPosition(0, pos[0]);
-//        myoControl->setPosition(1, pos[1]);
-//        myoControl->setPosition(2, pos[2]);
-//        myoControl->setPosition(3, pos[3]);
-//    }
-    ROS_INFO("all to displacement called");
-    myoControl->allToDisplacement(req.setpoint);
+    ROS_INFO("all to displacement %d called", req.setpoint);
+    if (id == SHOULDER_RIGHT) {
+        for (uint motor = 0; motor < myoControl->numberOfMotors; motor++) {
+            if(motor>=9 && motor<=14) {
+                myoControl->setPosition(motor,myoControl->getPosition(motor));
+                myoControl->changeControl(motor, POSITION);
+                control_mode[motor] = POSITION;
+            }else {
+                myoControl->setDisplacement(motor, req.setpoint);
+                myoControl->changeControl(motor, DISPLACEMENT);
+                control_mode[motor] = DISPLACEMENT;
+            }
+        }
+    }else{
+        for (uint motor = 0; motor < myoControl->numberOfMotors; motor++) {
+            myoControl->setDisplacement(motor, req.setpoint);
+            myoControl->changeControl(motor, DISPLACEMENT);
+            control_mode[motor] = DISPLACEMENT;
+        }
+    }
     return true;
 }
 
