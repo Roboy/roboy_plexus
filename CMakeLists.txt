@@ -101,6 +101,13 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
+#    add_executable( ROS_MASTER_URI_broadcaster_armhf src/ROS_MASTER_URI_broadcaster.cpp)
+#    target_link_libraries( ROS_MASTER_URI_broadcaster_armhf ${ros_LIBRARIES} src/UDPSocket )
+
+    add_executable( ROS_MASTER_URI_receiver_armhf src/ROS_MASTER_URI_receiver.cpp src/UDPSocket )
+    target_link_libraries( ROS_MASTER_URI_receiver_armhf ${ros_LIBRARIES} )
+
+
     #==============================================================================
     # Installation
     #==============================================================================

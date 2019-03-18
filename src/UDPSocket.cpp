@@ -1,6 +1,61 @@
 #include <ifaddrs.h>
 #include "common_utilities/UDPSocket.hpp"
 
+uint64_t pack754(long double f, unsigned bits, unsigned expbits)
+{
+    long double fnorm;
+    int shift;
+    long long sign, exp, significand;
+    unsigned significandbits = bits - expbits - 1; // -1 for sign bit
+
+    if (f == 0.0) return 0; // get this special case out of the way
+
+    // check sign and begin normalization
+    if (f < 0) { sign = 1; fnorm = -f; }
+    else { sign = 0; fnorm = f; }
+
+    // get the normalized form of f and track the exponent
+    shift = 0;
+    while(fnorm >= 2.0) { fnorm /= 2.0; shift++; }
+    while(fnorm < 1.0) { fnorm *= 2.0; shift--; }
+    fnorm = fnorm - 1.0;
+
+    // calculate the binary form (non-float) of the significand data
+    significand = fnorm * ((1LL<<significandbits) + 0.5f);
+
+    // get the biased exponent
+    exp = shift + ((1<<(expbits-1)) - 1); // shift + bias
+
+    // return the final answer
+    return (sign<<(bits-1)) | (exp<<(bits-expbits-1)) | significand;
+}
+
+long double unpack754(uint64_t i, unsigned bits, unsigned expbits)
+{
+    long double result;
+    long long shift;
+    unsigned bias;
+    unsigned significandbits = bits - expbits - 1; // -1 for sign bit
+
+    if (i == 0) return 0.0;
+
+    // pull the significand
+    result = (i&((1LL<<significandbits)-1)); // mask
+    result /= (1LL<<significandbits); // convert back to float
+    result += 1.0f; // add the one back on
+
+    // deal with the exponent
+    bias = (1<<(expbits-1)) - 1;
+    shift = ((i>>significandbits)&((1LL<<expbits)-1)) - bias;
+    while(shift > 0) { result *= 2.0; shift--; }
+    while(shift < 0) { result /= 2.0; shift++; }
+
+    // sign it
+    result *= (i>>(bits-1))&1? -1.0: 1.0;
+
+    return result;
+}
+
 UDPSocket::UDPSocket(const char *server_IP, int server_port, const char *client_IP, int client_port, bool exclusive):
         exclusive(exclusive){
     cout << "creating socket on " << server_IP << ":" << server_port << " with client " << client_IP << ":"
@@ -133,23 +188,23 @@ UDPSocket::UDPSocket(const char *client_IP, int client_port, int server_port, bo
         // loop through all the results, make a socket and bind
         for (p = servinfo; p != NULL; p = p->ai_next) {
             if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-                fprintf(stderr, "talker: socket\n");
+                fprintf(stderr, "talker: socket");
                 continue;
             }
             if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const void *) &yes, sizeof(int)) == -1) {
-                fprintf(stderr, "setsockopt\n");
+                fprintf(stderr, "setsockopt");
                 continue;
             };
             if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
                 close(sockfd);
-                fprintf(stderr, "listener: bind\n");
+                fprintf(stderr, "listener: bind");
                 continue;
             }
             break;
         }
 
         if (p == NULL) {
-            fprintf(stderr, "talker: failed to bind socket\n");
+            fprintf(stderr, "talker: failed to bind socket");
             return;
         }
 
@@ -163,7 +218,7 @@ UDPSocket::UDPSocket(const char *client_IP, int client_port, int server_port, bo
 
         initialized = true;
     }else{
-        fprintf(stderr, "could not create UDP socket\n");
+        fprintf(stderr, "could not create UDP socket");
     }
 }
 
@@ -185,14 +240,14 @@ UDPSocket::UDPSocket(int port, int broadcastIP, bool broadcaster) {
 
     // creat UDP socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        fprintf(stderr, "talker: socket\n");
+        fprintf(stderr, "talker: socket");
         return;
     }
 
     // Allow broadcasts
     int yes = true;
     if  (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, (const void *)&yes, sizeof(int)) == -1) {
-        fprintf(stderr, "broadcasting not allowed\n");
+        fprintf(stderr, "broadcasting not allowed");
         return;
     }
 
@@ -203,7 +258,7 @@ UDPSocket::UDPSocket(int port, int broadcastIP, bool broadcaster) {
         // Bind an address to our socket, so that client programs can listen to this server
         if (bind(sockfd, (struct sockaddr *) &client_addr, client_addr_len) == -1) {
             close(sockfd);
-            fprintf(stderr, "broadcaster bind error\n");
+            fprintf(stderr, "broadcaster bind error");
             return;
         }
     }
@@ -227,14 +282,14 @@ UDPSocket::UDPSocket(int port, bool broadcaster) {
 
     // creat UDP socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        fprintf(stderr, "talker: socket\n");
+        fprintf(stderr, "talker: socket");
         return;
     }
 
     // Allow broadcasts
     int yes = true;
     if  (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, (const void *)&yes, sizeof(int)) == -1) {
-        fprintf(stderr, "broadcasting not allowed\n");
+        fprintf(stderr, "broadcasting not allowed");
         return;
     }
 
@@ -242,10 +297,10 @@ UDPSocket::UDPSocket(int port, bool broadcaster) {
     setTimeOut(100000);
 
     if(!broadcaster) {
-        // Bind an address to our socket, so that client programs can listen to this server
+        // Bind an address to our socket, so that client programs can listen to this serve
         if (bind(sockfd, (struct sockaddr *) &client_addr, client_addr_len) == -1) {
             close(sockfd);
-            fprintf(stderr, "broadcaster bind error\n");
+            fprintf(stderr, "broadcaster bind error");
             return;
         }
     }
@@ -300,7 +355,7 @@ bool UDPSocket::broadcastHostIP(char *key, int length){
 
 bool UDPSocket::receiveSensorData(vector<uint32_t> &sensorID, vector<bool> &lighthouse, vector<bool> &axis, vector<uint32_t> &sweepDuration){
     if(receiveUDP()){
-        if(numbytes == 32){
+        if(numbytes == 32){ // without timestamp
             union {
                 uint32_t sensor[8];
                 uint8_t data[32];
@@ -315,6 +370,34 @@ bool UDPSocket::receiveSensorData(vector<uint32_t> &sensorID, vector<bool> &ligh
 //                   BYTE_TO_BINARY(spi_frame.data[3]), BYTE_TO_BINARY(spi_frame.data[2]),
 //                   BYTE_TO_BINARY(spi_frame.data[1]), BYTE_TO_BINARY(spi_frame.data[0]));
             int j = 0;
+            for(uint i=0; i<8; i++){
+                uint32_t val = (uint32_t)((uint8_t)buf[j+3]<<24|(uint8_t)buf[j+2]<<16|(uint8_t)buf[j+1]<<8|(uint8_t)buf[j]);
+                int valid = (val >> 29) & 0x1;
+                if(!valid)
+                    continue;
+                lighthouse.push_back((val >> 31) & 0x1);
+                axis.push_back((val >> 30) & 0x1);
+                sensorID.push_back((val >>19) & 0x3FF);
+                sweepDuration.push_back((val & 0x7FFFF));
+                j+=4;
+            }
+            return !sensorID.empty();
+        }else if(numbytes == 34){ // with timestamp
+            union {
+                uint32_t sensor[8];
+                uint8_t data[32];
+            }spi_frame;
+            uint16_t timestamp = (uint16_t)(buf[1]<<8|buf[0]);
+            memcpy(spi_frame.data, &buf[2], 32);
+//            for(uint i = 0; i<32;i++){
+//                printf("%d ",buf[i]);
+//            }
+//            printf("\n");
+//            printf(BYTE_TO_BINARY_PATTERN " " BYTE_TO_BINARY_PATTERN " "
+//                           BYTE_TO_BINARY_PATTERN " " BYTE_TO_BINARY_PATTERN "\n",
+//                   BYTE_TO_BINARY(spi_frame.data[3]), BYTE_TO_BINARY(spi_frame.data[2]),
+//                   BYTE_TO_BINARY(spi_frame.data[1]), BYTE_TO_BINARY(spi_frame.data[0]));
+            int j = 2;
             for(uint i=0; i<8; i++){
                 uint32_t val = (uint32_t)((uint8_t)buf[j+3]<<24|(uint8_t)buf[j+2]<<16|(uint8_t)buf[j+1]<<8|(uint8_t)buf[j]);
                 int valid = (val >> 29) & 0x1;
@@ -478,7 +561,7 @@ bool UDPSocket::sendUDPToClient() {
 bool UDPSocket::broadcastUDP() {
     if ((numbytes = sendto(sockfd, buf, numbytes, 0, (struct sockaddr *) &broadcast_addr, broadcast_addr_len)) ==
         -1) {
-        printf("could not broadcast\n");
+        printf("could not broadcast");
         return false;
     }
     return true;
