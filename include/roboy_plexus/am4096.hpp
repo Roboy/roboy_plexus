@@ -65,6 +65,9 @@ public:
 	 * @param absAngles the angles
 	 */
 	void readAbsAngle(vector<uint32_t> &absAngles);
+
+
+	void readAbsAngle(uint32_t &absAngle);
 	/**
 	 * Reads the ansolute angle of a device
 	 * @param i2cAddr the device id

@@ -44,6 +44,7 @@
 #include "roboy_plexus/hps_0.h"
 #include "roboy_plexus/roboyPlexus.hpp"
 
+
 using namespace std;
 
 #define ALT_LWFPGASLVS_OFST 0xFF200000
@@ -194,6 +195,11 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_i2c_addr.push_back(nullptr);
 #endif
+#ifdef I2C_4_BASE
+    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#else
+    h2p_lw_i2c_addr.push_back(nullptr);
+#endif
 #ifdef DARKROOM_0_BASE
     h2p_lw_darkroom_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else
@@ -232,7 +238,7 @@ int main(int argc, char *argv[]) {
 //        ros::start();
 //    }
 //
-//    I2C i2c0(h2p_lw_i2c_addr[0]), i2c1(h2p_lw_i2c_addr[1]), i2c(h2p_lw_i2c_addr[2]);
+    I2C i2c0(h2p_lw_i2c_addr[0]), i2c1(h2p_lw_i2c_addr[1]), i2c(h2p_lw_i2c_addr[2]);
 //    ros::Duration d(0.1);
 //    while(ros::ok()) {
 //        vector<uint8_t> data;
@@ -241,30 +247,30 @@ int main(int argc, char *argv[]) {
 //            ROS_ERROR("ack");
 //        else
 //            ROS_INFO("yea");
-////        {
-////            vector <uint8_t> active_devices;
-////            i2c0.checkAddressSpace(0, 127, active_devices);
-////            ROS_INFO("i2c 0 found %ld active devices", active_devices.size());
-////            for (auto device:active_devices)
-////                printf("%x\t", device);
-////            cout << endl;
-////        }
-////        {
-////            vector <uint8_t> active_devices;
-////            i2c1.checkAddressSpace(0, 127, active_devices);
-////            ROS_INFO("i2c 1 found %ld active devices", active_devices.size());
-////            for (auto device:active_devices)
-////                printf("%x\t", device);
-////            cout << endl;
-////        }
-////        {
-////            vector <uint8_t> active_devices;
-////            i2c2.checkAddressSpace(0, 127, active_devices);
-////            ROS_INFO("i2c 2 found %ld active devices", active_devices.size());
-////            for (auto device:active_devices)
-////                printf("%x\t", device);
-////            cout << endl;
-////        }
+//        {
+    vector <uint8_t> active_devices;
+    i2c0.checkAddressSpace(0, 127, active_devices);
+    ROS_INFO("i2c 0 found %ld active devices", active_devices.size());
+    for (auto device:active_devices)
+        printf("%x\t", device);
+    cout << endl;
+//        }
+//        {
+//            vector <uint8_t> active_devices;
+//            i2c1.checkAddressSpace(0, 127, active_devices);
+//            ROS_INFO("i2c 1 found %ld active devices", active_devices.size());
+//            for (auto device:active_devices)
+//                printf("%x\t", device);
+//            cout << endl;
+//        }
+//        {
+//            vector <uint8_t> active_devices;
+//            i2c2.checkAddressSpace(0, 127, active_devices);
+//            ROS_INFO("i2c 2 found %ld active devices", active_devices.size());
+//            for (auto device:active_devices)
+//                printf("%x\t", device);
+//            cout << endl;
+//        }
 //        d.sleep();
 //    }
 
@@ -312,6 +318,8 @@ int main(int argc, char *argv[]) {
                             h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
     PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
+
+
 
     signal(SIGINT, SigintHandler);
 

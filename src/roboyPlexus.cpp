@@ -24,7 +24,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
     ifile.close();
-    string node_name = "roboy_fpga_" + body_part + "_" + ethaddr;
+    node_name = "roboy_fpga_" + body_part + "_" + ethaddr;
     replace(node_name.begin(), node_name.end(), ':', '_');
 
     if (!ros::isInitialized()) {
@@ -32,6 +32,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         char **argv = NULL;
         ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
     }
+
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
@@ -116,9 +117,13 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                                               &RoboyPlexus::ExpandBehaviorService, this);
 
     motorStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+    jointStatus_pub = nh->advertise<roboy_middleware_msgs::JointStatus>("/roboy/middleware/JointStatus", 1);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
+
+    bondThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::bondCreator, this));
+    bondThread->detach();
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
@@ -128,6 +133,14 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         control_mode[motor] = POSITION;
     }
 
+    if (!i2c_base.empty()) {
+        vector<vector<int32_t>> deviceIDs = {{0x0}, {0x1}};
+        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[0], deviceIDs[0])));
+        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[0], deviceIDs[1])));
+        jointAngleThread = boost::shared_ptr<std::thread>(
+                new std::thread(&RoboyPlexus::jointStatusPublisher, this));
+        jointAngleThread->detach();
+    }
 
 //    // open i2c bus for gsensor
 //    if ((file = open(filename, O_RDWR)) < 0) {
@@ -185,6 +198,23 @@ RoboyPlexus::~RoboyPlexus() {
 
 string RoboyPlexus::getBodyPart() {
     return body_part;
+}
+
+void RoboyPlexus::jointStatusPublisher() {
+    ros::Rate rate(50);
+    while (keep_publishing) {
+        roboy_middleware_msgs::JointStatus msg;
+        msg.absAngles.resize(jointAngle.size());
+        for (uint i = 0; i < jointAngle.size(); i++) {
+            jointAngle[i]->readAbsAngle(msg.absAngles[i]);
+//            jointAngle[i]->readRelAngle(msg.relAngles);
+//            jointAngle[i]->readMagnetStatus(msg.tooFar, msg.tooClose);
+//            jointAngle[i]->readTacho(msg.tacho);
+//            jointAngle[i]->readAgcGain(msg.agcGain);
+        }
+        jointStatus_pub.publish(msg);
+        rate.sleep();
+    }
 }
 
 void RoboyPlexus::gsensorPublisher() {
@@ -453,6 +483,19 @@ void RoboyPlexus::motorStatusPublisher() {
         motorStatus_pub.publish(msg);
         rate.sleep();
     }
+}
+
+void RoboyPlexus::bondCreator() {
+
+    // skill machine
+    bond::Bond bond("skill_machine_bonds", node_name);
+    bond.start();
+    ROS_INFO_STREAM("Created skill machine bond");
+    ros::Rate rate(200);
+    while (keep_publishing && ros::ok()) {
+        rate.sleep();
+    }
+    bond.breakBond();
 }
 
 void RoboyPlexus::magneticShoulderJointPublisher() {

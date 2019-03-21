@@ -19,6 +19,7 @@
  * Instead, use the system header file which has macros with unique names.
  */
 
+
 /*
  * Macros for device 'I2C_3', class 'I2C'
  * The macros are prefixed with 'I2C_3_'.
@@ -29,6 +30,7 @@
 #define I2C_3_BASE 0x0
 #define I2C_3_SPAN 32
 #define I2C_3_END 0x1f
+
 
 /*
  * Macros for device 'I2C_1', class 'I2C'
@@ -62,6 +64,8 @@
 #define I2C_0_BASE 0x60
 #define I2C_0_SPAN 32
 #define I2C_0_END 0x7f
+
+
 
 /*
  * Macros for device 'pio_0', class 'altera_avalon_pio'

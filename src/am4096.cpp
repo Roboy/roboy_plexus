@@ -22,6 +22,16 @@ void AM4096::readAbsAngle(vector<uint32_t> &absAngles){
 	}
 }
 
+void AM4096::readAbsAngle(uint32_t &absAngle){
+	for(int const addr:i2cAddrs){
+		uint32_t val;
+		bool dataOk = readAbsAngle(addr,val);
+		absAngle = val;
+//		if(!dataOk)
+//			ROS_WARN("abs angle data of sensor %d NOT ok", addr);
+	}
+}
+
 bool AM4096::readAbsAngle(uint8_t i2cAddr, uint32_t &absAngle){
 	vector<uint8_t> data;
 	i2c->read(i2cAddr, 33, 2, data);

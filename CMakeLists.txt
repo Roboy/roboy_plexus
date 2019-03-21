@@ -21,13 +21,13 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roscpp
             std_msgs
             message_generation
-            rviz
-            tf
-            tf_conversions
-            visualization_msgs
+#            tf
+#            tf_conversions
+#            visualization_msgs
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
+            bondcpp
 #            roboy_soli
             )
     include(findros)
@@ -46,6 +46,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_control_msgs
             common_utilities
             roboy_soli
+            bondcpp
             )
 
     SET(ALT_DEVICE_FAMILY soc_cv_av)

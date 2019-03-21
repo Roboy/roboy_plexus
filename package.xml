@@ -16,6 +16,8 @@
   <depend>roboy_control_msgs</depend>
   <depend>common_utilities</depend>
   <depend>roboy_soli</depend>
+  <depend>bond</depend>
+  <depend>bondcpp</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
