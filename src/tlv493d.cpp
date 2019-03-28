@@ -16,9 +16,18 @@ void TLV493D::reset(){
     vector<uint8_t> regdata;
     readAllRegisters(0x5e,regdata);
 
+    ROS_WARN("resetting sensor");
+    uint32_t cfgdata = 0;
+    cfgdata |= (0b000|(regdata[7]&0b11000))<<8;
+    cfgdata |= (regdata[8]<<16);
+    cfgdata |= (0b01000000|(0b11111&regdata[9]))<<24;
+    if(!checkParity(cfgdata))
+        cfgdata |= (0b10000000<<8);
+    i2c->write(0x5e, cfgdata, 4);
+
     // Begin config
     // Static initial config for now
-    uint32_t cfgdata = 0;
+    cfgdata = 0;
     cfgdata |= (0b011|(regdata[7]&0b11000))<<8;
     cfgdata |= (regdata[8]<<16);
     cfgdata |= (0b01000000|(0b11111&regdata[9]))<<24;
