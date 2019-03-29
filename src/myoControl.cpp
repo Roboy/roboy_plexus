@@ -334,7 +334,7 @@ int32_t MyoControl::getVelocity(int motor) {
 }
 
 int32_t MyoControl::getDisplacement(int motor) {
-    return MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+    return (int16_t)MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 void MyoControl::setPosition(int motor, int32_t setPoint) {
