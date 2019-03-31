@@ -399,7 +399,7 @@ private:
     vector<string> expandBehavior(string name);
 
     string body_part;
-
+    vector<string> body_parts;
 };
 
 /** @} */ // end of group1

@@ -605,7 +605,10 @@ float MyoControl::startRecordTrajectories(
     recording = true;
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
-    allToDisplacement(predisplacement);
+    for(auto motor:idList) {
+        changeControl(motor,DISPLACEMENT);
+        setDisplacement(motor,predisplacement);
+    }
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -626,7 +629,10 @@ float MyoControl::startRecordTrajectories(
     } while (recording);
 
 
-    allToDisplacement(predisplacement / 2);
+    for(auto motor:idList) {
+        changeControl(motor,DISPLACEMENT);
+        setDisplacement(motor,predisplacement*0.1);
+    }
 
     // done recording
 

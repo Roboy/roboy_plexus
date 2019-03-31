@@ -37,10 +37,13 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     switch (id) {
         case SHOULDER_LEFT: {
+            body_parts.push_back("leg_left");
+            body_parts.push_back("shoulder_left");
             break;
         }
         case SHOULDER_RIGHT: {
-
+            body_parts.push_back("leg_right");
+            body_parts.push_back("shoulder_right");
             break;
         }
         default: {
@@ -789,21 +792,48 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request
                                         roboy_middleware_msgs::SetInt16::Request &res) {
     ROS_INFO("all to displacement %d called", req.setpoint);
     if (id == SHOULDER_RIGHT) {
-        for (uint motor = 0; motor < myoControl->numberOfMotors; motor++) {
-            if(motor>=9 && motor<=14) {
-                myoControl->setPosition(motor,myoControl->getPosition(motor));
-                myoControl->changeControl(motor, POSITION);
-                control_mode[motor] = POSITION;
-            }else {
-                myoControl->setDisplacement(motor, req.setpoint);
-                myoControl->changeControl(motor, DISPLACEMENT);
-                control_mode[motor] = DISPLACEMENT;
+        if(req.setpoint>0) {
+            for (auto motor:req.motors) {
+                if (motor >= 9 && motor <= 14) {
+                    myoControl->changeControl(motor, POSITION);
+                    control_mode[motor] = POSITION;
+                } else {
+                    myoControl->changeControl(motor, DISPLACEMENT);
+                    myoControl->setDisplacement(motor, req.setpoint);
+                    control_mode[motor] = DISPLACEMENT;
+                }
+            }
+        }else {
+            // special care for displacement <= 0, because the pid controller turns of for those values
+            // the springs potentially relax so fast that the encoders max speed is exceeded
+            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                if (find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor) !=
+                    myoControl->myo_bricks.end()) {
+                    myoControl->changeControl(motor, POSITION);
+                    control_mode[motor] = POSITION;
+                } else {
+                    myoControl->changeControl(motor, DISPLACEMENT);
+                }
+            }
+            // relax the springs
+            ros::Rate rate(100);
+            for (int decrements = 99; decrements >= 0; decrements -= 1) {
+                for (auto motor:req.motors) {
+                    if (motor >= 9 && motor <= 14)  // head myobricks
+                        continue;
+                    int displacement = myoControl->getDisplacement(motor);
+                    if (displacement <= req.setpoint)
+                        continue;
+                    else
+                        myoControl->setDisplacement(motor, displacement * (decrements / 100.0));
+                }
+                rate.sleep();
             }
         }
     }else{
-        for (uint motor = 0; motor < myoControl->numberOfMotors; motor++) {
-            myoControl->setDisplacement(motor, req.setpoint);
+        for (auto motor:req.motors) {
             myoControl->changeControl(motor, DISPLACEMENT);
+            myoControl->setDisplacement(motor, req.setpoint);
             control_mode[motor] = DISPLACEMENT;
         }
     }
@@ -811,12 +841,19 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request
 }
 
 void RoboyPlexus::StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg) {
-
-    if (std::find(msg->body_parts.begin(), msg->body_parts.end(), body_part) == msg->body_parts.end()) {
-        ROS_INFO_STREAM("Not my call, not recording!");
-        return;
+    bool its_for_me = false;
+    stringstream str;
+    for(auto b:body_parts) {
+        if (std::find(msg->body_parts.begin(), msg->body_parts.end(), b) != msg->body_parts.end()) {
+            str << body_part << " recording " << b << " with " << msg->id_list.size() << " motors" << endl;
+            its_for_me = true;
+        }
     }
-    ROS_INFO_STREAM("Recording a trajectory");
+    if(!its_for_me)
+        return;
+    for(int i:msg->id_list)
+        str << i << "\t";
+    ROS_INFO_STREAM(str.str());
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
     string name = body_part + "_" + msg->name;
     vector<int> idList(begin(msg->id_list), end(msg->id_list));
