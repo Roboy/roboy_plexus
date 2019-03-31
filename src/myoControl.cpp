@@ -631,7 +631,7 @@ float MyoControl::startRecordTrajectories(
 
     for(auto motor:idList) {
         changeControl(motor,DISPLACEMENT);
-        setDisplacement(motor,predisplacement*0.1);
+        setDisplacement(motor,10);
     }
 
     // done recording
@@ -738,7 +738,7 @@ bool MyoControl::playTrajectory(const char *file) {
         }
     }
 
-    allToDisplacement(0);
+//    allToDisplacement(0);
     ROS_INFO_STREAM("Replaying trajectory " + string(file));
     timer.start();
     double elapsedTime = 0.0, dt;
