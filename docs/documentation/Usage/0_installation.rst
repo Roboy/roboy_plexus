@@ -5,7 +5,7 @@ Prerequisites
 -------------
 `Download <http://wiki.ros.org/kinetic/Installation/Ubuntu>`_  ROS
 
-`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install **SoCEDS 17 (or greater)** standard edition. (! must be installed with sudo)
+`Download <https://dl.altera.com/soceds/17.1/?edition=standard&platform=linux&download_manager=dlm3>`_  and install **SoCEDS 17 (or greater)** standard edition (! must be installed with sudo).
 
 `Download <http://dl.altera.com/?edition=lite>`_ and install **Quartus 17 (or greater)** lite edition. (Quartus is only needed if you want to change the FPGA core)
 
@@ -17,21 +17,21 @@ Clone roboy_plexus recursively into your catkin workspace:
 ::
     git clone --recursive https://github.com/Roboy/roboy_plexus
 
-The package also depends on the following packages which need to be cloned into your workspace aswell:
+The package also depends on the following packages which need to be cloned into your workspace as well:
 ::
     git clone https://github.com/Roboy/common_utilities
     git clone https://github.com/Roboy/roboy_communication
 
 FPGA
 ----
-you can download the sd-card image with Ubuntu 16.04, xfce, kernel linux 4.9.78-ltsi from our servers:
+Find the SD card image with Ubuntu 16.04, xfce, kernel linux 4.9.78-ltsi on our servers:
 ::
     wget -nv http://bot.roboy.org:8081/~roboy/DE10_nano_lxce_4.9.78-ltsi-altera.md5sum
     wget -nv http://bot.roboy.org:8081/~roboy/DE10_nano_lxce_4.9.78-ltsi-altera.img
-Plug the sdcard into you reader. In a terminal, find out the name of your sd card device:
+Plug the SD card into your reader and get the name of your SD card device with the following command:
 ::
     sudo fdisk -l
-flash the image to a min 8GB sd-card: (sdX has to be replaced with the correct device)
+Flash the image to a min 8GB SD card: (sdX has to be replaced with the correct device)
 ::
     sudo dd if=DE10_nano_lxce_4.9.78-ltsi-altera.img of=/dev/sdX bs=1M status=progress
 .. warning::
@@ -39,21 +39,20 @@ flash the image to a min 8GB sd-card: (sdX has to be replaced with the correct d
     
 FPGA (flashing the old way --obsoleted)
 ----
-The flashing procedure takes up to 10 minutes. While your waiting, you can flash the fpga. We will flash it permanently,
-so make sure the dip switches are set to On-Off-On-On-Off-Off, ie configured to flash the fpga on startup from eeprom via jic
-( read the de10 nano user guide if your don't know what that means ).
+Notice: The flashing procedure takes up to 10 minutes. Meanwhile the flashing of the FPGA can be done. This has to be done permanently. Make sure the dip switches are set to On-Off-On-Off-Off, i.e. configure to flash on the FPGA on startup from eeprom via jic (for further information read the de10 nano user guide: `Download <http://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=China&No=1046&FID=1c19d1d50e0ee9b21678e881004f6d81>`_).
 
-Start the jtag server
+
+Start the jtag server with the following command:
 ::
     sudo ~/intelFPGA/17.1/quartus/bin/jtagd
 
-Connect the fpga flash port with your computer using a USB cable, then verify teh connection using:
+Connect the FPGA flash port with your computer by using an USB cable, then verify the connection using:
 ::
     sudo ~/intelFPGA/17.1/quartus/bin/jtagconfig
 
-Start quartus and open the project ``DE10_NANO_SoC_GHRD.qpf`` in ``roboy_de10_nano_soc``. Open the programmer.
-Under Hardware Setup choose your fpga. Click auto-detect and verify the model.
-Choose soc_system.jic and flash the fpga.
+Start the software quartus and open the project ``DE10_NANO_SoC_GHRD.qpf`` in the folder ``roboy_de10_nano_soc``. Open the programmer.
+Under Hardware Setup choose your FPGA. Click auto-detect and verify the model.
+Choose soc_system.jic and flash the FPGA.
 
 Build
 -----
