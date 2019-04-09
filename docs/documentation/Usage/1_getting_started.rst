@@ -4,29 +4,30 @@ Getting started
 Connect to FPGA
 ===============
 
-Connect via USB (not recomended, only if not found in network)
+Connect via USB port (not recommended, only if not found in network)
 ----
-Power-up your fpga with the flashed sd-card in it. Connect a USB cable to the uart port of the fpga, then:
+Power-up your FPGA with the flashed SD card in it. Connect an USB cable to the UART port of the FPGA, after that use the following command:
 ::
     sudo screen /dev/ttyUSB0 115200
 
-You should see the fpga boot screen, or already login screen (if not press enter).
-Login in ( user: root, password: Roboy2016 ).
+You should see either the FPGA boot screen, or already the login screen (if not press enter).
+Login in data ( user: 'root', password: 'Roboy2016' ).
 
-To find out what ip the fpga has:
+To find out what ip the FPGA has use:
 ::
     ifconfig
 
 Connect via ssh 
 ----
-Connect an ethernet cable to the fpga and you lan. You can also connect it directly to your pc ( in ubuntu->settings->network->wired->options->ipv4->shared_to_others )
+Connect either an ethernet cable to the FPGA and your LAN or connect it directly to your PC 
+(in ubuntu-> settings-> network-> wired-> options-> ipv4-> shared_to_others)
 
-The FPGA can be found via nmap (look for Gandalf)
+The FPGA can be found via NMAP (search for Gandalf)
 ::
     sudo nmap 192.168.0.0/24
 (roboy usally has a class B net so if you can't find it try /16)
 
-In the ~/.bashrc of the fpga edit the ROS_MASTER_URI variable so it is set to the IP where the roscore was started.
+In the ~/.bashrc of the FPGA edit the ROS_MASTER_URI variable so it is set to the IP where the roscore was started.
 Source the ~/.bashrc and make sure ROS_IP and ROS_MASTER_URI are set correctly:
 ::
     echo $ROS_IP
@@ -34,13 +35,13 @@ Source the ~/.bashrc and make sure ROS_IP and ROS_MASTER_URI are set correctly:
 
 copy data to FPGA  
 ===============
-copy plexus to FPGA
+Copy plexus to FPGA
 ----
-Copy the roboy_plexus binary to the fpga:
+Copy the roboy_plexus binary to the FPGA:
 ::
     scp <YOUR CATKIN WORKSPACE>/devel/lib/roboy_plexus/roboy_plexus root@10.42.0.1:~
 
-copy HDL to FPGA 
+Copy HDL to FPGA 
 ----
 (only needed if the rbf file was changed)
 
@@ -51,30 +52,31 @@ Start the roscore on your host pc.
 ::    
     roscore
 
-Run roboy_plexus on the fpga:
+Run roboy_plexus on the FPGA:
 ::
     ./roboy_plexus
       
-if you haven't done this befor add execute the following commands on your computer:
+If you haven't done this before execute the following commands on your computer:
 ::
     echo "export ROS_IP=$(hostname -I|head -n1 | awk '{print $1;'})" >> ~/.bashrc
     echo "export ROS_MASTER_URI=http://$ROS_IP:11311" >> ~/.bashrc
 
-troubleshooting
+Troubleshooting
 ===============
-troubleshooting plexus on PC
+Troubleshooting plexus on PC
 ----
-echo $ROS_MASTER_URI shows the wrong IP even bashrc was eddited 
-first solution
+Echo $ROS_MASTER_URI shows the wrong IP even bashrc was eddited 
+
+First solution
 :: 
     source ~/.bashrc   
-second solution (Ip address has to be changed to your current Ip)
+Second solution (IP address has to be changed to your current IP)
 ::
     export ROS_MASTER_URI=http://192.168.0.231:11311
 
-troubleshooting plexus on FPGA
+Troubleshooting plexus on FPGA
 ----
-If the led slides shows 2 "running" LED's, plexus ist started more than once. This means it has to be killed. 
+If the LED slides shows two "running" LED's, plexus ist started more than once. This means it has to be killed. 
 ::
     killall roboy_plexus
     
