@@ -42,6 +42,7 @@
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
 //#include <roboy_soli/roboySoli.hpp>
+#include <roboy_plexus/A1335.hpp>
 #include <roboy_middleware_msgs/ADCvalue.h>
 #include <roboy_middleware_msgs/ControlMode.h>
 #include <roboy_middleware_msgs/DarkRoom.h>
@@ -63,7 +64,8 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Empty.h>
-#include "std_msgs/Int32.h"
+#include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include <sensor_msgs/Imu.h>
 #include <thread>
 #include <map>
@@ -128,6 +130,11 @@ private:
      * Publishes ADC values
      */
     void adcPublisher();
+
+    /**
+     * Publishes sensor values measured in the test rig
+     */
+    void testBenchPublisher();
 
     /**
      * Publishes lighthouse sensor values
@@ -332,7 +339,7 @@ private:
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
-            motorAngle_pub, magneticSensor_pub;
+            motorAngle_pub, magneticSensor_pub, testbench_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
@@ -345,9 +352,10 @@ private:
     map<int, int> rotationCounter;
     map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
+    boost::shared_ptr<A1335> a1335;
 //    ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
+            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread, testbenchThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;

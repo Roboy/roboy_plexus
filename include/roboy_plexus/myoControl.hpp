@@ -172,7 +172,7 @@
 #define MYO_WRITE_wrist_joint_angle_setpoint(base, data)  IOWR(base, (uint32_t)(0x30<<8|0), data )
 #define MYO_WRITE_wrist_smooth_distance(base, data) IOWR(base, (uint32_t)(0x31<<8|0), data )
 
-#define NUMBER_OF_ADC_SAMPLES 10
+#define NUMBER_OF_ADC_SAMPLES 50
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
 
 using namespace std;
@@ -528,7 +528,7 @@ public:
     vector<int32_t> myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
     int32_t *adc_base;
     float weight_offset = 0;
-    float adc_weight_parameters[2] = {-1.3070e+01, 6.8629e-03}; // b + a*x = y
+    float adc_weight_parameters[2] = {-89.6187, 0.1133}; // b + a*x = y
     uint numberOfMotors;
     const string trajectories_folder = "/home/root/trajectories/";
     const string behaviors_folder = "/home/root/behaviors/";

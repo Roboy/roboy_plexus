@@ -74,10 +74,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                        new std::thread(&RoboyPlexus::darkRoomOOTXPublisher, this));
 //                darkRoomOOTXThread->detach();
 //            }
-//            if (adc_base != nullptr) {
-//                adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
-//                adcThread->detach();
-//            }
         }
     }
 
@@ -99,6 +95,19 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     emergencyStop_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
+
+    adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
+    testbench_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
+
+    if (adc_base != nullptr) {
+        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
+        adcThread->detach();
+
+        vector<uint8_t> deviceIds = {0xC};
+        a1335.reset(new A1335(i2c_base[3],deviceIds));
+        testbenchThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::testBenchPublisher, this));
+        testbenchThread->detach();
+    }
 
     setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
@@ -230,6 +239,18 @@ void RoboyPlexus::adcPublisher() {
             msg.load.push_back(val);
         }
         adc_pub.publish(msg);
+        rate.sleep();
+    }
+}
+
+void RoboyPlexus::testBenchPublisher() {
+    ros::Rate rate(100);
+    while (keep_publishing) {
+        std_msgs::Float32 msg;
+        vector<A1335State> state;
+        a1335->readAngleData(state);
+        msg.data = state[0].angle;
+        testbench_pub.publish(msg);
         rate.sleep();
     }
 }

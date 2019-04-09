@@ -132,16 +132,16 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     }
     reset();
 
-//    // set measure number for ADC convert
-//    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
-//
-//    // start measure
-//    for (uint channel = 0; channel < 8; channel++) {
-//        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-//        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
-//        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-//        usleep(1);
-//    }
+    // set measure number for ADC convert
+    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
+
+    // start measure
+    for (uint channel = 0; channel < 8; channel++) {
+        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
+        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+        usleep(1);
+    }
 
 }
 

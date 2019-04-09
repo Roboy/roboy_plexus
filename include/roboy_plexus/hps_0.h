@@ -136,6 +136,17 @@
 #define LED_RESET_VALUE 0
 
 /*
+ * Macros for device 'adc_ltc2308_0', class 'adc_ltc2308'
+ * The macros are prefixed with 'ADC_LTC2308_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
+#define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
+#define ADC_LTC2308_0_BASE 0xb0
+#define ADC_LTC2308_0_SPAN 8
+#define ADC_LTC2308_0_END 0xb7
+
+/*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
  * The macros are prefixed with 'SYSID_QSYS_'.
  * The prefix is the slave descriptor.
@@ -146,7 +157,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 114415
-#define SYSID_QSYS_TIMESTAMP 1552480421
+#define SYSID_QSYS_TIMESTAMP 1554819359
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
