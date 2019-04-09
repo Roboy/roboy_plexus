@@ -79,7 +79,7 @@
 #include "roboy_plexus/CRC32.h"
 #include <bitset>
 #include "roboy_plexus/A1335.hpp"
-#include "roboy_plexus/tlv493d.hpp"
+#include "roboy_plexus/tlv493d_fpga.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 //#include "roboy_plexus/armControl.hpp"
@@ -299,7 +299,7 @@ private:
      * @param b input byte
      * @return reversed byte
      */
-    inline uint8_t reverse(uint8_t b) {
+    inline uint8_t rev(uint8_t b) {
         b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
         b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
         b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
@@ -312,10 +312,10 @@ private:
      * @return reversed uint32_t
      */
     inline uint32_t reverse(uint32_t b) {
-        uint32_t a = (uint32_t) ((uint8_t) reverse((uint8_t) (b >> 24 & 0xff)) << 24 |
-                                 (uint8_t) reverse((uint8_t) (b >> 16 & 0xff)) << 16 |
-                                 (uint8_t) reverse((uint8_t) (b >> 8 & 0xff)) << 8 |
-                                 (uint8_t) reverse((uint8_t) (b & 0xff)));
+        uint32_t a = (uint32_t) ((uint8_t) rev((uint8_t) (b >> 24 & 0xff)) << 24 |
+                                 (uint8_t) rev((uint8_t) (b >> 16 & 0xff)) << 16 |
+                                 (uint8_t) rev((uint8_t) (b >> 8 & 0xff)) << 8 |
+                                 (uint8_t) rev((uint8_t) (b & 0xff)));
         return a;
     }
 
@@ -398,7 +398,7 @@ private:
 
     string ethaddr;
 
-    vector<boost::shared_ptr<TLV493D>> tlv493D0;
+    vector<boost::shared_ptr<TLV493D_FPGA>> tlv493D0;
 
     bool executeAction(string actions);
 
@@ -407,7 +407,7 @@ private:
     vector<string> expandBehavior(string name);
 
     string body_part;
-
+    vector<string> body_parts;
 };
 
 /** @} */ // end of group1

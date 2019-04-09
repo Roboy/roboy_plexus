@@ -334,7 +334,7 @@ int32_t MyoControl::getVelocity(int motor) {
 }
 
 int32_t MyoControl::getDisplacement(int motor) {
-    return MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+    return (int16_t)MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 void MyoControl::setPosition(int motor, int32_t setPoint) {
@@ -605,7 +605,10 @@ float MyoControl::startRecordTrajectories(
     recording = true;
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
-    allToDisplacement(predisplacement);
+    for(auto motor:idList) {
+        changeControl(motor,DISPLACEMENT);
+        setDisplacement(motor,predisplacement);
+    }
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -626,7 +629,10 @@ float MyoControl::startRecordTrajectories(
     } while (recording);
 
 
-    allToDisplacement(predisplacement / 2);
+    for(auto motor:idList) {
+        changeControl(motor,DISPLACEMENT);
+        setDisplacement(motor,10);
+    }
 
     // done recording
 
@@ -732,7 +738,7 @@ bool MyoControl::playTrajectory(const char *file) {
         }
     }
 
-    allToDisplacement(0);
+//    allToDisplacement(0);
     ROS_INFO_STREAM("Replaying trajectory " + string(file));
     timer.start();
     double elapsedTime = 0.0, dt;
