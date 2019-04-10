@@ -38,7 +38,7 @@ Source the ~/.bashrc and make sure ROS_IP and ROS_MASTER_URI are set correctly:
     echo $ROS_IP
     echo $ROS_MASTER_URI
 
-copy data to FPGA  
+Copy data to FPGA  
 ===============
 Copy plexus to FPGA
 ----
