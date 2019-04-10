@@ -1,3 +1,5 @@
+See [Roboy Plexus readthedocs](https://roboy-plexus.readthedocs.io/en) for full documentation.
+
 # Prerequisites
 1. Install dependencies
 ```
