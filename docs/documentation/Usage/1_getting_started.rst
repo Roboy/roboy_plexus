@@ -53,7 +53,6 @@ The copy is only needed if the RBF file was changed.
 FireUp the system 
 ===============
 Start the ROS core on your host PC.
-
 ::
     roscore
 
