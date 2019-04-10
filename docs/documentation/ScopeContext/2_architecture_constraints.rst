@@ -18,6 +18,8 @@ Hardware Constraints
 
 Hardware Constraints
 
+Software Constraints
+----
 .. csv-table:: 
   :header: "Constraint Name", "Description"
   :widths: 20, 60
@@ -27,6 +29,8 @@ Hardware Constraints
 
 Software Constraints
 
+Operating System Constraints
+----
 .. csv-table:: 
   :header: "Constraint Name", "Description"
   :widths: 20, 60
@@ -35,6 +39,8 @@ Software Constraints
 
 Operating System Constraints
 
+Programming Constraints
+----
 .. csv-table:: 
   :header: "Constraint Name", "Description"
   :widths: 20, 60
