@@ -7,7 +7,7 @@ Architecture Constraints
 Technical Constraints / Runtime Interface Requirements
 ------------------------------------------------------
 
-Hardware Constraints
+*Hardware Constraints*
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
@@ -17,7 +17,7 @@ Hardware Constraints
   "Intel RealSense", "Only the intel real sense can sense it.."
 
 
-Software Constraints
+*Software Constraints*
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
@@ -27,7 +27,7 @@ Software Constraints
   "Intel RealSense", "Only the intel real sense can sense it..."
 
 
-Operating System Constraints
+*Operating System Constraints*
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
@@ -36,7 +36,7 @@ Operating System Constraints
   "Windows 8 or higher", "Due to the Intel RealSense SDK only being supported on Windows, we are stuck with Windows"
 
 
-Programming Constraints
+*Programming Constraints*
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
