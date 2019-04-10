@@ -2,7 +2,6 @@ Building Block View
 ===================
 Overview
 The white box view of the first level of your code.
-^^^^^^^^
 
 .. _bb-l1-overview:
 
