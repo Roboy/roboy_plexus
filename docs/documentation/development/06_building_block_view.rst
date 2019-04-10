@@ -1,11 +1,11 @@
 Building Block View
 ===================
 Overview
+The white box view of the first level of your code.
 ^^^^^^^^
 
 .. _bb-l1-overview:
 
-The white box view of the first level of your code.
 This is a white box view of your system as shown within the in Context in figure: :ref:`context_within_environment`.
 External libraries and software are clearly marked.
 
