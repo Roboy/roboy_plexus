@@ -135,8 +135,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     if (!i2c_base.empty()) {
         vector<vector<int32_t>> deviceIDs = {{0x0}, {0x1}};
-        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[0], deviceIDs[0])));
-        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[0], deviceIDs[1])));
+        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[0])));
+        jointAngle.push_back(boost::shared_ptr<AM4096>(new AM4096(i2c_base[1], deviceIDs[1])));
         jointAngleThread = boost::shared_ptr<std::thread>(
                 new std::thread(&RoboyPlexus::jointStatusPublisher, this));
         jointAngleThread->detach();
