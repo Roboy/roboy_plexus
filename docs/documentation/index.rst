@@ -3,34 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Software Documentation Template!
+Roboy Plexus Documentation
 ===========================================================
 
-
-.. todo::
-  Introduce your project and describe what its intended goal and use is.
-
-
-.. _background_prerequisits:
-
-Relevant Background Information and Pre-Requisits
---------------------------------------------------
-
-.. _requirements_overview:
-
-Requirements Overview
----------------------
-
-The **software requirements** define the system from a blackbox/interfaces perspective. They are split into the following sections:
-
-- **User Interfaces** - :ref:`user-interfaces`
-- **Technical Interfaces** - :ref:`technical-interfaces`
-- **Runtime Interfaces and Constraints** - :ref:`runtime_interfaces`
-
-
-TODO:
-======
-.. todolist::
 
 Contents:
 
@@ -50,15 +25,3 @@ Contents:
 
   ScopeContext/*
 
-.. _development:
-.. toctree::
-  :maxdepth: 1
-  :glob:
-  :caption: Development
-
-  development/*
-
-.. toctree::
-   :maxdepth: 1
-
-   about-arc42
