@@ -16,14 +16,6 @@ Welcome to Software Documentation Template!
 Relevant Background Information and Pre-Requisits
 --------------------------------------------------
 
-.. todo::
-  Describe what a potential user needs to be familiar with. What should they read and understand beforehand
-
-  Describe what a developer needs to be familiar with to further understand the code.
-
-  Link to relevant documents or create a new page and add them there.
-
-
 .. _requirements_overview:
 
 Requirements Overview
