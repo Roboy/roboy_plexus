@@ -4,15 +4,6 @@ User Interfaces
 ---------------
 How does a user interact with the system.
 
-.. todo::
-  If you have a user interacting with the finished system, and especially if you have a UI or GUI, describe how it can be used.
-  A good way of doing this, is by building a
-
-  - state transition diagram aka the 'Dynamic UI Behaviuour' and
-  - a mockup/picture of every screen the user can see - aka 'Static UI'
-
-  Don't overdo it...
-
 .. _dynamic-UI-requirements:
 
 Dynamic UI Behaviour
