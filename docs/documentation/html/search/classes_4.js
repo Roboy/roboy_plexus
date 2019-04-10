@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['roboyplexus',['RoboyPlexus',['../class_roboy_plexus.html',1,'']]]
+  ['performmovementaction',['PerformMovementAction',['../class_perform_movement_action.html',1,'']]],
+  ['performmovementsaction',['PerformMovementsAction',['../class_perform_movements_action.html',1,'']]]
 ];
