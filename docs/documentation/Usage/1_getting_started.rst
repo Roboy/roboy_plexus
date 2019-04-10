@@ -52,7 +52,7 @@ The copy is only needed if the RBF file was changed.
 
 FireUp the system 
 ===============
-Start the ROS core on your host pc.
+Start the ROS core on your host PC.
 
 ::    
     roscore
@@ -85,7 +85,7 @@ If the LED slides shows two "running" LED's, plexus is started more than once. I
 ::
     killall roboy_plexus
     
-It might happen that the ssh interface doesn't open the terminal. This might occur if the plexus code is broken - to prevent it from autostart. In that case connect the board to a PC via USB and comment out the last line of ~/.bashrc that starts Plexus.
+It might happen that the ssh interface doesn't open the terminal. This might occur if the plexus code is broken - to prevent it from autostart. In that case, connect the board to a PC via USB and comment out the last line of ~/.bashrc that starts Plexus.
 
 Visualize data
 ===============
@@ -95,6 +95,6 @@ Go into your catkin WORKSPACE and into SRC and clone RQT
 ::
     git clone https://github.com/Roboy/roboy_rqt_plugins.git
     
-After catkin_make is executed the new plugins have to be source:
+After catkin_make is executed the new plugins have to be sourced:
 ::
     source <YOUR CATKIN WORKSPACE>/devel/setup.bash
