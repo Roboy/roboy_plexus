@@ -54,7 +54,7 @@ FireUp the system
 ===============
 Start the ROS core on your host PC.
 
-::    
+::
     roscore
 
 Run roboy_plexus on the FPGA:
