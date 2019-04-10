@@ -81,7 +81,7 @@ Second solution (IP address has to be changed to your current IP)
 
 Troubleshooting plexus on FPGA
 ----
-If the LED slides shows two "running" LED's, plexus is started more than once. In that case use the following comment:
+If the LED slides shows two "running" LED's, plexus is started more than once. In that case use the following command:
 ::
     killall roboy_plexus
     
