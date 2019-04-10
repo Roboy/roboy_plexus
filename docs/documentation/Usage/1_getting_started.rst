@@ -11,9 +11,11 @@ Power-up your FPGA with the flashed SD card in it. Connect an USB cable to the U
     sudo screen /dev/ttyUSB0 115200
 
 You should see either the FPGA boot screen, or already the login screen (if not press enter).
-Login in data ( user: 'root', password: 'Roboy2016' ).
+Login in data: 
+user: 'root'
+password: 'Roboy2016'
 
-To find out what ip the FPGA has use:
+To find out what IP the FPGA is using:
 ::
     ifconfig
 
@@ -25,7 +27,10 @@ Connect either an ethernet cable to the FPGA and your LAN or connect it directly
 The FPGA can be found via NMAP (search for Gandalf)
 ::
     sudo nmap 192.168.0.0/24
-(roboy usally has a class B net so if you can't find it try /16)
+
+If you can not find this net, use Roboy's class B net:
+::
+    sudo nmap 192.168.0.0/16
 
 In the ~/.bashrc of the FPGA edit the ROS_MASTER_URI variable so it is set to the IP where the roscore was started.
 Source the ~/.bashrc and make sure ROS_IP and ROS_MASTER_URI are set correctly:
@@ -43,7 +48,7 @@ Copy the roboy_plexus binary to the FPGA:
 
 Copy HDL to FPGA 
 ----
-(only needed if the rbf file was changed)
+The copy is only needed if the rbf file was changed.
 
 FireUp the system 
 ===============
@@ -76,20 +81,20 @@ Second solution (IP address has to be changed to your current IP)
 
 Troubleshooting plexus on FPGA
 ----
-If the LED slides shows two "running" LED's, plexus ist started more than once. This means it has to be killed. 
+If the LED slides shows two "running" LED's, plexus is started more than once. In that case use the following commant:
 ::
     killall roboy_plexus
     
-Sometimes the ssh interface dosn't open the terminal, this sometimes happens if the plexus code is broken. To prevent it from autostart. Connect the board to a pc via USB and comment out the last line of ~/.bashrc that starts plexus.
+It might happen that the ssh interface doesn't open the terminal. This might occur if the plexus code is broken - to prevent it from autostart. In that case connect the board to a PC via USB and comment out the last line of ~/.bashrc that starts Plexus.
 
 Visualize data
 ===============
-To visualize data, there is something called rqt
+For visualizing your data use RQT
 
-go into your catkin WORKSPACE and into src and clone rqt
+Go into your catkin WORKSPACE and into src and clone rqt
 ::
     git clone https://github.com/Roboy/roboy_rqt_plugins.git
     
-after catkin_make is executed the new plugins have to be source 
+After catkin_make is executed the new plugins have to be source:
 ::
     source <YOUR CATKIN WORKSPACE>/devel/setup.bash
