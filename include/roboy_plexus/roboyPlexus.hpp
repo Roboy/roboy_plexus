@@ -41,29 +41,31 @@
 #include "roboy_plexus/controlActions.hpp"
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
-#include <roboy_soli/roboySoli.hpp>
-#include <roboy_communication_middleware/ADCvalue.h>
-#include <roboy_communication_middleware/ControlMode.h>
-#include <roboy_communication_middleware/DarkRoom.h>
-#include <roboy_communication_middleware/DarkRoomOOTX.h>
-#include <roboy_communication_middleware/DarkRoomStatus.h>
-#include <roboy_communication_middleware/JointStatus.h>
-#include <roboy_communication_middleware/MagneticSensor.h>
-#include <roboy_communication_middleware/MotorAngle.h>
-#include <roboy_communication_middleware/MotorCalibrationService.h>
-#include <roboy_communication_middleware/MotorCommand.h>
-#include <roboy_communication_middleware/MotorStatus.h>
-#include <roboy_communication_middleware/MotorConfigService.h>
-#include <roboy_communication_middleware/SetInt16.h>
-#include <roboy_communication_control/Behavior.h>
-#include <roboy_communication_control/StartRecordTrajectory.h>
-#include <roboy_communication_middleware/SystemCheck.h>
-#include <roboy_communication_control/ListItems.h>
+//#include <roboy_soli/roboySoli.hpp>
+#include <roboy_plexus/A1335.hpp>
+#include <roboy_middleware_msgs/ADCvalue.h>
+#include <roboy_middleware_msgs/ControlMode.h>
+#include <roboy_middleware_msgs/DarkRoom.h>
+#include <roboy_middleware_msgs/DarkRoomOOTX.h>
+#include <roboy_middleware_msgs/DarkRoomStatus.h>
+#include <roboy_middleware_msgs/MagneticSensor.h>
+#include <roboy_middleware_msgs/MotorAngle.h>
+#include <roboy_middleware_msgs/MotorCalibrationService.h>
+#include <roboy_middleware_msgs/MotorCommand.h>
+#include <roboy_middleware_msgs/MotorStatus.h>
+#include <roboy_middleware_msgs/MotorConfigService.h>
+#include <roboy_middleware_msgs/MyoBrickCalibrationService.h>
+#include <roboy_middleware_msgs/SetInt16.h>
+#include <roboy_control_msgs/Behavior.h>
+#include <roboy_control_msgs/StartRecordTrajectory.h>
+#include <roboy_middleware_msgs/SystemCheck.h>
+#include <roboy_control_msgs/ListItems.h>
 #include <std_srvs/SetBool.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <std_msgs/Empty.h>
-#include "std_msgs/Int32.h"
+#include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include <sensor_msgs/Imu.h>
 #include <thread>
 #include <map>
@@ -77,10 +79,10 @@
 #include "roboy_plexus/CRC32.h"
 #include <bitset>
 #include "roboy_plexus/A1335.hpp"
-#include "roboy_plexus/tlv493d.hpp"
+#include "roboy_plexus/tlv493d_fpga.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-#include "roboy_plexus/armControl.hpp"
+//#include "roboy_plexus/armControl.hpp"
 #include <sys/stat.h>
 #include <common_utilities/CommonDefinitions.h>
 
@@ -130,6 +132,11 @@ private:
     void adcPublisher();
 
     /**
+     * Publishes sensor values measured in the test rig
+     */
+    void testBenchPublisher();
+
+    /**
      * Publishes lighthouse sensor values
      */
     void darkRoomPublisher();
@@ -138,11 +145,6 @@ private:
      * Publishes decoded lighthouse ootx data
      */
     void darkRoomOOTXPublisher();
-
-    /**
-     * Publishes joint angles
-     */
-    void jointStatusPublisher();
 
     /**
      * Publishes motor angles
@@ -158,7 +160,7 @@ private:
      * Callback for motor command
      * @param msg motor command
      */
-    void motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg);
+    void motorCommandCB(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg);
 
     /**
      * Motor Angle PID controller
@@ -180,8 +182,8 @@ private:
      * @param res success
      * @return success
      */
-    bool MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,
-                            roboy_communication_middleware::MotorConfigService::Response &res);
+    bool MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
+                            roboy_middleware_msgs::MotorConfigService::Response &res);
 
     /**
      * Service for changing the control mode of motors, perviously set PID parameters are restored
@@ -189,8 +191,8 @@ private:
      * @param res
      * @return success
      */
-    bool ControlModeService(roboy_communication_middleware::ControlMode::Request &req,
-                            roboy_communication_middleware::ControlMode::Response &res);
+    bool ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
+                            roboy_middleware_msgs::ControlMode::Response &res);
 
     /**
      * Service for motor spring calibration, samples the spring space for a requested amount of time and estimates spring coefficients
@@ -198,8 +200,17 @@ private:
      * @param res
      * @return
      */
-    bool MotorCalibrationService(roboy_communication_middleware::MotorCalibrationService::Request &req,
-                                 roboy_communication_middleware::MotorCalibrationService::Response &res);
+    bool MotorCalibrationService(roboy_middleware_msgs::MotorCalibrationService::Request &req,
+                                 roboy_middleware_msgs::MotorCalibrationService::Response &res);
+
+    /**
+     * Service for calibrating the motor angle sensor
+     * @param req
+     * @param res
+     * @return
+     */
+    bool MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCalibrationService::Request &req,
+                                 roboy_middleware_msgs::MyoBrickCalibrationService::Response &res);
 
     /**
      * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
@@ -216,15 +227,15 @@ private:
      * @param res
      * @return
      */
-    bool SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
-                            roboy_communication_middleware::SystemCheck::Response &res);
+    bool SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
+                            roboy_middleware_msgs::SystemCheck::Response &res);
 
     /**
      * Motor setpoints trajectory recording callback.
      * @param msg
      * @return
      */
-    void StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg);
+    void StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg);
 
     /**
      * Callback stops recording the trajectory
@@ -238,7 +249,7 @@ private:
      * Callback saves behavior
      * @param msg
      */
-    void SaveBehaviorCB(const roboy_communication_control::Behavior &msg);
+    void SaveBehaviorCB(const roboy_control_msgs::Behavior &msg);
 
     /**
      * Callback updates the displacement for recording trajectories
@@ -259,8 +270,8 @@ private:
      * @param res
      * @return
      */
-    bool ListExistingItemsService(roboy_communication_control::ListItems::Request &req,
-                                  roboy_communication_control::ListItems::Response &res);
+    bool ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
+                                  roboy_control_msgs::ListItems::Response &res);
 
     /**
      * Service returns the list of actions in the requested behavior
@@ -268,8 +279,8 @@ private:
      * @param res
      * @return
      */
-    bool ExpandBehaviorService(roboy_communication_control::ListItems::Request &req,
-                               roboy_communication_control::ListItems::Response &res);
+    bool ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
+                               roboy_control_msgs::ListItems::Response &res);
 
 
     /**
@@ -278,8 +289,8 @@ private:
      * @param res
      * @return
      */
-    bool SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
-                               roboy_communication_middleware::SetInt16::Request &res);
+    bool SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
+                               roboy_middleware_msgs::SetInt16::Request &res);
 
 
 private:
@@ -288,7 +299,7 @@ private:
      * @param b input byte
      * @return reversed byte
      */
-    inline uint8_t reverse(uint8_t b) {
+    inline uint8_t rev(uint8_t b) {
         b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
         b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
         b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
@@ -301,10 +312,10 @@ private:
      * @return reversed uint32_t
      */
     inline uint32_t reverse(uint32_t b) {
-        uint32_t a = (uint32_t) ((uint8_t) reverse((uint8_t) (b >> 24 & 0xff)) << 24 |
-                                 (uint8_t) reverse((uint8_t) (b >> 16 & 0xff)) << 16 |
-                                 (uint8_t) reverse((uint8_t) (b >> 8 & 0xff)) << 8 |
-                                 (uint8_t) reverse((uint8_t) (b & 0xff)));
+        uint32_t a = (uint32_t) ((uint8_t) rev((uint8_t) (b >> 24 & 0xff)) << 24 |
+                                 (uint8_t) rev((uint8_t) (b >> 16 & 0xff)) << 16 |
+                                 (uint8_t) rev((uint8_t) (b >> 8 & 0xff)) << 8 |
+                                 (uint8_t) rev((uint8_t) (b & 0xff)));
         return a;
     }
 
@@ -327,23 +338,24 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
-    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, jointStatus_pub, adc_pub, gsensor_pub,
-            motorAngle_pub, magneticSensor_pub;
+    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
+            motorAngle_pub, magneticSensor_pub, testbench_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
             soliGetData_srv, soli_srv, soliGetFrameFormat_srv, soliSetFrameFormat_srv, soliGetAdcSamplerate_srv,
             soliSetAdcSamplerate_srv, soliGetChirpDuration_srv, soliSetFMCWConfiguration_srv, soliGetFMCWConfiguration_srv,
-            soliGetFrameInfo_srv;
+            soliGetFrameInfo_srv, myobrick_calibration_srv;
     map<int, int> setPoint_backup;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     map<int, int> rotationCounter;
     map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
-    ArmControlPtr armControl;
-    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, jointStatusThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread;
+    boost::shared_ptr<A1335> a1335;
+//    ArmControlPtr armControl;
+    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
+            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread, testbenchThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
@@ -386,7 +398,7 @@ private:
 
     string ethaddr;
 
-    vector<boost::shared_ptr<TLV493D>> tlv493D0;
+    vector<boost::shared_ptr<TLV493D_FPGA>> tlv493D0;
 
     bool executeAction(string actions);
 
@@ -395,7 +407,7 @@ private:
     vector<string> expandBehavior(string name);
 
     string body_part;
-
+    vector<string> body_parts;
 };
 
 /** @} */ // end of group1

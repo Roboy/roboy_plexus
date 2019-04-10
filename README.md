@@ -56,7 +56,7 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 3. The control commands are set by publishing ROS messages under `/roboy/middleware/MotorCommand`:
   ```  
-  rostopic pub /roboy/middleware/MotorCommand roboy_communication_middleware/MotorCommand "id: 0 
+  rostopic pub /roboy/middleware/MotorCommand roboy_middleware_msgs/MotorCommand "id: 0 
 		motors: [0,1]
 		setPoints: [0,0]"
   ```

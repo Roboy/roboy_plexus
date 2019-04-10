@@ -9,20 +9,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     id = IORD(switches_base, 0) & 0x7;
 //    string body_part;
     switch (id) {
-        case HEAD:
-            body_part = "head";
-            break;
         case SHOULDER_LEFT:
             body_part = "shoulder_left";
             break;
-        case SPINE_LEFT:
-            body_part = "spine_left";
-            break;
         case SHOULDER_RIGHT:
             body_part = "shoulder_right";
-            break;
-        case SPINE_RIGHT:
-            body_part = "spine_right";
             break;
         default:
             body_part = "unknown";
@@ -45,148 +36,17 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     switch (id) {
-        case HEAD: {
-            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle", 1);
-            vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
-            vector<int32_t> gearBoxRatio = {35, 62, 35, 35, 62, 35};
-            vector<int32_t> encoderMultiplier = {16, 4, 16, 16, 4, 16};
-            if (!myoControl->configureMyoBricks(myo_bricks[HEAD], deviceIDs, encoderMultiplier, gearBoxRatio)) {
-                ROS_ERROR("could not configure myoBricks");
-            }else {
-                motorAngleThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                motorAngleThread->detach();
-            }
-            break;
-        }
-
-        case SPINE_LEFT: {
-            { // start motor angle publisher for three myoBricks
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                           1);
-                vector<uint8_t> deviceIDs = {0xE, 0xC};
-//                vector<uint8_t> motorIDs = {0,1,2};
-                vector<int32_t> gearBoxRatio = {62, 62};
-                vector<int32_t> encoderMultiplier = {1, 1};
-                if (!myoControl->configureMyoBricks(myo_bricks[SPINE_LEFT], deviceIDs, encoderMultiplier, gearBoxRatio)) {
-                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
-                }else {
-                    motorAngleThread = boost::shared_ptr<std::thread>(
-                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                    motorAngleThread->detach();
-                }
-            }
-            break;
-        }
-        case SPINE_RIGHT: {
-            { // start motor angle publisher for three myoBricks
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                           1);
-                vector<uint8_t> deviceIDs = {0xE, 0xD};
-                vector<int32_t> gearBoxRatio = {62, 62};
-                vector<int32_t> encoderMultiplier = {1, 1};
-                if (!myoControl->configureMyoBricks(myo_bricks[SPINE_RIGHT], deviceIDs, encoderMultiplier,gearBoxRatio)) {
-                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
-                }else {
-                    motorAngleThread = boost::shared_ptr<std::thread>(
-                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                    motorAngleThread->detach();
-                }
-            }
-            soliInitSensor();
-
-            soliGetData_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetData", soliGetData);
-            soli_srv = nh->advertiseService("/roboy/middleware/leftHand/soli", soli);
-            soliGetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameFormat", soliGetFrameFormat);
-            soliSetFrameFormat_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFrameFormat", soliSetFrameFormat);
-            soliGetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetAdcSamplerate", soliGetAdcSamplerate);
-            soliSetAdcSamplerate_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetAdcSamplerate", soliSetAdcSamplerate);
-            soliGetChirpDuration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetChirpDuration", soliGetChirpDuration);
-            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
-            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
-            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
-            break;
-        }
         case SHOULDER_LEFT: {
-            {
-                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-                                                                                           1);
-                vector<uint8_t> deviceIDs = {0xF, 0xE};
-                vector<int32_t> gearBoxRatio = {62, 62};
-                vector<int32_t> encoderMultiplier = {1, 1};
-                if (!myoControl->configureMyoBricks(myo_bricks[SHOULDER_LEFT], deviceIDs, encoderMultiplier,
-                                                    gearBoxRatio)) {
-                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
-                } else {
-                    motorAngleThread = boost::shared_ptr<std::thread>(
-                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-                    motorAngleThread->detach();
-                }
-            }
-            {
-                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, false, false, false, true));
-            }
-//            {
-//                if(i2c_base.size()>=3) {
-//                    vector<uint8_t> deviceIDs = {0x5e};
-//                    vector<int> pins = {255};
-//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceIDs, pins)));
-//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceIDs, pins)));
-//                    tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceIDs, pins)));
-//                    magneticsShoulderThread = boost::shared_ptr<std::thread>(
-//                            new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-//                    magneticsShoulderThread->detach();
-//                }
-//            }
-
-            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-                    "/roboy/middleware/MagneticSensor", 1, this);
-
-            vector<uint8_t> deviceaddress = {0x5e};
-            vector<int> devicepins = {255};
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[0], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-
-            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-            magneticsShoulderThread->detach();
+            body_parts.push_back("leg_left");
+            body_parts.push_back("shoulder_left");
             break;
         }
         case SHOULDER_RIGHT: {
-            {
-//                motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-//                                                                                           1);
-//                vector<uint8_t> deviceIDs = {0xF, 0xE};
-//                vector<int32_t> gearBoxRatio = {62, 62};
-//                vector<int32_t> encoderMultiplier = {1, 1};
-//                if (!myoControl->configureMyoBricks(myo_bricks[SHOULDER_RIGHT], deviceIDs, encoderMultiplier,
-//                                                    gearBoxRatio)) {
-//                    ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
-//                } else {
-//                    motorAngleThread = boost::shared_ptr<std::thread>(
-//                            new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-//                    motorAngleThread->detach();
-//                }
-            }
-            {
-                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-                armControl.reset(new ArmControl(myo_base[1], 0xF, 0xC, deviceIDs, true, false, false, false));
-            }
-//            motorAngle_pub = nh->advertise<roboy_communication_middleware::MotorAngle>("/roboy/middleware/MotorAngle",
-//                                                                                       1);
-//            jointStatus_pub = nh->advertise<roboy_communication_middleware::JointStatus>(
-//                    "/roboy/middleware/JointStatus", 1);
-//            magneticSensor_pub = nh->advertise<roboy_communication_middleware::MagneticSensor>(
-//                    "/roboy/middleware/MagneticSensor", 1, this);
-//            if(i2c_base[0]!=nullptr){ // start hand IMU publisher
-//                vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
-//                handControl.reset(new HandControl(i2c_base[0], deviceIDs, true));
-//                handPower_srv = nh->advertiseService("/roboy/" + body_part + "/control/HandPower",
-//                                                     &RoboyPlexus::HandPower, this);
-//            }
-
+            body_parts.push_back("leg_right");
+            body_parts.push_back("shoulder_right");
+            break;
+        }
+        default: {
 //            soliInitSensor();
 //
 //            soliGetData_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetData", soliGetData);
@@ -199,53 +59,24 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            soliSetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliSetFMCWConfiguration", soliSetFMCWConfiguration);
 //            soliGetFMCWConfiguration_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFMCWConfiguration", soliGetFMCWConfiguration);
 //            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/rightHand/soliGetFrameInfo", soliGetFrameInfo);
-
-//            // Look in the device's user manual for allowed addresses! (Table 6)
-//            vector<uint8_t> deviceaddress0 = {0b1001010, 0b1001110};//
-//            vector<uint8_t> deviceaddress1 = {0b1001010};//
-//            vector<int> devicepins0 = {0, 1};
-//            vector<int> devicepins1 = {0};
-//            tlv493D0[0].reset(new TLV493D(i2c_base[0], deviceaddress0, devicepins0));
-//            tlv493D0[1].reset(new TLV493D(i2c_base[1], deviceaddress1, devicepins1));
-//
-//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-//            magneticsShoulderThread->detach();
-
-//            vector<uint8_t> deviceaddress = {0b1001010};//
-//            vector<int> devicepins = {255};
-//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[1], deviceaddress, devicepins)));
-//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[2], deviceaddress, devicepins)));
-//            tlv493D0.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[3], deviceaddress, devicepins)));
-
-//            magneticsShoulderThread = boost::shared_ptr<std::thread>(
-//                    new std::thread(&RoboyPlexus::magneticShoulderJointPublisher, this));
-//            magneticsShoulderThread->detach();
-            break;
-        }
-        default: {
-            motorCalibration_srv = nh->advertiseService("/roboy/middleware/MotorCalibration",
-                                                        &RoboyPlexus::MotorCalibrationService, this);
-            darkroom_pub = nh->advertise<roboy_communication_middleware::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
-                                                                                   1);
-            darkroom_ootx_pub = nh->advertise<roboy_communication_middleware::DarkRoomOOTX>(
-                    "/roboy/middleware/DarkRoom/ootx", 1);
-            darkroom_status_pub = nh->advertise<roboy_communication_middleware::DarkRoomStatus>(
-                    "/roboy/middleware/DarkRoom/status", 1);
-            adc_pub = nh->advertise<roboy_communication_middleware::ADCvalue>("/roboy/middleware/LoadCells", 1);
-            if (darkroom_base != nullptr) {
-                darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
-                darkRoomThread->detach();
-            }
-            if (!darkroom_ootx_addr.empty()) {
-                darkRoomOOTXThread = boost::shared_ptr<std::thread>(
-                        new std::thread(&RoboyPlexus::darkRoomOOTXPublisher, this));
-                darkRoomOOTXThread->detach();
-            }
-            if (adc_base != nullptr) {
-                adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
-                adcThread->detach();
-            }
+//            motorCalibration_srv = nh->advertiseService("/roboy/middleware/MotorCalibration",
+//                                                        &RoboyPlexus::MotorCalibrationService, this);
+//            darkroom_pub = nh->advertise<roboy_middleware_msgs::DarkRoom>("/roboy/middleware/DarkRoom/sensors",
+//                                                                                   1);
+//            darkroom_ootx_pub = nh->advertise<roboy_middleware_msgs::DarkRoomOOTX>(
+//                    "/roboy/middleware/DarkRoom/ootx", 1);
+//            darkroom_status_pub = nh->advertise<roboy_middleware_msgs::DarkRoomStatus>(
+//                    "/roboy/middleware/DarkRoom/status", 1);
+//            adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
+//            if (darkroom_base != nullptr) {
+//                darkRoomThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::darkRoomPublisher, this));
+//                darkRoomThread->detach();
+//            }
+//            if (!darkroom_ootx_addr.empty()) {
+//                darkRoomOOTXThread = boost::shared_ptr<std::thread>(
+//                        new std::thread(&RoboyPlexus::darkRoomOOTXPublisher, this));
+//                darkRoomOOTXThread->detach();
+//            }
         }
     }
 
@@ -268,6 +99,19 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
 
+    adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
+    testbench_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
+
+    if (adc_base != nullptr) {
+        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
+        adcThread->detach();
+
+        vector<uint8_t> deviceIds = {0xC};
+        a1335.reset(new A1335(i2c_base[3],deviceIds));
+        testbenchThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::testBenchPublisher, this));
+        testbenchThread->detach();
+    }
+
     setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
 //    replayTrajectory_srv = nh->advertiseService("/roboy/" + body_part + "/control/ReplayTrajectory",
@@ -283,18 +127,19 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     expandBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExpandBehavior",
                                               &RoboyPlexus::ExpandBehaviorService, this);
 
-    motorStatus_pub = nh->advertise<roboy_communication_middleware::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+    motorStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
+    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+        myoControl->setPosition(motor,myoControl->getPosition(motor));
+        myoControl->changeControl(motor, POSITION);
+        control_mode[motor] = POSITION;
+    }
 
-    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++)
-        control_mode[motor] = DISPLACEMENT;
-
-    myoControl->allToDisplacement(0);
 
 //    // open i2c bus for gsensor
 //    if ((file = open(filename, O_RDWR)) < 0) {
@@ -329,10 +174,6 @@ RoboyPlexus::~RoboyPlexus() {
 
     if (motorStatusThread->joinable())
         motorStatusThread->join();
-    if (!i2c_base.empty()) {
-        if (jointStatusThread->joinable())
-            jointStatusThread->join();
-    }
     if (bSuccess) {
         if (gsensor_thread->joinable())
             gsensor_thread->join();
@@ -392,7 +233,7 @@ void RoboyPlexus::gsensorPublisher() {
 void RoboyPlexus::adcPublisher() {
     ros::Rate rate(100);
     while (keep_publishing) {
-        roboy_communication_middleware::ADCvalue msg;
+        roboy_middleware_msgs::ADCvalue msg;
         msg.id = id;
         for (uint i = 0; i < NUMBER_OF_LOADCELLS; i++) {
             uint32_t adcvalue;
@@ -405,13 +246,25 @@ void RoboyPlexus::adcPublisher() {
     }
 }
 
+void RoboyPlexus::testBenchPublisher() {
+    ros::Rate rate(100);
+    while (keep_publishing) {
+        std_msgs::Float32 msg;
+        vector<A1335State> state;
+        a1335->readAngleData(state);
+        msg.data = state[0].angle;
+        testbench_pub.publish(msg);
+        rate.sleep();
+    }
+}
+
 void RoboyPlexus::darkRoomPublisher() {
     ros::Rate rate(240);
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     while (keep_publishing) {
         uint active_sensors = 0;
-        roboy_communication_middleware::DarkRoom msg;
-        msg.objectID = ethaddr;
+        roboy_middleware_msgs::DarkRoom msg;
+        msg.object_id = ethaddr;
         for (uint i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, i);
             high_resolution_clock::time_point t1 = high_resolution_clock::now();
@@ -479,10 +332,10 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
 
                 uint32_t crc32checksumCalculated = crc.finalize();
                 if (crc.finalize() == crc32checksum) { // kinda paranoid right...?!
-                    roboy_communication_middleware::DarkRoomOOTX msg;
+                    roboy_middleware_msgs::DarkRoomOOTX msg;
                     msg.lighthouse = lighthouse;
                     msg.fw_version = ootx.frame.fw_version;
-                    msg.ID = ootx.frame.ID;
+                    msg.id = ootx.frame.ID;
                     half fcal_0_phase, fcal_1_phase, fcal_0_tilt, fcal_1_tilt;
                     fcal_0_phase.data_ = ootx.frame.fcal_0_phase;
                     fcal_1_phase.data_ = ootx.frame.fcal_1_phase;
@@ -556,8 +409,8 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
             }
         }
 
-        roboy_communication_middleware::DarkRoomStatus status_msg;
-        status_msg.objectID = ethaddr;
+        roboy_middleware_msgs::DarkRoomStatus status_msg;
+        status_msg.object_id = ethaddr;
         uint active_sensors = 0;
         for (uint8_t i = 0; i < NUM_SENSORS; i++) {
             int32_t val = IORD(darkroom_base, (1 << 8 | i));
@@ -572,30 +425,27 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
     }
 }
 
-
-void RoboyPlexus::jointStatusPublisher() {
-    ros::Rate rate(50);
-    while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::JointStatus msg;
-        msg.id = id;
-        vector<A1335State> jointState;
-        for (uint i = 0; i < jointAngle.size(); i++) {
-            jointAngle[i]->readAngleData(jointState);
-            msg.absAngles.push_back(jointState[i].angle);
-            msg.relAngles.push_back(jointState[i].angle);
-        }
-        jointStatus_pub.publish(msg);
-        rate.sleep();
-    }
-}
-
 void RoboyPlexus::motorAnglePublisher() {
     ros::Rate rate(60);
     while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::MotorAngle msg;
+        roboy_middleware_msgs::MotorAngle msg;
         msg.id = id;
-        for (int motor:myo_bricks[id]) {
-            msg.angles.push_back((myoControl->getMotorAngle(motor) / 4096.0 * 360.0));
+        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+            if(find(myo_bricks[id].begin(),myo_bricks[id].end(),motor)!=myo_bricks[id].end()) {
+                msg.angles.push_back((myoControl->getMotorAngle(motor) / 4096.0 * 360.0));
+                msg.raw_angles.push_back(myoControl->getMotorAngle(motor));
+                msg.raw_angles_prev.push_back(myoControl->getMotorAnglePrev(motor));
+                msg.offset_angles.push_back(myoControl->getMotorAngleOffset(motor));
+                msg.relative_angles.push_back(myoControl->getRelativeMotorAngle(motor));
+                msg.rev_counter.push_back(myoControl->getRevolutionCounter(motor));
+            }else {
+                msg.angles.push_back(0);
+                msg.raw_angles.push_back(0);
+                msg.raw_angles_prev.push_back(0);
+                msg.offset_angles.push_back(0);
+                msg.relative_angles.push_back(0);
+                msg.rev_counter.push_back(0);
+            }
         }
         motorAngle_pub.publish(msg);
         rate.sleep();
@@ -605,11 +455,11 @@ void RoboyPlexus::motorAnglePublisher() {
 void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::MotorStatus msg;
+        roboy_middleware_msgs::MotorStatus msg;
         msg.id = id;
         msg.power_sense = myoControl->getPowerSense();
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-            msg.pwmRef.push_back(myoControl->getPWM(motor));
+            msg.pwm_ref.push_back(myoControl->getPWM(motor));
             int16_t current = myoControl->getCurrent(motor);
             if (current >= 0) {
                 msg.position.push_back(myoControl->getPosition(motor));
@@ -632,7 +482,7 @@ void RoboyPlexus::motorStatusPublisher() {
 void RoboyPlexus::magneticShoulderJointPublisher() {
     ros::Rate rate(60);
     while (keep_publishing && ros::ok()) {
-        roboy_communication_middleware::MagneticSensor msg;
+        roboy_middleware_msgs::MagneticSensor msg;
 
         float fx,fy,fz;
         for(int i=0;i<tlv493D0.size();i++){
@@ -655,22 +505,22 @@ void RoboyPlexus::magneticShoulderJointPublisher() {
     }
 }
 
-void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorCommand::ConstPtr &msg) {
+void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
     if (msg->id == id) {
         uint i = 0;
         for (auto motor:msg->motors) {
             switch (control_mode[motor]) {
                 case POSITION:
-                    myoControl->setPosition(motor, msg->setPoints[i]);
+                    myoControl->setPosition(motor, msg->set_points[i]);
                     break;
                 case VELOCITY:
-                    myoControl->setVelocity(motor, msg->setPoints[i]);
+                    myoControl->setVelocity(motor, msg->set_points[i]);
                     break;
                 case DISPLACEMENT:
-                    myoControl->setDisplacement(motor, msg->setPoints[i]);
+                    myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
                 case FORCE:
-                    myoControl->setDisplacement(motor, msg->setPoints[i]);
+                    myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
             }
             i++;
@@ -681,7 +531,7 @@ void RoboyPlexus::motorCommandCB(const roboy_communication_middleware::MotorComm
 void RoboyPlexus::motorAnglePID() {
 //    ros::Rate rate(100);
 //    while (keep_publishing) {
-//        roboy_communication_middleware::MotorAngle msg;
+//        roboy_middleware_msgs::MotorAngle msg;
 //        msg.id = id;
 //        vector<A1335State> state;
 //        motorAngle[0]->readAngleData(state);
@@ -730,8 +580,8 @@ bool RoboyPlexus::HandPower(std_srvs::SetBool::Request &req, std_srvs::SetBool::
     return true;
 }
 
-bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfigService::Request &req,
-                                     roboy_communication_middleware::MotorConfigService::Response &res) {
+bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
+                                     roboy_middleware_msgs::MotorConfigService::Response &res) {
     stringstream str;
     control_Parameters_t params;
     uint i = 0;
@@ -748,19 +598,19 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
             str << "\t" << (int) motor << ": VELOCITY";
         if (req.config.control_mode[i] == DISPLACEMENT)
             str << "\t" << (int) motor << ": DISPLACEMENT";
-        params.outputPosMax = req.config.outputPosMax[i];
-        params.outputNegMax = req.config.outputNegMax[i];
-        params.spPosMax = req.config.spPosMax[i];
-        params.spNegMax = req.config.spNegMax[i];
-        params.Kp = req.config.Kp[i];
-        params.Ki = req.config.Ki[i];
-        params.Kd = req.config.Kd[i];
-        params.forwardGain = req.config.forwardGain[i];
-        params.deadBand = req.config.deadBand[i];
-        params.IntegralPosMax = req.config.IntegralPosMax[i];
-        params.IntegralNegMax = req.config.IntegralNegMax[i];
+        params.outputPosMax = req.config.output_pos_max[i];
+        params.outputNegMax = req.config.output_neg_max[i];
+        params.spPosMax = req.config.sp_pos_max[i];
+        params.spNegMax = req.config.sp_neg_max[i];
+        params.Kp = req.config.kp[i];
+        params.Ki = req.config.ki[i];
+        params.Kd = req.config.kd[i];
+        params.forwardGain = req.config.forward_gain[i];
+        params.deadBand = req.config.dead_band[i];
+        params.IntegralPosMax = req.config.integral_pos_max[i];
+        params.IntegralNegMax = req.config.integral_neg_max[i];
         params.control_mode = req.config.control_mode[i];
-        params.outputDivider = req.config.outputDivider[i];
+        params.outputDivider = req.config.output_divider[i];
         myoControl->changeControlParameters(motor, params);
         res.mode.push_back(params.control_mode);
         myoControl->changeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
@@ -773,34 +623,34 @@ bool RoboyPlexus::MotorConfigService(roboy_communication_middleware::MotorConfig
     return true;
 }
 
-bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode::Request &req,
-                                     roboy_communication_middleware::ControlMode::Response &res) {
+bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
+                                     roboy_middleware_msgs::ControlMode::Response &res) {
     if (!emergency_stop) {
-        if(req.motorId.empty()) {
+        if(req.motor_id.empty()) {
             switch (req.control_mode) {
                 case POSITION:
                     ROS_INFO("switch to POSITION control");
                     for (auto &mode:control_mode)
                         mode.second = POSITION;
-                    myoControl->allToPosition(req.setPoint);
+                    myoControl->allToPosition(req.set_point);
                     break;
                 case VELOCITY:
                     ROS_INFO("switch to VELOCITY control");
                     for (auto &mode:control_mode)
                         mode.second = VELOCITY;
-                    myoControl->allToVelocity(req.setPoint);
+                    myoControl->allToVelocity(req.set_point);
                     break;
                 case DISPLACEMENT:
                     ROS_INFO("switch to DISPLACEMENT control");
                     for (auto &mode:control_mode)
                         mode.second = DISPLACEMENT;
-                    myoControl->allToDisplacement(req.setPoint);
+                    myoControl->allToDisplacement(req.set_point);
                     break;
                 default:
                     return false;
             }
         }else{
-            for(int motor:req.motorId){
+            for(int motor:req.motor_id){
                 myoControl->changeControl(motor,req.control_mode);
                 control_mode[motor] = req.control_mode;
             }
@@ -812,13 +662,31 @@ bool RoboyPlexus::ControlModeService(roboy_communication_middleware::ControlMode
     }
 }
 
-bool RoboyPlexus::MotorCalibrationService(roboy_communication_middleware::MotorCalibrationService::Request &req,
-                                          roboy_communication_middleware::MotorCalibrationService::Response &res) {
+bool RoboyPlexus::MotorCalibrationService(roboy_middleware_msgs::MotorCalibrationService::Request &req,
+                                          roboy_middleware_msgs::MotorCalibrationService::Response &res) {
     if (!emergency_stop) {
         ROS_INFO("serving motor calibration service for motor %d", req.motor);
         myoControl->estimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
-                                             req.timeout, req.numberOfDataPoints, req.displacement_min,
+                                             req.timeout, req.number_of_data_points, req.displacement_min,
                                              req.displacement_max, res.load, res.displacement);
+        cout << "coefficients:\t";
+        for (uint i = 0; i < req.degree; i++) {
+            cout << res.estimated_spring_parameters[i] << "\t";
+        }
+        cout << endl;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool RoboyPlexus::MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCalibrationService::Request &req,
+                                roboy_middleware_msgs::MyoBrickCalibrationService::Response &res){
+    if (!emergency_stop) {
+        ROS_INFO("serving myobrick calibration service for motor %d", req.motor);
+        myoControl->estimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
+                                             req.timeout, req.number_of_data_points, req.min_degree,
+                                             req.max_degree, res.motor_angle, res.motor_encoder);
         cout << "coefficients:\t";
         for (uint i = 0; i < req.degree; i++) {
             cout << res.estimated_spring_parameters[i] << "\t";
@@ -873,10 +741,10 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
     return true;
 }
 
-bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck::Request &req,
-                                     roboy_communication_middleware::SystemCheck::Response &res) {
+bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
+                                     roboy_middleware_msgs::SystemCheck::Response &res) {
     vector<uint8_t> motorIDs;
-    if (req.motorIDs.empty()) {
+    if (req.motorids.empty()) {
         motorIDs.resize(NUMBER_OF_MOTORS_PER_FPGA);
         int i = 0;
         for (auto &m:motorIDs) {
@@ -884,7 +752,7 @@ bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck
             i++;
         }
     } else {
-        motorIDs = req.motorIDs;
+        motorIDs = req.motorids;
     }
     bool system_check_successful = true;
     for (auto &m:motorIDs) {
@@ -941,37 +809,75 @@ bool RoboyPlexus::SystemCheckService(roboy_communication_middleware::SystemCheck
     return system_check_successful;
 }
 
-bool RoboyPlexus::SetDisplacementForAll(roboy_communication_middleware::SetInt16::Request &req,
-                                        roboy_communication_middleware::SetInt16::Request &res) {
-    if (id == HEAD) {
-        myoControl->allToDisplacement(req.setpoint);
-        ros::Duration d(5);
-        d.sleep();
-        int pos[4] = {0, 0, 0, 0};
-        pos[0] = myoControl->getPosition(0);
-        pos[1] = myoControl->getPosition(1);
-        pos[2] = myoControl->getPosition(2);
-        pos[3] = myoControl->getPosition(3);
-        myoControl->allToPosition(0);
-        myoControl->setPosition(0, pos[0]);
-        myoControl->setPosition(1, pos[1]);
-        myoControl->setPosition(2, pos[2]);
-        myoControl->setPosition(3, pos[3]);
+bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
+                                        roboy_middleware_msgs::SetInt16::Request &res) {
+    ROS_INFO("all to displacement %d called", req.setpoint);
+    if (id == SHOULDER_RIGHT) {
+        if(req.setpoint>0) {
+            for (auto motor:req.motors) {
+                if (motor >= 9 && motor <= 14) {
+                    myoControl->changeControl(motor, POSITION);
+                    control_mode[motor] = POSITION;
+                } else {
+                    myoControl->changeControl(motor, DISPLACEMENT);
+                    myoControl->setDisplacement(motor, req.setpoint);
+                    control_mode[motor] = DISPLACEMENT;
+                }
+            }
+        }else {
+            // special care for displacement <= 0, because the pid controller turns of for those values
+            // the springs potentially relax so fast that the encoders max speed is exceeded
+            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                if (find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor) !=
+                    myoControl->myo_bricks.end()) {
+                    myoControl->changeControl(motor, POSITION);
+                    control_mode[motor] = POSITION;
+                } else {
+                    myoControl->changeControl(motor, DISPLACEMENT);
+                }
+            }
+            // relax the springs
+            ros::Rate rate(100);
+            for (int decrements = 99; decrements >= 0; decrements -= 1) {
+                for (auto motor:req.motors) {
+                    if (motor >= 9 && motor <= 14)  // head myobricks
+                        continue;
+                    int displacement = myoControl->getDisplacement(motor);
+                    if (displacement <= req.setpoint)
+                        continue;
+                    else
+                        myoControl->setDisplacement(motor, displacement * (decrements / 100.0));
+                }
+                rate.sleep();
+            }
+        }
+    }else{
+        for (auto motor:req.motors) {
+            myoControl->changeControl(motor, DISPLACEMENT);
+            myoControl->setDisplacement(motor, req.setpoint);
+            control_mode[motor] = DISPLACEMENT;
+        }
     }
-    myoControl->allToDisplacement(req.setpoint);
     return true;
 }
 
-void RoboyPlexus::StartRecordTrajectoryCB(const roboy_communication_control::StartRecordTrajectory::ConstPtr &msg) {
-
-    if (std::find(msg->body_parts.begin(), msg->body_parts.end(), body_part) == msg->body_parts.end()) {
-        ROS_INFO_STREAM("Not my call, not recording!");
-        return;
+void RoboyPlexus::StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg) {
+    bool its_for_me = false;
+    stringstream str;
+    for(auto b:body_parts) {
+        if (std::find(msg->body_parts.begin(), msg->body_parts.end(), b) != msg->body_parts.end()) {
+            str << body_part << " recording " << b << " with " << msg->id_list.size() << " motors" << endl;
+            its_for_me = true;
+        }
     }
-    ROS_INFO_STREAM("Recording a trajectory");
+    if(!its_for_me)
+        return;
+    for(int i:msg->id_list)
+        str << i << "\t";
+    ROS_INFO_STREAM(str.str());
     float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
     string name = body_part + "_" + msg->name;
-    vector<int> idList(begin(msg->idList), end(msg->idList));
+    vector<int> idList(begin(msg->id_list), end(msg->id_list));
     map<int, vector<float>> trajectories;
 
     myoControl->startRecordTrajectories(samplingTime, trajectories, idList, name);
@@ -982,7 +888,7 @@ void RoboyPlexus::StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg) {
     myoControl->stopRecordTrajectories();
 }
 
-void RoboyPlexus::SaveBehaviorCB(const roboy_communication_control::Behavior &msg) {
+void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
 
     ofstream output_file(myoControl->behaviors_folder + msg.name);
     ostream_iterator<std::string> output_iterator(output_file, "\n");
@@ -1026,8 +932,8 @@ void RoboyPlexus::PredisplacementCB(const std_msgs::Int32 &msg) {
 }
 
 
-bool RoboyPlexus::ListExistingItemsService(roboy_communication_control::ListItems::Request &req,
-                                           roboy_communication_control::ListItems::Response &res) {
+bool RoboyPlexus::ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
+                                           roboy_control_msgs::ListItems::Response &res) {
 
     // read filenames in the specified folder
     DIR *dirp = opendir(req.name.c_str());
@@ -1046,8 +952,8 @@ bool RoboyPlexus::ListExistingItemsService(roboy_communication_control::ListItem
     return true;
 }
 
-bool RoboyPlexus::ExpandBehaviorService(roboy_communication_control::ListItems::Request &req,
-                                        roboy_communication_control::ListItems::Response &res) {
+bool RoboyPlexus::ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
+                                        roboy_control_msgs::ListItems::Response &res) {
 
     res.items = expandBehavior(req.name);
     return true;

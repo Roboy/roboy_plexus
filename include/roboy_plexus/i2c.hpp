@@ -103,6 +103,7 @@ public:
 	// registers: only write
 	const uint8_t GPIO_CONTROL = 5;
 	const uint8_t READ_ONLY = 6;
+    const uint8_t RESET_TLV = 7;
 
 	// registers: only read
 	const uint8_t BUSY = 4;

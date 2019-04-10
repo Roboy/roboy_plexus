@@ -1,7 +1,7 @@
 /*
     BSD 3-Clause License
 
-    Copyright (c) 2017, Roboy
+    Copyright (c) 2019, Roboy
             All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,50 +29,26 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    author: Simon Trendel ( st@gi.ai ), 2018
-    description: Class for configuring and reading 3d magnetic sensor TLV493d
+    author: Simon Trendel ( st@gi.ai ), 2019
+    description: Class for reading 3d magnetic sensor TLV493d, with automatic configuration and readout implemented in fpga
 */
 #pragma  once
 
+#define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
+#define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
+
 #include <stdint.h>
-#include "i2c.hpp"
 #include <vector>
 #include <ros/ros.h>
 
 using namespace std;
 
-#define bitRead(byte,pos) ((byte) & (1<<(pos)))
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  (byte & 0x80 ? '1' : '0'), \
-  (byte & 0x40 ? '1' : '0'), \
-  (byte & 0x20 ? '1' : '0'), \
-  (byte & 0x10 ? '1' : '0'), \
-  (byte & 0x08 ? '1' : '0'), \
-  (byte & 0x04 ? '1' : '0'), \
-  (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0')
-
-
-
-class TLV493D{
+class TLV493D_FPGA{
 public:
-    TLV493D(int32_t *i2c_base);
-    ~TLV493D();
-    bool initTLV(uint8_t &deviceaddress, int devicepin);
-    void reset();
-    float convertToMilliTesla(uint8_t MSB, uint8_t LSB) ;
-    void readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool print=true);
+    TLV493D_FPGA(int32_t *i2c_base);
+    ~TLV493D_FPGA();
+    float convertToMilliTesla(int32_t data) ;
     bool read(float &fx, float &fy, float &fz);
-private:
-    /// checks the parity of 32 bit val
-    /// \param val
-    /// \return true if odd, false if even
-    bool checkParity(uint32_t val);
-    vector<uint8_t> deviceAddress;
-    uint8_t gpioreg = 0;
-    uint8_t frameCounter = 0;
 public:
-    boost::shared_ptr<I2C> i2c;
-    int32_t *i2c_base;
+    int32_t *tlv_base;
 };

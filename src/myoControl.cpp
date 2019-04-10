@@ -35,7 +35,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
         }
     }
 
-    changeControl(DISPLACEMENT);
+    changeControl(VELOCITY);
 
     for (uint i = 0; i < myo_base.size(); i++) {
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
@@ -121,7 +121,7 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
         }
     }
 
-    changeControl(DISPLACEMENT);
+    changeControl(VELOCITY);
 
     for (uint i = 0; i < myo_base.size(); i++) {
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
@@ -132,16 +132,16 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     }
     reset();
 
-//    // set measure number for ADC convert
-//    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
-//
-//    // start measure
-//    for (uint channel = 0; channel < 8; channel++) {
-//        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-//        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
-//        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-//        usleep(1);
-//    }
+    // set measure number for ADC convert
+    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
+
+    // start measure
+    for (uint channel = 0; channel < 8; channel++) {
+        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
+        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+        usleep(1);
+    }
 
 }
 
@@ -154,12 +154,15 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], setPoint);
     int kp, ki, kd, fg, db, sp, od;
     getPIDcontrollerParams(kp, ki, kd, fg, db, sp, od, motor);
-    ROS_INFO( "change control motor %d (Kp: %d, Kd %d, Ki %d, ForwardGain %d, deadband %d, "
-                    "OutputDivider %d, setPoint %d)", motor, kp, ki, kd, fg, db, od, sp);
+    ROS_INFO("change control motor %d (Kp: %d, Kd %d, Ki %d, ForwardGain %d, deadband %d, "
+                     "OutputDivider %d, setPoint %d)", motor, kp, ki, kd, fg, db, od, sp);
 }
 
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params) {
-    MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+    if (find(myo_bricks.begin(), myo_bricks.end(), motor) != myo_bricks.end() && mode == DISPLACEMENT)
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
+    else
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
     MYO_WRITE_reset_controller(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     MYO_WRITE_Kp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.Kp);
     MYO_WRITE_Kd(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.Kd);
@@ -171,6 +174,13 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
     MYO_WRITE_outputPosMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.outputPosMax);
     MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.outputNegMax);
     MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.outputDivider);
+    if (mode == POSITION) {
+        int32_t current_position = MYO_READ_position(myo_base[myo_base_of_motor[motor]],
+                                                     motor - motor_offset[motor]);
+        MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], current_position);
+    } else {
+        MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], 0);
+    }
 }
 
 void MyoControl::changeControl(int motor, int mode) {
@@ -190,9 +200,19 @@ void MyoControl::changeControl(int motor, int mode) {
                            control_params[motor][mode].outputPosMax);
     MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                            control_params[motor][mode].outputNegMax);
-    MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+    if (find(myo_bricks.begin(), myo_bricks.end(), motor) != myo_bricks.end() && mode == DISPLACEMENT)
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
+    else
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
     MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                             control_params[motor][mode].outputDivider);
+    if (mode == POSITION) {
+        int32_t current_position = MYO_READ_position(myo_base[myo_base_of_motor[motor]],
+                                                     motor - motor_offset[motor]);
+        MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], current_position);
+    } else {
+        MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], 0);
+    }
 }
 
 void MyoControl::changeControl(int mode) {
@@ -213,9 +233,19 @@ void MyoControl::changeControl(int mode) {
                                control_params[motor][mode].outputPosMax);
         MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                                control_params[motor][mode].outputNegMax);
-        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+        if (find(myo_bricks.begin(), myo_bricks.end(), motor) != myo_bricks.end() && mode == DISPLACEMENT)
+            MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
+        else
+            MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
         MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                                 control_params[motor][mode].outputDivider);
+        if (mode == POSITION) {
+            int32_t current_position = MYO_READ_position(myo_base[myo_base_of_motor[motor]],
+                                                         motor - motor_offset[motor]);
+            MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], current_position);
+        } else {
+            MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], 0);
+        }
     }
 }
 
@@ -263,10 +293,27 @@ uint16_t MyoControl::getControlMode(int motor) {
 }
 
 int32_t MyoControl::getMotorAngle(int motor) {
-    if (MYO_READ_myo_brick_i2c_ack_error(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]))
-        return 0;
-    else
-        return MYO_READ_myo_brick_motor_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+    return MYO_READ_myo_brick_motor_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getMotorAnglePrev(int motor) {
+    return MYO_READ_myo_brick_motor_raw_angle_prev(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getRawMotorAngle(int motor) {
+    return MYO_READ_myo_brick_motor_raw_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getRelativeMotorAngle(int motor) {
+    return MYO_READ_myo_brick_motor_relative_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getMotorAngleOffset(int motor) {
+    return MYO_READ_myo_brick_motor_offset_angle(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+}
+
+int32_t MyoControl::getRevolutionCounter(int motor) {
+    return MYO_READ_myo_brick_motor_angle_revolution_counter(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 bool MyoControl::getPowerSense() {
@@ -286,8 +333,8 @@ int32_t MyoControl::getVelocity(int motor) {
     return ((int32_t) vel) * MOTOR_BOARD_COMMUNICATION_FREQUENCY;
 }
 
-int16_t MyoControl::getDisplacement(int motor) {
-    return MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+int32_t MyoControl::getDisplacement(int motor) {
+    return (int16_t)MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 void MyoControl::setPosition(int motor, int32_t setPoint) {
@@ -296,7 +343,7 @@ void MyoControl::setPosition(int motor, int32_t setPoint) {
 
 void MyoControl::setVelocity(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
-                 (int32_t) (setPoint/MOTOR_BOARD_COMMUNICATION_FREQUENCY));
+                 (int32_t) (setPoint / MOTOR_BOARD_COMMUNICATION_FREQUENCY));
 }
 
 void MyoControl::setDisplacement(int motor, int16_t setPoint) {
@@ -310,6 +357,9 @@ bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &
         cerr << "provided " << deviceIDs.size() << " deviceIDs but only " << motorIDs.size() << " motorIDs";
         return false;
     }
+    myo_bricks = motorIDs;
+    myo_bricks_gearbox_ratio = gearBoxRatio;
+    myo_bricks_encoder_multiplier = encoderMultiplier;
     uint32_t myo_brick = 0;
     uint i = 0;
     stringstream str;
@@ -354,14 +404,14 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 //            params->outputNegMax = -4000;
             params->spPosMax = 10000000;
             params->spNegMax = -10000000;
-            params->Kp = 50;
+            params->Kp = 1;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
             params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = -100;
-            params->outputDivider = 100;
+            params->outputDivider = 5;
             break;
         case VELOCITY:
             params->spPosMax = 100000;
@@ -373,7 +423,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = -100;
-            params->outputDivider = 1;
+            params->outputDivider = 0;
             break;
         case DISPLACEMENT:
             params->spPosMax = 200;
@@ -385,7 +435,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->deadBand = 1;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = 0;
-            params->outputDivider = 1;
+            params->outputDivider = 0;
             break;
         default:
             ROS_ERROR("unknown control mode");
@@ -555,7 +605,10 @@ float MyoControl::startRecordTrajectories(
     recording = true;
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
-    allToDisplacement(predisplacement);
+    for(auto motor:idList) {
+        changeControl(motor,DISPLACEMENT);
+        setDisplacement(motor,predisplacement);
+    }
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -576,7 +629,10 @@ float MyoControl::startRecordTrajectories(
     } while (recording);
 
 
-    allToDisplacement(predisplacement / 2);
+    for(auto motor:idList) {
+        changeControl(motor,DISPLACEMENT);
+        setDisplacement(motor,10);
+    }
 
     // done recording
 
@@ -682,7 +738,7 @@ bool MyoControl::playTrajectory(const char *file) {
         }
     }
 
-    allToDisplacement(0);
+//    allToDisplacement(0);
     ROS_INFO_STREAM("Replaying trajectory " + string(file));
     timer.start();
     double elapsedTime = 0.0, dt;
@@ -747,6 +803,93 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
     } while ((ms_stop - ms_start).count() < timeout && load.size() < numberOfDataPoints);
     setDisplacement(motor, 0);
     polynomialRegression(degree, displacement, load, coeffs);
+    outfile << "regression coefficients for polynomial of " << degree << " degree:" << endl;
+    for (float coef:coeffs) {
+        outfile << coef << "\t";
+    }
+    outfile << endl;
+//	polyPar[motor] = coeffs;
+    outfile.close();
+}
+
+void MyoControl::estimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+                                                           uint numberOfDataPoints, float delta_revolution_negative,
+                                                           float delta_revolution_positive, vector<double> &motor_angle,
+                                                           vector<double> &motor_encoder) {
+    auto it = find(myo_bricks.begin(), myo_bricks.end(), motor);
+    if (it == myo_bricks.end()) {
+        cerr << "motor " << motor << " is not configured as a myobrick, aborting..." << endl;
+        return;
+    }
+
+    ptrdiff_t id = distance(myo_bricks.begin(), it);
+
+    changeControl(motor, POSITION);
+    setPosition(motor, 0);
+    while (abs(getPosition(motor)) > 1000) {
+        cout << "waiting for motor " << motor << " to go to zero position" << endl;
+        usleep(1000000);
+    }
+    changeControl(motor, VELOCITY);
+    milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop;
+    ofstream outfile;
+    char str[100];
+    sprintf(str, "motorAngleLinearisation_calibration_motor%d.csv", motor);
+    outfile.open(str);
+    if (!outfile.is_open()) {
+        cout << "could not open file " << str << " for writing, aborting!" << endl;
+        return;
+    }
+    outfile << "motor_angle[ticks], motor_optical_encoder[ticks]" << endl;
+
+    int32_t initial_motor_pos = getPosition(motor);
+    int32_t initial_motor_angle = abs(getMotorAngle(motor)) % 4096;
+    setVelocity(motor, -30000);
+    bool go_backward = true;
+    int back_and_forth = 2;
+
+    int pos_min = initial_motor_pos + ((delta_revolution_negative / 360) * 1024 * myo_bricks_gearbox_ratio[id]);
+    int pos_max = initial_motor_pos + ((delta_revolution_positive / 360) * 1024 * myo_bricks_gearbox_ratio[id]);
+
+    cout << "position min\t" << pos_min << endl;
+    cout << "position max\t" << pos_max << endl;
+
+    int sample = 0;
+
+    do {
+        if (go_backward) {
+            if (getPosition(motor) < pos_min) {
+                setVelocity(motor, 30000);
+                go_backward = false;
+                cout << "going forward" << endl;
+            }
+        } else {
+            if (getPosition(motor) > pos_max) {
+                setVelocity(motor, -30000);
+                go_backward = true;
+                cout << "going backward" << endl;
+                back_and_forth--;
+                if(back_and_forth<=0)
+                    break;
+            }
+        }
+
+        // note the motor angle
+        motor_angle.push_back(abs(getMotorAngle(motor)) % 4096);
+        // note the motor encoder
+        motor_encoder.push_back(
+                abs(getPosition(motor) / myo_bricks_gearbox_ratio[id] * myo_bricks_encoder_multiplier[id] -
+                    initial_motor_angle) % 4096);
+        outfile << motor_angle.back() << ", " << motor_encoder.back() << endl;
+        if(sample%100==0)
+            printf("sample %d motor angle %lf \t motor encoder %lf\n", sample, motor_angle.back(), motor_encoder.back());
+        ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        sample++;
+        usleep(10000);
+    } while ((ms_stop - ms_start).count() < timeout && motor_angle.size() < numberOfDataPoints);
+    changeControl(motor, POSITION);
+    setPosition(motor, initial_motor_pos);
+    polynomialRegression(degree, motor_angle, motor_encoder, coeffs);
     outfile << "regression coefficients for polynomial of " << degree << " degree:" << endl;
     for (float coef:coeffs) {
         outfile << coef << "\t";

@@ -51,10 +51,12 @@ using namespace std;
 #define HW_REGS_SPAN ( 0x04000000 )
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
+int32_t *h2p_lw_sysid_addr;
 int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
+int32_t *h2p_lw_a1339_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
 vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_i2c_addr;
@@ -64,20 +66,13 @@ MyoControlPtr myoControl;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-    if(h2p_lw_myo_addr[0]!=nullptr) {
-        MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[0], 0);
-        MYO_WRITE_wrist_joint_control(h2p_lw_myo_addr[0], 0);
-        MYO_WRITE_hand_control(h2p_lw_myo_addr[0], 0);
-    }
-    if(h2p_lw_myo_addr[1]!=nullptr) {
-        MYO_WRITE_elbow_joint_control(h2p_lw_myo_addr[1], 0);
-        MYO_WRITE_wrist_joint_control(h2p_lw_myo_addr[1], 0);
-        MYO_WRITE_hand_control(h2p_lw_myo_addr[1], 0);
-    }
     if(myoControl!= nullptr){
         // switch to displacement
         for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-            myoControl->changeControl(motor, DISPLACEMENT);
+            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+                myoControl->changeControl(motor, VELOCITY);
+            else
+                myoControl->changeControl(motor, DISPLACEMENT);
         }
         // relax the springs
         ros::Rate rate(100);
@@ -89,6 +84,8 @@ void SigintHandler(int sig)
                 *h2p_lw_led_addr = 0x00;
 
             for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+                    continue;
                 int displacement = myoControl->getDisplacement(motor);
                 if(displacement<=0)
                     continue;
@@ -133,6 +130,20 @@ int main(int argc, char *argv[]) {
         close( fd );
         return( 1 );
     }
+
+    h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+    if(*h2p_lw_sysid_addr!=0x0001beef){ // if the system id does not match, we abort
+        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, 0x0001beef);
+        // clean up our memory mapping and exit
+        if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
+            printf( "ERROR: munmap() failed...\n" );
+            close( fd );
+            return( 1 );
+        }
+        close( fd );
+        return -1;
+    }
+
 #ifdef LED_BASE
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else
@@ -143,20 +154,25 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_switches_addr = nullptr;
 #endif
+#ifdef A1339_0_BASE
+    h2p_lw_a1339_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + A1339_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_a1339_addr = nullptr;
+#endif
 #ifdef MYOCONTROL_0_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
-    h2p_lw_myo_addr.push_back(nullptr);
+//    h2p_lw_myo_addr.push_back(nullptr);
 #endif
 #ifdef MYOCONTROL_1_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
-    h2p_lw_myo_addr.push_back(nullptr);
+//    h2p_lw_myo_addr.push_back(nullptr);
 #endif
 #ifdef MYOCONTROL_2_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
-    h2p_lw_myo_addr.push_back(nullptr);
+//    h2p_lw_myo_addr.push_back(nullptr);
 #endif
 #ifdef I2C_0_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
@@ -194,6 +210,21 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
+//    if (!ros::isInitialized()) {
+//        int argc = 0;
+//        char **argv = NULL;
+//        ros::init(argc, argv, "roboy_plexus");
+//        ros::start();
+//    }
+//
+//    ros::Duration d(1);
+//    while(ros::ok()){
+//        int32_t angle = IORD(h2p_lw_a1339_addr,0);
+//        ROS_INFO_STREAM((angle/4096.0)*360.0);
+//        d.sleep();
+//    }
+//
+//    return 0;
 //    if (!ros::isInitialized()) {
 //        int argc = 0;
 //        char **argv = NULL;
@@ -250,30 +281,14 @@ int main(int argc, char *argv[]) {
 //    vector<uint8_t> deviceIDs = {0xF};
 //    vector<uint8_t> motorids = {0};
 //    A1335 motorAngle(h2p_lw_i2c_addr[0],motorids,deviceIDs);
-//    while(ros::ok()) {
-//        vector<A1335State> state;
-//        motorAngle.readAngleData(state);
-//        stringstream str;
-//        str<<endl;
-//        for (auto s:state) {
-//            str << "Motor Angle Sensor on i2C address " << (int) s.address << " is " << (s.isOK ? "ok" : "not ok")
-//                << endl;
-//            str << "angle:         " << s.angle << endl;
-//            str << "angle_flags:   " << motorAngle.decodeFlag(s.angle_flags, ANGLES_FLAGS) << endl;
-//            str << "err_flags:     " << motorAngle.decodeFlag(s.err_flags, ERROR_FLAGS) << endl;
-//            str << "fieldStrength: " << s.fieldStrength << endl;
-//            str << "status_flags:  " << motorAngle.decodeFlag(s.status_flags, STATUS_FLAGS) << endl;
-//            str << "xerr_flags:    " << motorAngle.decodeFlag(s.xerr_flags, XERROR_FLAGS) << endl;
-////            msg.temperature.push_back(s.temp);
-//        }
-//        ROS_INFO_STREAM_THROTTLE(1,str.str());
-//    }
+//
 
 
 //        vector<uint8_t> deviceIDs = {0x50, 0x51, 0x52, 0x53};
 //        HandControl hand(h2p_lw_myo_addr[1], 0xF, deviceIDs);
 //        hand.test();
 //    return 0;
+
 
 
     myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));

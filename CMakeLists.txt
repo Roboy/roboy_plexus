@@ -25,10 +25,10 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             tf
             tf_conversions
             visualization_msgs
-            roboy_communication_middleware
-            roboy_communication_control
+            roboy_middleware_msgs
+            roboy_control_msgs
             common_utilities
-            roboy_soli
+#            roboy_soli
             )
     include(findros)
     # Eigen
@@ -42,8 +42,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
 
     catkin_package(CATKIN_DEPENDS
             message_runtime
-            roboy_communication_middleware
-            roboy_communication_control
+            roboy_middleware_msgs
+            roboy_control_msgs
             common_utilities
             roboy_soli
             )
@@ -71,9 +71,9 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/am4096.cpp
             src/CRC32.cpp
             src/A1335.cpp
-            src/tlv493d.cpp
+            src/tlv493d_fpga.cpp
             src/controlActions.cpp
-            src/armControl.cpp
+#            src/armControl.cpp
             src/UDPSocket.cpp
             include/roboy_plexus/myoControl.hpp
             include/roboy_plexus/i2c.hpp
@@ -83,9 +83,9 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/A1335.hpp
             include/roboy_plexus/tlv493d.hpp
             include/roboy_plexus/controlActions.hpp
-            include/roboy_plexus/armControl.hpp
+#            include/roboy_plexus/armControl.hpp
             )
-    add_dependencies(roboy_plexus roboy_communication_middleware_gencpp roboy_communication_control_gencpp roboy_soli_gencpp)
+    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_soli_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
 
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
