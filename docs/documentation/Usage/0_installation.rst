@@ -24,7 +24,7 @@ The package also requires the following packages which need to be cloned into yo
 
 FPGA
 ----
-Find the SD card image with Ubuntu 16.04, xfce, kernel linux 4.9.78-ltsi on our servers:
+Find the SD card image with Ubuntu 16.04, Xfce, kernel Linux 4.9.78-ltsi on our servers:
 ::
     wget -nv http://bot.roboy.org:8081/~roboy/DE10_nano_lxce_4.9.78-ltsi-altera.md5sum
     wget -nv http://bot.roboy.org:8081/~roboy/DE10_nano_lxce_4.9.78-ltsi-altera.img
@@ -39,18 +39,18 @@ Flash the image to a min 8GB SD card: (sdX has to be replaced with the correct d
     
 FPGA (flashing the old way --obsoleted)
 ----
-Notice: The flashing procedure takes up to 10 minutes. Meanwhile the flashing of the FPGA can be done, which should be done permanently. Make sure the dip switches are set to On-Off-On-Off-Off, i.e. configure to flash on the FPGA on startup from eeprom via jic (for further information read the de10 nano user guide: `Download <http://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=China&No=1046&FID=1c19d1d50e0ee9b21678e881004f6d81>`_).
+Notice: The flashing procedure takes up to 10 minutes. Meanwhile, the flashing of the FPGA can be done. This has to be done permanently. Make sure the dip switches are set to On-Off-On-Off-Off, i.e. configure to flash on the FPGA on startup from EEPROM via jic (for further information read the de10 nano user guide: `Download <http://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=China&No=1046&FID=1c19d1d50e0ee9b21678e881004f6d81>`_).
 
 
 Start the jtag server:
 ::
     sudo ~/intelFPGA/17.1/quartus/bin/jtagd
 
-Connect the FPGA flash port with your computer by using an USB cable, then verify the connection using with the following command:
+Connect the FPGA flash port with your computer by using a USB cable, then verify the connection using with the following command:
 ::
     sudo ~/intelFPGA/17.1/quartus/bin/jtagconfig
 
-Start the software quartus and open the project ``DE10_NANO_SoC_GHRD.qpf`` in the folder ``roboy_de10_nano_soc``. Open the programmer.
+Start the software ‘quartus’ and open the project ``DE10_NANO_SoC_GHRD.qpf`` in the folder ``roboy_de10_nano_soc``. Open the programmer.
 Under the section 'Hardware Setup' choose your FPGA. Select 'auto-detect' and verify the model.
 Choose ``soc_system.jic`` and flash the FPGA.
 
