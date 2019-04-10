@@ -15,7 +15,8 @@ Hardware Constraints
 
   "Altera FPGA", "All code is highly specific to the Altera FPGA. Intel has bought Altera and aims to integrate their SoC with FPGAs. We are on the right horse!"
   "Intel RealSense", "Only the intel real sense can sense it.."
-  Hardware Constraints
+
+Hardware Constraints
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
@@ -23,21 +24,24 @@ Hardware Constraints
 
   "Altera FPGA", "All code is highly specific to the Altera FPGA. Intel has bought Altera and aims to integrate their SoC with FPGAs. We are on the right horse!"
   "Intel RealSense", "Only the intel real sense can sense it..."
-  Software Constraints
+
+Software Constraints
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
   :widths: 20, 60
 
   "Windows 8 or higher", "Due to the Intel RealSense SDK only being supported on Windows, we are stuck with Windows"
-  Operating System Constraints
+
+Operating System Constraints
 
 .. csv-table:: 
   :header: "Constraint Name", "Description"
   :widths: 20, 60
 
   "CouchDB", "We have to use the CouchDB because the type of data we have to store changes at runtime..."
-  Programming Constraints
+
+Programming Constraints
 
 
 .. _conventions:
