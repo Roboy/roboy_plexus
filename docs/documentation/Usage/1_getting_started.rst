@@ -4,13 +4,13 @@ Getting started
 Connect to FPGA
 ===============
 
-Connect via USB port (not recommended, only if not found in network)
+Connect via USB port (not recommended, only if not found in the network)
 ----
-Power-up your FPGA with the flashed SD card in it. Connect an USB cable to the UART port of the FPGA, after that use the following command:
+Power-up your FPGA with the flashed SD card in it. Connect a USB cable to the UART port of the FPGA, after that use the following command:
 ::
     sudo screen /dev/ttyUSB0 115200
 
-You should see either the FPGA boot screen, or already the login screen (if not press enter).
+You should see either the FPGA boot screen or already the login screen (if not press enter).
 Login in data: 
 user: 'root'
 password: 'Roboy2016'
@@ -28,11 +28,11 @@ The FPGA can be found via NMAP (search for Gandalf)
 ::
     sudo nmap 192.168.0.0/24
 
-If you can not find this net, use Roboy's class B net:
+If you cannot find this net, use Roboy's class B net:
 ::
     sudo nmap 192.168.0.0/16
 
-In the ~/.bashrc of the FPGA edit the ROS_MASTER_URI variable so it is set to the IP where the roscore was started.
+In the ~/.bashrc of the FPGA edit the ROS_MASTER_URI variable so it is set to the IP where ROS core was started.
 Source the ~/.bashrc and make sure ROS_IP and ROS_MASTER_URI are set correctly:
 ::
     echo $ROS_IP
@@ -48,11 +48,11 @@ Copy the roboy_plexus binary to the FPGA:
 
 Copy HDL to FPGA 
 ----
-The copy is only needed if the rbf file was changed.
+The copy is only needed if the RBF file was changed.
 
 FireUp the system 
 ===============
-Start the roscore on your host pc.
+Start the ROS core on your host pc.
 
 ::    
     roscore
@@ -70,7 +70,7 @@ Troubleshooting
 ===============
 Troubleshooting plexus on PC
 ----
-Echo $ROS_MASTER_URI shows the wrong IP even bashrc was eddited 
+Echo $ROS_MASTER_URI shows the wrong IP even bashrc was edited 
 
 First solution
 :: 
@@ -81,7 +81,7 @@ Second solution (IP address has to be changed to your current IP)
 
 Troubleshooting plexus on FPGA
 ----
-If the LED slides shows two "running" LED's, plexus is started more than once. In that case use the following commant:
+If the LED slides shows two "running" LED's, plexus is started more than once. In that case use the following comment:
 ::
     killall roboy_plexus
     
@@ -91,7 +91,7 @@ Visualize data
 ===============
 For visualizing your data use RQT
 
-Go into your catkin WORKSPACE and into src and clone rqt
+Go into your catkin WORKSPACE and into SRC and clone RQT
 ::
     git clone https://github.com/Roboy/roboy_rqt_plugins.git
     
