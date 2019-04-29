@@ -28,7 +28,6 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
-            roboy_soli
             )
     include(findros)
     # Eigen
@@ -45,7 +44,6 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
-            roboy_soli
             )
 
     SET(ALT_DEVICE_FAMILY soc_cv_av)
@@ -87,17 +85,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/armControl.hpp
             include/roboy_plexus/joy_CTL.hpp
             )
-    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_soli_gencpp)
+    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
-
-    add_executable( msj_platform_fpga
-            src/msj_platform.cpp
-            src/i2c.cpp
-            src/tlv493d.cpp
-            include/roboy_plexus/msj_platform.hpp
-            )
-    add_dependencies(msj_platform_fpga roboy_middleware_msgs_gencpp )
-    target_link_libraries( msj_platform_fpga -lpthread -lrt ${ros_LIBRARIES})
 
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )

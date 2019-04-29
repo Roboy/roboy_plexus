@@ -271,6 +271,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
                                              &RoboyPlexus::StopRecordTrajectoryCB, this);
     setGPIO_sub = nh->subscribe("/roboy/control/GPIO", 1, &RoboyPlexus::SetGPIOCB, this);
+    joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/joy", 10, &Joy_CTL::joyCallback, this);
 
     //AngleStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
@@ -1042,9 +1043,26 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
 //}
 void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
   rickshaw_CTL rickshaw_CTL(bike_addr);
-  rickshaw_CTL.writeThrottle(0xffff & msg->data);
+  rickshaw_CTL.writeThrottle(0xffff & (msg->data | rickshaw_throttle_on) & rickshaw_move_on);
   ROS_INFO("New pint value: [%d]", (rickshaw_CTL.readThrottle()&0x0001));
   ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
+}
+
+void rickshaw_CTL::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
+  rickshaw_CTL rickshaw_CTL(bike_addr);
+  //Ax 5 too speed up above value 25000
+  if(joy->axes[0] > 25000){//stear speed up
+    rickshaw_CTL.writeThrottle(1);
+    rickshaw_throttle_on = 1;
+  } else {
+    rickshaw_throttle_on = 0;
+  }
+  if(joy->buttons[1] == 0){
+    rickshaw_move_on = 1;
+  }else{
+    rickshaw_CTL.writeThrottle(0);
+    rickshaw_move_on = 0;
+  }
 }
 
 bool RoboyPlexus::executeActions(vector<string> actions) {

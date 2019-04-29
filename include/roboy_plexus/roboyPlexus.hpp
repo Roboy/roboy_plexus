@@ -302,6 +302,8 @@ private:
     bool SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
                                roboy_middleware_msgs::SetInt16::Request &res);
 
+    void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
+
 
 private:
     /**
@@ -416,6 +418,9 @@ private:
     vector<string> expandBehavior(string name);
 
     string body_part;
+
+    bool rickshaw_move_on = 0;
+    bool rickshaw_throttle_on = 0;
 
 };
 
