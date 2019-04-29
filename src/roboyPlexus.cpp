@@ -1234,18 +1234,16 @@ void RoboyPlexus::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   int motor_turn_left = 10;
   int motor_turn_right = 11;
   rickshaw_CTL rickshaw_CTL(bike_addr);
+
+
+  control_params_backup = myoControl->control_params;
   control_Parameters_t params;
   int motor_cnt;
-
   myoControl->getDefaultControlParams(&params, DISPLACEMENT);
   params.Kp = 150;
   params.outputPosMax = 5000;
   params.outputNegMax = -5000;
-  cout << "KP set to: " << params.Kp << "\n";
-  for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
-    myoControl->changeControlParameters(motor_cnt, params);
-    myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
-  }
+
 
   //Ax 5 too speed up above value 25000
   if(joy->axes[5] > 25000){//stear speed up
@@ -1264,10 +1262,26 @@ void RoboyPlexus::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   //ax trigger above -27000 to 27000
   //left joy->axes[0] //for left and right
   if(joy->axes[0] > 27000){
+    for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
+      myoControl->changeControlParameters(motor_cnt, params);
+      myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
+    }
     myoControl->setDisplacement(motor_turn_left,1);
     myoControl->setDisplacement(motor_turn_right,200);
   } else if(joy->axes[0] < -27000){
+    for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
+      myoControl->changeControlParameters(motor_cnt, params);
+      myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
+    }
     myoControl->setDisplacement(motor_turn_left,200);
     myoControl->setDisplacement(motor_turn_right,1);
+  }else{
+
+    uint motor = 0;
+    for (auto &params:control_params_backup) {
+        myoControl->changeControl(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
+        motor++;
+    }
+
   }
 }
