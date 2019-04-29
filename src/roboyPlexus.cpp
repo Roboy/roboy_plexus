@@ -1038,32 +1038,7 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
     std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
 }
 
-//void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
-//void RoboyPlexus::motorStatusPublisher() {
-//}
-void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
-  rickshaw_CTL rickshaw_CTL(bike_addr);
-  rickshaw_CTL.writeThrottle(0xffff & (msg->data | rickshaw_throttle_on) & rickshaw_move_on);
-  ROS_INFO("New pint value: [%d]", (rickshaw_CTL.readThrottle()&0x0001));
-  ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
-}
 
-void RoboyPlexus::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
-  rickshaw_CTL rickshaw_CTL(bike_addr);
-  //Ax 5 too speed up above value 25000
-  if(joy->axes[0] > 25000){//stear speed up
-    rickshaw_CTL.writeThrottle(1);
-    rickshaw_throttle_on = 1;
-  } else {
-    rickshaw_throttle_on = 0;
-  }
-  if(joy->buttons[1] == 0){
-    rickshaw_move_on = 1;
-  }else{
-    rickshaw_CTL.writeThrottle(0);
-    rickshaw_move_on = 0;
-  }
-}
 
 bool RoboyPlexus::executeActions(vector<string> actions) {
 
@@ -1240,4 +1215,59 @@ bool RoboyPlexus::ADXL345_IdRead(int file, uint8_t *pId) {
     bPass = ADXL345_REG_READ(file, ADXL345_REG_DEVID, pId);
 
     return bPass;
+}
+
+//=========================================================
+//      Added routins for joy control
+//=========================================================
+//void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
+//void RoboyPlexus::motorStatusPublisher() {
+//}
+void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
+  rickshaw_CTL rickshaw_CTL(bike_addr);
+  rickshaw_CTL.writeThrottle(0xffff & (msg->data | rickshaw_throttle_on) & rickshaw_move_on);
+  ROS_INFO("New pint value: [%d]", (rickshaw_CTL.readThrottle()&0x0001));
+  ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
+}
+
+void RoboyPlexus::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
+  int motor_turn_left = 10;
+  int motor_turn_right = 11;
+  rickshaw_CTL rickshaw_CTL(bike_addr);
+  control_Parameters_t params;
+  int motor_cnt;
+
+  myoControl->getDefaultControlParams(&params, DISPLACEMENT);
+  params.Kp = 150;
+  params.outputPosMax = 5000;
+  params.outputNegMax = -5000;
+  cout << "KP set to: " << params.Kp << "\n";
+  for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
+    myoControl->changeControlParameters(motor_cnt, params);
+    myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
+  }
+
+  //Ax 5 too speed up above value 25000
+  if(joy->axes[5] > 25000){//stear speed up
+    rickshaw_CTL.writeThrottle(1);
+    rickshaw_throttle_on = 1;
+  } else {
+    rickshaw_throttle_on = 0;
+  }
+  if(joy->buttons[1] == 0){
+    rickshaw_move_on = 1;
+  }else{
+    rickshaw_CTL.writeThrottle(0);
+    rickshaw_move_on = 0;
+  }
+
+  //ax trigger above -27000 to 27000
+  //left joy->axes[0] //for left and right
+  if(joy->axes[0] > 27000){
+    myoControl->setDisplacement(motor_turn_left,1);
+    myoControl->setDisplacement(motor_turn_right,200);
+  } else if(joy->axes[0] < -27000){
+    myoControl->setDisplacement(motor_turn_left,200);
+    myoControl->setDisplacement(motor_turn_right,1);
+  }
 }
