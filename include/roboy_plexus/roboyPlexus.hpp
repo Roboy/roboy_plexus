@@ -41,7 +41,7 @@
 #include "roboy_plexus/controlActions.hpp"
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
-#include <roboy_soli/roboySoli.hpp>
+//#include <roboy_soli/roboySoli.hpp>
 #include <roboy_middleware_msgs/ADCvalue.h>
 #include <roboy_middleware_msgs/ControlMode.h>
 #include <roboy_middleware_msgs/DarkRoom.h>
@@ -80,7 +80,7 @@
 #include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-#include "roboy_plexus/armControl.hpp"
+//#include "roboy_plexus/armControl.hpp"
 #include <sys/stat.h>
 #include <common_utilities/CommonDefinitions.h>
 #include "roboy_plexus/joy_CTL.hpp"
@@ -349,7 +349,7 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
-            setGPIO_sub, enablePlayback_sub, predisplacement_sub;
+            setGPIO_sub, joy_sub_, enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
             motorAngle_pub, magneticSensor_pub, StearingAngle_pub;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
@@ -364,7 +364,7 @@ private:
     map<int, int> rotationCounter;
     map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
-    ArmControlPtr armControl;
+    //ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
             gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread, stearingAngleThread;
     bool keep_publishing = true;

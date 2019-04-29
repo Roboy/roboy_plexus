@@ -1,7 +1,7 @@
 # Prerequisites
 1. Install dependencies
 ```
-sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf 
+sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 ```
 
 2. [Download](https://dl.altera.com/soceds/) and install Intel SoC FPGA Embedded Development Suite (Standard Edition).
@@ -36,16 +36,16 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   ```
   ~/intelFPGA/17.1/embedded/embedded_command_shell.sh
   ```
-  
-  
+
+
 
 2. Status of the motors is published under the rostopic `roboy/middleware/MotorStatus`
-  ``` 
+  ```
   rostopic echo /roboy/middleware/MotorStatus
   ```
 
 * check for available rostopic and services:
-  ``` 
+  ```
   rostopic list
   rosservice list
   ```
@@ -54,7 +54,7 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
 3. The control commands are set by publishing ROS messages under `/roboy/middleware/MotorCommand`:
   ```  
-  rostopic pub /roboy/middleware/MotorCommand roboy_middleware_msgs/MotorCommand "id: 0 
+  rostopic pub /roboy/middleware/MotorCommand roboy_middleware_msgs/MotorCommand "id: 0
 		motors: [0,1]
 		setPoints: [0,0]"
   ```
@@ -64,13 +64,13 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 	* 0: position (encoder ticks with `rad_per_encoder_count: 0.00005788606746738269`)
 	* 1: velocity (rad/s) - untested!
 	* 2: displacement (encoder ticks)
-	* force mode is available only from GUI and requires a YAML file with spring constants 
+	* force mode is available only from GUI and requires a YAML file with spring constants
 	* [example transform from displacement to force](https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125)
 	* myomuscle calibration file is required, specify the path in GUI (start by calling `rqt`)
 	* `Plugins->Roboy->roboy motor calibration`
 	* use myomuscle tab
 
-5. Start GUI (the plots show all the motors together encoded in different colors) 
+5. Start GUI (the plots show all the motors together encoded in different colors)
   ```
   rqt
   ```
@@ -79,7 +79,7 @@ You can find the daemon in scripts/automaticRoboyPlexusLauncherDaemon, execute t
 ```
 sudo mv automaticRoboyPlexusLauncherDaemon /etc/init.d/
 echo "/etc/init.d/automaticRoboyPlexusLauncherDaemon start" >> ~/.bashrc
-sudo ln -s /home/root/roboy_plexus /usr/local/bin/roboy_plexus 
+sudo ln -s /home/root/roboy_plexus /usr/local/bin/roboy_plexus
 ```
 Edit the file /lib/systemd/system/serial-getty@.service and replace the line:
 ```
@@ -90,3 +90,8 @@ with auto-login:
 ExecStart=-/sbin/agetty --autologin root --keep-baud 115200,38400,9600 %I $TERM
 ```
 This will auto-login root when the fpga boots and the daemon is started via the bashrc entry.
+
+# Start joy CTL node
+rosparam set joy_node/dev "/dev/input/js0"
+rosrun joy joy_node
+rostopic echo "/joy"

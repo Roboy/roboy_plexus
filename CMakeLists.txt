@@ -71,7 +71,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/A1335.cpp
             src/tlv493d.cpp
             src/controlActions.cpp
-            src/armControl.cpp
+            #src/armControl.cpp
             src/UDPSocket.cpp
             src/joy_CTL.cpp
             include/roboy_plexus/myoControl.hpp
@@ -82,7 +82,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/A1335.hpp
             include/roboy_plexus/tlv493d.hpp
             include/roboy_plexus/controlActions.hpp
-            include/roboy_plexus/armControl.hpp
+#            include/roboy_plexus/armControl.hpp
             include/roboy_plexus/joy_CTL.hpp
             )
     add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)

@@ -271,7 +271,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
                                              &RoboyPlexus::StopRecordTrajectoryCB, this);
     setGPIO_sub = nh->subscribe("/roboy/control/GPIO", 1, &RoboyPlexus::SetGPIOCB, this);
-    joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("/joy", 10, &Joy_CTL::joyCallback, this);
+    joy_sub_ = nh->subscribe("/joy", 10, &RoboyPlexus::joyCallback, this);
 
     //AngleStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
     saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
@@ -1048,7 +1048,7 @@ void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
   ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
 }
 
-void rickshaw_CTL::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
+void RoboyPlexus::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   rickshaw_CTL rickshaw_CTL(bike_addr);
   //Ax 5 too speed up above value 25000
   if(joy->axes[0] > 25000){//stear speed up
