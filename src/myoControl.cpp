@@ -432,10 +432,12 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
-            params->deadBand = 1;
+            params->deadBand = 0;
             params->IntegralPosMax = 100;
             params->IntegralNegMax = 0;
             params->outputDivider = 0;
+            params->outputPosMax = 300;
+            params->outputNegMax = -300;
             break;
         default:
             ROS_ERROR("unknown control mode");
