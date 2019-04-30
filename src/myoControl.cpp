@@ -132,15 +132,17 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
     }
     reset();
 
-    // set measure number for ADC convert
-    IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
+    if(adc_base!= nullptr) {
+        // set measure number for ADC convert
+        IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
 
-    // start measure
-    for (uint channel = 0; channel < 8; channel++) {
-        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-        IOWR(adc_base, 0x00, (channel << 1) | 0x01);
-        IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-        usleep(1);
+        // start measure
+        for (uint channel = 0; channel < 8; channel++) {
+            IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+            IOWR(adc_base, 0x00, (channel << 1) | 0x01);
+            IOWR(adc_base, 0x00, (channel << 1) | 0x00);
+            usleep(1);
+        }
     }
 
 }
@@ -159,10 +161,7 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
 }
 
 void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params) {
-    if (find(myo_bricks.begin(), myo_bricks.end(), motor) != myo_bricks.end() && mode == DISPLACEMENT)
-        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
-    else
-        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+    MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
     MYO_WRITE_reset_controller(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
     MYO_WRITE_Kp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.Kp);
     MYO_WRITE_Kd(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], params.Kd);
@@ -200,10 +199,7 @@ void MyoControl::changeControl(int motor, int mode) {
                            control_params[motor][mode].outputPosMax);
     MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                            control_params[motor][mode].outputNegMax);
-    if (find(myo_bricks.begin(), myo_bricks.end(), motor) != myo_bricks.end() && mode == DISPLACEMENT)
-        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
-    else
-        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+    MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
     MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                             control_params[motor][mode].outputDivider);
     if (mode == POSITION) {
@@ -233,10 +229,7 @@ void MyoControl::changeControl(int mode) {
                                control_params[motor][mode].outputPosMax);
         MYO_WRITE_outputNegMax(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                                control_params[motor][mode].outputNegMax);
-        if (find(myo_bricks.begin(), myo_bricks.end(), motor) != myo_bricks.end() && mode == DISPLACEMENT)
-            MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], DISPLACEMENT_MYOBRICKS);
-        else
-            MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
+        MYO_WRITE_control(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], mode);
         MYO_WRITE_outputDivider(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor],
                                 control_params[motor][mode].outputDivider);
         if (mode == POSITION) {
@@ -334,7 +327,7 @@ int32_t MyoControl::getVelocity(int motor) {
 }
 
 int32_t MyoControl::getDisplacement(int motor) {
-    return (int16_t)MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
+    return (int32_t)MYO_READ_displacement(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor]);
 }
 
 void MyoControl::setPosition(int motor, int32_t setPoint) {
@@ -346,41 +339,39 @@ void MyoControl::setVelocity(int motor, int32_t setPoint) {
                  (int32_t) (setPoint / MOTOR_BOARD_COMMUNICATION_FREQUENCY));
 }
 
-void MyoControl::setDisplacement(int motor, int16_t setPoint) {
-    MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], (int32_t) setPoint);
+void MyoControl::setDisplacement(int motor, int32_t setPoint) {
+    MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], setPoint);
 }
 
-bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs,
+void MyoControl::setPWM(int motor, int32_t setPoint) {
+    MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], setPoint);
+}
+
+bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs,
                                     vector<int32_t> &encoderMultiplier,
                                     vector<int32_t> &gearBoxRatio) {
-    if (motorIDs.size() < deviceIDs.size()) {
-        cerr << "provided " << deviceIDs.size() << " deviceIDs but only " << motorIDs.size() << " motorIDs";
-        return false;
-    }
     myo_bricks = motorIDs;
     myo_bricks_gearbox_ratio = gearBoxRatio;
     myo_bricks_encoder_multiplier = encoderMultiplier;
     uint32_t myo_brick = 0;
     uint i = 0;
     stringstream str;
-    str << "configuring myoBricks\ni2c device ID | gear box ratio | encoder multiplier" << endl;
-    for (auto device:deviceIDs) {
-        int myoBaseOfMotor = myo_base_of_motor[motorIDs[i]];
-        int myoControlMotor = motorIDs[i] - motor_offset[motorIDs[i]];
+    str << "configuring myoBricks\nmotor ID | gear box ratio | encoder multiplier" << endl;
+    for (auto motor_id:motorIDs) {
+        int myoBaseOfMotor = myo_base_of_motor[motor_id];
+        int myoControlMotor = motor_id - motor_offset[motor_id];
         ROS_INFO("myoBrick %d of myoControl %d", myoControlMotor, myoBaseOfMotor);
         myo_brick |= (1 << myoControlMotor);
-        MYO_WRITE_myo_brick_device_id(myo_base[myoBaseOfMotor], myoControlMotor, device);
         MYO_WRITE_myo_brick_gear_box_ratio(myo_base[myoBaseOfMotor], myoControlMotor, gearBoxRatio[i]);
         MYO_WRITE_myo_brick_encoder_multiplier(myo_base[myoBaseOfMotor], myoControlMotor, encoderMultiplier[i]);
-        int id = MYO_READ_myo_brick_device_id(myo_base[myoBaseOfMotor], myoControlMotor);
         int ratio = MYO_READ_myo_brick_gear_box_ratio(myo_base[myoBaseOfMotor], myoControlMotor);
         int multiplier = MYO_READ_myo_brick_encoder_multiplier(myo_base[myoBaseOfMotor], myoControlMotor);
         if (ratio != gearBoxRatio[i] ||
             multiplier != encoderMultiplier[i]) { // if the value was not written correctly, we abort!
-            ROS_INFO("id %d, ratio %d, multiplier %d", id, ratio, multiplier);
+            ROS_FATAL("id %d, ratio %d, multiplier %d", motor_id, ratio, multiplier);
             return false;
         }
-        str << (int) device << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
+        str << (int) motor_id << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
         MYO_WRITE_myo_brick(myo_base[myoBaseOfMotor], myo_brick);
         i++;
     }
@@ -426,7 +417,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->outputDivider = 0;
             break;
         case DISPLACEMENT:
-            params->spPosMax = 200;
+            params->spPosMax = 100000;
             params->spNegMax = 0;
             params->Kp = 100;
             params->Ki = 0;
@@ -458,10 +449,17 @@ void MyoControl::allToVelocity(int32_t vel) {
     }
 }
 
-void MyoControl::allToDisplacement(int16_t displacement) {
+void MyoControl::allToDisplacement(int32_t displacement) {
     changeControl(DISPLACEMENT);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         setDisplacement(motor, displacement);
+    }
+}
+
+void MyoControl::allToDirectPWM(int32_t pwm) {
+    changeControl(DIRECT_PWM);
+    for (uint motor = 0; motor < numberOfMotors; motor++) {
+        setPWM(motor, pwm);
     }
 }
 

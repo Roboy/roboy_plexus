@@ -76,50 +76,14 @@
 #define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
 #define MYO_READ_myo_brick_motor_angle(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
 #define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
-#define MYO_READ_myo_brick_device_id(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
-#define MYO_READ_myo_brick_gear_box_ratio(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
-#define MYO_READ_myo_brick_encoder_multiplier(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
-#define MYO_READ_outputDivider(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
-#define MYO_READ_myo_brick_i2c_ack_error(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
-#define MYO_READ_elbow_joint_angle_error(base) IORD(base, (uint32_t)(0x1A<<8|0) )
-#define MYO_READ_elbow_Kp_joint_angle(base) IORD(base, (uint32_t)(0x1B<<8|0) )
-#define MYO_READ_elbow_Kd_joint_angle(base) IORD(base, (uint32_t)(0x1C<<8|0) )
-#define MYO_READ_elbow_agonist(base) IORD(base, (uint32_t)(0x1D<<8|0) )
-#define MYO_READ_elbow_antagonist(base) IORD(base, (uint32_t)(0x1E<<8|0) )
-#define MYO_READ_elbow_joint_angle_setpoint(base) IORD(base, (uint32_t)(0x1F<<8|0) )
-#define MYO_READ_elbow_joint_angle_device_id(base) IORD(base, (uint32_t)(0x20<<8|0) )
-#define MYO_READ_elbow_joint_angle(base) IORD(base, (uint32_t)(0x21<<8|0) )
-#define MYO_READ_elbow_joint_angle_offset(base) IORD(base, (uint32_t)(0x22<<8|0) )
-#define MYO_READ_elbow_joint_control_result(base) IORD(base, (uint32_t)(0x23<<8|0) )
-#define MYO_READ_elbow_joint_pretension(base) IORD(base, (uint32_t)(0x24<<8|0) )
-#define MYO_READ_elbow_joint_deadband(base) IORD(base, (uint32_t)(0x25<<8|0) )
-#define MYO_READ_hand_control(base) IORD(base, (uint32_t)(0x26<<8|0) )
-#define MYO_READ_arm_board_device_id(base, motor) IORD(base, (uint32_t)(0x27<<8|motor&0xff) )
-#define MYO_READ_motor0(base, board) IORD(base, (uint32_t)(0x28<<8|board&0xff) )
-#define MYO_READ_motor1(base, board) IORD(base, (uint32_t)(0x29<<8|board&0xff) )
-#define MYO_READ_motor2(base, board) IORD(base, (uint32_t)(0x2A<<8|board&0xff) )
-#define MYO_READ_motor3(base, board) IORD(base, (uint32_t)(0x2B<<8|board&0xff) )
-#define MYO_READ_motor4(base, board) IORD(base, (uint32_t)(0x2C<<8|board&0xff) )
-#define MYO_READ_arm_board_ack_error(base) IORD(base, (uint32_t)(0x2D<<8|0) )
-#define MYO_READ_elbow_smooth_distance(base) IORD(base, (uint32_t)(0x2E<<8|0) )
-#define MYO_READ_wrist_joint_angle_error(base) IORD(base, (uint32_t)(0x2F<<8|0) )
-#define MYO_READ_wrist_Kp_joint_angle(base) IORD(base, (uint32_t)(0x30<<8|0) )
-#define MYO_READ_wrist_Kd_joint_angle(base) IORD(base, (uint32_t)(0x31<<8|0) )
-#define MYO_READ_wrist_agonist(base) IORD(base, (uint32_t)(0x32<<8|0) )
-#define MYO_READ_wrist_antagonist(base) IORD(base, (uint32_t)(0x33<<8|0) )
-#define MYO_READ_wrist_joint_angle_setpoint(base) IORD(base, (uint32_t)(0x34<<8|0) )
-#define MYO_READ_wrist_joint_angle_device_id(base) IORD(base, (uint32_t)(0x35<<8|0) )
-#define MYO_READ_wrist_joint_angle(base) IORD(base, (uint32_t)(0x36<<8|0) )
-#define MYO_READ_wrist_joint_angle_offset(base) IORD(base, (uint32_t)(0x37<<8|0) )
-#define MYO_READ_wrist_joint_control_result(base) IORD(base, (uint32_t)(0x38<<8|0) )
-#define MYO_READ_wrist_joint_pretension(base) IORD(base, (uint32_t)(0x39<<8|0) )
-#define MYO_READ_wrist_joint_deadband(base) IORD(base, (uint32_t)(0x3A<<8|0) )
-#define MYO_READ_wrist_smooth_distance(base) IORD(base, (uint32_t)(0x2E<<8|0) )
-#define MYO_READ_myo_brick_motor_raw_angle(base, motor) IORD(base, (uint32_t)(0x3C<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_raw_angle_prev(base, motor) IORD(base, (uint32_t)(0x40<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_offset_angle(base, motor) IORD(base, (uint32_t)(0x3D<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_relative_angle(base, motor) IORD(base, (uint32_t)(0x3E<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_angle_revolution_counter(base, motor) IORD(base, (uint32_t)(0x3F<<8|motor&0xff) )
+#define MYO_READ_myo_brick_gear_box_ratio(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
+#define MYO_READ_myo_brick_encoder_multiplier(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
+#define MYO_READ_outputDivider(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_raw_angle(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_raw_angle_prev(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_offset_angle(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_relative_angle(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
+#define MYO_READ_myo_brick_motor_angle_revolution_counter(base, motor) IORD(base, (uint32_t)(0x1C<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -138,39 +102,9 @@
 #define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
 #define MYO_WRITE_gpio(base, data) IOWR(base, (uint32_t)(0x0F<<8|0), data )
 #define MYO_WRITE_myo_brick(base, data) IOWR(base, (uint32_t)(0x10<<8|0), data )
-#define MYO_WRITE_myo_brick_device_id(base, motor, data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
-#define MYO_WRITE_myo_brick_gear_box_ratio(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
-#define MYO_WRITE_myo_brick_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
-#define MYO_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x14<<8|motor&0xff), data )
-#define MYO_WRITE_elbow_joint_control(base, data)  IOWR(base, (uint32_t)(0x15<<8|0), data )
-#define MYO_WRITE_elbow_joint_angle_device_id(base, data) IOWR(base, (uint32_t)(0x16<<8|0), data )
-#define MYO_WRITE_elbow_agonist(base, motor) IOWR(base, (uint32_t)(0x17<<8|0), motor )
-#define MYO_WRITE_elbow_antagonist(base, motor) IOWR(base, (uint32_t)(0x18<<8|0), motor )
-#define MYO_WRITE_elbow_Kp_joint_angle(base, data)  IOWR(base, (uint32_t)(0x19<<8|0), data )
-#define MYO_WRITE_elbow_Kd_joint_angle(base, data)  IOWR(base, (uint32_t)(0x1A<<8|0), data )
-#define MYO_WRITE_elbow_joint_angle_offset(base, data)  IOWR(base, (uint32_t)(0x1B<<8|0), data )
-#define MYO_WRITE_elbow_joint_pretension(base, data)  IOWR(base, (uint32_t)(0x1C<<8|0), data )
-#define MYO_WRITE_elbow_joint_deadband(base, data)  IOWR(base, (uint32_t)(0x1D<<8|0), data )
-#define MYO_WRITE_elbow_joint_angle_setpoint(base, data)  IOWR(base, (uint32_t)(0x1E<<8|0), data )
-#define MYO_WRITE_hand_control(base, data)  IOWR(base, (uint32_t)(0x1F<<8|0), data )
-#define MYO_WRITE_arm_board_device_id(base, board, data) IOWR(base, (uint32_t)(0x20<<8|board&0xff), data )
-#define MYO_WRITE_motor0(base, board, data) IOWR(base, (uint32_t)(0x21<<8|board&0xff), data )
-#define MYO_WRITE_motor1(base, board, data) IOWR(base, (uint32_t)(0x22<<8|board&0xff), data )
-#define MYO_WRITE_motor2(base, board, data) IOWR(base, (uint32_t)(0x23<<8|board&0xff), data )
-#define MYO_WRITE_motor3(base, board, data) IOWR(base, (uint32_t)(0x24<<8|board&0xff), data )
-#define MYO_WRITE_motor4(base, board, data) IOWR(base, (uint32_t)(0x25<<8|board&0xff), data )
-#define MYO_WRITE_elbow_smooth_distance(base, data) IOWR(base, (uint32_t)(0x26<<8|0), data )
-#define MYO_WRITE_wrist_joint_control(base, data)  IOWR(base, (uint32_t)(0x27<<8|0), data )
-#define MYO_WRITE_wrist_joint_angle_device_id(base, data) IOWR(base, (uint32_t)(0x28<<8|0), data )
-#define MYO_WRITE_wrist_agonist(base, motor) IOWR(base, (uint32_t)(0x29<<8|0), motor )
-#define MYO_WRITE_wrist_antagonist(base, motor) IOWR(base, (uint32_t)(0x2A<<8|0), motor )
-#define MYO_WRITE_wrist_Kp_joint_angle(base, data)  IOWR(base, (uint32_t)(0x2B<<8|0), data )
-#define MYO_WRITE_wrist_Kd_joint_angle(base, data)  IOWR(base, (uint32_t)(0x2C<<8|0), data )
-#define MYO_WRITE_wrist_joint_angle_offset(base, data)  IOWR(base, (uint32_t)(0x2D<<8|0), data )
-#define MYO_WRITE_wrist_joint_pretension(base, data)  IOWR(base, (uint32_t)(0x2E<<8|0), data )
-#define MYO_WRITE_wrist_joint_deadband(base, data)  IOWR(base, (uint32_t)(0x2F<<8|0), data )
-#define MYO_WRITE_wrist_joint_angle_setpoint(base, data)  IOWR(base, (uint32_t)(0x30<<8|0), data )
-#define MYO_WRITE_wrist_smooth_distance(base, data) IOWR(base, (uint32_t)(0x31<<8|0), data )
+#define MYO_WRITE_myo_brick_gear_box_ratio(base, motor, data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
+#define MYO_WRITE_myo_brick_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
+#define MYO_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
@@ -338,6 +272,12 @@ public:
     int32_t getDisplacement(int motor);
 
     /**
+     * Gets the current in Ampere
+     * @param motor for this motor
+     */
+    int16_t getCurrent(int motor);
+
+    /**
 	 * Sets the position of a motor in radians
 	 * @param motor for this motor
 	 */
@@ -353,23 +293,22 @@ public:
      * Set the displacement in encoder ticks
      * @param motor for this motor
      */
-    void setDisplacement(int motor, int16_t setPoint);
+    void setDisplacement(int motor, int32_t setPoint);
+
+    /**
+     * Set the pwm
+     * @param motor for this motor
+     */
+    void setPWM(int motor, int32_t setPoint);
 
     /**
      * Configures motors to be handled as myoBricks
      * @param motorIDs these are the ids of the motors
-     * @param deviceIDs these are the i2c addresses of the motor angle sensors (A1335)
      * @param encoderMultiplier this multiplies the output of the optical encoder
      * @param gearBoxRatio the ratio of the gear box for each myoBrick
      */
-    bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<uint8_t> &deviceIDs, vector<int32_t> &encoderMultiplier,
+    bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<int32_t> &encoderMultiplier,
                             vector<int32_t> &gearBoxRatio);
-
-    /**
-     * Gets the current in Ampere
-     * @param motor for this motor
-     */
-    int16_t getCurrent(int motor);
 
     /**
      * Fills the given params with default values for the corresponding control mode
@@ -392,9 +331,15 @@ public:
 
     /**
      * Changes the control mode for all motors to Displacement
-     * @param force new setPoint
+     * @param displacement new setPoint
      */
-    void allToDisplacement(int16_t displacement);
+    void allToDisplacement(int32_t displacement);
+
+    /**
+     * Changes the control mode for all motors to Direct PWM
+     * @param pwm new setPoint
+     */
+    void allToDirectPWM(int32_t pwm);
 
     /**
      * Zeros the weight for a load cell

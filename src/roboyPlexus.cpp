@@ -140,6 +140,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         control_mode[motor] = POSITION;
     }
 
+    myoControl->configureMyoBricks(myo_bricks[id],encoder_multiplier[id],gear_box_ratio[id]);
+    motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
+
+    motorAngleThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+    motorAngleThread->detach();
 
 //    // open i2c bus for gsensor
 //    if ((file = open(filename, O_RDWR)) < 0) {
@@ -522,6 +527,9 @@ void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::Cons
                 case FORCE:
                     myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
+                case DIRECT_PWM:
+                    myoControl->setPWM(motor, msg->set_points[i]);
+                    break;
             }
             i++;
         }
@@ -646,7 +654,14 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                         mode.second = DISPLACEMENT;
                     myoControl->allToDisplacement(req.set_point);
                     break;
+                case DIRECT_PWM:
+                    ROS_INFO("switch to DIRECT_PWM control");
+                    for (auto &mode:control_mode)
+                        mode.second = DIRECT_PWM;
+                    myoControl->allToDirectPWM(req.set_point);
+                    break;
                 default:
+                    ROS_ERROR("invalid control mode requested, available: POSITION, VELOCITY, DISPLACEMENT, FORCE, DIRECT_PWM");
                     return false;
             }
         }else{
