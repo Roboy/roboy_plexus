@@ -9,6 +9,9 @@ I2C::I2C(void * baseAddr):h2p_lw_i2c_addr(baseAddr) {
 //        str << hex << device << " ";
 //    }
 //    ROS_INFO_STREAM(str.str());
+    IOWR(h2p_lw_i2c_addr, RESET_TLV, 0);
+    IOWR(h2p_lw_i2c_addr, TLV_SCL, 1);
+    IOWR(h2p_lw_i2c_addr, TLV_SDA, 1);
 }
 
 void I2C::write(uint8_t i2cAddr, uint32_t data, uint8_t number_of_bytes) {
@@ -116,4 +119,9 @@ bool I2C::checkAddressSpace(uint8_t fromDeviceID, uint8_t toDeviceID, vector<uin
             activeDevices.push_back(fromDeviceID);
     }
     return !activeDevices.empty();
+}
+
+void I2C::resetTLV(){
+    IOWR(h2p_lw_i2c_addr, RESET_TLV, true);
+    IOWR(h2p_lw_i2c_addr, RESET_TLV, false);
 }

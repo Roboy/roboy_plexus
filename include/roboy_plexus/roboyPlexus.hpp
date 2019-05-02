@@ -79,7 +79,7 @@
 #include "roboy_plexus/CRC32.h"
 #include <bitset>
 #include "roboy_plexus/A1335.hpp"
-#include "roboy_plexus/tlv493d_fpga.hpp"
+#include "roboy_plexus/tlv493d.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 //#include "roboy_plexus/armControl.hpp"
@@ -152,9 +152,9 @@ private:
     void motorAnglePublisher();
 
     /**
-     * Publishes 3d magnetic information about shoulder joint
+     * Publishes 3d magnetic information about joint
      */
-    void magneticShoulderJointPublisher();
+    void magneticJointPublisher();
 
     /**
      * Callback for motor command
@@ -355,7 +355,7 @@ private:
     boost::shared_ptr<A1335> a1335;
 //    ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, jointAngleThread, magneticsShoulderThread, testbenchThread;
+            gsensor_thread, motorAngleThread, jointAngleThread, magneticsThread, testbenchThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
@@ -398,7 +398,7 @@ private:
 
     string ethaddr;
 
-    vector<boost::shared_ptr<TLV493D_FPGA>> tlv493D0;
+    vector<boost::shared_ptr<TLV493D>> tlv;
 
     bool executeAction(string actions);
 

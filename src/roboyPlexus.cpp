@@ -146,6 +146,17 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     motorAngleThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorAnglePublisher, this));
     motorAngleThread->detach();
 
+    if(i2c_base.size()>=3){
+        if(i2c_base[0]!=nullptr && i2c_base[1]!=nullptr && i2c_base[2]!=nullptr){
+            for(int i=0;i<3;i++){
+                tlv.push_back(boost::shared_ptr<TLV493D>(new TLV493D(i2c_base[i])));
+            }
+            magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
+            magneticsThread = boost::shared_ptr<std::thread>( new std::thread(&RoboyPlexus::magneticJointPublisher, this));
+            magneticsThread->detach();
+        }
+    }
+
 //    // open i2c bus for gsensor
 //    if ((file = open(filename, O_RDWR)) < 0) {
 //        ROS_ERROR("Failed to open the i2c bus of gsensor");
@@ -484,28 +495,19 @@ void RoboyPlexus::motorStatusPublisher() {
     }
 }
 
-void RoboyPlexus::magneticShoulderJointPublisher() {
-    ros::Rate rate(60);
-    while (keep_publishing && ros::ok()) {
+void RoboyPlexus::magneticJointPublisher() {
+    ros::Rate rate(200);
+    while (ros::ok()) {
         roboy_middleware_msgs::MagneticSensor msg;
-
-        float fx,fy,fz;
-        for(int i=0;i<tlv493D0.size();i++){
-            ros::Time start_time = ros::Time::now();
-            bool success = false;
-            do{
-                success = tlv493D0[i]->read(fx,fy,fz);
-                if(success) {
-                    msg.sensor_id.push_back(i);
-                    msg.x.push_back(fx);
-                    msg.y.push_back(fy);
-                    msg.z.push_back(fz);
-//                    ROS_INFO("sensor %d %.6f\t%.6f\t%.6f", i, fx, fy, fz);
-                }
-            }while(!success && (ros::Time::now()-start_time).toSec()<0.1);
+        for(int i=0;i<tlv.size();i++){
+            float fx = 0,fy = 0,fz = 0;
+            bool success = tlv[i]->read(fx,fy,fz);
+            msg.sensor_id.push_back(i);
+            msg.x.push_back(fx);
+            msg.y.push_back(fy);
+            msg.z.push_back(fz);
         }
-        if(msg.sensor_id.size()==tlv493D0.size())
-            magneticSensor_pub.publish(msg);
+        magneticSensor_pub.publish(msg);
         rate.sleep();
     }
 }
@@ -594,18 +596,14 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
     control_Parameters_t params;
     uint i = 0;
     for (int motor:req.config.motors) {
-        if (req.config.control_mode[i] < POSITION || req.config.control_mode[i] > DISPLACEMENT) {
-            ROS_ERROR("trying to change control to an invalid control mode %d, available control modes: "
-                              "[0]Position [1]Velocity [2]Displacement", req.config.control_mode[i]);
-            i++;
-            continue;
-        }
         if (req.config.control_mode[i] == POSITION)
             str << "\t" << (int) motor << ": POSITION";
         if (req.config.control_mode[i] == VELOCITY)
             str << "\t" << (int) motor << ": VELOCITY";
         if (req.config.control_mode[i] == DISPLACEMENT)
             str << "\t" << (int) motor << ": DISPLACEMENT";
+        if (req.config.control_mode[i] == DIRECT_PWM)
+            str << "\t" << (int) motor << ": DIRECT_PWM";
         params.outputPosMax = req.config.output_pos_max[i];
         params.outputNegMax = req.config.output_neg_max[i];
         params.spPosMax = req.config.sp_pos_max[i];

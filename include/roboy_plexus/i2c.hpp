@@ -54,7 +54,7 @@ public:
 	 * @param baseAddr i2c base address (cf hps_0.h)
 	 */
 	I2C(void * baseAddr);
-    /**
+	/**
      * Writes up to three bytes to an address
      * @param i2cAddr device address
      * @param data (reg<<24|data[0]<<16|data[1]<<8|data[2])
@@ -80,7 +80,7 @@ public:
 	 * Queries for acknowledge error
 	 * @return error/no error
 	 */
-    bool ack_error();
+	bool ack_error();
 	/**
 	 * Scans the provided address range for active devices
 	 * @param fromDeviceID start address
@@ -89,6 +89,10 @@ public:
 	 * @return true if at least one active device was found
 	 */
 	bool checkAddressSpace(uint8_t fromDeviceID, uint8_t toDeviceID, vector<uint8_t> &activeDevices);
+	/**
+	 * Runs a custom reset sequence for the tlv493 chip
+	 */
+	void resetTLV();
 private:
 	void * h2p_lw_i2c_addr;
 
@@ -99,11 +103,13 @@ public:
 	const uint8_t RW = 2;
 	const uint8_t ENA = 3;
 	const uint8_t NUMBER_OF_BYTES = 4;
+	const uint8_t TLV_SDA = 8;
+	const uint8_t TLV_SCL = 9;
 
 	// registers: only write
 	const uint8_t GPIO_CONTROL = 5;
 	const uint8_t READ_ONLY = 6;
-    const uint8_t RESET_TLV = 7;
+	const uint8_t RESET_TLV = 7;
 
 	// registers: only read
 	const uint8_t BUSY = 4;

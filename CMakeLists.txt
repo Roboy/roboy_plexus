@@ -71,7 +71,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/am4096.cpp
             src/CRC32.cpp
             src/A1335.cpp
-            src/tlv493d_fpga.cpp
+            src/tlv493d.cpp
             src/controlActions.cpp
 #            src/armControl.cpp
             src/UDPSocket.cpp
