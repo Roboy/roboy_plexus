@@ -140,7 +140,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         control_mode[motor] = POSITION;
     }
 
-    myoControl->configureMyoBricks(myo_bricks[id],encoder_multiplier[id],gear_box_ratio[id]);
+//    myoControl->configureMyoBricks(myo_bricks[id],encoder_multiplier[id],gear_box_ratio[id]);
     motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
 
     motorAngleThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorAnglePublisher, this));

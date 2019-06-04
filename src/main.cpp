@@ -43,6 +43,7 @@
 #include "socal/hps.h"
 #include "roboy_plexus/hps_0.h"
 #include "roboy_plexus/roboyPlexus.hpp"
+#include "roboy_plexus/NeoPixel.hpp"
 
 using namespace std;
 
@@ -53,6 +54,7 @@ using namespace std;
 
 int32_t *h2p_lw_sysid_addr;
 int32_t *h2p_lw_led_addr;
+int32_t *h2p_lw_neopixel_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
@@ -148,6 +150,11 @@ int main(int argc, char *argv[]) {
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else
     h2p_lw_led_addr = nullptr;
+#endif
+#ifdef NEOPIXEL_0_BASE
+    h2p_lw_neopixel_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + NEOPIXEL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_neopixel_addr = nullptr;
 #endif
 #ifdef SWITCHES_BASE
     h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
@@ -299,22 +306,25 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, SigintHandler);
 
-    uint8_t mask = 0x1;
-    ros::Rate rate(30);
-    bool dir = 1;
+    NeoPixel neoPixel(h2p_lw_neopixel_addr,10);
+    map<int,vector<int>> pattern;
+    vector<int> p = {NeoPixelColorRGB::blue,NeoPixelColorRGB::green,NeoPixelColorRGB::red,NeoPixelColorRGB::yellow};
+    pattern[0] = p;
+    pattern[1] = p;
+    pattern[2] = p;
+    pattern[3] = p;
+    pattern[4] = p;
+    pattern[5] = p;
+    pattern[6] = p;
+    pattern[7] = p;
+    pattern[8] = p;
+    pattern[9] = p;
+    ros::Rate rate(1);
     while(ros::ok()){
-        if(dir)
-            mask<<=1;
-        else
-            mask>>=1;
-        *h2p_lw_led_addr = mask;
+        neoPixel.setColorAll(NeoPixelColorRGB::green);
         rate.sleep();
-        if(mask==0x80)
-            dir = 0;
-        if(mask==0x1)
-            dir = 1;
     }
-
+    neoPixel.setColorAll(NeoPixelColorRGB::black);
 
 
 ////    I2C i2c(h2p_lw_i2c_addr[0]);
