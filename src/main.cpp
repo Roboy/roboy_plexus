@@ -64,6 +64,7 @@ vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_i2c_addr;
 
 MyoControlPtr myoControl;
+NeoPixelPtr neoPixel;
 
 void SigintHandler(int sig)
 {
@@ -107,7 +108,8 @@ void SigintHandler(int sig)
 
     if(h2p_lw_led_addr!=nullptr)
         *h2p_lw_led_addr = 0;
-
+    neoPixel->abort = true;
+    neoPixel->setColorAll(NeoPixelColorRGB::black);
     // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
@@ -306,25 +308,23 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, SigintHandler);
 
-    NeoPixel neoPixel(h2p_lw_neopixel_addr,10);
+    neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
     map<int,vector<int>> pattern;
     vector<int> p = {NeoPixelColorRGB::blue,NeoPixelColorRGB::green,NeoPixelColorRGB::red,NeoPixelColorRGB::yellow};
-    pattern[0] = p;
-    pattern[1] = p;
-    pattern[2] = p;
-    pattern[3] = p;
-    pattern[4] = p;
-    pattern[5] = p;
-    pattern[6] = p;
-    pattern[7] = p;
-    pattern[8] = p;
-    pattern[9] = p;
-    ros::Rate rate(1);
+    for(int j=1;j<=10;j++) {
+        pattern[j] = {j};
+    }
+
+    for(int i=0;i<255-10;i++){
+        for(int j=1;j<=10;j++) {
+            pattern[j].push_back(pattern[j][i] + 1);
+        }
+    }
+    ros::Rate rate(30);
     while(ros::ok()){
-        neoPixel.setColorAll(NeoPixelColorRGB::green);
+        neoPixel->runPattern(pattern,rate);
         rate.sleep();
     }
-    neoPixel.setColorAll(NeoPixelColorRGB::black);
 
 
 ////    I2C i2c(h2p_lw_i2c_addr[0]);

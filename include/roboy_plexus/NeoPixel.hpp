@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ros/ros.h>
+
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
@@ -25,15 +27,21 @@ struct NeoPixelColorRGB{
 class NeoPixel{
 public:
     NeoPixel(int32_t *base, int number_of_neopixel):base(base), number_of_neopixel(number_of_neopixel){
-
+        for(int j=1;j<=number_of_neopixel;j++){
+            IOWR(base,j,NeoPixelColorRGB::black);
+        }
+        //latch
+        IOWR(base,0,true);
     }
     ~NeoPixel(){
 
     }
     void runPattern(map<int,vector<int>> pattern, ros::Rate rate, bool loop = false, int timeOut = -1){
-        for(int j=0;j<number_of_neopixel;j++){
+        for(int j=1;j<=number_of_neopixel;j++){
             IOWR(base,j,NeoPixelColorRGB::black);
         }
+        //latch
+        IOWR(base,0,true);
         int i=0;
         int pattern_length = 0;
         for(auto &p:pattern){
@@ -43,19 +51,28 @@ public:
             for(auto &p:pattern){
                 IOWR(base,p.first,p.second[i]);
             }
+            //latch
+            IOWR(base,0,true);
             rate.sleep();
             i++;
-        }while(i<pattern_length);
+        }while(i<pattern_length && !abort);
     }
     void setColor(int pixel, int color){
         IOWR(base,pixel,color);
+        //latch
+        IOWR(base,0,true);
     }
     void setColorAll(int color){
-        for(int i=0;i<number_of_neopixel;i++){
-            IOWR(base,i,color);
+        for(int j=1;j<=number_of_neopixel;j++){
+            IOWR(base,j,color);
         }
+        //latch
+        IOWR(base,0,true);
     }
     int number_of_neopixel;
+    bool abort = false;
 private:
     int32_t *base;
 };
+
+typedef boost::shared_ptr<NeoPixel> NeoPixelPtr;
