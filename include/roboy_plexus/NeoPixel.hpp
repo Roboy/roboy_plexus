@@ -17,11 +17,11 @@ struct NeoPixelColorRGBW{
 
 struct NeoPixelColorRGB{
     static const int black = 0;
-    static const int blue  = 0x010000;
-    static const int red   = 0x00000100;
-    static const int green = 0x00000001;
-    static const int yellow = 0x00010001;
-    static const int white = 0x00010101;
+    static const int blue  = 0xE00000;
+    static const int red   = 0x00E000;
+    static const int green = 0x0000E0;
+    static const int yellow = 0x00E000E0;
+    static const int white = 0x00E0E0E0;
 };
 
 class NeoPixel{

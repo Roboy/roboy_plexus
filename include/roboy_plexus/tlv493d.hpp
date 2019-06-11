@@ -65,6 +65,8 @@ public:
     float convertToMilliTesla(uint32_t data) ;
     void readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool print=true);
     bool read(float &fx, float &fy, float &fz);
+    void updateData();
+    bool readData100Hz(float &fx, float &fy, float &fz);
 private:
     /// checks the parity of 32 bit val
     /// \param val

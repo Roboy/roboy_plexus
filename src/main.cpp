@@ -311,18 +311,26 @@ int main(int argc, char *argv[]) {
     neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
     map<int,vector<int>> pattern;
     vector<int> p = {NeoPixelColorRGB::blue,NeoPixelColorRGB::green,NeoPixelColorRGB::red,NeoPixelColorRGB::yellow};
-    for(int j=1;j<=10;j++) {
-        pattern[j] = {j};
-    }
+    pattern[1] = {NeoPixelColorRGB::blue,0,0,0,0,0,0,0,0,0};
+    pattern[2] = {0,NeoPixelColorRGB::blue,0,0,0,0,0,0,0,0};
+    pattern[3] = {0,0,NeoPixelColorRGB::blue,0,0,0,0,0,0,0};
+    pattern[4] = {0,0,0,NeoPixelColorRGB::blue,0,0,0,0,0,0};
+    pattern[5] = {0,0,0,0,NeoPixelColorRGB::blue,0,0,0,0,0};
+    pattern[6] = {0,0,0,0,0,NeoPixelColorRGB::blue,0,0,0,0};
+    pattern[7] = {0,0,0,0,0,0,NeoPixelColorRGB::blue,0,0,0};
+    pattern[8] = {0,0,0,0,0,0,0,NeoPixelColorRGB::blue,0,0};
+    pattern[9] = {0,0,0,0,0,0,0,0,NeoPixelColorRGB::blue,0};
+    pattern[10] = {0,0,0,0,0,0,0,0,0,NeoPixelColorRGB::blue};
 
-    for(int i=0;i<255-10;i++){
-        for(int j=1;j<=10;j++) {
-            pattern[j].push_back(pattern[j][i] + 1);
-        }
-    }
+//    for(int i=0;i<255-10;i++){
+//        for(int j=1;j<=10;j++) {
+//            pattern[j].push_back(pattern[j][i] + 1);
+//        }
+//    }
     ros::Rate rate(30);
     while(ros::ok()){
         neoPixel->runPattern(pattern,rate);
+//        neoPixel->setColor(1,0x80);
         rate.sleep();
     }
 

@@ -496,19 +496,22 @@ void RoboyPlexus::motorStatusPublisher() {
 }
 
 void RoboyPlexus::magneticJointPublisher() {
-    ros::Rate rate(200);
+    ros::Rate rate(100);
     while (ros::ok()) {
+        for(int i=0;i<tlv.size();i++){
+            tlv[i]->updateData();
+        }
+        rate.sleep();
         roboy_middleware_msgs::MagneticSensor msg;
         for(int i=0;i<tlv.size();i++){
             float fx = 0,fy = 0,fz = 0;
-            bool success = tlv[i]->read(fx,fy,fz);
+            tlv[i]->readData100Hz(fx,fy,fz);
             msg.sensor_id.push_back(i);
             msg.x.push_back(fx);
             msg.y.push_back(fy);
             msg.z.push_back(fz);
         }
         magneticSensor_pub.publish(msg);
-        rate.sleep();
     }
 }
 

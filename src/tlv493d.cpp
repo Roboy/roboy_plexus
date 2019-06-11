@@ -2,7 +2,7 @@
 
 TLV493D::TLV493D(int32_t *i2c_base):i2c_base(i2c_base){
     i2c = boost::shared_ptr<I2C>(new I2C(i2c_base));
-    reset();
+//    reset();
 }
 
 void TLV493D::reset(){
@@ -113,4 +113,17 @@ bool TLV493D::read(float &fx, float &fy, float &fz){
     fy = convertToMilliTesla(data[1], (uint8_t)(data[4]&0xF));
     fz = convertToMilliTesla(data[2], (uint8_t)(data[5]&0xF));
     return true;
+}
+
+void TLV493D::updateData(){
+    i2c->write(0x5e,0x00830060,4);
+}
+
+bool TLV493D::readData100Hz(float &fx, float &fy, float &fz){
+    vector<uint8_t> data;
+    i2c->read_continuous(0x5e,7, data);
+    i2c->write(0x5e,0x00000020,4);
+    fx = convertToMilliTesla(data[0], (uint8_t)(data[4]>>4));
+    fy = convertToMilliTesla(data[1], (uint8_t)(data[4]&0xF));
+    fz = convertToMilliTesla(data[2], (uint8_t)(data[5]&0xF));
 }
