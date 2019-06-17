@@ -84,8 +84,8 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
     reset();
 }
 
-MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_base(myo_base),
-                                                                         adc_base(adc_base) {
+MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base, NeoPixelPtr neopixel) : myo_base(myo_base),
+                                                                         adc_base(adc_base), neopixel(neopixel) {
     if (myo_base.size() > 3)
         ROS_FATAL("a maximum of THREE myoControls is currently supported");
     // initialize control mode
@@ -144,7 +144,8 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base) : myo_bas
             usleep(1);
         }
     }
-
+    if(neopixel!=nullptr)
+        neopixel->setColorAll(NeoPixelColorRGB::green);
 }
 
 MyoControl::~MyoControl() {

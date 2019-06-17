@@ -2,6 +2,8 @@
 
 #include <ros/ros.h>
 
+using namespace std;
+
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
@@ -57,6 +59,72 @@ public:
             i++;
         }while(i<pattern_length && !abort);
     }
+    map<int,vector<int>> getPattern(string name, int color){
+        map<int,vector<int>> pattern;
+        if(name=="run"){
+            pattern[1] = {color,0,0,0,0,0,0,0,0,0};
+            pattern[2] = {0,color,0,0,0,0,0,0,0,0};
+            pattern[3] = {0,0,color,0,0,0,0,0,0,0};
+            pattern[4] = {0,0,0,color,0,0,0,0,0,0};
+            pattern[5] = {0,0,0,0,color,0,0,0,0,0};
+            pattern[6] = {0,0,0,0,0,color,0,0,0,0};
+            pattern[7] = {0,0,0,0,0,0,color,0,0,0};
+            pattern[8] = {0,0,0,0,0,0,0,color,0,0};
+            pattern[9] = {0,0,0,0,0,0,0,0,color,0};
+            pattern[10] = {0,0,0,0,0,0,0,0,0,color};
+        }else if(name=="nightrider"){
+            pattern[1] =  {color,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,color};
+            pattern[2] =  {0,color,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,color,0};
+            pattern[3] =  {0,0,color,0,0,0,0,0,0,0,0,0,0,0,0,0,0,color,0,0};
+            pattern[4] =  {0,0,0,color,0,0,0,0,0,0,0,0,0,0,0,0,color,0,0,0};
+            pattern[5] =  {0,0,0,0,color,0,0,0,0,0,0,0,0,0,0,color,0,0,0,0};
+            pattern[6] =  {0,0,0,0,0,color,0,0,0,0,0,0,0,0,color,0,0,0,0,0};
+            pattern[7] =  {0,0,0,0,0,0,color,0,0,0,0,0,0,color,0,0,0,0,0,0};
+            pattern[8] =  {0,0,0,0,0,0,0,color,0,0,0,0,color,0,0,0,0,0,0,0};
+            pattern[9] =  {0,0,0,0,0,0,0,0,color,0,0,color,0,0,0,0,0,0,0,0};
+            pattern[10] = {0,0,0,0,0,0,0,0,0,color,color,0,0,0,0,0,0,0,0,0};
+        }else if(name=="fadeout"){
+            switch(color){
+                case NeoPixelColorRGB::blue:{
+                    int color = 0xFF0000;
+                    vector<int> p;
+                    for(int i=0;i<255;i++){
+                        p.push_back(color);
+                        color-=0x10000;
+                    }
+                    for(int i=0;i<10;i++){
+                        pattern[i] =p;
+                    }
+                    break;
+                }
+                case NeoPixelColorRGB::red:{
+                    int color = 0xFF00;
+                    vector<int> p;
+                    for(int i=0;i<255;i++){
+                        p.push_back(color);
+                        color-=0x100;
+                    }
+                    for(int i=0;i<10;i++){
+                        pattern[i] =p;
+                    }
+                    break;
+                }
+                case NeoPixelColorRGB::green:{
+                    int color = 0xFF;
+                    vector<int> p;
+                    for(int i=0;i<255;i++){
+                        p.push_back(color);
+                        color-=0x1;
+                    }
+                    for(int i=0;i<10;i++){
+                        pattern[i] =p;
+                    }
+                    break;
+                }
+            }
+        }
+        return pattern;
+    }
     void setColor(int pixel, int color){
         IOWR(base,pixel,color);
         //latch
@@ -73,6 +141,7 @@ public:
     bool abort = false;
 private:
     int32_t *base;
+    map<string,map<int,vector<int>>> pattern;
 };
 
 typedef boost::shared_ptr<NeoPixel> NeoPixelPtr;

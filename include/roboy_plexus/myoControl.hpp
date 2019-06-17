@@ -48,6 +48,7 @@
 #include <common_utilities/CommonDefinitions.h>
 #include <roboy_plexus/timer.hpp>
 #include <ros/ros.h>
+#include <roboy_plexus/NeoPixel.hpp>
 
 #define MOTORS_PER_MYOCONTROL 9
 
@@ -125,7 +126,7 @@ public:
      * @param myo_base vector of myo base addresses (cf hps_0.h)
      * @param adc_base adc base address (cf hps_0.h)
      */
-    MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base);
+    MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base, NeoPixelPtr neopixel = nullptr);
 
     ~MyoControl();
 
@@ -484,6 +485,7 @@ private:
     bool recording = false; // keeps track of recording status
     bool replay = true;
     int predisplacement = 100;
+    NeoPixelPtr neopixel;
 
 };
 

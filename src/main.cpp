@@ -97,6 +97,10 @@ void SigintHandler(int sig)
             }
             rate.sleep();
             if(decrements%15==0) {
+                if(!toggle)
+                    neoPixel->setColorAll(0xFF0000);
+                else
+                    neoPixel->setColorAll(NeoPixelColorRGB::black);
                 toggle = !toggle;
                 cout << "." << endl;
             }
@@ -298,9 +302,9 @@ int main(int argc, char *argv[]) {
 //        hand.test();
 //    return 0;
 
+    neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
 
-
-    myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr));
+    myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
                             h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
     PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
@@ -308,19 +312,6 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, SigintHandler);
 
-    neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
-    map<int,vector<int>> pattern;
-    vector<int> p = {NeoPixelColorRGB::blue,NeoPixelColorRGB::green,NeoPixelColorRGB::red,NeoPixelColorRGB::yellow};
-    pattern[1] = {NeoPixelColorRGB::blue,0,0,0,0,0,0,0,0,0};
-    pattern[2] = {0,NeoPixelColorRGB::blue,0,0,0,0,0,0,0,0};
-    pattern[3] = {0,0,NeoPixelColorRGB::blue,0,0,0,0,0,0,0};
-    pattern[4] = {0,0,0,NeoPixelColorRGB::blue,0,0,0,0,0,0};
-    pattern[5] = {0,0,0,0,NeoPixelColorRGB::blue,0,0,0,0,0};
-    pattern[6] = {0,0,0,0,0,NeoPixelColorRGB::blue,0,0,0,0};
-    pattern[7] = {0,0,0,0,0,0,NeoPixelColorRGB::blue,0,0,0};
-    pattern[8] = {0,0,0,0,0,0,0,NeoPixelColorRGB::blue,0,0};
-    pattern[9] = {0,0,0,0,0,0,0,0,NeoPixelColorRGB::blue,0};
-    pattern[10] = {0,0,0,0,0,0,0,0,0,NeoPixelColorRGB::blue};
 
 //    for(int i=0;i<255-10;i++){
 //        for(int j=1;j<=10;j++) {
@@ -328,6 +319,7 @@ int main(int argc, char *argv[]) {
 //        }
 //    }
     ros::Rate rate(30);
+    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
     while(ros::ok()){
         neoPixel->runPattern(pattern,rate);
 //        neoPixel->setColor(1,0x80);
