@@ -1,89 +1,5 @@
 #include "roboy_plexus/myoControl.hpp"
 
-MyoControl::MyoControl(vector<int32_t *> &myo_base) : myo_base(myo_base) {
-    if (myo_base.size() > 3)
-        ROS_FATAL("a maximum of THREE myoControls is currently supported");
-    // initialize control mode
-    numberOfMotors = (myo_base.size() == 0 ? NUMBER_OF_MOTORS_MYOCONTROL_0 :
-                      (myo_base.size() == 1 ? NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 :
-                       NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1 + NUMBER_OF_MOTORS_MYOCONTROL_2));
-    ROS_INFO("initializing myoControl for %d spi buses with %d motors in total", myo_base.size(), numberOfMotors);
-    // initialize all controllers with default values
-    control_Parameters_t params;
-    getDefaultControlParams(&params, POSITION);
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        control_params[motor][POSITION] = params;
-    }
-    getDefaultControlParams(&params, VELOCITY);
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        control_params[motor][VELOCITY] = params;
-    }
-    getDefaultControlParams(&params, DISPLACEMENT);
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        control_params[motor][DISPLACEMENT] = params;
-    }
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        if (motor < NUMBER_OF_MOTORS_MYOCONTROL_0) {
-            myo_base_of_motor[motor] = 0;
-            motor_offset[motor] = 0;
-        } else if (motor < NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1) {
-            myo_base_of_motor[motor] = 1;
-            motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0;
-        } else {
-            myo_base_of_motor[motor] = 2;
-            motor_offset[motor] = NUMBER_OF_MOTORS_MYOCONTROL_0 + NUMBER_OF_MOTORS_MYOCONTROL_1;
-        }
-    }
-
-    changeControl(VELOCITY);
-
-    for (uint i = 0; i < myo_base.size(); i++) {
-//        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
-        MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
-        MYO_WRITE_spi_activated(myo_base[i], true);
-        usleep(10000);
-        ROS_INFO("motor update frequency %d", MYO_READ_update_frequency(myo_base[i]));
-//        for(uint motor=0; motor<7; motor++){
-//            printf(        "Kp             %d\n"
-//                           "Ki             %d\n"
-//                           "Kd             %d\n"
-//                           "sp             %d\n"
-//                           "forwardGain    %d\n"
-//                           "outputPosMax   %d\n"
-//                           "outputNegMax   %d\n"
-//                           "IntegralPosMax %d\n"
-//                           "IntegralNegMax %d\n"
-//                           "deadBand       %d\n"
-//                           "control        %d\n"
-//                           "position       %d\n"
-//                           "velocity       %d\n"
-//                           "current        %d\n"
-//                           "displacement   %d\n"
-//                           "pwmRef         %d\n"
-//                           "update_frequency %d\n",
-//            MYO_READ_Kp(myo_base[i],motor),
-//            MYO_READ_Ki(myo_base[i],motor),
-//            MYO_READ_Kd(myo_base[i],motor),
-//            MYO_READ_sp(myo_base[i],motor),
-//            MYO_READ_forwardGain(myo_base[i],motor),
-//                           (int16_t)MYO_READ_outputPosMax(myo_base[i],motor),
-//                           (int16_t)MYO_READ_outputNegMax(myo_base[i],motor),
-//            MYO_READ_IntegralPosMax(myo_base[i],motor),
-//            MYO_READ_IntegralNegMax(myo_base[i],motor),
-//            MYO_READ_deadBand(myo_base[i],motor),
-//            MYO_READ_control(myo_base[i],motor),
-//            MYO_READ_position(myo_base[i],motor),
-//            MYO_READ_velocity(myo_base[i],motor),
-//            MYO_READ_current(myo_base[i],motor),
-//            MYO_READ_displacement(myo_base[i],motor),
-//            MYO_READ_pwmRef(myo_base[i],motor),
-//            MYO_READ_update_frequency(myo_base[i]));
-//        }
-
-    }
-    reset();
-}
-
 MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base, NeoPixelPtr neopixel) : myo_base(myo_base),
                                                                          adc_base(adc_base), neopixel(neopixel) {
     if (myo_base.size() > 3)
@@ -348,7 +264,7 @@ void MyoControl::setPWM(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[myo_base_of_motor[motor]], motor - motor_offset[motor], setPoint);
 }
 
-bool MyoControl::configureMyoBricks(vector<uint8_t> &motorIDs,
+bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
                                     vector<int32_t> &encoderMultiplier,
                                     vector<int32_t> &gearBoxRatio) {
     myo_bricks = motorIDs;

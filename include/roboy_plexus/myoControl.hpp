@@ -118,15 +118,10 @@ public:
     /**
      * Constructor
      * @param myo_base vector of myo base addresses (cf hps_0.h)
+     * @param adc_base adc base address (cf hps_0.h) [OPTIONAL]
+     * @param neopixel neopixel base address (cf hps_0.h) [OPTIONAL]
      */
-    MyoControl(vector<int32_t *> &myo_base);
-
-    /**
-     * Alternative Constructor
-     * @param myo_base vector of myo base addresses (cf hps_0.h)
-     * @param adc_base adc base address (cf hps_0.h)
-     */
-    MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base, NeoPixelPtr neopixel = nullptr);
+    MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
 
     ~MyoControl();
 
@@ -308,7 +303,7 @@ public:
      * @param encoderMultiplier this multiplies the output of the optical encoder
      * @param gearBoxRatio the ratio of the gear box for each myoBrick
      */
-    bool configureMyoBricks(vector<uint8_t> &motorIDs, vector<int32_t> &encoderMultiplier,
+    bool configureMyoBricks(vector<int32_t> &motorIDs, vector<int32_t> &encoderMultiplier,
                             vector<int32_t> &gearBoxRatio);
 
     /**
@@ -470,8 +465,7 @@ public:
 
     int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
     map<int, map<int, control_Parameters_t>> control_params;
-    vector<uint8_t> myo_bricks;
-    vector<int32_t> myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
+    vector<int32_t> myo_bricks, myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
     int32_t *adc_base;
     float weight_offset = 0;
     float adc_weight_parameters[2] = {-89.6187, 0.1133}; // b + a*x = y
