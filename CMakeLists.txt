@@ -28,7 +28,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
-#            roboy_soli
+            roboy_soli
             )
     include(findros)
     # Eigen
@@ -45,7 +45,6 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
-            roboy_soli
             )
 
     SET(ALT_DEVICE_FAMILY soc_cv_av)
@@ -55,6 +54,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
 
     include_directories(
             include/
+#            ../roboy_soli/include/roboy_soli
+#            ../roboy_soli/infineon/Communication\ Library/host_c/include
             ${catkin_INCLUDE_DIRS}
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/include
@@ -83,6 +84,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/A1335.hpp
             include/roboy_plexus/tlv493d.hpp
             include/roboy_plexus/controlActions.hpp
+#            ../roboy_soli/src/roboySoli.cpp
 #            include/roboy_plexus/armControl.hpp
             )
     add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_soli_gencpp)

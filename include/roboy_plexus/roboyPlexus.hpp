@@ -41,7 +41,7 @@
 #include "roboy_plexus/controlActions.hpp"
 #include <roboy_plexus/am4096.hpp>
 #include <roboy_plexus/Adafruit_LSM9DS1.hpp>
-//#include <roboy_soli/roboySoli.hpp>
+#include <roboy_soli/roboySoli.hpp>
 #include <roboy_plexus/A1335.hpp>
 #include <roboy_middleware_msgs/ADCvalue.h>
 #include <roboy_middleware_msgs/ControlMode.h>
