@@ -1215,6 +1215,7 @@ bool RoboyPlexus::ADXL345_IdRead(int file, uint8_t *pId) {
     bPass = ADXL345_REG_READ(file, ADXL345_REG_DEVID, pId);
 
     return bPass;
+
 }
 
 //=========================================================
@@ -1224,64 +1225,103 @@ bool RoboyPlexus::ADXL345_IdRead(int file, uint8_t *pId) {
 //void RoboyPlexus::motorStatusPublisher() {
 //}
 void RoboyPlexus::SetGPIOCB(const std_msgs::Bool::ConstPtr& msg) {
+  bool throttle_ = msg->data;
+  throttle_ = throttle_ | (bool)rickshaw_throttle_on;
+  throttle_ &= rickshaw_move_on;
+
+  printf("\nTHROTTEL ON: %d\n", throttle_);
+
+
   rickshaw_CTL rickshaw_CTL(bike_addr);
-  rickshaw_CTL.writeThrottle(0xffff & (msg->data | rickshaw_throttle_on) & rickshaw_move_on);
-  ROS_INFO("New pint value: [%d]", (rickshaw_CTL.readThrottle()&0x0001));
-  ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
+  //rickshaw_CTL.writeThrottle(0xffff & (msg->data | rickshaw_throttle_on) & rickshaw_move_on);
+  rickshaw_CTL.writeThrottle(0xffff & throttle_);
+  //ROS_INFO("New pint value: [%d]", (rickshaw_CTL.readThrottle()&0x0001));
+  //ROS_INFO("data form sensor, %d", rickshaw_CTL.readAngleSensor());
 }
 
 void RoboyPlexus::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
-  int motor_turn_left = 10;
+  int motor_turn_left = 9;
   int motor_turn_right = 11;
+  int break1 =10;
+  int break2 =12;
   rickshaw_CTL rickshaw_CTL(bike_addr);
 
 
-  control_params_backup = myoControl->control_params;
+  //control_params_backup = myoControl->control_params;
   control_Parameters_t params;
+
   int motor_cnt;
-  myoControl->getDefaultControlParams(&params, DISPLACEMENT);
-  params.Kp = 150;
-  params.outputPosMax = 5000;
-  params.outputNegMax = -5000;
 
 
   //Ax 5 too speed up above value 25000
-  if(joy->axes[5] > 25000){//stear speed up
+  if(joy->axes[5] <= -0.7){//stear speed up
     rickshaw_CTL.writeThrottle(1);
     rickshaw_throttle_on = 1;
   } else {
     rickshaw_throttle_on = 0;
   }
+
   if(joy->buttons[1] == 0){
     rickshaw_move_on = 1;
   }else{
+    cout << "\n\nbreak on\n";
     rickshaw_CTL.writeThrottle(0);
     rickshaw_move_on = 0;
   }
 
+  if(joy->buttons[3] == 0){
+    cout << "\nadditional button\n";
+    for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
+      //myoControl->changeControlParameters(motor_cnt, params);
+      //myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
+      myoControl->setDisplacement(motor_cnt,5);
+    }
+  }
+
+  if(joy->buttons[2] == 0){
+    //Breaks activate
+    //myoControl->changeControlParameters(break1, params);
+    //myoControl->changeControlParameters(break2, params);
+    //myoControl->changeControl(break1, DISPLACEMENT, params, 300);
+    //myoControl->changeControl(break2, DISPLACEMENT, params, 300);
+    myoControl->setDisplacement(break1,400);
+    myoControl->setDisplacement(break2,400);
+  }
+
+  //myoControl->changeControlParameters(motor_turn_right, params);
+  //myoControl->changeControlParameters(motor_turn_left, params);
+
   //ax trigger above -27000 to 27000
   //left joy->axes[0] //for left and right
-  if(joy->axes[0] > 27000){
-    for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
-      myoControl->changeControlParameters(motor_cnt, params);
-      myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
-    }
-    myoControl->setDisplacement(motor_turn_left,1);
-    myoControl->setDisplacement(motor_turn_right,200);
-  } else if(joy->axes[0] < -27000){
-    for(motor_cnt = 0; motor_cnt < 21; motor_cnt++){
-      myoControl->changeControlParameters(motor_cnt, params);
-      myoControl->changeControl(motor_cnt, DISPLACEMENT, params, 0);
-    }
-    myoControl->setDisplacement(motor_turn_left,200);
-    myoControl->setDisplacement(motor_turn_right,1);
-  }else{
+  if(joy->axes[0] <= -0.8){
+    cout << "\nturn right\n";
+    //failsafe_flag = 1;
+    //myoControl->changeControl(motor_turn_left, DISPLACEMENT, params, 3);
+    //myoControl->changeControl(motor_turn_right, DISPLACEMENT, params, 400);
+    myoControl->setDisplacement(motor_turn_left,20);
+    myoControl->setDisplacement(motor_turn_right,400);
+  } else if(joy->axes[0] >= 0.8){
+    cout << "\nturn left\n";
+    //failsafe_flag = 1;
+    //myoControl->changeControl(motor_turn_right, DISPLACEMENT, params, 3);
+    //myoControl->changeControl(motor_turn_left, DISPLACEMENT, params, 400);
 
-    uint motor = 0;
+    myoControl->setDisplacement(motor_turn_left,400);
+    myoControl->setDisplacement(motor_turn_right,20);
+
+  }else{
+    //if(failsafe_flag == 1){
+      cout << "\n DISPLACEMENT MODE \n ==============================\n" ;
+      myoControl->allToDisplacement(20);
+      //failsafe_flag = 0;
+      myoControl->setDisplacement(motor_turn_left,20);
+      myoControl->setDisplacement(motor_turn_right,20);
+    //}
+    /*uint motor = 0;
     for (auto &params:control_params_backup) {
         myoControl->changeControl(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
         motor++;
-    }
+    }*/
 
   }
 }

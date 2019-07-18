@@ -421,6 +421,7 @@ private:
 
     bool rickshaw_move_on = 0;
     bool rickshaw_throttle_on = 0;
+    bool failsafe_flag = 0;
 
 };
 

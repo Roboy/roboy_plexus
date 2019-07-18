@@ -393,8 +393,8 @@ int16_t MyoControl::getCurrent(int motor) {
 }
 
 void MyoControl::getDefaultControlParams(control_Parameters_t *params, int control_mode) {
-    params->outputPosMax = 500;
-    params->outputNegMax = -500;
+    params->outputPosMax = 1000;
+    params->outputNegMax = -1000;
 
     params->radPerEncoderCount = 2 * 3.14159265359 / (2000.0 * 53.0);
 
@@ -426,9 +426,9 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
             params->outputDivider = 1;
             break;
         case DISPLACEMENT:
-            params->spPosMax = 200;
+            params->spPosMax = 400;
             params->spNegMax = 0;
-            params->Kp = 100;
+            params->Kp = 150;
             params->Ki = 0;
             params->Kd = 0;
             params->forwardGain = 0;
