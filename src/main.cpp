@@ -139,18 +139,18 @@ int main(int argc, char *argv[]) {
         return( 1 );
     }
 
-    h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-    if(*h2p_lw_sysid_addr!=0x0001beef){ // if the system id does not match, we abort
-        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, 0x0001beef);
-        // clean up our memory mapping and exit
-        if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
-            printf( "ERROR: munmap() failed...\n" );
-            close( fd );
-            return( 1 );
-        }
-        close( fd );
-        return -1;
-    }
+//    h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+//    if(*h2p_lw_sysid_addr!=0x0001beef){ // if the system id does not match, we abort
+//        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, 0x0001beef);
+//        // clean up our memory mapping and exit
+//        if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
+//            printf( "ERROR: munmap() failed...\n" );
+//            close( fd );
+//            return( 1 );
+//        }
+//        close( fd );
+//        return -1;
+//    }
 
 #ifdef LED_BASE
     h2p_lw_led_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + LED_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
@@ -223,23 +223,76 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-    neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
-
-    myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
-    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
-                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
-    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
-    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
-
-    signal(SIGINT, SigintHandler);
-
-    ros::Rate rate(30);
-    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
-    while(ros::ok()){
-        neoPixel->runPattern(pattern,rate);
-//        neoPixel->setColor(1,0x80);
-        rate.sleep();
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "biatch", ros::init_options::NoSigintHandler);
     }
+
+    ros::NodeHandle nh;
+
+    MYO_WRITE_spi_activated(h2p_lw_myo_addr[0],1);// 1.0f/(62.0f*1023.0f)*2.0f*M_PI //
+    float Kp = 0.1, Kd = 0, sp = 0.0f, pos_encoder_multiplier = 1, dis_encoder_multiplier = 7.688263341f;//0.08888888f*M_PI/180.0f/2.0f;
+    int ouputLimit = 500, controlMode = 0;
+    MYO_WRITE_Kp(h2p_lw_myo_addr[0],1,&Kp);
+    MYO_WRITE_outputLimit(h2p_lw_myo_addr[0],1,&ouputLimit);
+    MYO_WRITE_pos_encoder_multiplier(h2p_lw_myo_addr[0],1,&pos_encoder_multiplier);
+    MYO_WRITE_dis_encoder_multiplier(h2p_lw_myo_addr[0],1,&dis_encoder_multiplier);
+    while(true){
+        nh.getParam("Kp", Kp);
+        nh.getParam("Kd", Kd);
+        nh.getParam("setPoint", sp);
+        nh.getParam("controlMode", controlMode);
+        MYO_WRITE_Kp(h2p_lw_myo_addr[0],1,&Kp);
+        MYO_WRITE_Kd(h2p_lw_myo_addr[0],1,&Kd);
+        MYO_WRITE_sp(h2p_lw_myo_addr[0],1,&sp);
+        MYO_WRITE_control(h2p_lw_myo_addr[0],1,controlMode);
+
+        printf("\ncur: %d pwmRef %d\n", MYO_READ_current(h2p_lw_myo_addr[0],1), *MYO_READ_pwmRef(h2p_lw_myo_addr[0],1) );
+        printf("pos: %d, raw: %f, conv: %f, error: %f, result: %f, result %d\n", MYO_READ_position(h2p_lw_myo_addr[0],1),
+                *MYO_READ_pos_raw_f(h2p_lw_myo_addr[0],1),
+                *MYO_READ_pos_conv_f(h2p_lw_myo_addr[0],1),
+                *MYO_READ_pos_err_f(h2p_lw_myo_addr[0],1),
+                *MYO_READ_pos_res_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_pos_res(h2p_lw_myo_addr[0],1));
+        printf("vel: %d, raw: %f, conv: %f, error: %f, result: %f, result %d\n", MYO_READ_velocity(h2p_lw_myo_addr[0],1),
+               *MYO_READ_vel_raw_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_vel_conv_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_vel_err_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_vel_res_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_vel_res(h2p_lw_myo_addr[0],1));
+        printf("dis: %d, raw: %f, conv: %f, error: %f, result: %f, result %d\n", MYO_READ_displacement(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_raw_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_conv_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_err_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_res_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_res(h2p_lw_myo_addr[0],1));
+        printf("myo_brick conv: %f, error: %f, result: %f, result %d\n",
+               *MYO_READ_dis_myo_brick_conv_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_myo_brick_err_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_myo_brick_res_f(h2p_lw_myo_addr[0],1),
+               *MYO_READ_dis_myo_brick_res(h2p_lw_myo_addr[0],1));
+        usleep(100000);
+    }
+
+
+//    neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
+//
+//    myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
+//    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
+//                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+//    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
+//    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
+//
+//    signal(SIGINT, SigintHandler);
+
+//    ros::Rate rate(30);
+//    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
+//    while(ros::ok()){
+//        neoPixel->runPattern(pattern,rate);
+////        neoPixel->setColor(1,0x80);
+//        rate.sleep();
+//    }
 
     // clean up our memory mapping and exit
     if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {

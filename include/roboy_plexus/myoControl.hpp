@@ -53,7 +53,7 @@
 #define MOTORS_PER_MYOCONTROL 9
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
-#define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
+#define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=*reinterpret_cast<int*>(data))
 
 // the upper 8 bit define which value, the lower 8 bit define which motor
 #define MYO_READ_Kp(base, motor) IORD(base, (uint32_t)(0x00<<8|motor&0xff) )
@@ -67,16 +67,41 @@
 #define MYO_READ_IntegralNegMax(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
 #define MYO_READ_deadBand(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
 #define MYO_READ_control(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
+
 #define MYO_READ_position(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
 #define MYO_READ_velocity(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
 #define MYO_READ_current(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
 #define MYO_READ_displacement(base, motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
-#define MYO_READ_pwmRef(base, motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
+
+#define MYO_READ_pwmRef(base, motor) reinterpret_cast<volatile int16_t*>(&IORD(base, (uint32_t)(0x0F<<8|motor&0xff) ))
 #define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
 #define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
-#define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
+
+#define MYO_READ_pos_raw_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x12<<8|motor&0xff) ))
+#define MYO_READ_vel_raw_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x13<<8|motor&0xff) ))
+#define MYO_READ_dis_raw_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x14<<8|motor&0xff) ))
+
+#define MYO_READ_pos_conv_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x15<<8|motor&0xff) ))
+#define MYO_READ_vel_conv_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x16<<8|motor&0xff) ))
+#define MYO_READ_dis_conv_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x17<<8|motor&0xff) ))
+#define MYO_READ_dis_myo_brick_conv_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x18<<8|motor&0xff) ))
+
+#define MYO_READ_pos_err_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x19<<8|motor&0xff) ))
+#define MYO_READ_vel_err_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x1A<<8|motor&0xff) ))
+#define MYO_READ_dis_err_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x1B<<8|motor&0xff) ))
+#define MYO_READ_dis_myo_brick_err_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x1C<<8|motor&0xff) ))
+
+#define MYO_READ_pos_res_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x1D<<8|motor&0xff) ))
+#define MYO_READ_vel_res_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x1E<<8|motor&0xff) ))
+#define MYO_READ_dis_res_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x1F<<8|motor&0xff) ))
+#define MYO_READ_dis_myo_brick_res_f(base, motor) reinterpret_cast<volatile float*>(&IORD(base, (uint32_t)(0x20<<8|motor&0xff) ))
+
+#define MYO_READ_pos_res(base, motor) reinterpret_cast<volatile int32_t*>(&IORD(base, (uint32_t)(0x21<<8|motor&0xff) ))
+#define MYO_READ_vel_res(base, motor) reinterpret_cast<volatile int32_t*>(&IORD(base, (uint32_t)(0x22<<8|motor&0xff) ))
+#define MYO_READ_dis_res(base, motor) reinterpret_cast<volatile int32_t*>(&IORD(base, (uint32_t)(0x23<<8|motor&0xff) ))
+#define MYO_READ_dis_myo_brick_res(base, motor) reinterpret_cast<volatile int32_t*>(&IORD(base, (uint32_t)(0x24<<8|motor&0xff) ))
+
 #define MYO_READ_myo_brick_motor_angle(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
-#define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
 #define MYO_READ_myo_brick_gear_box_ratio(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
 #define MYO_READ_myo_brick_encoder_multiplier(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
 #define MYO_READ_outputDivider(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
@@ -86,16 +111,18 @@
 #define MYO_READ_myo_brick_motor_relative_angle(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
 #define MYO_READ_myo_brick_motor_angle_revolution_counter(base, motor) IORD(base, (uint32_t)(0x1C<<8|motor&0xff) )
 
-#define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
-#define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
-#define MYO_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
-#define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
-#define MYO_WRITE_forwardGain(base, motor, data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), data )
-#define MYO_WRITE_outputPosMax(base, motor, data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), data )
-#define MYO_WRITE_outputNegMax(base, motor, data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralPosMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralNegMax(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
-#define MYO_WRITE_deadBand(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
+
+#define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_forwardGain(base, motor, data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_outputPosMax(base, motor, data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_outputLimit(base, motor, data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_outputNegMax(base, motor, data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_IntegralPosMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_IntegralNegMax(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_deadBand(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
 #define MYO_WRITE_control(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
 #define MYO_WRITE_reset_myo_control(base, data) IOWR(base, (uint32_t)(0x0B<<8|0), data )
 #define MYO_WRITE_spi_activated(base, data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
@@ -106,6 +133,8 @@
 #define MYO_WRITE_myo_brick_gear_box_ratio(base, motor, data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
 #define MYO_WRITE_myo_brick_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 #define MYO_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
+#define MYO_WRITE_pos_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x10<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
+#define MYO_WRITE_dis_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), *reinterpret_cast<int32_t*>(data) )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
