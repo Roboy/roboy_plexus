@@ -419,7 +419,7 @@ private:
 
     string body_part;
 
-    bool rickshaw_move_on = 0;
+    bool rickshaw_move_on = true;
     bool rickshaw_throttle_on = 0;
     bool failsafe_flag = 0;
 

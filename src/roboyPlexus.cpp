@@ -11,19 +11,19 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     id = IORD(switches_base, 0) & 0x7;
 //    string body_part;
     switch (id) {
-        case HEAD:
+        case 0:
             body_part = "head";
             break;
-        case SHOULDER_LEFT:
+        case 1:
             body_part = "shoulder_left";
             break;
-        case SPINE_LEFT:
+        case 2:
             body_part = "spine_left";
             break;
-        case SHOULDER_RIGHT:
+        case 3:
             body_part = "shoulder_right";
             break;
-        case SPINE_RIGHT:
+        case 4:
             body_part = "spine_right";
             break;
         default:
@@ -47,12 +47,12 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     switch (id) {
-        case HEAD: {
+        case 0: {
             motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
             vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
             vector<int32_t> gearBoxRatio = {62, 62, 62, 62, 62, 62};
             vector<int32_t> encoderMultiplier = {4, 4, 4, 4, 4, 4};
-            if (!myoControl->configureMyoBricks(myo_bricks[HEAD], deviceIDs, encoderMultiplier, gearBoxRatio)) {
+            if (!myoControl->configureMyoBricks(myo_bricks[0], deviceIDs, encoderMultiplier, gearBoxRatio)) {
                 ROS_ERROR("could not configure myoBricks");
             }else {
                 motorAngleThread = boost::shared_ptr<std::thread>(
@@ -64,7 +64,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             break;
         }
 
-        case SPINE_LEFT: {
+        case 1: {
             { // start motor angle publisher for three myoBricks
                 motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                            1);
@@ -72,7 +72,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //                vector<uint8_t> motorIDs = {0,1,2};
                 vector<int32_t> gearBoxRatio = {62, 62};
                 vector<int32_t> encoderMultiplier = {1, 1};
-                if (!myoControl->configureMyoBricks(myo_bricks[SPINE_LEFT], deviceIDs, encoderMultiplier, gearBoxRatio)) {
+                if (!myoControl->configureMyoBricks(myo_bricks[1], deviceIDs, encoderMultiplier, gearBoxRatio)) {
                     ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
                 }else {
                     motorAngleThread = boost::shared_ptr<std::thread>(
@@ -82,14 +82,14 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
             }
             break;
         }
-        case SPINE_RIGHT: {
+        case 2: {
             { // start motor angle publisher for three myoBricks
                 motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle",
                                                                                            1);
                 vector<uint8_t> deviceIDs = {0xC, 0xD, 0xF, 0xC, 0xE, 0xD};
                 vector<int32_t> gearBoxRatio = {62, 62, 62, 62, 62, 62};
                 vector<int32_t> encoderMultiplier = {4, 4, 4, 4, 4, 4};
-                if (!myoControl->configureMyoBricks(myo_bricks[SPINE_RIGHT], deviceIDs, encoderMultiplier,gearBoxRatio)) {
+                if (!myoControl->configureMyoBricks(myo_bricks[2], deviceIDs, encoderMultiplier,gearBoxRatio)) {
                     ROS_ERROR("could not configure myoBricks, make sure the correct fpga image is used");
                 }else {
                     motorAngleThread = boost::shared_ptr<std::thread>(
@@ -111,8 +111,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            soliGetFrameInfo_srv = nh->advertiseService("/roboy/middleware/leftHand/soliGetFrameInfo", soliGetFrameInfo);
             break;
         }
-        case SHOULDER_LEFT: {
-          StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/StearingAngle",
+        case 3: {
+          StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/SteeringAngle",
                                                                                      1);
           stearingAngleThread = boost::shared_ptr<std::thread>(
                    new std::thread(&RoboyPlexus::StearingAnglePublisher, this));
@@ -163,7 +163,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            magneticsShoulderThread->detach();
             break;
         }
-        case SHOULDER_RIGHT: {
+        case 4: {
             StearingAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/StearingAngle",
                                                                                  1);
             stearingAngleThread = boost::shared_ptr<std::thread>(
@@ -992,7 +992,7 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
 
 bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
                                         roboy_middleware_msgs::SetInt16::Request &res) {
-    if (id == HEAD) {
+    if (id == 0) {
         myoControl->allToDisplacement(req.setpoint);
         ros::Duration d(5);
         d.sleep();
