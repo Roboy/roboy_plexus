@@ -554,6 +554,11 @@ void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::Cons
                     myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
                 case DIRECT_PWM:
+                    if(abs(msg->set_points[i]>500)) {
+                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values, "
+                                          "what the heck are you publishing?!");
+                        break;
+                    }
                     myoControl->setPWM(motor, msg->set_points[i]);
                     break;
             }
