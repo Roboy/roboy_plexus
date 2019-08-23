@@ -80,6 +80,7 @@
 #include <bitset>
 #include "roboy_plexus/A1335.hpp"
 #include "roboy_plexus/tlv493d.hpp"
+#include "roboy_plexus/tle493d_w2b6.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 //#include "roboy_plexus/armControl.hpp"
@@ -398,7 +399,8 @@ private:
 
     string ethaddr;
 
-    vector<boost::shared_ptr<TLV493D>> tlv;
+    int active_magnetic_sensors = 0;
+    vector<boost::shared_ptr<TLE493D>> tle;
 
     bool executeAction(string actions);
 

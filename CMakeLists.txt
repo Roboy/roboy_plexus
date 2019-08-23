@@ -74,6 +74,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/A1335.cpp
             src/tlv493d.cpp
             src/controlActions.cpp
+            src/tle493d_w2b6.cpp
 #            src/armControl.cpp
             src/UDPSocket.cpp
             include/roboy_plexus/myoControl.hpp
@@ -84,6 +85,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/A1335.hpp
             include/roboy_plexus/tlv493d.hpp
             include/roboy_plexus/controlActions.hpp
+            include/roboy_plexus/tle493d_w2b6.hpp
 #            ../roboy_soli/src/roboySoli.cpp
 #            include/roboy_plexus/armControl.hpp
             )
