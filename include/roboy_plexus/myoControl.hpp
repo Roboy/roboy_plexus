@@ -56,59 +56,41 @@
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
 // the upper 8 bit define which value, the lower 8 bit define which motor
-#define MYO_READ_Kp(base, motor) IORD(base, (uint32_t)(0x00<<8|motor&0xff) )
-#define MYO_READ_Ki(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
-#define MYO_READ_Kd(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
-#define MYO_READ_sp(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
-#define MYO_READ_forwardGain(base, motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
-#define MYO_READ_outputPosMax(base, motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
-#define MYO_READ_outputNegMax(base, motor) IORD(base, (uint32_t)(0x06<<8|motor&0xff) )
-#define MYO_READ_IntegralPosMax(base, motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
-#define MYO_READ_IntegralNegMax(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
-#define MYO_READ_deadBand(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
-#define MYO_READ_control(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
-#define MYO_READ_position(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
-#define MYO_READ_velocity(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
-#define MYO_READ_current(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
-#define MYO_READ_displacement(base, motor) IORD(base, (uint32_t)(0x0E<<8|motor&0xff) )
-#define MYO_READ_pwmRef(base, motor) IORD(base, (uint32_t)(0x0F<<8|motor&0xff) )
-#define MYO_READ_update_frequency(base) IORD(base, (uint32_t)(0x10<<8|0) )
-#define MYO_READ_power_sense(base) IORD(base, (uint32_t)(0x11<<8|0) )
-#define MYO_READ_gpio(base) IORD(base, (uint32_t)(0x12<<8|0) )
-#define MYO_READ_myo_brick_motor_angle(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
-#define MYO_READ_myo_brick(base) IORD(base, (uint32_t)(0x14<<8|0) )
-#define MYO_READ_myo_brick_gear_box_ratio(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
-#define MYO_READ_myo_brick_encoder_multiplier(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
-#define MYO_READ_outputDivider(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_raw_angle(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_raw_angle_prev(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_offset_angle(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_relative_angle(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
-#define MYO_READ_myo_brick_motor_angle_revolution_counter(base, motor) IORD(base, (uint32_t)(0x1C<<8|motor&0xff) )
+#define MYO_READ_Kp(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
+#define MYO_READ_Ki(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
+#define MYO_READ_Kd(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
+#define MYO_READ_encoder0_position(base, motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
+#define MYO_READ_encoder1_position(base, motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
+#define MYO_READ_encoder0_velocity(base, motor) IORD(base, (uint32_t)(0x06<<8|motor&0xff) )
+#define MYO_READ_encoder1_velocity(base, motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
+#define MYO_READ_PWMLimit(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
+#define MYO_READ_IntegralLimit(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
+#define MYO_READ_deadband(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
+#define MYO_READ_control_mode(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
+#define MYO_READ_sp(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
+#define MYO_READ_error_code(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
+#define MYO_READ_status_update_frequency_Hz(base) IORD(base, (uint32_t)(0x11<<8|0) )
+#define MYO_READ_current_phase1(base, motor) IORD(base, (uint32_t)(0x12<<8|motor&0xff) )
+#define MYO_READ_current_phase2(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
+#define MYO_READ_current_phase3(base, motor) IORD(base, (uint32_t)(0x14<<8|motor&0xff) )
 
-#define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
-#define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
-#define MYO_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
-#define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
-#define MYO_WRITE_forwardGain(base, motor, data) IOWR(base, (uint32_t)(0x04<<8|motor&0xff), data )
-#define MYO_WRITE_outputPosMax(base, motor, data) IOWR(base, (uint32_t)(0x05<<8|motor&0xff), data )
-#define MYO_WRITE_outputNegMax(base, motor, data) IOWR(base, (uint32_t)(0x06<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralPosMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralNegMax(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
-#define MYO_WRITE_deadBand(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
-#define MYO_WRITE_control(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
-#define MYO_WRITE_reset_myo_control(base, data) IOWR(base, (uint32_t)(0x0B<<8|0), data )
-#define MYO_WRITE_spi_activated(base, data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
-#define MYO_WRITE_reset_controller(base, motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
-#define MYO_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x0E<<8|0), data )
-#define MYO_WRITE_gpio(base, data) IOWR(base, (uint32_t)(0x0F<<8|0), data )
-#define MYO_WRITE_myo_brick(base, data) IOWR(base, (uint32_t)(0x10<<8|0), data )
-#define MYO_WRITE_myo_brick_gear_box_ratio(base, motor, data) IOWR(base, (uint32_t)(0x11<<8|motor&0xff), data )
-#define MYO_WRITE_myo_brick_encoder_multiplier(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
-#define MYO_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
+#define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
+#define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
+#define MYO_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
+#define MYO_WRITE_PWMLimit(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
+#define MYO_WRITE_IntegralLimit(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
+#define MYO_WRITE_deadband(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
+#define MYO_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0B<<8|motor&0xff), data )
+#define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
+#define MYO_WRITE_trigger_control_mode_update(base, motor, data) IOWR(base, (uint32_t)(0x0E<<8|motor&0xff), data )
+#define MYO_WRITE_trigger_setpoint_update(base, motor, data) IOWR(base, (uint32_t)(0x0F<<8|motor&0xff), data )
+#define MYO_WRITE_motor_to_update(base, motor, data) IOWR(base, (uint32_t)(0x10<<8|motor&0xff), data )
+#define MYO_WRITE_status_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
-#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
+
+#define MOTOR_ENCODER 0
+#define DISPLACEMENT_ENCODER 1
 
 using namespace std;
 using namespace std::chrono;
@@ -163,148 +145,33 @@ public:
     void changeControlParameters(int motor, control_Parameters_t &params);
 
     /**
-     * Resets all myo controllers
-     */
-    void reset();
-
-    /**
-     * Sets the spi state for the interface of a motor
-     * @param motor
-     * @param active
-     * @param active/not active
-     */
-    bool setSPIactive(int motor, bool active);
-
-    /**
-     * Get the parameters for the PID controller of a motor
-     * @param motor for this motor
-     */
-    void getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
-                                int &setPoint, int &outputDivider, int motor);
-
-    /**
-     * Get the parameters for the PID controller of a motor
-     * @param motor for this motor
-     */
-    void setPIDcontrollerParams(uint16_t Pgain, uint16_t Igain, uint16_t Dgain, uint16_t forwardGain, uint16_t deadband,
-                                int motor, int mode);
-
-    /**
      * Gets the current control_mode of a motor
      * @param motor for this motor
      */
     uint16_t getControlMode(int motor);
 
     /**
-     * Gets the motor angle of a myo brick
+     * Gets the current position of a motor in encoder ticks
+     * @param motor for this motor
+     * @param encoder of this encoder
+     */
+    int32_t getEncoderPosition(int motor,int encoder);
+
+    /**
+     * Gets the current velcity of a motor in encoder ticks/s
+     * @param motor for this motor
+     * @param encoder of this encoder
+     */
+    int32_t getEncoderVelocity(int motor,int encoder);
+
+    /**
+     * Sets a new setpoint for a motor
      * @param motor
-     * @return angle in ticks
+     * @param setpoint
      */
-    int32_t getMotorAngle(int motor);
+    void setPoint(int motor, int32_t setpoint);
 
-    /**
-     * Gets the motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getMotorAnglePrev(int motor);
-
-    /**
-     * Gets the raw motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getRawMotorAngle(int motor);
-
-    /**
-     * Gets the raw motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getRelativeMotorAngle(int motor);
-
-    /**
-     * Gets the raw motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getMotorAngleOffset(int motor);
-
-    /**
-     * Gets the motor angle revolution counter of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getRevolutionCounter(int motor);
-
-    /**
-     * Get the power sense
-     * @return true (power on), false (power off)
-     */
-    bool getPowerSense();
-
-    /**
-     * Gets the current pwm of a motor
-     * @param motor for this motor
-     */
-    int16_t getPWM(int motor);
-
-    /**
-     * Gets the current position of a motor in radians
-     * @param motor for this motor
-     */
-    int32_t getPosition(int motor);
-
-    /**
-     * Gets the current velocity of a motor in radians/seconds
-     * @param motor for this motor
-     */
-    int32_t getVelocity(int motor);
-
-    /**
-     * Gets the displacement in encoder ticks
-     * @param motor for this motor
-     */
-    int32_t getDisplacement(int motor);
-
-    /**
-     * Gets the current in Ampere
-     * @param motor for this motor
-     */
-    int16_t getCurrent(int motor);
-
-    /**
-	 * Sets the position of a motor in radians
-	 * @param motor for this motor
-	 */
-    void setPosition(int motor, int32_t setPoint);
-
-    /**
-     * Sets the current velocity of a motor in radians/seconds
-     * @param motor for this motor
-     */
-    void setVelocity(int motor, int32_t setPoint);
-
-    /**
-     * Set the displacement in encoder ticks
-     * @param motor for this motor
-     */
-    void setDisplacement(int motor, int32_t setPoint);
-
-    /**
-     * Set the pwm
-     * @param motor for this motor
-     */
-    void setPWM(int motor, int32_t setPoint);
-
-    /**
-     * Configures motors to be handled as myoBricks
-     * @param motorIDs these are the ids of the motors
-     * @param encoderMultiplier this multiplies the output of the optical encoder
-     * @param gearBoxRatio the ratio of the gear box for each myoBrick
-     */
-    bool configureMyoBricks(vector<int32_t> &motorIDs, vector<int32_t> &encoderMultiplier,
-                            vector<int32_t> &gearBoxRatio);
+    int16_t getCurrent(int motor, int phase);
 
     /**
      * Fills the given params with default values for the corresponding control mode
@@ -460,8 +327,6 @@ public:
     void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
                               vector<float> &coeffs);
 
-
-    void gpioControl(bool power);
 
     int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
     map<int, map<int, control_Parameters_t>> control_params;
