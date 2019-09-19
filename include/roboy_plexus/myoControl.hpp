@@ -281,6 +281,8 @@ public:
      */
     void setReplay(bool status);
 
+    void printStatus(int motor_id_global);
+
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces
      * keeping track of displacement and weight, it will either timeout or stop when the
@@ -344,6 +346,7 @@ private:
     bool replay = true;
     int predisplacement = 100;
     NeoPixelPtr neopixel;
+    MotorConfigPtr motor_config;
 };
 
 typedef boost::shared_ptr<MyoControl> MyoControlPtr;

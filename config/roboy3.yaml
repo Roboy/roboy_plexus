@@ -1,0 +1,11 @@
+number_of_icebuses: 1
+icebus_0:
+  number_of_motors: 2
+  motor_ids: [0,1]
+  motor_ids_global: [0,1]
+  coeffs_force2displacement:
+    - [0, 0, 0]
+    - [0, 0, 0]
+  coeffs_displacement2force:
+    - [0, 0, 0]
+    - [0, 0, 0]

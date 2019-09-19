@@ -1,9 +1,9 @@
 #include <roboy_plexus/roboyPlexus.hpp>
 
-RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, vector<int32_t *> &i2c_base,
+RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
                          int32_t *darkroom_base,
                          vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base) :
-        myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base), darkroom_ootx_addr(darkroom_ootx_addr),
+        i2c_base(i2c_base), darkroom_base(darkroom_base), darkroom_ootx_addr(darkroom_ootx_addr),
         adc_base(adc_base), myoControl(myoControl), switches_base(switches_base) {
 //
 //    id = IORD(switches_base, 0) & 0x7;
@@ -19,6 +19,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 //            body_part = "unknown";
 //    }
 //
+    myoControl->getEncoderPosition(0,0);
+
     ROS_INFO("roboy3 plexus initializing");
     body_part = "roboy3";
 
@@ -84,22 +86,22 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
-    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-        myoControl->setPoint(motor, myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
-        myoControl->changeControl(motor, POSITION);
-        control_mode[motor] = POSITION;
-    }
-
-    if (nh->hasParam("myo_bricks") && nh->hasParam("encoder_multiplier") && nh->hasParam("gear_box_ratio")) {
-        vector<int> myo_bricks, encoder_multiplier, gear_box_ratio;
-        nh->getParam("myo_bricks", myo_bricks);
-        nh->getParam("encoder_multiplier", encoder_multiplier);
-        nh->getParam("gear_box_ratio", gear_box_ratio);
-//        myoControl->configureMyoBricks(myo_bricks, encoder_multiplier, gear_box_ratio);
-        motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
-        motorAngleThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-        motorAngleThread->detach();
-    }
+//    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+//        myoControl->setPoint(motor, myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
+//        myoControl->changeControl(motor, POSITION);
+//        control_mode[motor] = POSITION;
+//    }
+//
+//    if (nh->hasParam("myo_bricks") && nh->hasParam("encoder_multiplier") && nh->hasParam("gear_box_ratio")) {
+//        vector<int> myo_bricks, encoder_multiplier, gear_box_ratio;
+//        nh->getParam("myo_bricks", myo_bricks);
+//        nh->getParam("encoder_multiplier", encoder_multiplier);
+//        nh->getParam("gear_box_ratio", gear_box_ratio);
+////        myoControl->configureMyoBricks(myo_bricks, encoder_multiplier, gear_box_ratio);
+//        motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
+//        motorAngleThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorAnglePublisher, this));
+//        motorAngleThread->detach();
+//    }
 
 //    vector<int> active_i2c_bus;
 //    for (int i = 0; i < i2c_base.size(); i++) {

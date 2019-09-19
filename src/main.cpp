@@ -47,6 +47,8 @@
 
 using namespace std;
 
+#define SYSTEM_ID 0xb16b00b5
+
 #define ALT_LWFPGASLVS_OFST 0xFF200000
 #define HW_REGS_BASE ( ALT_STM_OFST )
 #define HW_REGS_SPAN ( 0x04000000 )
@@ -147,8 +149,8 @@ int main(int argc, char *argv[]) {
     }
 
     h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-    if(*h2p_lw_sysid_addr!=0x0001beef){ // if the system id does not match, we abort
-        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, 0x0001beef);
+    if(*h2p_lw_sysid_addr!=SYSTEM_ID){ // if the system id does not match, we abort
+        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, SYSTEM_ID);
         // clean up our memory mapping and exit
         if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
             printf( "ERROR: munmap() failed...\n" );
@@ -184,51 +186,6 @@ int main(int argc, char *argv[]) {
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
 //    h2p_lw_myo_addr.push_back(nullptr);
-#endif
-#ifdef I2C_0_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef I2C_1_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef I2C_2_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef I2C_3_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef I2C_4_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef I2C_5_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef DARKROOM_0_BASE
-    h2p_lw_darkroom_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-#else
-    h2p_lw_darkroom_addr = nullptr;
-#endif
-#ifdef DARKROOMOOTXDECODER_0_BASE
-    h2p_lw_darkroom_ootx_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + DARKROOMOOTXDECODER_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_darkroom_ootx_addr.push_back(nullptr);
-#endif
-#ifdef ADC_LTC2308_0_BASE
-    h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-#else
-    h2p_lw_adc_addr = nullptr;
 #endif
 
 //    while(true){
@@ -279,18 +236,25 @@ int main(int argc, char *argv[]) {
 //    }
 
     myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
-    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
+    myoControl->getEncoderPosition(0,0);
+    RoboyPlexus roboyPlexus(myoControl, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
                             h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
-    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
-    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
+//    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
+//    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
+//
+//    signal(SIGINT, SigintHandler);
+//
 
-    signal(SIGINT, SigintHandler);
 
     ros::Rate rate(30);
     if(h2p_lw_neopixel_addr!=nullptr){
 //        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
         while(ros::ok()){
 //            neoPixel->runPattern(pattern,rate);
+            rate.sleep();
+        }
+    }else{
+        while(ros::ok()){
             rate.sleep();
         }
     }

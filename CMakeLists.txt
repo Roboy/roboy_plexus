@@ -75,22 +75,21 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/tlv493d.cpp
             src/controlActions.cpp
             src/tle493d_w2b6.cpp
-#            src/armControl.cpp
             src/UDPSocket.cpp
+            ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/myoControl.hpp
             include/roboy_plexus/i2c.hpp
             include/roboy_plexus/roboyPlexus.hpp
             include/roboy_plexus/am4096.hpp
             include/roboy_plexus/CRC32.h
             include/roboy_plexus/A1335.hpp
-            include/roboy_plexus/tlv493d.hpp
             include/roboy_plexus/controlActions.hpp
             include/roboy_plexus/tle493d_w2b6.hpp
+            ../common_utilities/include/common_utilities/MotorConfig.hpp
 #            ../roboy_soli/src/roboySoli.cpp
-#            include/roboy_plexus/armControl.hpp
             )
     add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_soli_gencpp)
-    target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
+    target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES} )
 
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )

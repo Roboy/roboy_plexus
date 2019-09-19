@@ -107,7 +107,7 @@ static vector<vector<int32_t>> DEFAULT_VECTOR_VECTOR;
  */
 class RoboyPlexus {
 public:
-    RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base,
+    RoboyPlexus(MyoControlPtr myoControl,
                 vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
                 int32_t *darkroom_base = nullptr, vector<int32_t *> &darkroom_ootx_addr = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
