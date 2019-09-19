@@ -1,7 +1,7 @@
 /*
     BSD 3-Clause License
 
-    Copyright (c) 2017, Roboy
+    Copyright (c) 2019, Roboy
             All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,8 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    author: Simon Trendel ( simon.trendel@tum.de ), 2018
-    description: Class for interfacing motor status and PID controllers running on fpga
+    author: Simon Trendel ( st@gi.ai ), 2019
+    description: Class for interfacing iceboards connected via icebus
 */
 
 #pragma once
@@ -46,6 +46,7 @@
 #include <string>
 #include <sstream>
 #include <common_utilities/CommonDefinitions.h>
+#include <common_utilities/MotorConfig.hpp>
 #include <roboy_plexus/timer.hpp>
 #include <ros/ros.h>
 #include <roboy_plexus/NeoPixel.hpp>
@@ -55,7 +56,7 @@
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
-// the upper 8 bit define which value, the lower 8 bit define which motor
+// the upper 8 bit define which register, the lower 8 bit define which motor
 #define MYO_READ_Kp(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
 #define MYO_READ_Ki(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
 #define MYO_READ_Kd(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
@@ -69,7 +70,7 @@
 #define MYO_READ_control_mode(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
 #define MYO_READ_sp(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
 #define MYO_READ_error_code(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
-#define MYO_READ_status_update_frequency_Hz(base) IORD(base, (uint32_t)(0x11<<8|0) )
+#define MYO_READ_update_frequency_Hz(base) IORD(base, (uint32_t)(0x11<<8|0) )
 #define MYO_READ_current_phase1(base, motor) IORD(base, (uint32_t)(0x12<<8|motor&0xff) )
 #define MYO_READ_current_phase2(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
 #define MYO_READ_current_phase3(base, motor) IORD(base, (uint32_t)(0x14<<8|motor&0xff) )
@@ -84,10 +85,7 @@
 #define MYO_WRITE_deadband(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
 #define MYO_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0B<<8|motor&0xff), data )
 #define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
-#define MYO_WRITE_trigger_control_mode_update(base, motor, data) IOWR(base, (uint32_t)(0x0E<<8|motor&0xff), data )
-#define MYO_WRITE_trigger_setpoint_update(base, motor, data) IOWR(base, (uint32_t)(0x0F<<8|motor&0xff), data )
-#define MYO_WRITE_motor_to_update(base, motor, data) IOWR(base, (uint32_t)(0x10<<8|motor&0xff), data )
-#define MYO_WRITE_status_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
+#define MYO_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 
@@ -105,7 +103,7 @@ public:
      * @param adc_base adc base address (cf hps_0.h) [OPTIONAL]
      * @param neopixel neopixel base address (cf hps_0.h) [OPTIONAL]
      */
-    MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
+    MyoControl(string motor_config_filepath, vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
 
     ~MyoControl();
 
@@ -330,9 +328,8 @@ public:
                               vector<float> &coeffs);
 
 
-    int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
+    map<int,int> myo_base_of_motor, motor_offset;
     map<int, map<int, control_Parameters_t>> control_params;
-    vector<int32_t> myo_bricks, myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
     int32_t *adc_base;
     float weight_offset = 0;
     float adc_weight_parameters[2] = {-89.6187, 0.1133}; // b + a*x = y
@@ -347,7 +344,6 @@ private:
     bool replay = true;
     int predisplacement = 100;
     NeoPixelPtr neopixel;
-
 };
 
 typedef boost::shared_ptr<MyoControl> MyoControlPtr;

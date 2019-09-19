@@ -69,58 +69,65 @@ NeoPixelPtr neoPixel;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-    if(myoControl!= nullptr){
-        // switch to displacement
-        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
-                myoControl->changeControl(motor, VELOCITY);
-            else
-                myoControl->changeControl(motor, DISPLACEMENT);
-        }
-        // relax the springs
-        ros::Rate rate(100);
-        bool toggle = true;
-        for(int decrements = 99; decrements>=0; decrements-=1){
-            if(toggle)
-                *h2p_lw_led_addr = 0xFF;
-            else
-                *h2p_lw_led_addr = 0x00;
-
-            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
-                    continue;
-                int displacement = myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER);
-                if(displacement<=0)
-                    continue;
-                else
-                    myoControl->setPoint(motor,displacement*(decrements/100.0));
-            }
-            rate.sleep();
-            if(decrements%15==0) {
-                if(!toggle)
-                    neoPixel->setColorAll(0xF00000);
-                else
-                    neoPixel->setColorAll(NeoPixelColorRGB::black);
-                toggle = !toggle;
-                cout << "." << endl;
-            }
-        }
-    }
-    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-        myoControl->setPoint(motor,0);
-    }
-
-    if(h2p_lw_led_addr!=nullptr)
-        *h2p_lw_led_addr = 0;
-    neoPixel->abort = true;
-    neoPixel->setColorAll(NeoPixelColorRGB::black);
-    // All the default sigint handler does is call shutdown()
+//    if(myoControl!= nullptr){
+//        // switch to displacement
+//        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+//            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+//                myoControl->changeControl(motor, VELOCITY);
+//            else
+//                myoControl->changeControl(motor, DISPLACEMENT);
+//        }
+//        // relax the springs
+//        ros::Rate rate(100);
+//        bool toggle = true;
+//        for(int decrements = 99; decrements>=0; decrements-=1){
+//            if(toggle)
+//                *h2p_lw_led_addr = 0xFF;
+//            else
+//                *h2p_lw_led_addr = 0x00;
+//
+//            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+//                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+//                    continue;
+//                int displacement = myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER);
+//                if(displacement<=0)
+//                    continue;
+//                else
+//                    myoControl->setPoint(motor,displacement*(decrements/100.0));
+//            }
+//            rate.sleep();
+//            if(decrements%15==0) {
+//                if(!toggle)
+//                    neoPixel->setColorAll(0xF00000);
+//                else
+//                    neoPixel->setColorAll(NeoPixelColorRGB::black);
+//                toggle = !toggle;
+//                cout << "." << endl;
+//            }
+//        }
+//    }
+//    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+//        myoControl->setPoint(motor,0);
+//    }
+//
+//    if(h2p_lw_led_addr!=nullptr)
+//        *h2p_lw_led_addr = 0;
+//    neoPixel->abort = true;
+//    neoPixel->setColorAll(NeoPixelColorRGB::black);
+//    // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
     system("fortune");
 }
 
 int main(int argc, char *argv[]) {
+    if(argc!=2) {
+        printf("ERROR: please provide motor config file path\n"
+               "USAGE: ./roboy_plexus path/to/motor_config.yaml\n");
+        return -1;
+    }
+    string motor_config_file_path(argv[1]);
+
     void *virtual_base;
     int fd;
 
@@ -178,16 +185,6 @@ int main(int argc, char *argv[]) {
 #else
 //    h2p_lw_myo_addr.push_back(nullptr);
 #endif
-#ifdef MYOCONTROL_1_BASE
-    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-//    h2p_lw_myo_addr.push_back(nullptr);
-#endif
-#ifdef MYOCONTROL_2_BASE
-    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-//    h2p_lw_myo_addr.push_back(nullptr);
-#endif
 #ifdef I2C_0_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #else
@@ -234,75 +231,69 @@ int main(int argc, char *argv[]) {
     h2p_lw_adc_addr = nullptr;
 #endif
 
-
-//    if(!ros::isInitialized()){
-//        ros::Time::init();
+//    while(true){
+//        printf(
+//                "control_mode  %d\n"
+//                "sp            %d\n"
+//               "encoder0_pos  %d\n"
+//               "encoder1_pos  %d\n"
+//               "encoder0_vel  %d\n"
+//               "encoder1_vel  %d\n"
+//               "current_phase1 %d\n"
+//               "current_phase2 %d\n"
+//               "current_phase3 %d\n"
+//               "Kp            %d\n"
+//               "Ki            %d\n"
+//               "Kd            %d\n"
+//               "PWMLimit      %d\n"
+//               "IntegralLimit %d\n"
+//               "deadband      %d\n"
+//
+//               "suf           %d\n"
+//               "error_code    %x\n"
+//               "crc           %x\n"
+//               "com quality   %d\n"
+//               "-------------------------------------------------\n",
+//                MYO_READ_control_mode(h2p_lw_myo_addr[0],0),
+//                MYO_READ_sp(h2p_lw_myo_addr[0],0),
+//
+//               MYO_READ_encoder0_position(h2p_lw_myo_addr[0],0),
+//               MYO_READ_encoder1_position(h2p_lw_myo_addr[0],0),
+//               MYO_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
+//               MYO_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
+//                MYO_READ_current_phase1(h2p_lw_myo_addr[0],0),
+//                MYO_READ_current_phase2(h2p_lw_myo_addr[0],0),
+//                MYO_READ_current_phase3(h2p_lw_myo_addr[0],0),
+//                MYO_READ_Kp(h2p_lw_myo_addr[0],0),
+//                MYO_READ_Ki(h2p_lw_myo_addr[0],0),
+//                MYO_READ_Kd(h2p_lw_myo_addr[0],0),
+//               MYO_READ_PWMLimit(h2p_lw_myo_addr[0],0),
+//               MYO_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
+//               MYO_READ_deadband(h2p_lw_myo_addr[0],0),
+//               MYO_READ_update_frequency_Hz(h2p_lw_myo_addr[0]),
+//               MYO_READ_error_code(h2p_lw_myo_addr[0],0),
+//               MYO_READ_crc_checksum(h2p_lw_myo_addr[0],0),
+//                MYO_READ_communication_quality(h2p_lw_myo_addr[0],0)
+//               );
+//        usleep(100000);
 //    }
-//
-//    ros::Rate rate(30);
-    while(true){
-        printf(
-                "control_mode  %d\n"
-                "sp            %d\n"
-               "encoder0_pos  %d\n"
-               "encoder1_pos  %d\n"
-               "encoder0_vel  %d\n"
-               "encoder1_vel  %d\n"
-               "current_phase1 %d\n"
-               "current_phase2 %d\n"
-               "current_phase3 %d\n"
-               "Kp            %d\n"
-               "Ki            %d\n"
-               "Kd            %d\n"
-               "PWMLimit      %d\n"
-               "IntegralLimit %d\n"
-               "deadband      %d\n"
 
-               "suf           %d\n"
-               "error_code    %x\n"
-               "crc           %x\n"
-               "com quality   %d\n"
-               "-------------------------------------------------\n",
-                MYO_READ_control_mode(h2p_lw_myo_addr[0],0),
-                MYO_READ_sp(h2p_lw_myo_addr[0],0),
+    myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
+    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
+                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
+    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 
-               MYO_READ_encoder0_position(h2p_lw_myo_addr[0],0),
-               MYO_READ_encoder1_position(h2p_lw_myo_addr[0],0),
-               MYO_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
-               MYO_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
-                MYO_READ_current_phase1(h2p_lw_myo_addr[0],0),
-                MYO_READ_current_phase2(h2p_lw_myo_addr[0],0),
-                MYO_READ_current_phase3(h2p_lw_myo_addr[0],0),
-                MYO_READ_Kp(h2p_lw_myo_addr[0],0),
-                MYO_READ_Ki(h2p_lw_myo_addr[0],0),
-                MYO_READ_Kd(h2p_lw_myo_addr[0],0),
-               MYO_READ_PWMLimit(h2p_lw_myo_addr[0],0),
-               MYO_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
-               MYO_READ_deadband(h2p_lw_myo_addr[0],0),
-               MYO_READ_status_update_frequency_Hz(h2p_lw_myo_addr[0]),
-               MYO_READ_error_code(h2p_lw_myo_addr[0],0),
-               MYO_READ_crc_checksum(h2p_lw_myo_addr[0],0),
-                MYO_READ_communication_quality(h2p_lw_myo_addr[0],0)
-               );
-        usleep(100000);
-    }
+    signal(SIGINT, SigintHandler);
 
-//    myoControl = MyoControlPtr(new MyoControl(h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
-//    RoboyPlexus roboyPlexus(myoControl, h2p_lw_myo_addr, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
-//                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
-//    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
-//    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
-//
-//    signal(SIGINT, SigintHandler);
-//
-//    ros::Rate rate(30);
-//    if(h2p_lw_neopixel_addr!=nullptr){
+    ros::Rate rate(30);
+    if(h2p_lw_neopixel_addr!=nullptr){
 //        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
-//        while(ros::ok()){
+        while(ros::ok()){
 //            neoPixel->runPattern(pattern,rate);
-//            rate.sleep();
-//        }
-//    }
+            rate.sleep();
+        }
+    }
 
 
     // clean up our memory mapping and exit

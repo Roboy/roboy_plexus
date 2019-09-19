@@ -777,51 +777,10 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
 bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
                                         roboy_middleware_msgs::SetInt16::Request &res) {
     ROS_INFO("all to displacement %d called", req.setpoint);
-    if (id == SHOULDER_RIGHT) {
-        if (req.setpoint > 0) {
-            for (auto motor:req.motors) {
-                if (motor >= 9 && motor <= 14) {
-                    myoControl->changeControl(motor, POSITION);
-                    control_mode[motor] = POSITION;
-                } else {
-                    myoControl->changeControl(motor, DISPLACEMENT);
-                    myoControl->setPoint(motor, req.setpoint);
-                    control_mode[motor] = DISPLACEMENT;
-                }
-            }
-        } else {
-            // special care for displacement <= 0, because the pid controller turns of for those values
-            // the springs potentially relax so fast that the encoders max speed is exceeded
-            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-                if (find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor) !=
-                    myoControl->myo_bricks.end()) {
-                    myoControl->changeControl(motor, POSITION);
-                    control_mode[motor] = POSITION;
-                } else {
-                    myoControl->changeControl(motor, DISPLACEMENT);
-                }
-            }
-            // relax the springs
-            ros::Rate rate(100);
-            for (int decrements = 99; decrements >= 0; decrements -= 1) {
-                for (auto motor:req.motors) {
-                    if (motor >= 9 && motor <= 14)  // head myobricks
-                        continue;
-                    int displacement = myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER);
-                    if (displacement <= req.setpoint)
-                        continue;
-                    else
-                        myoControl->setPoint(motor, displacement * (decrements / 100.0));
-                }
-                rate.sleep();
-            }
-        }
-    } else {
-        for (auto motor:req.motors) {
-            myoControl->changeControl(motor, DISPLACEMENT);
-            myoControl->setPoint(motor, req.setpoint);
-            control_mode[motor] = DISPLACEMENT;
-        }
+    for (auto motor:req.motors) {
+        myoControl->changeControl(motor, DISPLACEMENT);
+        myoControl->setPoint(motor, req.setpoint);
+        control_mode[motor] = DISPLACEMENT;
     }
     return true;
 }

@@ -85,9 +85,9 @@
 #include <dirent.h>
 //#include "roboy_plexus/armControl.hpp"
 #include <sys/stat.h>
-#include <common_utilities/CommonDefinitions.h>
+#include "../../../common_utilities/include/common_utilities/CommonDefinitions.h"
 
-
+#define NUMBER_OF_MOTORS_PER_FPGA 2
 #define NUM_SENSORS 12
 #define NUMBER_OF_LOADCELLS 8
 
