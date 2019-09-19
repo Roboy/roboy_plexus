@@ -119,7 +119,7 @@ void SigintHandler(int sig)
 //    // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
-    system("fortune");
+    system("fortune | cowsay");
 }
 
 int main(int argc, char *argv[]) {
@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
 //    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 //    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 //
-//    signal(SIGINT, SigintHandler);
+    signal(SIGINT, SigintHandler);
 //
 
 

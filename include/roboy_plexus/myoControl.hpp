@@ -51,8 +51,6 @@
 #include <ros/ros.h>
 #include <roboy_plexus/NeoPixel.hpp>
 
-#define MOTORS_PER_MYOCONTROL 9
-
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
@@ -88,6 +86,8 @@
 #define MYO_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
+#define NUM_SENSORS 0
+#define NUMBER_OF_LOADCELLS 1
 
 #define MOTOR_ENCODER 0
 #define DISPLACEMENT_ENCODER 1
@@ -338,6 +338,7 @@ public:
     uint numberOfMotors;
     const string trajectories_folder = "/home/root/trajectories/";
     const string behaviors_folder = "/home/root/behaviors/";
+    MotorConfigPtr motor_config;
 private:
     Timer timer;
     vector<int32_t *> myo_base;
@@ -346,7 +347,6 @@ private:
     bool replay = true;
     int predisplacement = 100;
     NeoPixelPtr neopixel;
-    MotorConfigPtr motor_config;
 };
 
 typedef boost::shared_ptr<MyoControl> MyoControlPtr;

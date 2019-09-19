@@ -19,8 +19,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
 //            body_part = "unknown";
 //    }
 //
-    myoControl->getEncoderPosition(0,0);
-
     ROS_INFO("roboy3 plexus initializing");
     body_part = "roboy3";
 
@@ -86,62 +84,51 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
 
     motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
     motorStatusThread->detach();
-//    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-//        myoControl->setPoint(motor, myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
-//        myoControl->changeControl(motor, POSITION);
-//        control_mode[motor] = POSITION;
-//    }
-//
-//    if (nh->hasParam("myo_bricks") && nh->hasParam("encoder_multiplier") && nh->hasParam("gear_box_ratio")) {
-//        vector<int> myo_bricks, encoder_multiplier, gear_box_ratio;
-//        nh->getParam("myo_bricks", myo_bricks);
-//        nh->getParam("encoder_multiplier", encoder_multiplier);
-//        nh->getParam("gear_box_ratio", gear_box_ratio);
-////        myoControl->configureMyoBricks(myo_bricks, encoder_multiplier, gear_box_ratio);
-//        motorAngle_pub = nh->advertise<roboy_middleware_msgs::MotorAngle>("/roboy/middleware/MotorAngle", 1);
-//        motorAngleThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorAnglePublisher, this));
-//        motorAngleThread->detach();
-//    }
+    for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
+        myoControl->setPoint(motor, myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
+        myoControl->changeControl(motor, POSITION);
+        control_mode[motor] = POSITION;
+    }
 
-//    vector<int> active_i2c_bus;
-//    for (int i = 0; i < i2c_base.size(); i++) {
-//        if (i2c_base[i] != nullptr) {
-//            tle.push_back(boost::shared_ptr<TLE493D>(new TLE493D(i2c_base[i])));
-//            active_magnetic_sensors++;
-//        }
-//    }
-//    if (active_magnetic_sensors > 0) {
-//        magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
-//        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticJointPublisher, this));
-//        magneticsThread->detach();
-//    } else {
-//        ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
-//    }
+    vector<int> active_i2c_bus;
+    for (int i = 0; i < i2c_base.size(); i++) {
+        if (i2c_base[i] != nullptr) {
+            tle.push_back(boost::shared_ptr<TLE493D>(new TLE493D(i2c_base[i])));
+            active_magnetic_sensors++;
+        }
+    }
+    if (active_magnetic_sensors > 0) {
+        magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
+        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticJointPublisher, this));
+        magneticsThread->detach();
+    } else {
+        ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
+    }
 
-//    // open i2c bus for gsensor
-//    if ((file = open(filename, O_RDWR)) < 0) {
-//        ROS_ERROR("Failed to open the i2c bus of gsensor");
-//    }
-//
-//    // init
-//    // gsensor i2c address: 101_0011
-//    int addr = 0b01010011;
-//    if (ioctl(file, I2C_SLAVE, addr) < 0) {
-//        ROS_WARN("Failed to acquire bus access and/or talk to IMU slave, IMU data will not be published");
-//    }else{
-//        // configure accelerometer as +-2g and start measure
-//        bSuccess = ADXL345_Init(file);
-//        if (bSuccess){
-//            // dump chip id
-//            bSuccess = ADXL345_IdRead(file, &id);
-//            if (bSuccess){
-//                gsensor_pub = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/IMU", 1);
-//                ROS_INFO("gsensor chip_id=%02Xh", id);
-//                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
-//                gsensor_thread->detach();
-//            }
-//        }
-//    }
+    // open i2c bus for gsensor
+    if ((file = open(filename, O_RDWR)) < 0) {
+        ROS_ERROR("Failed to open the i2c bus of gsensor");
+    }
+
+    // init
+    // gsensor i2c address: 101_0011
+    int addr = 0b01010011;
+    if (ioctl(file, I2C_SLAVE, addr) < 0) {
+        ROS_WARN("Failed to acquire bus access and/or talk to IMU slave, IMU data will not be published");
+    }else{
+        // configure accelerometer as +-2g and start measure
+        bSuccess = ADXL345_Init(file);
+        if (bSuccess){
+            // dump chip id
+            bSuccess = ADXL345_IdRead(file, &id);
+            if (bSuccess){
+                gsensor_pub = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/IMU", 1);
+                ROS_INFO("gsensor chip_id=%02Xh", id);
+                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
+                gsensor_thread->detach();
+            }
+        }
+    }
 
     ROS_INFO("roboy plexus initialized");
 }
@@ -402,39 +389,12 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
     }
 }
 
-void RoboyPlexus::motorAnglePublisher() {
-//    ros::Rate rate(60);
-//    while (keep_publishing && ros::ok()) {
-//        roboy_middleware_msgs::MotorAngle msg;
-//        msg.id = id;
-//        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-//            if (find(myo_bricks[id].begin(), myo_bricks[id].end(), motor) != myo_bricks[id].end()) {
-//                msg.angles.push_back((myoControl->getMotorAngle(motor) / 4096.0 * 360.0));
-//                msg.raw_angles.push_back(myoControl->getMotorAngle(motor));
-//                msg.raw_angles_prev.push_back(myoControl->getMotorAnglePrev(motor));
-//                msg.offset_angles.push_back(myoControl->getMotorAngleOffset(motor));
-//                msg.relative_angles.push_back(myoControl->getRelativeMotorAngle(motor));
-//                msg.rev_counter.push_back(myoControl->getRevolutionCounter(motor));
-//            } else {
-//                msg.angles.push_back(0);
-//                msg.raw_angles.push_back(0);
-//                msg.raw_angles_prev.push_back(0);
-//                msg.offset_angles.push_back(0);
-//                msg.relative_angles.push_back(0);
-//                msg.rev_counter.push_back(0);
-//            }
-//        }
-//        motorAngle_pub.publish(msg);
-//        rate.sleep();
-//    }
-}
-
 void RoboyPlexus::motorStatusPublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorStatus msg;
         msg.id = id;
-        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+        for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
             msg.encoder0_pos.push_back(myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
             msg.encoder0_vel.push_back(myoControl->getEncoderVelocity(motor,MOTOR_ENCODER));
             msg.encoder1_pos.push_back(myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER));
@@ -675,7 +635,7 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         // switch to displacement
         ros::Rate rate(100);
         for (int decrements = 99; decrements >= 0; decrements -= 1) {
-            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+            for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
                 int displacement = myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER);
                 if (displacement <= 0)
                     continue;
@@ -692,7 +652,7 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         params.Ki = 0;
         params.Kd = 0;
         params.PWMLimit = 0;
-        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+        for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
             myoControl->changeControl(motor, DISPLACEMENT, params);
         }
         emergency_stop = true;
@@ -712,7 +672,7 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
                                      roboy_middleware_msgs::SystemCheck::Response &res) {
     vector<uint8_t> motorIDs;
     if (req.motorids.empty()) {
-        motorIDs.resize(NUMBER_OF_MOTORS_PER_FPGA);
+        motorIDs.resize(myoControl->motor_config->total_number_of_motors);
         int i = 0;
         for (auto &m:motorIDs) {
             m = i;

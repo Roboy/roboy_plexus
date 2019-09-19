@@ -109,7 +109,7 @@ uint16_t MyoControl::getControlMode(int motor) {
 
 int32_t MyoControl::getEncoderPosition(int motor, int encoder) {
     if(encoder==0)
-        return MYO_READ_encoder0_position(myo_base[0], 0);
+        return MYO_READ_encoder0_position(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
     else if(encoder==1)
         return MYO_READ_encoder1_position(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
     else

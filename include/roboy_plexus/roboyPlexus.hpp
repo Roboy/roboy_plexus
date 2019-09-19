@@ -83,13 +83,8 @@
 #include "roboy_plexus/tle493d_w2b6.hpp"
 #include <sys/types.h>
 #include <dirent.h>
-//#include "roboy_plexus/armControl.hpp"
 #include <sys/stat.h>
-#include "../../../common_utilities/include/common_utilities/CommonDefinitions.h"
-
-#define NUMBER_OF_MOTORS_PER_FPGA 2
-#define NUM_SENSORS 12
-#define NUMBER_OF_LOADCELLS 8
+#include <common_utilities/CommonDefinitions.h>
 
 #pragma pack(1) // we need this, otherwise the ootx union will be padded and the checksum test fails
 
@@ -146,11 +141,6 @@ private:
      * Publishes decoded lighthouse ootx data
      */
     void darkRoomOOTXPublisher();
-
-    /**
-     * Publishes motor angles
-     */
-    void motorAnglePublisher();
 
     /**
      * Publishes 3d magnetic information about joint
@@ -356,7 +346,7 @@ private:
     boost::shared_ptr<A1335> a1335;
 //    ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
-            gsensor_thread, motorAngleThread, jointAngleThread, magneticsThread, testbenchThread;
+            gsensor_thread, jointAngleThread, magneticsThread, testbenchThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
