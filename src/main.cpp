@@ -241,41 +241,48 @@ int main(int argc, char *argv[]) {
 //
 //    ros::Rate rate(30);
     while(true){
-        printf("Kp            %d\n"
-               "Ki            %d\n"
-               "Kd            %d\n"
+        printf(
+                "control_mode  %d\n"
+                "sp            %d\n"
                "encoder0_pos  %d\n"
-               "encoder0_vel  %d\n"
                "encoder1_pos  %d\n"
+               "encoder0_vel  %d\n"
                "encoder1_vel  %d\n"
-               "PWMLimit      %d\n"
-               "IntegralLimit %d\n"
-               "deadband      %d\n"
-               "control_mode  %d\n"
-               "sp            %d\n"
-               "error_code    %d\n"
-               "suf           %d\n"
                "current_phase1 %d\n"
                "current_phase2 %d\n"
                "current_phase3 %d\n"
+               "Kp            %d\n"
+               "Ki            %d\n"
+               "Kd            %d\n"
+               "PWMLimit      %d\n"
+               "IntegralLimit %d\n"
+               "deadband      %d\n"
+
+               "suf           %d\n"
+               "error_code    %x\n"
+               "crc           %x\n"
+               "com quality   %d\n"
                "-------------------------------------------------\n",
-               MYO_READ_Kp(h2p_lw_myo_addr[0],0),
-               MYO_READ_Ki(h2p_lw_myo_addr[0],0),
-               MYO_READ_Kd(h2p_lw_myo_addr[0],0),
+                MYO_READ_control_mode(h2p_lw_myo_addr[0],0),
+                MYO_READ_sp(h2p_lw_myo_addr[0],0),
+
                MYO_READ_encoder0_position(h2p_lw_myo_addr[0],0),
                MYO_READ_encoder1_position(h2p_lw_myo_addr[0],0),
                MYO_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
                MYO_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
+                MYO_READ_current_phase1(h2p_lw_myo_addr[0],0),
+                MYO_READ_current_phase2(h2p_lw_myo_addr[0],0),
+                MYO_READ_current_phase3(h2p_lw_myo_addr[0],0),
+                MYO_READ_Kp(h2p_lw_myo_addr[0],0),
+                MYO_READ_Ki(h2p_lw_myo_addr[0],0),
+                MYO_READ_Kd(h2p_lw_myo_addr[0],0),
                MYO_READ_PWMLimit(h2p_lw_myo_addr[0],0),
                MYO_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
                MYO_READ_deadband(h2p_lw_myo_addr[0],0),
-               MYO_READ_control_mode(h2p_lw_myo_addr[0],0),
-               MYO_READ_sp(h2p_lw_myo_addr[0],0),
-               MYO_READ_error_code(h2p_lw_myo_addr[0],0),
                MYO_READ_status_update_frequency_Hz(h2p_lw_myo_addr[0]),
-               MYO_READ_current_phase1(h2p_lw_myo_addr[0],0),
-               MYO_READ_current_phase2(h2p_lw_myo_addr[0],0),
-               MYO_READ_current_phase3(h2p_lw_myo_addr[0],0)
+               MYO_READ_error_code(h2p_lw_myo_addr[0],0),
+               MYO_READ_crc_checksum(h2p_lw_myo_addr[0],0),
+                MYO_READ_communication_quality(h2p_lw_myo_addr[0],0)
                );
         usleep(100000);
     }

@@ -73,6 +73,8 @@
 #define MYO_READ_current_phase1(base, motor) IORD(base, (uint32_t)(0x12<<8|motor&0xff) )
 #define MYO_READ_current_phase2(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
 #define MYO_READ_current_phase3(base, motor) IORD(base, (uint32_t)(0x14<<8|motor&0xff) )
+#define MYO_READ_crc_checksum(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
+#define MYO_READ_communication_quality(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
