@@ -119,6 +119,7 @@ void SigintHandler(int sig)
 //    // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
+    system("sl&");
     system("fortune | cowsay");
 }
 
@@ -236,7 +237,6 @@ int main(int argc, char *argv[]) {
 //    }
 
     myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
-    myoControl->getEncoderPosition(0,0);
     RoboyPlexus roboyPlexus(myoControl, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
                             h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
 //    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");

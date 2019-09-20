@@ -52,7 +52,8 @@
 #include <roboy_middleware_msgs/MotorAngle.h>
 #include <roboy_middleware_msgs/MotorCalibrationService.h>
 #include <roboy_middleware_msgs/MotorCommand.h>
-#include <roboy_middleware_msgs/MotorStatus.h>
+#include <roboy_middleware_msgs/MotorState.h>
+#include <roboy_middleware_msgs/MotorInfo.h>
 #include <roboy_middleware_msgs/MotorConfigService.h>
 #include <roboy_middleware_msgs/MyoBrickCalibrationService.h>
 #include <roboy_middleware_msgs/SetInt16.h>
@@ -78,7 +79,6 @@
 #include "roboy_plexus/half.hpp"
 #include "roboy_plexus/CRC32.h"
 #include <bitset>
-#include "roboy_plexus/A1335.hpp"
 #include "roboy_plexus/tlv493d.hpp"
 #include "roboy_plexus/tle493d_w2b6.hpp"
 #include <sys/types.h>
@@ -109,72 +109,12 @@ public:
 
     ~RoboyPlexus();
 
-    string getBodyPart();
-
-    /**
-     * Publishes information about motors
-     */
-    void motorStatusPublisher();
 
 private:
     /**
-     * Publishes IMU data
-     */
-    void gsensorPublisher();
-
-    /**
      * Publishes ADC values
      */
-    void adcPublisher();
-
-    /**
-     * Publishes sensor values measured in the test rig
-     */
-    void testBenchPublisher();
-
-    /**
-     * Publishes lighthouse sensor values
-     */
-    void darkRoomPublisher();
-
-    /**
-     * Publishes decoded lighthouse ootx data
-     */
-    void darkRoomOOTXPublisher();
-
-    /**
-     * Publishes 3d magnetic information about joint
-     */
-    void magneticJointPublisher();
-
-    /**
-     * Callback for motor command
-     * @param msg motor command
-     */
-    void motorCommandCB(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg);
-
-    /**
-     * Motor Angle PID controller
-     */
-    void motorAnglePID();
-
-    /**
-     * Service for turning on/off hand
-     * @param req
-     * @param res
-     * @return success
-     */
-    bool HandPower(std_srvs::SetBool::Request &req,
-                   std_srvs::SetBool::Response &res);
-
-    /**
-     * Service for changing motor PID parameters
-     * @param req PID parameters
-     * @param res success
-     * @return success
-     */
-    bool MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
-                            roboy_middleware_msgs::MotorConfigService::Response &res);
+    void AdcPublisher();
 
     /**
      * Service for changing the control mode of motors, perviously set PID parameters are restored
@@ -184,6 +124,64 @@ private:
      */
     bool ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
                             roboy_middleware_msgs::ControlMode::Response &res);
+
+    /**
+     * Publishes lighthouse sensor values
+     */
+    void DarkRoomPublisher();
+
+    /**
+     * Publishes decoded lighthouse ootx data
+     */
+    void DarkRoomOOTXPublisher();
+
+    /**
+     * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
+     * @param req
+     * @param res
+     * @return
+     */
+    bool EmergencyStopService(std_srvs::SetBool::Request &req,
+                              std_srvs::SetBool::Response &res);
+
+    /**
+     * Stops replaying the trajectory
+     * @param msg
+     */
+    void EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg);
+
+    /**
+     * Service returns the list of actions in the requested behavior
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
+                               roboy_control_msgs::ListItems::Response &res);
+
+    bool ExecuteAction(string actions);
+
+    bool ExecuteActions(vector<string> actions);
+
+    vector<string> ExpandBehavior(string name);
+    /**
+     * Publishes IMU data
+     */
+    void GsensorPublisher();
+
+    /**
+     * Service return a list of files in the requested folder
+     * @param req
+     * @param res
+     * @return
+     */
+    bool ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
+                                  roboy_control_msgs::ListItems::Response &res);
+
+    /**
+     * Publishes 3d magnetic information about joint
+     */
+    void MagneticJointPublisher();
 
     /**
      * Service for motor spring calibration, samples the spring space for a requested amount of time and estimates spring coefficients
@@ -201,16 +199,66 @@ private:
      * @return
      */
     bool MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCalibrationService::Request &req,
-                                 roboy_middleware_msgs::MyoBrickCalibrationService::Response &res);
+                                    roboy_middleware_msgs::MyoBrickCalibrationService::Response &res);
 
     /**
-     * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
+     * Callback for motor command
+     * @param msg motor command
+     */
+    void MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg);
+
+    /**
+     * Service for changing motor PID parameters
+     * @param req PID parameters
+     * @param res success
+     * @return success
+     */
+    bool MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
+                            roboy_middleware_msgs::MotorConfigService::Response &res);
+
+    /**
+     * Publishes information about motors
+     */
+    void MotorInfoPublisher();
+
+    /**
+     * Publishes state of motors
+     */
+    void MotorStatePublisher();
+
+    /**
+    * Callback updates the displacement for recording trajectories
+    * @param msg
+    */
+    void PredisplacementCB(const std_msgs::Int32 &msg);
+
+    /**
+     * Callback saves behavior
+     * @param msg
+     */
+    void SaveBehaviorCB(const roboy_control_msgs::Behavior &msg);
+
+    /**
+     * Service sets displacement for all motors
      * @param req
      * @param res
      * @return
      */
-    bool EmergencyStopService(std_srvs::SetBool::Request &req,
-                              std_srvs::SetBool::Response &res);
+    bool SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
+                               roboy_middleware_msgs::SetInt16::Request &res);
+    /**
+     * Motor setpoints trajectory recording callback.
+     * @param msg
+     * @return
+     */
+    void StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg);
+
+    /**
+    * Callback stops recording the trajectory
+    * @param msg
+    * @return
+    */
+    void StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg);
 
     /**
      * Service for system check
@@ -222,67 +270,9 @@ private:
                             roboy_middleware_msgs::SystemCheck::Response &res);
 
     /**
-     * Motor setpoints trajectory recording callback.
-     * @param msg
-     * @return
+     * Publishes sensor values measured in the test rig
      */
-    void StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg);
-
-    /**
-     * Callback stops recording the trajectory
-     * @param msg
-     * @return
-     */
-    void StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg);
-
-
-    /**
-     * Callback saves behavior
-     * @param msg
-     */
-    void SaveBehaviorCB(const roboy_control_msgs::Behavior &msg);
-
-    /**
-     * Callback updates the displacement for recording trajectories
-     * @param msg
-     */
-    void PredisplacementCB(const std_msgs::Int32 &msg);
-
-    /**
-     * Stops replaying the trajectory
-     * @param msg
-     */
-    void EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg);
-
-
-    /**
-     * Service return a list of files in the requested folder
-     * @param req
-     * @param res
-     * @return
-     */
-    bool ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
-                                  roboy_control_msgs::ListItems::Response &res);
-
-    /**
-     * Service returns the list of actions in the requested behavior
-     * @param req
-     * @param res
-     * @return
-     */
-    bool ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
-                               roboy_control_msgs::ListItems::Response &res);
-
-
-    /**
-     * Service sets displacement for all motors
-     * @param req
-     * @param res
-     * @return
-     */
-    bool SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
-                               roboy_middleware_msgs::SetInt16::Request &res);
-
+    void testBenchPublisher();
 
 private:
     /**
@@ -329,8 +319,8 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
-    ros::Publisher motorStatus_pub, darkroom_pub, darkroom_ootx_pub, darkroom_status_pub, adc_pub, gsensor_pub,
-            motorAngle_pub, magneticSensor_pub, testbench_pub;
+    ros::Publisher motorState, motorInfo, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
+            motorAngle, magneticSensor, testbench;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
             setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
@@ -345,13 +335,12 @@ private:
     boost::shared_ptr<MyoControl> myoControl;
     boost::shared_ptr<A1335> a1335;
 //    ArmControlPtr armControl;
-    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStatusThread,
+    boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStateThread, motorInfoThread,
             gsensor_thread, jointAngleThread, magneticsThread, testbenchThread;
     bool keep_publishing = true;
     int32_t *darkroom_base, *adc_base, *switches_base;
     vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
     bool emergency_stop = false;
-    vector<boost::shared_ptr<A1335>> motorAngle, jointAngle; // motor angle of new motor units
     int file;
     const char *filename = "/dev/i2c-0";
     uint8_t id;
@@ -391,12 +380,6 @@ private:
 
     int active_magnetic_sensors = 0;
     vector<boost::shared_ptr<TLE493D>> tle;
-
-    bool executeAction(string actions);
-
-    bool executeActions(vector<string> actions);
-
-    vector<string> expandBehavior(string name);
 
     string body_part;
     vector<string> body_parts;

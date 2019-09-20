@@ -74,6 +74,7 @@
 #define MYO_READ_current_phase3(base, motor) IORD(base, (uint32_t)(0x14<<8|motor&0xff) )
 #define MYO_READ_crc_checksum(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
 #define MYO_READ_communication_quality(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
+#define MYO_READ_pwm(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
@@ -114,7 +115,7 @@ public:
 	 * @param params with these controller parameters
      * @param setPoint new setPoint
 	 */
-    void changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
+    void ChangeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
 
     /**
      * Changes the controller of a motor
@@ -122,166 +123,27 @@ public:
      * @param mode choose from Position, Velocity or Displacement
      * @param params with these controller parameters
      */
-    void changeControl(int motor, int mode, control_Parameters_t &params);
+    void ChangeControl(int motor, int mode, control_Parameters_t &params);
 
     /**
      * Changes the controller of a motor with the saved controller parameters
      * @param motor for this motor
      * @param mode choose from Position, Velocity or Displacement
      */
-    void changeControl(int motor, int mode);
+    void ChangeControl(int motor, int mode);
 
     /**
      * Changes the controller of ALL motors with the saved controller parameters
      * @param mode choose from Position, Velocity or Displacement
      */
-    void changeControl(int mode);
+    void ChangeControl(int mode);
 
     /**
     * Changes the controller parameters of a motor
     * @param motor for this motor
     * @param params with these controller parameters
     */
-    void changeControlParameters(int motor, control_Parameters_t &params);
-
-    /**
-     * Gets the current control_mode of a motor
-     * @param motor for this motor
-     */
-    uint16_t getControlMode(int motor);
-
-    /**
-     * Gets the current position of a motor in encoder ticks
-     * @param motor for this motor
-     * @param encoder of this encoder
-     */
-    int32_t getEncoderPosition(int motor,int encoder);
-
-    /**
-     * Gets the current velcity of a motor in encoder ticks/s
-     * @param motor for this motor
-     * @param encoder of this encoder
-     */
-    int32_t getEncoderVelocity(int motor,int encoder);
-
-    /**
-     * Sets a new setpoint for a motor
-     * @param motor
-     * @param setpoint
-     */
-    void setPoint(int motor, int32_t setpoint);
-
-    int16_t getCurrent(int motor, int phase);
-
-    /**
-     * Fills the given params with default values for the corresponding control mode
-     * @param params pointer to control struct
-     * @param control_mode Position, Velocity, Force
-     */
-    void getDefaultControlParams(control_Parameters_t *params, int control_mode);
-
-    /**
-     * Changes the control mode for all motors to Position
-     * @param pos new setPoint
-     */
-    void allToPosition(int32_t pos);
-
-    /**
-     * Changes the control mode for all motors to Velocity
-     * @param pos new setPoint
-     */
-    void allToVelocity(int32_t vel);
-
-    /**
-     * Changes the control mode for all motors to Displacement
-     * @param displacement new setPoint
-     */
-    void allToDisplacement(int32_t displacement);
-
-    /**
-     * Changes the control mode for all motors to Direct PWM
-     * @param pwm new setPoint
-     */
-    void allToDirectPWM(int32_t pwm);
-
-    /**
-     * Zeros the weight for a load cell
-     * @param load_cell for this load cell
-     */
-    void zeroWeight(int load_cell = 0);
-
-    /**
-	 * Returns the current adc of the load cell
-	 * @param load_cell for this load cell
-     * @return the adc value
-	 */
-    uint32_t readADC(int load_cell);
-
-    /**
-	 * Returns the current weight according to adc_weight_parameters of a load_cell
-	 * @param load_cell for this load cell
-	 * @return the load
-	 */
-    float getWeight(int load_cell);
-
-    /**
-     * Returns the current weight according to adc_weight_parameters of a load_cell
-     * @param load_cell for this load cell
-     * @param the adc value
-     * @return the load
-     */
-    float getWeight(int load_cell, uint32_t &adc_value);
-
-    /**
-     * records positions of motors in Displacement mode
-     * @param samplingTime
-     * @param recordTime
-     * @param trajectories will be filled with positions
-     * @param idList record these motors
-     * @param controlmode in this mode
-     * @param name filename
-     */
-    float recordTrajectories(
-            float samplingTime, float recordTime,
-            map<int, vector<float>> &trajectories, vector<int> &idList,
-            vector<int> &controlmode, string name);
-
-    /**
-	 * starts recording positions of motors in Displacement mode
-	 * @param samplingTime
-	 * @param trajectories will be filled with positions
-	 * @param idList record these motors
-	 * @param name filename
-	 */
-    float startRecordTrajectories(
-            float samplingTime, map<int, vector<float>> &trajectories,
-            vector<int> &idList, string name);
-
-    /**
-     * stops recording a trajectory and writes to file
-     */
-    void stopRecordTrajectories();
-
-    /**
-     * Plays back a trajectory
-     * @param file
-     * @return success
-     */
-    bool playTrajectory(const char *file);
-
-    /**
-     * Sets predisplacement for recording trajectories (50 by default)
-     * @param value
-     */
-    void setPredisplacement(int value);
-
-    /**
-     * Enables/disables replaying trajectory
-     * @param replay
-     */
-    void setReplay(bool status);
-
-    void printStatus(int motor_id_global);
+    void ChangeControlParameters(int motor, control_Parameters_t &params);
 
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces
@@ -297,7 +159,7 @@ public:
      * @param load will be filled with the load cell data
      * @param displacement will be filled with the displacement
      */
-    void estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+    void EstimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                   uint numberOfDataPoints, float displacement_min,
                                   float displacement_max, vector<double> &load, vector<double> &displacement);
 
@@ -314,10 +176,96 @@ public:
 	 * @param motor_angle will be filled with the a1339 motor_angle data (values between 0-4095)
 	 * @param motor_encoder will be filled with positions from the optical encoder (values between 0-4095)
 	 */
-    void estimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+    void EstimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                                    uint numberOfDataPoints, float delta_revolution_negative,
                                                    float delta_revolution_positive, vector<double> &motor_angle,
                                                    vector<double> &motor_encoder);
+    /**
+     * Gets the communication Quality of a motor
+     * @param motor
+     * @return quality in percent
+     */
+    int32_t GetCommunicationQuality(int motor);
+
+    void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
+            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
+
+
+    /**
+     * Gets the current control_mode of a motor
+     * @param motor for this motor
+     */
+    uint16_t GetControlMode(int motor);
+
+    /**
+     * Gets the current of a motors phase
+     * @param motor
+     * @param phase
+     * @return current in mA
+     */
+    int16_t GetCurrent(int motor, int phase);
+
+    /**
+     * Fills the given params with default values for the corresponding control mode
+     * @param params pointer to control struct
+     * @param control_mode Position, Velocity, Force
+     */
+    void GetDefaultControlParams(control_Parameters_t *params, int control_mode);
+
+    /**
+     * Gets the current position of a motor in encoder ticks
+     * @param motor for this motor
+     * @param encoder of this encoder
+     */
+    int32_t GetEncoderPosition(int motor,int encoder);
+
+    /**
+     * Gets the current velcity of a motor in encoder ticks/s
+     * @param motor for this motor
+     * @param encoder of this encoder
+     */
+    int32_t GetEncoderVelocity(int motor,int encoder);
+
+    /**
+     * Get PWM of motor
+     * @param pwm
+     */
+    int32_t GetPWM(int motor);
+
+    /**
+     * Gets the setpoint of a motor
+     * @param motor
+     * @return
+     */
+    int32_t GetSetPoint(int motor);
+
+    /**
+     * Returns the current weight according to adc_weight_parameters of a load_cell
+     * @param load_cell for this load cell
+     * @return the load
+     */
+    float GetWeight(int load_cell);
+
+    /**
+     * Returns the current weight according to adc_weight_parameters of a load_cell
+     * @param load_cell for this load cell
+     * @param the adc value
+     * @return the load
+     */
+    float GetWeight(int load_cell, uint32_t &adc_value);
+
+    /**
+     * Plays back a trajectory
+     * @param file
+     * @return success
+     */
+    bool PlayTrajectory(const char *file);
+
+    /**
+     * Prints all information about a motor
+     * @param motor_id_global
+     */
+    void PrintStatus(int motor_id_global);
 
     /**
      * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)
@@ -326,9 +274,93 @@ public:
      * @param X the x-data
      * @param Y the y-data
      */
-    void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
+    void PolynomialRegression(int degree, vector<double> &x, vector<double> &y,
                               vector<float> &coeffs);
 
+    /**
+	 * Returns the current adc of the load cell
+	 * @param load_cell for this load cell
+     * @return the adc value
+	 */
+    uint32_t ReadADC(int load_cell);
+
+    /**
+     * records positions of motors in Displacement mode
+     * @param samplingTime
+     * @param recordTime
+     * @param trajectories will be filled with positions
+     * @param idList record these motors
+     * @param controlmode in this mode
+     * @param name filename
+     */
+    float RecordTrajectories(
+            float samplingTime, float recordTime,
+            map<int, vector<float>> &trajectories, vector<int> &idList,
+            vector<int> &controlmode, string name);
+    /**
+     * Sets a new setpoint for a motor
+     * @param motor
+     * @param setpoint
+     */
+    void SetPoint(int motor, int32_t setpoint);
+
+    /**
+    * Sets predisplacement for recording trajectories (50 by default)
+    * @param value
+    */
+    void SetPredisplacement(int value);
+
+    /**
+    * Changes the control mode for all motors to Direct PWM
+    * @param pwm new setPoint
+    */
+    void SetAllToDirectPWM(int32_t pwm);
+
+    /**
+     * Changes the control mode for all motors to Displacement
+     * @param displacement new setPoint
+     */
+    void SetAllToDisplacement(int32_t displacement);
+
+    /**
+     * Changes the control mode for all motors to Position
+     * @param pos new setPoint
+     */
+    void SetAllToPosition(int32_t pos);
+
+    /**
+     * Enables/disables replaying trajectory
+     * @param replay
+     */
+    void SetReplay(bool status);
+
+    /**
+     * Changes the control mode for all motors to Velocity
+     * @param pos new setPoint
+     */
+    void SetAllToVelocity(int32_t vel);
+
+    /**
+	 * starts recording positions of motors in Displacement mode
+	 * @param samplingTime
+	 * @param trajectories will be filled with positions
+	 * @param idList record these motors
+	 * @param name filename
+	 */
+    float StartRecordTrajectories(
+            float samplingTime, map<int, vector<float>> &trajectories,
+            vector<int> &idList, string name);
+
+    /**
+     * stops recording a trajectory and writes to file
+     */
+    void StopRecordTrajectories();
+
+    /**
+     * Zeros the weight for a load cell
+     * @param load_cell for this load cell
+     */
+    void ZeroWeight(int load_cell = 0);
 
     map<int,int> myo_base_of_motor, motor_offset;
     map<int, map<int, control_Parameters_t>> control_params;

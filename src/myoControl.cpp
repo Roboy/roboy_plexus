@@ -34,12 +34,12 @@ MyoControl::~MyoControl() {
     ROS_INFO("shutting down myoControl");
 }
 
-void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
-    changeControl(motor, mode, params);
+void MyoControl::ChangeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
+    ChangeControl(motor, mode, params);
     MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, setPoint);
 }
 
-void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params) {
+void MyoControl::ChangeControl(int motor, int mode, control_Parameters_t &params) {
     MYO_WRITE_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
     MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kp);
     MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kd);
@@ -56,7 +56,7 @@ void MyoControl::changeControl(int motor, int mode, control_Parameters_t &params
     }
 }
 
-void MyoControl::changeControl(int motor, int mode) {
+void MyoControl::ChangeControl(int motor, int mode) {
     MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
     MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
     MYO_WRITE_Ki(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
@@ -76,7 +76,7 @@ void MyoControl::changeControl(int motor, int mode) {
     }
 }
 
-void MyoControl::changeControl(int mode) {
+void MyoControl::ChangeControl(int mode) {
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
         MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
@@ -98,16 +98,30 @@ void MyoControl::changeControl(int mode) {
     }
 }
 
-void MyoControl::changeControlParameters(int motor, control_Parameters_t &params) {
+void MyoControl::ChangeControlParameters(int motor, control_Parameters_t &params) {
     control_params[motor][params.control_mode] = params;
 }
 
-uint16_t MyoControl::getControlMode(int motor) {
+int32_t MyoControl::GetCommunicationQuality(int motor){
+    return MYO_READ_communication_quality(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
+void MyoControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
+                            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){
+    Kp = MYO_READ_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    Ki = MYO_READ_Ki(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    Kd = MYO_READ_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    IntegralLimit = MYO_READ_IntegralLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    deadband = MYO_READ_deadband(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    PWMLimit = MYO_READ_PWMLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
+uint16_t MyoControl::GetControlMode(int motor) {
 
     return MYO_READ_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-int32_t MyoControl::getEncoderPosition(int motor, int encoder) {
+int32_t MyoControl::GetEncoderPosition(int motor, int encoder) {
     if(encoder==0)
         return MYO_READ_encoder0_position(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
     else if(encoder==1)
@@ -116,7 +130,7 @@ int32_t MyoControl::getEncoderPosition(int motor, int encoder) {
         return -1;
 }
 
-int32_t MyoControl::getEncoderVelocity(int motor, int encoder) {
+int32_t MyoControl::GetEncoderVelocity(int motor, int encoder) {
     if(encoder==0)
         return MYO_READ_encoder0_velocity(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
     else if(encoder==1)
@@ -125,11 +139,19 @@ int32_t MyoControl::getEncoderVelocity(int motor, int encoder) {
         return -1;
 }
 
-void MyoControl::setPoint(int motor, int32_t setPoint) {
+int32_t MyoControl::GetSetPoint(int motor){
+    return MYO_READ_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
+int32_t MyoControl::GetPWM(int motor){
+    return MYO_READ_pwm(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
+void MyoControl::SetPoint(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, (int32_t) setPoint);
 }
 
-int16_t MyoControl::getCurrent(int motor, int phase) {
+int16_t MyoControl::GetCurrent(int motor, int phase) {
     switch(phase){
         case 1:
             return MYO_READ_current_phase1(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
@@ -142,7 +164,7 @@ int16_t MyoControl::getCurrent(int motor, int phase) {
     }
 }
 
-void MyoControl::getDefaultControlParams(control_Parameters_t *params, int control_mode) {
+void MyoControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
     params->PWMLimit = 128;
 
     switch (control_mode) {
@@ -174,40 +196,40 @@ void MyoControl::getDefaultControlParams(control_Parameters_t *params, int contr
 
 }
 
-void MyoControl::allToPosition(int32_t pos) {
-    changeControl(POSITION);
+void MyoControl::SetAllToPosition(int32_t pos) {
+    ChangeControl(POSITION);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        setPoint(motor, pos);
+        SetPoint(motor, pos);
     }
 }
 
-void MyoControl::allToVelocity(int32_t vel) {
-    changeControl(VELOCITY);
+void MyoControl::SetAllToVelocity(int32_t vel) {
+    ChangeControl(VELOCITY);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        setPoint(motor, vel);
+        SetPoint(motor, vel);
     }
 }
 
-void MyoControl::allToDisplacement(int32_t displacement) {
-    changeControl(DISPLACEMENT);
+void MyoControl::SetAllToDisplacement(int32_t displacement) {
+    ChangeControl(DISPLACEMENT);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        setPoint(motor, displacement);
+        SetPoint(motor, displacement);
     }
 }
 
-void MyoControl::allToDirectPWM(int32_t pwm) {
-    changeControl(DIRECT_PWM);
+void MyoControl::SetAllToDirectPWM(int32_t pwm) {
+    ChangeControl(DIRECT_PWM);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        setPoint(motor, pwm);
+        SetPoint(motor, pwm);
     }
 }
 
-void MyoControl::zeroWeight(int load_cell) {
+void MyoControl::ZeroWeight(int load_cell) {
     uint32_t adc_value = 0;
-    weight_offset = -getWeight(load_cell, adc_value);
+    weight_offset = -GetWeight(load_cell, adc_value);
 }
 
-uint32_t MyoControl::readADC(int load_cell = 0) {
+uint32_t MyoControl::ReadADC(int load_cell = 0) {
     // start measure
     IOWR(adc_base, 0x00, (load_cell << 1) | 0x00);
     IOWR(adc_base, 0x00, (load_cell << 1) | 0x01);
@@ -240,19 +262,19 @@ uint32_t MyoControl::readADC(int load_cell = 0) {
     return adc_value;
 }
 
-float MyoControl::getWeight(int load_cell) {
-    uint32_t adc_value = readADC(load_cell);
+float MyoControl::GetWeight(int load_cell) {
+    uint32_t adc_value = ReadADC(load_cell);
     float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value) * 9.81f;
     return weight;
 }
 
-float MyoControl::getWeight(int load_cell, uint32_t &adc_value) {
-    adc_value = readADC(load_cell);
+float MyoControl::GetWeight(int load_cell, uint32_t &adc_value) {
+    adc_value = ReadADC(load_cell);
     float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value) * 9.81f;
     return weight;
 }
 
-float MyoControl::recordTrajectories(
+float MyoControl::RecordTrajectories(
         float samplingTime, float recordTime,
         map<int, vector<float>> &trajectories, vector<int> &idList,
         vector<int> &controlmode, string name) {
@@ -260,7 +282,7 @@ float MyoControl::recordTrajectories(
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     string filepath = trajectories_folder + name;
     // this will be filled with the trajectories
-    allToDisplacement(predisplacement);
+    SetAllToDisplacement(predisplacement);
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -275,11 +297,11 @@ float MyoControl::recordTrajectories(
 //        for (uint motor = 0; motor < idList.size(); motor++) {
         for (auto it = idList.begin(); it != idList.end(); it++) {
             if (controlmode[*it] == POSITION)
-                trajectories[idList[*it]].push_back(getEncoderPosition(*it,MOTOR_ENCODER));
+                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,MOTOR_ENCODER));
             else if (controlmode[*it] == VELOCITY)
-                trajectories[idList[*it]].push_back(getEncoderVelocity(*it,MOTOR_ENCODER));
+                trajectories[idList[*it]].push_back(GetEncoderVelocity(*it,MOTOR_ENCODER));
             else if (controlmode[*it] == FORCE)
-                trajectories[idList[*it]].push_back(getEncoderPosition(*it,DISPLACEMENT_ENCODER));
+                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,DISPLACEMENT_ENCODER));
         }
         sample++;
         elapsedTime = timer.elapsedTime();
@@ -292,7 +314,7 @@ float MyoControl::recordTrajectories(
     } while (elapsedTime < recordTime);
 
     // set force to zero
-    allToDisplacement(0);
+    SetAllToDisplacement(0);
 
     // done recording
     if (filepath.empty()) {
@@ -335,7 +357,7 @@ float MyoControl::recordTrajectories(
     return elapsedTime / (double) sample * 1000.0f;
 }
 
-float MyoControl::startRecordTrajectories(
+float MyoControl::StartRecordTrajectories(
         float samplingTime, map<int, vector<float>> &trajectories,
         vector<int> &idList, string name) {
     string filepath = trajectories_folder + name;
@@ -343,8 +365,8 @@ float MyoControl::startRecordTrajectories(
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
     for(auto motor:idList) {
-        changeControl(motor,DISPLACEMENT);
-        setPoint(motor,predisplacement);
+        ChangeControl(motor,DISPLACEMENT);
+        SetPoint(motor,predisplacement);
     }
 
     // samplingTime milli -> seconds
@@ -359,7 +381,7 @@ float MyoControl::startRecordTrajectories(
         dt = elapsedTime;
         for (auto it:  idList)//.begin(); it != idList.end(); it++ ) {
         {
-            trajectories[it].push_back(getEncoderPosition(it,MOTOR_ENCODER));
+            trajectories[it].push_back(GetEncoderPosition(it,MOTOR_ENCODER));
         }
         sample++;
         rate.sleep();
@@ -367,8 +389,8 @@ float MyoControl::startRecordTrajectories(
 
 
     for(auto motor:idList) {
-        changeControl(motor,DISPLACEMENT);
-        setPoint(motor,10);
+        ChangeControl(motor,DISPLACEMENT);
+        SetPoint(motor,10);
     }
 
     // done recording
@@ -415,12 +437,12 @@ float MyoControl::startRecordTrajectories(
     return elapsedTime / (double) sample * 1000.0f;
 }
 
-void MyoControl::stopRecordTrajectories() {
+void MyoControl::StopRecordTrajectories() {
     recording = false;
     ROS_INFO("Stopped recording a trajectory");
 }
 
-void MyoControl::setReplay(bool status) {
+void MyoControl::SetReplay(bool status) {
     replay = status;
     if (replay) {
         ROS_INFO("Replaying trajectories enabled");
@@ -429,8 +451,7 @@ void MyoControl::setReplay(bool status) {
     }
 }
 
-void MyoControl::printStatus(int motor_id_global){
-    //    while(true){
+void MyoControl::PrintStatus(int motor_id_global){
 //        printf(
 //                "control_mode  %d\n"
 //                "sp            %d\n"
@@ -475,10 +496,9 @@ void MyoControl::printStatus(int motor_id_global){
 //                MYO_READ_communication_quality(h2p_lw_myo_addr[0],0)
 //               );
 //        usleep(100000);
-//    }
 }
 
-bool MyoControl::playTrajectory(const char *file) {
+bool MyoControl::PlayTrajectory(const char *file) {
 
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
@@ -537,10 +557,10 @@ bool MyoControl::playTrajectory(const char *file) {
         dt = elapsedTime;
         for (auto &motor : trajectories) {
             if (sample == 0) {
-                changeControl(motor.first, POSITION);
+                ChangeControl(motor.first, POSITION);
             }
 
-            setPoint(motor.first, motor.second[sample]);
+            SetPoint(motor.first, motor.second[sample]);
         }
         sample++;
         rate.sleep();
@@ -549,16 +569,16 @@ bool MyoControl::playTrajectory(const char *file) {
     return true;
 }
 
-void MyoControl::setPredisplacement(int value) {
+void MyoControl::SetPredisplacement(int value) {
     predisplacement = value;
     ROS_INFO_STREAM("Now recording with displacement" + predisplacement);
 }
 
-void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+void MyoControl::EstimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                           uint numberOfDataPoints, float displacement_min,
                                           float displacement_max, vector<double> &load, vector<double> &displacement) {
-    setPoint(motor, 0);
-    changeControl(motor, DISPLACEMENT);
+    SetPoint(motor, 0);
+    ChangeControl(motor, DISPLACEMENT);
     milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
     ofstream outfile;
     char str[100];
@@ -571,7 +591,7 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
     outfile << "displacement[ticks], load[N]" << endl;
     do {
         float f = (rand() / (float) RAND_MAX) * (displacement_max - displacement_min) + displacement_min;
-        setPoint(motor, f);
+        SetPoint(motor, f);
         t0 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         do {// wait a bit until force is applied
             // update control
@@ -579,16 +599,16 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
         } while ((t1 - t0).count() < 1000);
 
         // note the weight
-        load.push_back(getWeight(0)); // TODO: use a different load_cell for each motor
+        load.push_back(GetWeight(0)); // TODO: use a different load_cell for each motor
         // note the force
-        displacement.push_back(getEncoderPosition(motor,DISPLACEMENT_ENCODER));
+        displacement.push_back(GetEncoderPosition(motor,DISPLACEMENT_ENCODER));
         outfile << displacement.back() << ", " << load.back() << endl;
         ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         cout << "setPoint: \t" << f << "\tdisplacement:\t" << displacement.back() << "\tload:\t" <<
              load.back() << endl;
     } while ((ms_stop - ms_start).count() < timeout && load.size() < numberOfDataPoints);
-    setPoint(motor, 0);
-    polynomialRegression(degree, displacement, load, coeffs);
+    SetPoint(motor, 0);
+    PolynomialRegression(degree, displacement, load, coeffs);
     outfile << "regression coefficients for polynomial of " << degree << " degree:" << endl;
     for (float coef:coeffs) {
         outfile << coef << "\t";
@@ -598,7 +618,7 @@ void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &
     outfile.close();
 }
 
-void MyoControl::estimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                                            uint numberOfDataPoints, float delta_revolution_negative,
                                                            float delta_revolution_positive, vector<double> &motor_angle,
                                                            vector<double> &motor_encoder) {
@@ -685,7 +705,7 @@ void MyoControl::estimateMotorAngleLinearisationParameters(int motor, int degree
 //    outfile.close();
 }
 
-void MyoControl::polynomialRegression(int degree, vector<double> &x, vector<double> &y,
+void MyoControl::PolynomialRegression(int degree, vector<double> &x, vector<double> &y,
                                       vector<float> &coeffs) {
     int N = x.size(), i, j, k;
     double X[2 * degree +

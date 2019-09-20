@@ -36,7 +36,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::motorCommandCB, this);
+    motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
     // TODO add body part to start record
     startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1,
@@ -55,11 +55,11 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
 
-    adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
-    testbench_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
+    adc = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
+    testbench = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
 
     if (adc_base != nullptr) {
-        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
+        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::AdcPublisher, this));
         adcThread->detach();
 
         vector<uint8_t> deviceIds = {0xC};
@@ -77,16 +77,21 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
     expandBehavior_srv = nh->advertiseService("/roboy/" + body_part + "/control/ExpandBehavior",
                                               &RoboyPlexus::ExpandBehaviorService, this);
 
-    motorStatus_pub = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+    motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
+    motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
 
-    motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::motorStatusPublisher, this));
-    motorStatusThread->detach();
+    motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
+    motorStateThread->detach();
+
+    motorInfoThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorInfoPublisher, this));
+    motorInfoThread->detach();
+
     for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-        myoControl->setPoint(motor, myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
-        myoControl->changeControl(motor, POSITION);
+        myoControl->SetPoint(motor, myoControl->GetEncoderPosition(motor,MOTOR_ENCODER));
+        myoControl->ChangeControl(motor, POSITION);
         control_mode[motor] = POSITION;
     }
 
@@ -98,8 +103,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
         }
     }
     if (active_magnetic_sensors > 0) {
-        magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
-        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticJointPublisher, this));
+        magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
+        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
         magneticsThread->detach();
     } else {
         ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
@@ -122,9 +127,9 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
             // dump chip id
             bSuccess = ADXL345_IdRead(file, &id);
             if (bSuccess){
-                gsensor_pub = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/IMU", 1);
+                gsensor = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/IMU", 1);
                 ROS_INFO("gsensor chip_id=%02Xh", id);
-                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::gsensorPublisher, this));
+                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::GsensorPublisher, this));
                 gsensor_thread->detach();
             }
         }
@@ -135,9 +140,10 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
 
 RoboyPlexus::~RoboyPlexus() {
     keep_publishing = false;
-
-    if (motorStatusThread->joinable())
-        motorStatusThread->join();
+    if (motorStateThread->joinable())
+        motorStateThread->join();
+    if (motorInfoThread->joinable())
+        motorInfoThread->join();
     if (bSuccess) {
         if (gsensor_thread->joinable())
             gsensor_thread->join();
@@ -159,11 +165,7 @@ RoboyPlexus::~RoboyPlexus() {
         close(file);
 }
 
-string RoboyPlexus::getBodyPart() {
-    return body_part;
-}
-
-void RoboyPlexus::gsensorPublisher() {
+void RoboyPlexus::GsensorPublisher() {
     ros::Rate rate(100);
     while (keep_publishing) {
         sensor_msgs::Imu msg;
@@ -188,24 +190,24 @@ void RoboyPlexus::gsensorPublisher() {
                 msg.linear_acceleration.y *= 0.00981;
                 msg.linear_acceleration.z *= 0.00981;
             }
-            gsensor_pub.publish(msg);
+            gsensor.publish(msg);
         }
         rate.sleep();
     }
 }
 
-void RoboyPlexus::adcPublisher() {
+void RoboyPlexus::AdcPublisher() {
     ros::Rate rate(100);
     while (keep_publishing) {
         roboy_middleware_msgs::ADCvalue msg;
         msg.id = id;
         for (uint i = 0; i < NUMBER_OF_LOADCELLS; i++) {
             uint32_t adcvalue;
-            float val = myoControl->getWeight(i, adcvalue);
+            float val = myoControl->GetWeight(i, adcvalue);
             msg.adc_value.push_back(adcvalue);
             msg.load.push_back(val);
         }
-        adc_pub.publish(msg);
+        adc.publish(msg);
         rate.sleep();
     }
 }
@@ -217,12 +219,12 @@ void RoboyPlexus::testBenchPublisher() {
         vector<A1335State> state;
         a1335->readAngleData(state);
         msg.data = state[0].angle;
-        testbench_pub.publish(msg);
+        testbench.publish(msg);
         rate.sleep();
     }
 }
 
-void RoboyPlexus::darkRoomPublisher() {
+void RoboyPlexus::DarkRoomPublisher() {
     ros::Rate rate(240);
     high_resolution_clock::time_point t0 = high_resolution_clock::now();
     while (keep_publishing) {
@@ -238,12 +240,12 @@ void RoboyPlexus::darkRoomPublisher() {
             if ((val >> 29) & 0x1)//valid
                 active_sensors++;
         }
-        darkroom_pub.publish(msg);
+        darkroom.publish(msg);
         rate.sleep();
     }
 }
 
-void RoboyPlexus::darkRoomOOTXPublisher() {
+void RoboyPlexus::DarkRoomOOTXPublisher() {
     // ootx frames are 17bits preamble + 271 bits payload + 32 bits checksum = 320 bits.
     // At 120Hz motor speed, this is ~2.6 seconds per frame. Lets set the update rate to 5 seconds then.
     ros::Rate rate(1 / 5.0);
@@ -333,7 +335,7 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
                     msg.faults = ootx.frame.faults;
                     msg.crc32 = crc32checksum;
 
-                    darkroom_ootx_pub.publish(msg);
+                    darkroom_ootx.publish(msg);
                 } else {
                     successfully_decoded_ootx = false;
 
@@ -383,32 +385,55 @@ void RoboyPlexus::darkRoomOOTXPublisher() {
                 active_sensors++;
         }
         ROS_INFO("lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
-        darkroom_status_pub.publish(status_msg);
+        darkroom_status.publish(status_msg);
 
         rate.sleep();
     }
 }
 
-void RoboyPlexus::motorStatusPublisher() {
+void RoboyPlexus::MotorStatePublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
-        roboy_middleware_msgs::MotorStatus msg;
+        roboy_middleware_msgs::MotorState msg;
         msg.id = id;
         for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-            msg.encoder0_pos.push_back(myoControl->getEncoderPosition(motor,MOTOR_ENCODER));
-            msg.encoder0_vel.push_back(myoControl->getEncoderVelocity(motor,MOTOR_ENCODER));
-            msg.encoder1_pos.push_back(myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER));
-            msg.encoder1_vel.push_back(myoControl->getEncoderVelocity(motor,DISPLACEMENT_ENCODER));
-            msg.current_phase1.push_back(myoControl->getCurrent(motor,1));
-            msg.current_phase2.push_back(myoControl->getCurrent(motor,2));
-            msg.current_phase3.push_back(myoControl->getCurrent(motor,3));
+            msg.encoder0_pos.push_back(myoControl->GetEncoderPosition(motor,MOTOR_ENCODER));
+            msg.encoder0_vel.push_back(myoControl->GetEncoderVelocity(motor,MOTOR_ENCODER));
+            msg.encoder1_pos.push_back(myoControl->GetEncoderPosition(motor,DISPLACEMENT_ENCODER));
+            msg.encoder1_vel.push_back(myoControl->GetEncoderVelocity(motor,DISPLACEMENT_ENCODER));
         }
-        motorStatus_pub.publish(msg);
+        motorState.publish(msg);
         rate.sleep();
     }
 }
 
-void RoboyPlexus::magneticJointPublisher() {
+void RoboyPlexus::MotorInfoPublisher() {
+    ros::Rate rate(5);
+    while (keep_publishing && ros::ok()) {
+        roboy_middleware_msgs::MotorInfo msg;
+        msg.id = id;
+        for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
+            int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
+            myoControl->GetControllerParameter(motor,Kp,Ki,Kd,deadband,IntegralLimit,PWMLimit);
+            msg.Kp.push_back(Kp);
+            msg.Ki.push_back(Ki);
+            msg.Kd.push_back(Kd);
+            msg.deadband.push_back(deadband);
+            msg.IntegralLimit.push_back(IntegralLimit);
+            msg.PWMLimit.push_back(PWMLimit);
+            msg.setpoint.push_back(myoControl->GetSetPoint(motor));
+            msg.pwm.push_back(myoControl->GetPWM(motor));
+            msg.communication_quality.push_back(myoControl->GetCommunicationQuality(motor));
+            msg.current_phase1.push_back(myoControl->GetCurrent(motor,1));
+            msg.current_phase2.push_back(myoControl->GetCurrent(motor,2));
+            msg.current_phase3.push_back(myoControl->GetCurrent(motor,3));
+        }
+        motorInfo.publish(msg);
+        rate.sleep();
+    }
+}
+
+void RoboyPlexus::MagneticJointPublisher() {
     ros::Rate rate(100);
     roboy_middleware_msgs::MagneticSensor msg;
     msg.id = id;
@@ -428,26 +453,26 @@ void RoboyPlexus::magneticJointPublisher() {
             msg.y[i] = fy;
             msg.z[i] = fz;
         }
-        magneticSensor_pub.publish(msg);
+        magneticSensor.publish(msg);
     }
 }
 
-void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
+void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
     if (msg->id == id) {
         uint i = 0;
         for (auto motor:msg->motor) {
             switch (control_mode[motor]) {
                 case POSITION:
-                    myoControl->setPoint(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                     break;
                 case VELOCITY:
-                    myoControl->setPoint(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                     break;
                 case DISPLACEMENT:
-                    myoControl->setPoint(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                     break;
                 case FORCE:
-                    myoControl->setPoint(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                     break;
                 case DIRECT_PWM:
                     if(fabsf(msg->setpoint[i])>128) {
@@ -455,59 +480,12 @@ void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::Cons
                                           "what the heck are you publishing?!");
                         break;
                     }
-                    myoControl->setPoint(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                     break;
             }
             i++;
         }
     }
-}
-
-void RoboyPlexus::motorAnglePID() {
-//    ros::Rate rate(100);
-//    while (keep_publishing) {
-//        roboy_middleware_msgs::MotorAngle msg;
-//        msg.id = id;
-//        vector<A1335State> state;
-//        motorAngle[0]->readAngleData(state);
-//        stringstream str;
-//        int i=0;
-//        for(auto s:state){
-//            msg.angles.push_back(s.angle);
-//            msg.magneticFieldStrength.push_back(s.fieldStrength);
-////            msg.temperature.push_back(s.temp);
-//            if(motorData[ANGLE].back()>340 && msg->angles[0] <20){ // increase rotation counter
-//                rotationCounter[0]++;
-//            }
-//            if(motorData[ANGLE].back()<20 && msg->angles[0] > 340){ // decrease rotation counter
-//                rotationCounter[0]--;
-//            }
-//        }
-//        motorAngle_pub.publish(msg);
-//
-//
-//
-//        motorData[ANGLE].push_back(msg->angles[0]);
-//        if (motorData[ANGLE].size() > samples_per_plot) {
-//            motorData[ANGLE].pop_front();
-//        }
-//
-//        motorData[ANGLEABSOLUT].push_back(msg->angles[0]+rotationCounter[0]*360.0f+offset[ANGLE]);
-//        if (motorData[ANGLEABSOLUT].size() > samples_per_plot) {
-//            motorData[ANGLEABSOLUT].pop_front();
-//        }
-//
-//        motorData[SPRING].push_back(motorData[POSITIONABSOLUT].back()-motorData[ANGLEABSOLUT].back());
-//        if (motorData[SPRING].size() > samples_per_plot) {
-//            motorData[SPRING].pop_front();
-//        }
-//
-//        if (timeMotorData[ANGLE].size() > samples_per_plot)
-//            timeMotorData[ANGLE].pop_front();
-//
-//        rate.sleep();
-//
-//    }
 }
 
 bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::Request &req,
@@ -531,9 +509,9 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
         params.deadband = req.config.deadband[i];
         params.IntegralLimit = req.config.IntegralLimit[i];
         params.control_mode = req.config.control_mode[i];
-        myoControl->changeControlParameters(motor, params);
+        myoControl->ChangeControlParameters(motor, params);
         res.mode.push_back(params.control_mode);
-        myoControl->changeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+        myoControl->ChangeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
                  req.config.setpoint[i]);
         control_mode[motor] = req.config.control_mode[i];
@@ -553,25 +531,25 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                     ROS_INFO("switch to POSITION control");
                     for (auto &mode:control_mode)
                         mode.second = POSITION;
-                    myoControl->allToPosition(req.set_point);
+                    myoControl->SetAllToPosition(req.set_point);
                     break;
                 case VELOCITY:
                     ROS_INFO("switch to VELOCITY control");
                     for (auto &mode:control_mode)
                         mode.second = VELOCITY;
-                    myoControl->allToVelocity(req.set_point);
+                    myoControl->SetAllToVelocity(req.set_point);
                     break;
                 case DISPLACEMENT:
                     ROS_INFO("switch to DISPLACEMENT control");
                     for (auto &mode:control_mode)
                         mode.second = DISPLACEMENT;
-                    myoControl->allToDisplacement(req.set_point);
+                    myoControl->SetAllToDisplacement(req.set_point);
                     break;
                 case DIRECT_PWM:
                     ROS_INFO("switch to DIRECT_PWM control");
                     for (auto &mode:control_mode)
                         mode.second = DIRECT_PWM;
-                    myoControl->allToDirectPWM(req.set_point);
+                    myoControl->SetAllToDirectPWM(req.set_point);
                     break;
                 default:
                     ROS_ERROR(
@@ -580,7 +558,7 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
             }
         } else {
             for (int motor:req.motor_id) {
-                myoControl->changeControl(motor, req.control_mode);
+                myoControl->ChangeControl(motor, req.control_mode);
                 control_mode[motor] = req.control_mode;
             }
         }
@@ -595,7 +573,7 @@ bool RoboyPlexus::MotorCalibrationService(roboy_middleware_msgs::MotorCalibratio
                                           roboy_middleware_msgs::MotorCalibrationService::Response &res) {
     if (!emergency_stop) {
         ROS_INFO("serving motor calibration service for motor %d", req.motor);
-        myoControl->estimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
+        myoControl->EstimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
                                              req.timeout, req.number_of_data_points, req.displacement_min,
                                              req.displacement_max, res.load, res.displacement);
         cout << "coefficients:\t";
@@ -613,7 +591,7 @@ bool RoboyPlexus::MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCali
                                              roboy_middleware_msgs::MyoBrickCalibrationService::Response &res) {
     if (!emergency_stop) {
         ROS_INFO("serving myobrick calibration service for motor %d", req.motor);
-        myoControl->estimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
+        myoControl->EstimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
                                                               req.timeout, req.number_of_data_points, req.min_degree,
                                                               req.max_degree, res.motor_angle, res.motor_encoder);
         cout << "coefficients:\t";
@@ -636,11 +614,11 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         ros::Rate rate(100);
         for (int decrements = 99; decrements >= 0; decrements -= 1) {
             for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-                int displacement = myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER);
+                int displacement = myoControl->GetEncoderPosition(motor,DISPLACEMENT_ENCODER);
                 if (displacement <= 0)
                     continue;
                 else
-                    myoControl->setPoint(motor, displacement * (decrements / 100.0));
+                    myoControl->SetPoint(motor, displacement * (decrements / 100.0));
             }
             rate.sleep();
         }
@@ -653,14 +631,14 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         params.Kd = 0;
         params.PWMLimit = 0;
         for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-            myoControl->changeControl(motor, DISPLACEMENT, params);
+            myoControl->ChangeControl(motor, DISPLACEMENT, params);
         }
         emergency_stop = true;
     } else {
         ROS_INFO("resuming normal operation");
         uint motor = 0;
         for (auto &params:control_params_backup) {
-            myoControl->changeControl(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
+            myoControl->ChangeControl(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
             motor++;
         }
         emergency_stop = false;
@@ -683,52 +661,52 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
     }
     bool system_check_successful = true;
     for (auto &m:motorIDs) {
-        if (myoControl->getCurrent(m,0) == 0) {
+        if (myoControl->GetCurrent(m,0) == 0) {
             system_check_successful = false;
             res.position.push_back(false);
             res.displacement.push_back(false);
         } else {
             // check position control
             bool position_control = true;
-            int32_t current_pos = myoControl->getEncoderPosition(m,MOTOR_ENCODER);
+            int32_t current_pos = myoControl->GetEncoderPosition(m,MOTOR_ENCODER);
             // run positive direction
-            myoControl->setPoint(m, current_pos + 5000);
+            myoControl->SetPoint(m, current_pos + 5000);
             ros::Duration wait_for_position(0.01);
             wait_for_position.sleep();
-            if (abs(myoControl->getEncoderPosition(m,MOTOR_ENCODER) - (current_pos + 5000)) > 1000) {
+            if (abs(myoControl->GetEncoderPosition(m,MOTOR_ENCODER) - (current_pos + 5000)) > 1000) {
                 system_check_successful = false;
                 position_control = false;
             }
             // run negative direction
-            myoControl->setPoint(m, current_pos - 5000);
+            myoControl->SetPoint(m, current_pos - 5000);
             wait_for_position.sleep();
-            if (abs(myoControl->getEncoderPosition(m,MOTOR_ENCODER) - (current_pos - 5000)) > 1000) {
+            if (abs(myoControl->GetEncoderPosition(m,MOTOR_ENCODER) - (current_pos - 5000)) > 1000) {
                 system_check_successful = false;
                 position_control = false;
             }
             // reset to start position
-            myoControl->setPoint(m, current_pos);
+            myoControl->SetPoint(m, current_pos);
 
             // check displacement control
             bool displacement_control = true;
-            int32_t current_displacement = myoControl->getEncoderPosition(m,DISPLACEMENT_ENCODER);
+            int32_t current_displacement = myoControl->GetEncoderPosition(m,DISPLACEMENT_ENCODER);
             // run positive direction
-            myoControl->setPoint(m, current_displacement + 10);
+            myoControl->SetPoint(m, current_displacement + 10);
             ros::Duration wait_for_displacement(1);
             wait_for_displacement.sleep();
-            if (abs(myoControl->getEncoderPosition(m,DISPLACEMENT_ENCODER) - (current_displacement + 10)) > 3) {
+            if (abs(myoControl->GetEncoderPosition(m,DISPLACEMENT_ENCODER) - (current_displacement + 10)) > 3) {
                 system_check_successful = false;
                 displacement_control = false;
             }
             // run negative direction
-            myoControl->setPoint(m, current_displacement - 10);
+            myoControl->SetPoint(m, current_displacement - 10);
             wait_for_displacement.sleep();
-            if (abs(myoControl->getEncoderPosition(m,DISPLACEMENT_ENCODER) - (current_displacement + 10)) > 3) {
+            if (abs(myoControl->GetEncoderPosition(m,DISPLACEMENT_ENCODER) - (current_displacement + 10)) > 3) {
                 system_check_successful = false;
                 displacement_control = false;
             }
             // reset to start displacement
-            myoControl->setPoint(m, current_displacement);
+            myoControl->SetPoint(m, current_displacement);
             res.position.push_back(position_control);
             res.displacement.push_back(displacement_control);
         }
@@ -740,8 +718,8 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request
                                         roboy_middleware_msgs::SetInt16::Request &res) {
     ROS_INFO("all to displacement %d called", req.setpoint);
     for (auto motor:req.motors) {
-        myoControl->changeControl(motor, DISPLACEMENT);
-        myoControl->setPoint(motor, req.setpoint);
+        myoControl->ChangeControl(motor, DISPLACEMENT);
+        myoControl->SetPoint(motor, req.setpoint);
         control_mode[motor] = DISPLACEMENT;
     }
     return true;
@@ -766,12 +744,12 @@ void RoboyPlexus::StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordT
     vector<int> idList(begin(msg->id_list), end(msg->id_list));
     map<int, vector<float>> trajectories;
 
-    myoControl->startRecordTrajectories(samplingTime, trajectories, idList, name);
+    myoControl->StartRecordTrajectories(samplingTime, trajectories, idList, name);
 
 }
 
 void RoboyPlexus::StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg) {
-    myoControl->stopRecordTrajectories();
+    myoControl->StopRecordTrajectories();
 }
 
 void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
@@ -781,16 +759,16 @@ void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
     std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
 }
 
-bool RoboyPlexus::executeActions(vector<string> actions) {
+bool RoboyPlexus::ExecuteActions(vector<string> actions) {
 
     bool success;
     for (string actionName: actions) {
-        success = executeAction(actionName);
+        success = ExecuteAction(actionName);
     }
     return success;
 }
 
-bool RoboyPlexus::executeAction(string actionName) {
+bool RoboyPlexus::ExecuteAction(string actionName) {
 
     bool success;
     if (actionName.find("pause") != std::string::npos) {
@@ -799,22 +777,22 @@ bool RoboyPlexus::executeAction(string actionName) {
         ros::Duration(pause).sleep();
         success = true && success;
     } else if (actionName.find("relax") != std::string::npos) {
-        myoControl->allToDisplacement(0);
+        myoControl->SetAllToDisplacement(0);
         success = true && success;
     } else {
         actionName = myoControl->trajectories_folder + actionName;
-        success = myoControl->playTrajectory(actionName.c_str()) && success;
+        success = myoControl->PlayTrajectory(actionName.c_str()) && success;
     }
 
     return success;
 }
 
 void RoboyPlexus::EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg) {
-    myoControl->setReplay(msg->data);
+    myoControl->SetReplay(msg->data);
 }
 
 void RoboyPlexus::PredisplacementCB(const std_msgs::Int32 &msg) {
-    myoControl->setPredisplacement(msg.data);
+    myoControl->SetPredisplacement(msg.data);
 }
 
 
@@ -841,11 +819,11 @@ bool RoboyPlexus::ListExistingItemsService(roboy_control_msgs::ListItems::Reques
 bool RoboyPlexus::ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
                                         roboy_control_msgs::ListItems::Response &res) {
 
-    res.items = expandBehavior(req.name);
+    res.items = ExpandBehavior(req.name);
     return true;
 }
 
-vector<string> RoboyPlexus::expandBehavior(string name) {
+vector<string> RoboyPlexus::ExpandBehavior(string name) {
     std::vector<string> actions;
     ifstream input_file(myoControl->behaviors_folder + name);
     std::copy(std::istream_iterator<std::string>(input_file),

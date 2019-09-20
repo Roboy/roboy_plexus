@@ -13,7 +13,7 @@ PerformMovementAction::PerformMovementAction(boost::shared_ptr<MyoControl> myoCo
 void PerformMovementAction::executeCB(const roboy_control_msgs::PerformMovementGoalConstPtr &goal) {
     string file = myoControl->trajectories_folder + goal->action;
     const char *fileName = file.c_str();
-    result.success = myoControl->playTrajectory(fileName);
+    result.success = myoControl->PlayTrajectory(fileName);
     performMovement_as.setSucceeded(result);
 
 };
@@ -38,12 +38,12 @@ void PerformMovementsAction::executeCB(const roboy_control_msgs::PerformMovement
             success = true && success;
         }
         else if (actionName.find("relax") != std::string::npos) {
-            myoControl->allToDisplacement(0);
+            myoControl->SetAllToDisplacement(0);
             success = true && success;
         }
         else {
             actionName = myoControl->trajectories_folder + actionName;
-            success = myoControl->playTrajectory(actionName.c_str()) && success;
+            success = myoControl->PlayTrajectory(actionName.c_str()) && success;
         }
     }
 
