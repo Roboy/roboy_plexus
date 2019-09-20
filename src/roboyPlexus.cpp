@@ -408,25 +408,35 @@ void RoboyPlexus::MotorStatePublisher() {
 }
 
 void RoboyPlexus::MotorInfoPublisher() {
-    ros::Rate rate(5);
+    ros::Rate rate(100);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorInfo msg;
         msg.id = id;
         for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
             int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
-            myoControl->GetControllerParameter(motor,Kp,Ki,Kd,deadband,IntegralLimit,PWMLimit);
+            myoControl->GetControllerParameter(motor, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
+            msg.control_mode.push_back(myoControl->GetControlMode(motor));
             msg.Kp.push_back(Kp);
             msg.Ki.push_back(Ki);
             msg.Kd.push_back(Kd);
             msg.deadband.push_back(deadband);
             msg.IntegralLimit.push_back(IntegralLimit);
             msg.PWMLimit.push_back(PWMLimit);
-            msg.setpoint.push_back(myoControl->GetSetPoint(motor));
-            msg.pwm.push_back(myoControl->GetPWM(motor));
-            msg.communication_quality.push_back(myoControl->GetCommunicationQuality(motor));
-            msg.current_phase1.push_back(myoControl->GetCurrent(motor,1));
-            msg.current_phase2.push_back(myoControl->GetCurrent(motor,2));
-            msg.current_phase3.push_back(myoControl->GetCurrent(motor,3));
+            int32_t communication_quality = myoControl->GetCommunicationQuality(motor);
+            msg.communication_quality.push_back(communication_quality);
+            if(communication_quality>0) {
+                msg.setpoint.push_back(myoControl->GetSetPoint(motor));
+                msg.pwm.push_back(myoControl->GetPWM(motor));
+                msg.current_phase1.push_back(myoControl->GetCurrent(motor, 1));
+                msg.current_phase2.push_back(myoControl->GetCurrent(motor, 2));
+                msg.current_phase3.push_back(myoControl->GetCurrent(motor, 3));
+            }else{
+                msg.setpoint.push_back(0);
+                msg.pwm.push_back(0);
+                msg.current_phase1.push_back(0);
+                msg.current_phase2.push_back(0);
+                msg.current_phase3.push_back(0);
+            }
         }
         motorInfo.publish(msg);
         rate.sleep();

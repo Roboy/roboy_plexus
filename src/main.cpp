@@ -119,7 +119,7 @@ void SigintHandler(int sig)
 //    // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
-    system("sl&");
+    system("sl");
     system("fortune | cowsay");
 }
 
