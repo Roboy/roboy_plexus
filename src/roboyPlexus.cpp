@@ -522,6 +522,7 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
         myoControl->ChangeControlParameters(motor, params);
         res.mode.push_back(params.control_mode);
         myoControl->ChangeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+        myoControl->SetMotorUpdateFrequency(motor,req.config.update_frequency[i]);
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
                  req.config.setpoint[i]);
         control_mode[motor] = req.config.control_mode[i];

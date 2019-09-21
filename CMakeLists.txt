@@ -50,7 +50,6 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     SET(ALT_DEVICE_FAMILY soc_cv_av)
     add_definitions(-D${ALT_DEVICE_FAMILY})
     MESSAGE(STATUS "fpga include dir: $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}")
-    MESSAGE(STATUS "objectdic dir: ${OPLK_BASE_DIR}/apps/common/objdicts/${OBJDICT}")
 
     include_directories(
             include/

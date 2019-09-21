@@ -224,6 +224,10 @@ void MyoControl::SetAllToDirectPWM(int32_t pwm) {
     }
 }
 
+void MyoControl::SetMotorUpdateFrequency(int motor, int32_t freq) {
+    MYO_WRITE_update_frequency_Hz(myo_base[motor_config->motor[motor]->icebus],freq);
+}
+
 void MyoControl::ZeroWeight(int load_cell) {
     uint32_t adc_value = 0;
     weight_offset = -GetWeight(load_cell, adc_value);

@@ -317,6 +317,14 @@ public:
     void SetAllToDirectPWM(int32_t pwm);
 
     /**
+     * Sets the motor update frequency, this is done per bus,
+     * so the motor id is only used to check which bus is controlling it
+     * @param motor
+     * @param freq
+     */
+    void SetMotorUpdateFrequency(int motor, int32_t freq);
+
+    /**
      * Changes the control mode for all motors to Displacement
      * @param displacement new setPoint
      */
