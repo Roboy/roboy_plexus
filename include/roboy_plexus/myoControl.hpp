@@ -60,8 +60,6 @@
 #define MYO_READ_Kd(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
 #define MYO_READ_encoder0_position(base, motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
 #define MYO_READ_encoder1_position(base, motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
-#define MYO_READ_encoder0_velocity(base, motor) IORD(base, (uint32_t)(0x06<<8|motor&0xff) )
-#define MYO_READ_encoder1_velocity(base, motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
 #define MYO_READ_PWMLimit(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
 #define MYO_READ_IntegralLimit(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
 #define MYO_READ_deadband(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
@@ -69,12 +67,11 @@
 #define MYO_READ_sp(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
 #define MYO_READ_error_code(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
 #define MYO_READ_update_frequency_Hz(base) IORD(base, (uint32_t)(0x11<<8|0) )
-#define MYO_READ_current_phase1(base, motor) IORD(base, (uint32_t)(0x12<<8|motor&0xff) )
-#define MYO_READ_current_phase2(base, motor) IORD(base, (uint32_t)(0x13<<8|motor&0xff) )
-#define MYO_READ_current_phase3(base, motor) IORD(base, (uint32_t)(0x14<<8|motor&0xff) )
 #define MYO_READ_crc_checksum(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
 #define MYO_READ_communication_quality(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
 #define MYO_READ_pwm(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
+#define MYO_READ_displacement(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
+#define MYO_READ_gearBoxRatio(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 
 #define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
@@ -85,13 +82,14 @@
 #define MYO_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0B<<8|motor&0xff), data )
 #define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
 #define MYO_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
+#define MYO_WRITE_gearBoxRatio(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define NUM_SENSORS 0
 #define NUMBER_OF_LOADCELLS 1
 
-#define MOTOR_ENCODER 0
-#define DISPLACEMENT_ENCODER 1
+#define ENCODER0 0
+#define ENCODER1 1
 
 using namespace std;
 using namespace std::chrono;
@@ -198,19 +196,18 @@ public:
     uint16_t GetControlMode(int motor);
 
     /**
-     * Gets the current of a motors phase
-     * @param motor
-     * @param phase
-     * @return current in mA
-     */
-    int16_t GetCurrent(int motor, int phase);
-
-    /**
      * Fills the given params with default values for the corresponding control mode
      * @param params pointer to control struct
      * @param control_mode Position, Velocity, Force
      */
     void GetDefaultControlParams(control_Parameters_t *params, int control_mode);
+
+    /**
+     * Get the displacement of a muscle
+     * @param muscle
+     * @return displacement
+     */
+    int16_t GetDisplacement(int muscle);
 
     /**
      * Gets the current position of a motor in encoder ticks
@@ -220,11 +217,11 @@ public:
     int32_t GetEncoderPosition(int motor,int encoder);
 
     /**
-     * Gets the current velcity of a motor in encoder ticks/s
-     * @param motor for this motor
-     * @param encoder of this encoder
+     * Get the displacement of a motor
+     * @param motor
+     * @return displacement
      */
-    int32_t GetEncoderVelocity(int motor,int encoder);
+    int32_t GetGearBoxRatio(int motor);
 
     /**
      * Get PWM of motor
@@ -297,6 +294,14 @@ public:
             float samplingTime, float recordTime,
             map<int, vector<float>> &trajectories, vector<int> &idList,
             vector<int> &controlmode, string name);
+
+    /**
+     * Sets the gearbox ratio of a motor
+     * @param motor
+     * @param gearBoxRatio
+     */
+    void SetGearBoxRatio(int motor, int32_t gearBoxRatio);
+
     /**
      * Sets a new setpoint for a motor
      * @param motor

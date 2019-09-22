@@ -121,6 +121,10 @@ uint16_t MyoControl::GetControlMode(int motor) {
     return MYO_READ_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
+int16_t MyoControl::GetDisplacement(int motor) {
+    return MYO_READ_displacement(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
 int32_t MyoControl::GetEncoderPosition(int motor, int encoder) {
     if(encoder==0)
         return MYO_READ_encoder0_position(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
@@ -130,13 +134,8 @@ int32_t MyoControl::GetEncoderPosition(int motor, int encoder) {
         return -1;
 }
 
-int32_t MyoControl::GetEncoderVelocity(int motor, int encoder) {
-    if(encoder==0)
-        return MYO_READ_encoder0_velocity(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    else if(encoder==1)
-        return MYO_READ_encoder1_velocity(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    else
-        return -1;
+int32_t MyoControl::GetGearBoxRatio(int motor) {
+    return MYO_READ_gearBoxRatio(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
 int32_t MyoControl::GetSetPoint(int motor){
@@ -147,21 +146,12 @@ int32_t MyoControl::GetPWM(int motor){
     return MYO_READ_pwm(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-void MyoControl::SetPoint(int motor, int32_t setPoint) {
-    MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, (int32_t) setPoint);
+void MyoControl::SetGearBoxRatio(int motor, int32_t gearBoxRatio){
+    MYO_WRITE_gearBoxRatio(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, gearBoxRatio);
 }
 
-int16_t MyoControl::GetCurrent(int motor, int phase) {
-    switch(phase){
-        case 1:
-            return MYO_READ_current_phase1(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-        case 2:
-            return MYO_READ_current_phase2(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-        case 3:
-            return MYO_READ_current_phase3(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-        default:
-            return -1;
-    }
+void MyoControl::SetPoint(int motor, int32_t setPoint) {
+    MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, (int32_t) setPoint);
 }
 
 void MyoControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
@@ -301,11 +291,9 @@ float MyoControl::RecordTrajectories(
 //        for (uint motor = 0; motor < idList.size(); motor++) {
         for (auto it = idList.begin(); it != idList.end(); it++) {
             if (controlmode[*it] == POSITION)
-                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,MOTOR_ENCODER));
-            else if (controlmode[*it] == VELOCITY)
-                trajectories[idList[*it]].push_back(GetEncoderVelocity(*it,MOTOR_ENCODER));
+                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER0));
             else if (controlmode[*it] == FORCE)
-                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,DISPLACEMENT_ENCODER));
+                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER1));
         }
         sample++;
         elapsedTime = timer.elapsedTime();
@@ -385,7 +373,7 @@ float MyoControl::StartRecordTrajectories(
         dt = elapsedTime;
         for (auto it:  idList)//.begin(); it != idList.end(); it++ ) {
         {
-            trajectories[it].push_back(GetEncoderPosition(it,MOTOR_ENCODER));
+            trajectories[it].push_back(GetEncoderPosition(it,ENCODER0));
         }
         sample++;
         rate.sleep();
@@ -605,7 +593,7 @@ void MyoControl::EstimateSpringParameters(int motor, int degree, vector<float> &
         // note the weight
         load.push_back(GetWeight(0)); // TODO: use a different load_cell for each motor
         // note the force
-        displacement.push_back(GetEncoderPosition(motor,DISPLACEMENT_ENCODER));
+        displacement.push_back(GetEncoderPosition(motor,ENCODER1));
         outfile << displacement.back() << ", " << load.back() << endl;
         ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         cout << "setPoint: \t" << f << "\tdisplacement:\t" << displacement.back() << "\tload:\t" <<
@@ -636,7 +624,7 @@ void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree
 //
 //    changeControl(motor, POSITION);
 //    setPoint(motor, 0);
-//    while (abs(getEncoderPosition(motor,MOTOR_ENCODER)) > 1000) {
+//    while (abs(getEncoderPosition(motor,ENCODER0)) > 1000) {
 //        cout << "waiting for motor " << motor << " to go to zero position" << endl;
 //        usleep(1000000);
 //    }
@@ -652,8 +640,8 @@ void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree
 //    }
 //    outfile << "motor_angle[ticks], motor_optical_encoder[ticks]" << endl;
 //
-//    int32_t initial_motor_pos = getEncoderPosition(motor,MOTOR_ENCODER);
-//    int32_t initial_motor_angle = abs(getEncoderPosition(motor,DISPLACEMENT_ENCODER)) % 4096;
+//    int32_t initial_motor_pos = getEncoderPosition(motor,ENCODER0);
+//    int32_t initial_motor_angle = abs(getEncoderPosition(motor,ENCODER1)) % 4096;
 //    setPoint(motor, -30000);
 //    bool go_backward = true;
 //    int back_and_forth = 2;
@@ -668,13 +656,13 @@ void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree
 //
 //    do {
 //        if (go_backward) {
-//            if (getEncoderPosition(motor,MOTOR_ENCODER) < pos_min) {
+//            if (getEncoderPosition(motor,ENCODER0) < pos_min) {
 //                setPoint(motor, 30000);
 //                go_backward = false;
 //                cout << "going forward" << endl;
 //            }
 //        } else {
-//            if (getEncoderPosition(motor,MOTOR_ENCODER) > pos_max) {
+//            if (getEncoderPosition(motor,ENCODER0) > pos_max) {
 //                setPoint(motor, -30000);
 //                go_backward = true;
 //                cout << "going backward" << endl;
@@ -685,10 +673,10 @@ void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree
 //        }
 //
 //        // note the motor angle
-//        motor_angle.push_back(abs(getEncoderPosition(motor,DISPLACEMENT_ENCODER)));
+//        motor_angle.push_back(abs(getEncoderPosition(motor,ENCODER1)));
 //        // note the motor encoder
 //        motor_encoder.push_back(
-//                abs(getEncoderPosition(motor,MOTOR_ENCODER)/ myo_bricks_gearbox_ratio[id] * myo_bricks_encoder_multiplier[id] -
+//                abs(getEncoderPosition(motor,ENCODER0)/ myo_bricks_gearbox_ratio[id] * myo_bricks_encoder_multiplier[id] -
 //                    initial_motor_angle) % 4096);
 //        outfile << motor_angle.back() << ", " << motor_encoder.back() << endl;
 //        if(sample%100==0)

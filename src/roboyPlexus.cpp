@@ -90,7 +90,8 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
     motorInfoThread->detach();
 
     for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-        myoControl->SetPoint(motor, myoControl->GetEncoderPosition(motor,MOTOR_ENCODER));
+        myoControl->SetGearBoxRatio(motor,53);
+        myoControl->SetPoint(motor, myoControl->GetEncoderPosition(motor,ENCODER0));
         myoControl->ChangeControl(motor, POSITION);
         control_mode[motor] = POSITION;
     }
@@ -395,12 +396,12 @@ void RoboyPlexus::MotorStatePublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorState msg;
-        msg.id = id;
         for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-            msg.encoder0_pos.push_back(myoControl->GetEncoderPosition(motor,MOTOR_ENCODER));
-            msg.encoder0_vel.push_back(myoControl->GetEncoderVelocity(motor,MOTOR_ENCODER));
-            msg.encoder1_pos.push_back(myoControl->GetEncoderPosition(motor,DISPLACEMENT_ENCODER));
-            msg.encoder1_vel.push_back(myoControl->GetEncoderVelocity(motor,DISPLACEMENT_ENCODER));
+            msg.encoder0_pos.push_back(myoControl->GetEncoderPosition(motor,ENCODER0));
+            msg.encoder1_pos.push_back(myoControl->GetEncoderPosition(motor,ENCODER1));
+            msg.displacement.push_back(myoControl->GetDisplacement(motor));
+//            msg.encoder1_pos.push_back(myoControl->GetEncoderPosition(motor,ENCODER1));
+//            msg.encoder1_vel.push_back(myoControl->GetEncoderVelocity(motor,ENCODER1));
         }
         motorState.publish(msg);
         rate.sleep();
@@ -411,7 +412,6 @@ void RoboyPlexus::MotorInfoPublisher() {
     ros::Rate rate(100);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorInfo msg;
-        msg.id = id;
         for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
             int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
             myoControl->GetControllerParameter(motor, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
@@ -424,18 +424,19 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.PWMLimit.push_back(PWMLimit);
             int32_t communication_quality = myoControl->GetCommunicationQuality(motor);
             msg.communication_quality.push_back(communication_quality);
+            msg.gearBoxRatio.push_back(myoControl->GetGearBoxRatio(motor));
             if(communication_quality>0) {
                 msg.setpoint.push_back(myoControl->GetSetPoint(motor));
                 msg.pwm.push_back(myoControl->GetPWM(motor));
-                msg.current_phase1.push_back(myoControl->GetCurrent(motor, 1));
-                msg.current_phase2.push_back(myoControl->GetCurrent(motor, 2));
-                msg.current_phase3.push_back(myoControl->GetCurrent(motor, 3));
+//                msg.current_phase1.push_back(myoControl->GetCurrent(motor, 1));
+//                msg.current_phase2.push_back(myoControl->GetCurrent(motor, 2));
+//                msg.current_phase3.push_back(myoControl->GetCurrent(motor, 3));
             }else{
                 msg.setpoint.push_back(0);
                 msg.pwm.push_back(0);
-                msg.current_phase1.push_back(0);
-                msg.current_phase2.push_back(0);
-                msg.current_phase3.push_back(0);
+//                msg.current_phase1.push_back(0);
+//                msg.current_phase2.push_back(0);
+//                msg.current_phase3.push_back(0);
             }
         }
         motorInfo.publish(msg);
@@ -468,33 +469,31 @@ void RoboyPlexus::MagneticJointPublisher() {
 }
 
 void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
-    if (msg->id == id) {
-        uint i = 0;
-        for (auto motor:msg->motor) {
-            switch (control_mode[motor]) {
-                case POSITION:
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
+    uint i = 0;
+    for (auto motor:msg->motor) {
+        switch (control_mode[motor]) {
+            case POSITION:
+                myoControl->SetPoint(motor, msg->setpoint[i]);
+                break;
+            case VELOCITY:
+                myoControl->SetPoint(motor, msg->setpoint[i]);
+                break;
+            case DISPLACEMENT:
+                myoControl->SetPoint(motor, msg->setpoint[i]);
+                break;
+            case FORCE:
+                myoControl->SetPoint(motor, msg->setpoint[i]);
+                break;
+            case DIRECT_PWM:
+                if(fabsf(msg->setpoint[i])>128) {
+                    ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values, "
+                                      "what the heck are you publishing?!");
                     break;
-                case VELOCITY:
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                    break;
-                case DISPLACEMENT:
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                    break;
-                case FORCE:
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                    break;
-                case DIRECT_PWM:
-                    if(fabsf(msg->setpoint[i])>128) {
-                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values, "
-                                          "what the heck are you publishing?!");
-                        break;
-                    }
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                    break;
-            }
-            i++;
+                }
+                myoControl->SetPoint(motor, msg->setpoint[i]);
+                break;
         }
+        i++;
     }
 }
 
@@ -523,6 +522,7 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
         res.mode.push_back(params.control_mode);
         myoControl->ChangeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
         myoControl->SetMotorUpdateFrequency(motor,req.config.update_frequency[i]);
+        myoControl->SetGearBoxRatio(motor,req.config.gearBoxRatio[i]);
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
                  req.config.setpoint[i]);
         control_mode[motor] = req.config.control_mode[i];
@@ -625,7 +625,7 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         ros::Rate rate(100);
         for (int decrements = 99; decrements >= 0; decrements -= 1) {
             for (uint motor = 0; motor < myoControl->motor_config->total_number_of_motors; motor++) {
-                int displacement = myoControl->GetEncoderPosition(motor,DISPLACEMENT_ENCODER);
+                int displacement = myoControl->GetEncoderPosition(motor,ENCODER1);
                 if (displacement <= 0)
                     continue;
                 else
@@ -659,70 +659,70 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
 
 bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
                                      roboy_middleware_msgs::SystemCheck::Response &res) {
-    vector<uint8_t> motorIDs;
-    if (req.motorids.empty()) {
-        motorIDs.resize(myoControl->motor_config->total_number_of_motors);
-        int i = 0;
-        for (auto &m:motorIDs) {
-            m = i;
-            i++;
-        }
-    } else {
-        motorIDs = req.motorids;
-    }
-    bool system_check_successful = true;
-    for (auto &m:motorIDs) {
-        if (myoControl->GetCurrent(m,0) == 0) {
-            system_check_successful = false;
-            res.position.push_back(false);
-            res.displacement.push_back(false);
-        } else {
-            // check position control
-            bool position_control = true;
-            int32_t current_pos = myoControl->GetEncoderPosition(m,MOTOR_ENCODER);
-            // run positive direction
-            myoControl->SetPoint(m, current_pos + 5000);
-            ros::Duration wait_for_position(0.01);
-            wait_for_position.sleep();
-            if (abs(myoControl->GetEncoderPosition(m,MOTOR_ENCODER) - (current_pos + 5000)) > 1000) {
-                system_check_successful = false;
-                position_control = false;
-            }
-            // run negative direction
-            myoControl->SetPoint(m, current_pos - 5000);
-            wait_for_position.sleep();
-            if (abs(myoControl->GetEncoderPosition(m,MOTOR_ENCODER) - (current_pos - 5000)) > 1000) {
-                system_check_successful = false;
-                position_control = false;
-            }
-            // reset to start position
-            myoControl->SetPoint(m, current_pos);
-
-            // check displacement control
-            bool displacement_control = true;
-            int32_t current_displacement = myoControl->GetEncoderPosition(m,DISPLACEMENT_ENCODER);
-            // run positive direction
-            myoControl->SetPoint(m, current_displacement + 10);
-            ros::Duration wait_for_displacement(1);
-            wait_for_displacement.sleep();
-            if (abs(myoControl->GetEncoderPosition(m,DISPLACEMENT_ENCODER) - (current_displacement + 10)) > 3) {
-                system_check_successful = false;
-                displacement_control = false;
-            }
-            // run negative direction
-            myoControl->SetPoint(m, current_displacement - 10);
-            wait_for_displacement.sleep();
-            if (abs(myoControl->GetEncoderPosition(m,DISPLACEMENT_ENCODER) - (current_displacement + 10)) > 3) {
-                system_check_successful = false;
-                displacement_control = false;
-            }
-            // reset to start displacement
-            myoControl->SetPoint(m, current_displacement);
-            res.position.push_back(position_control);
-            res.displacement.push_back(displacement_control);
-        }
-    }
-    return system_check_successful;
+//    vector<uint8_t> motorIDs;
+//    if (req.motorids.empty()) {
+//        motorIDs.resize(myoControl->motor_config->total_number_of_motors);
+//        int i = 0;
+//        for (auto &m:motorIDs) {
+//            m = i;
+//            i++;
+//        }
+//    } else {
+//        motorIDs = req.motorids;
+//    }
+//    bool system_check_successful = true;
+//    for (auto &m:motorIDs) {
+//        if (myoControl->GetCurrent(m,0) == 0) {
+//            system_check_successful = false;
+//            res.position.push_back(false);
+//            res.displacement.push_back(false);
+//        } else {
+//            // check position control
+//            bool position_control = true;
+//            int32_t current_pos = myoControl->GetEncoderPosition(m,ENCODER0);
+//            // run positive direction
+//            myoControl->SetPoint(m, current_pos + 5000);
+//            ros::Duration wait_for_position(0.01);
+//            wait_for_position.sleep();
+//            if (abs(myoControl->GetEncoderPosition(m,ENCODER0) - (current_pos + 5000)) > 1000) {
+//                system_check_successful = false;
+//                position_control = false;
+//            }
+//            // run negative direction
+//            myoControl->SetPoint(m, current_pos - 5000);
+//            wait_for_position.sleep();
+//            if (abs(myoControl->GetEncoderPosition(m,ENCODER0) - (current_pos - 5000)) > 1000) {
+//                system_check_successful = false;
+//                position_control = false;
+//            }
+//            // reset to start position
+//            myoControl->SetPoint(m, current_pos);
+//
+//            // check displacement control
+//            bool displacement_control = true;
+//            int32_t current_displacement = myoControl->GetEncoderPosition(m,ENCODER1);
+//            // run positive direction
+//            myoControl->SetPoint(m, current_displacement + 10);
+//            ros::Duration wait_for_displacement(1);
+//            wait_for_displacement.sleep();
+//            if (abs(myoControl->GetEncoderPosition(m,ENCODER1) - (current_displacement + 10)) > 3) {
+//                system_check_successful = false;
+//                displacement_control = false;
+//            }
+//            // run negative direction
+//            myoControl->SetPoint(m, current_displacement - 10);
+//            wait_for_displacement.sleep();
+//            if (abs(myoControl->GetEncoderPosition(m,ENCODER1) - (current_displacement + 10)) > 3) {
+//                system_check_successful = false;
+//                displacement_control = false;
+//            }
+//            // reset to start displacement
+//            myoControl->SetPoint(m, current_displacement);
+//            res.position.push_back(position_control);
+//            res.displacement.push_back(displacement_control);
+//        }
+//    }
+//    return system_check_successful;
 }
 
 bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,

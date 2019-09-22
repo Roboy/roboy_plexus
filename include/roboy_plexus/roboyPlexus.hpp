@@ -343,7 +343,7 @@ private:
     bool emergency_stop = false;
     int file;
     const char *filename = "/dev/i2c-0";
-    uint8_t id;
+    uint8_t id = 0;
     bool bSuccess;
     const int mg_per_digi = 4;
     uint16_t szXYZ[3];
