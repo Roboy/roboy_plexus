@@ -14,8 +14,8 @@
  ***************************************************************************/
 #pragma once
 
-#include "i2c.hpp"
-#include "roboy_plexus/Adafruit_Sensor.h"
+#include "roboy_plexus/i2c.hpp"
+#include "Adafruit_Sensor.h"
 #include <cstring>
 
 #define LSM9DS1_ADDRESS_ACCELGYRO          (0x6B)

@@ -13,9 +13,9 @@
 
 #include <math.h>
 #include <limits.h>
-#include <roboy_plexus/Adafruit_Sensor.h>
+#include <roboy_plexus/sensors/Adafruit_Sensor.h>
 
-#include "roboy_plexus/Adafruit_BNO055.hpp"
+#include "roboy_plexus/sensors/Adafruit_BNO055.hpp"
 
 /***************************************************************************
  CONSTRUCTOR

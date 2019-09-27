@@ -1,4 +1,4 @@
-#include <roboy_plexus/am4096.hpp>
+#include <roboy_plexus/sensors/am4096.hpp>
 
 AM4096::AM4096(int32_t * baseAddr){
 	i2c = new I2C(baseAddr);

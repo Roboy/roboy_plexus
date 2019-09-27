@@ -1,10 +1,9 @@
-#include <roboy_plexus/roboyPlexus.hpp>
+#include "roboyPlexus.hpp"
 
 RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
                          int32_t *darkroom_base,
                          vector<int32_t *> &darkroom_ootx_addr, int32_t *adc_base, int32_t *switches_base) :
-        i2c_base(i2c_base), darkroom_base(darkroom_base), darkroom_ootx_addr(darkroom_ootx_addr),
-        adc_base(adc_base), myoControl(myoControl), switches_base(switches_base) {
+        i2c_base(i2c_base),  adc_base(adc_base), myoControl(myoControl), switches_base(switches_base) {
 //
 //    id = IORD(switches_base, 0) & 0x7;
 ////    string body_part;
@@ -55,19 +54,6 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
 
-    adc = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
-    testbench = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
-
-    if (adc_base != nullptr) {
-        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::AdcPublisher, this));
-        adcThread->detach();
-
-        vector<uint8_t> deviceIds = {0xC};
-        a1335.reset(new A1335(i2c_base[3], deviceIds));
-        testbenchThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::testBenchPublisher, this));
-        testbenchThread->detach();
-    }
-
     setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
     listExistingTrajectories_srv = nh->advertiseService("/roboy/" + body_part + "/control/ListExistingTrajectories",
@@ -111,285 +97,16 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &i2c_base,
         ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
     }
 
-    // open i2c bus for gsensor
-    if ((file = open(filename, O_RDWR)) < 0) {
-        ROS_ERROR("Failed to open the i2c bus of gsensor");
-    }
-
-    // init
-    // gsensor i2c address: 101_0011
-    int addr = 0b01010011;
-    if (ioctl(file, I2C_SLAVE, addr) < 0) {
-        ROS_WARN("Failed to acquire bus access and/or talk to IMU slave, IMU data will not be published");
-    }else{
-        // configure accelerometer as +-2g and start measure
-        bSuccess = ADXL345_Init(file);
-        if (bSuccess){
-            // dump chip id
-            bSuccess = ADXL345_IdRead(file, &id);
-            if (bSuccess){
-                gsensor = nh->advertise<sensor_msgs::Imu>("/roboy/middleware/IMU", 1);
-                ROS_INFO("gsensor chip_id=%02Xh", id);
-                gsensor_thread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::GsensorPublisher, this));
-                gsensor_thread->detach();
-            }
-        }
-    }
-
     ROS_INFO("roboy plexus initialized");
 }
 
 RoboyPlexus::~RoboyPlexus() {
-    keep_publishing = false;
     if (motorStateThread->joinable())
         motorStateThread->join();
     if (motorInfoThread->joinable())
         motorInfoThread->join();
-    if (bSuccess) {
-        if (gsensor_thread->joinable())
-            gsensor_thread->join();
-    }
-    if (adc_base != nullptr) {
-        if (adcThread->joinable())
-            adcThread->join();
-    }
-    if (darkroom_base != nullptr) {
-        if (darkRoomThread->joinable())
-            darkRoomThread->join();
-    }
-    if (!darkroom_ootx_addr.empty()) {
-        if (darkRoomOOTXThread->joinable())
-            darkRoomOOTXThread->join();
-    }
-
     if (file)
         close(file);
-}
-
-void RoboyPlexus::GsensorPublisher() {
-    ros::Rate rate(100);
-    while (keep_publishing) {
-        sensor_msgs::Imu msg;
-        msg.header.stamp = ros::Time::now();
-        msg.header.frame_id = "calibrationCube";
-        msg.orientation.w = 1;
-        msg.linear_acceleration_covariance = {
-                0.01, 0, 0,
-                0, 0.01, 0,
-                0, 0, 0.01
-        };
-        if (ADXL345_IsDataReady(file)) {
-            bSuccess = ADXL345_XYZ_Read(file, szXYZ);
-            if (bSuccess) {
-                ROS_DEBUG_THROTTLE(1, "X=%d mg, Y=%d mg, Z=%d mg", (int16_t) szXYZ[0] * mg_per_digi,
-                                   (int16_t) szXYZ[1] * mg_per_digi, (int16_t) szXYZ[2] * mg_per_digi);
-                msg.linear_acceleration.x = (int16_t) szXYZ[0] * mg_per_digi;
-                msg.linear_acceleration.y = (int16_t) szXYZ[1] * mg_per_digi;
-                msg.linear_acceleration.z = (int16_t) szXYZ[2] * mg_per_digi;
-                // convert to m/s^2
-                msg.linear_acceleration.x *= 0.00981;
-                msg.linear_acceleration.y *= 0.00981;
-                msg.linear_acceleration.z *= 0.00981;
-            }
-            gsensor.publish(msg);
-        }
-        rate.sleep();
-    }
-}
-
-void RoboyPlexus::AdcPublisher() {
-    ros::Rate rate(100);
-    while (keep_publishing) {
-        roboy_middleware_msgs::ADCvalue msg;
-        msg.id = id;
-        for (uint i = 0; i < NUMBER_OF_LOADCELLS; i++) {
-            uint32_t adcvalue;
-            float val = myoControl->GetWeight(i, adcvalue);
-            msg.adc_value.push_back(adcvalue);
-            msg.load.push_back(val);
-        }
-        adc.publish(msg);
-        rate.sleep();
-    }
-}
-
-void RoboyPlexus::testBenchPublisher() {
-    ros::Rate rate(100);
-    while (keep_publishing) {
-        std_msgs::Float32 msg;
-        vector<A1335State> state;
-        a1335->readAngleData(state);
-        msg.data = state[0].angle;
-        testbench.publish(msg);
-        rate.sleep();
-    }
-}
-
-void RoboyPlexus::DarkRoomPublisher() {
-    ros::Rate rate(240);
-    high_resolution_clock::time_point t0 = high_resolution_clock::now();
-    while (keep_publishing) {
-        uint active_sensors = 0;
-        roboy_middleware_msgs::DarkRoom msg;
-        msg.object_id = ethaddr;
-        for (uint i = 0; i < NUM_SENSORS; i++) {
-            int32_t val = IORD(darkroom_base, i);
-            high_resolution_clock::time_point t1 = high_resolution_clock::now();
-            microseconds time_span = duration_cast<microseconds>(t1 - t0);
-            msg.timestamp.push_back(time_span.count());
-            msg.sensor_value.push_back(val);
-            if ((val >> 29) & 0x1)//valid
-                active_sensors++;
-        }
-        darkroom.publish(msg);
-        rate.sleep();
-    }
-}
-
-void RoboyPlexus::DarkRoomOOTXPublisher() {
-    // ootx frames are 17bits preamble + 271 bits payload + 32 bits checksum = 320 bits.
-    // At 120Hz motor speed, this is ~2.6 seconds per frame. Lets set the update rate to 5 seconds then.
-    ros::Rate rate(1 / 5.0);
-    high_resolution_clock::time_point t0 = high_resolution_clock::now();
-    while (keep_publishing) {
-        bool successfully_decoded_ootx = true;
-        for (uint lighthouse = 0; lighthouse < 2; lighthouse++) {
-            for (uint decoder = 0; decoder < darkroom_ootx_addr.size(); decoder++) {
-                // TODO: remove reverse and have the fpga convert it directly
-                ootx.frame.fw_version = (uint16_t) (
-                        reverse(IORD(darkroom_ootx_addr[decoder], (uint32_t) (18 * lighthouse + 0))) & 0xFFFF);
-                ootx.frame.ID = reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 1));
-                ootx.frame.fcal_0_phase = (uint16_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 2)) &
-                                                      0xFFFF);
-                ootx.frame.fcal_1_phase = (uint16_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 3)) &
-                                                      0xFFFF);
-                ootx.frame.fcal_0_tilt = (uint16_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 4)) &
-                                                     0xFFFF);
-                ootx.frame.fcal_1_tilt = (uint16_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 5)) &
-                                                     0xFFFF);
-                ootx.frame.unlock_count = (uint8_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 6)) &
-                                                     0xFF);
-                ootx.frame.hw_version = (uint8_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 7)) &
-                                                   0xFF);
-                ootx.frame.fcal_0_curve = (uint16_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 8)) &
-                                                      0xFFFF);
-                ootx.frame.fcal_1_curve = (uint16_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 9)) &
-                                                      0xFFFF);
-                uint32_t acc = reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 10));
-                ootx.frame.accel_dir_x = ((int8_t) (acc >> 0 & 0xFF));
-                ootx.frame.accel_dir_y = ((int8_t) (acc >> 8 & 0xFF));
-                ootx.frame.accel_dir_z = ((int8_t) (acc >> 16 & 0xFF));
-                ootx.frame.fcal_0_gibphase = (uint16_t) (
-                        reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 11)) & 0xFFFF);
-                ootx.frame.fcal_1_gibphase = (uint16_t) (
-                        reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 12)) & 0xFFFF);
-                ootx.frame.fcal_0_gibmag = (uint16_t) (
-                        reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 13)) & 0xFFFF);
-                ootx.frame.fcal_1_gibmag = (uint16_t) (
-                        reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 14)) & 0xFFFF);
-                ootx.frame.mode = (uint8_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 15)) & 0xFF);
-                ootx.frame.faults = (uint8_t) (reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 16)) & 0xFF);
-
-                uint32_t crc32checksum = reverse(IORD(darkroom_ootx_addr[decoder], 18 * lighthouse + 17));
-
-                CRC32 crc;
-                for (int i = 0; i < 33; i++) {
-                    crc.update(ootx.data[i]);
-                }
-
-                uint32_t crc32checksumCalculated = crc.finalize();
-                if (crc.finalize() == crc32checksum) { // kinda paranoid right...?!
-                    roboy_middleware_msgs::DarkRoomOOTX msg;
-                    msg.lighthouse = lighthouse;
-                    msg.fw_version = ootx.frame.fw_version;
-                    msg.id = ootx.frame.ID;
-                    half fcal_0_phase, fcal_1_phase, fcal_0_tilt, fcal_1_tilt;
-                    fcal_0_phase.data_ = ootx.frame.fcal_0_phase;
-                    fcal_1_phase.data_ = ootx.frame.fcal_1_phase;
-                    fcal_0_tilt.data_ = ootx.frame.fcal_0_tilt;
-                    fcal_1_tilt.data_ = ootx.frame.fcal_1_tilt;
-                    msg.fcal_0_phase = fcal_0_phase;
-                    msg.fcal_1_phase = fcal_1_phase;
-                    msg.fcal_0_tilt = fcal_0_tilt;
-                    msg.fcal_1_tilt = fcal_1_tilt;
-                    msg.unlock_count = fcal_1_tilt;
-                    msg.hw_version = ootx.frame.hw_version;
-                    half fcal_0_curve, fcal_1_curve;
-                    fcal_0_curve.data_ = ootx.frame.fcal_0_curve;
-                    fcal_1_curve.data_ = ootx.frame.fcal_1_curve;
-                    msg.fcal_0_curve = fcal_0_curve;
-                    msg.fcal_1_curve = fcal_1_curve;
-                    // max/min value of acceleration is 127/-127, so we divide to get an orientation vector
-                    msg.accel_dir_x = ootx.frame.accel_dir_x / 127.0f;
-                    msg.accel_dir_y = ootx.frame.accel_dir_y / 127.0f;
-                    msg.accel_dir_z = ootx.frame.accel_dir_z / 127.0f;
-                    half fcal_0_gibphase, fcal_1_gibphase, fcal_0_gibmag, fcal_1_gibmag;
-                    fcal_0_gibphase.data_ = ootx.frame.fcal_0_gibphase;
-                    fcal_1_gibphase.data_ = ootx.frame.fcal_1_gibphase;
-                    fcal_0_gibmag.data_ = ootx.frame.fcal_0_gibmag;
-                    fcal_1_gibmag.data_ = ootx.frame.fcal_1_gibmag;
-                    msg.fcal_0_gibphase = fcal_0_gibphase;
-                    msg.fcal_1_gibphase = fcal_1_gibphase;
-                    msg.fcal_0_gibmag = fcal_0_gibmag;
-                    msg.fcal_1_gibmag = fcal_1_gibmag;
-                    msg.mode = ootx.frame.mode;
-                    msg.faults = ootx.frame.faults;
-                    msg.crc32 = crc32checksum;
-
-                    darkroom_ootx.publish(msg);
-                } else {
-                    successfully_decoded_ootx = false;
-
-                    stringstream str;
-                    str << "received ootx frame" << " with crc " << crc32checksum
-                        << " which does not match the calculated: " << crc32checksumCalculated << endl;
-                    str << "fw_version:          " << ootx.frame.fw_version << endl;
-                    str << "ID:                  " << ootx.frame.ID << endl;
-                    str << "fcal_0_phase:        " << ootx.frame.fcal_0_phase << endl;
-                    str << "fcal_1_phase:        " << ootx.frame.fcal_1_phase << endl;
-                    str << "fcal_0_tilt:         " << ootx.frame.fcal_0_tilt << endl;
-                    str << "fcal_1_tilt:         " << ootx.frame.fcal_1_tilt << endl;
-                    str << "unlock_count:        " << (uint) ootx.frame.unlock_count << endl;
-                    str << "hw_version:          " << (uint) ootx.frame.hw_version << endl;
-                    str << "fcal_0_curve:        " << ootx.frame.fcal_0_curve << endl;
-                    str << "fcal_1_curve:        " << ootx.frame.fcal_1_curve << endl;
-                    str << "accel_dir_x:         " << (int) ootx.frame.accel_dir_x << endl;
-                    str << "accel_dir_y:         " << (int) ootx.frame.accel_dir_y << endl;
-                    str << "accel_dir_z:         " << (int) ootx.frame.accel_dir_z << endl;
-                    str << "fcal_0_gibphase:     " << ootx.frame.fcal_0_gibphase << endl;
-                    str << "fcal_1_gibphase:     " << ootx.frame.fcal_1_gibphase << endl;
-                    str << "fcal_0_gibmag:       " << ootx.frame.fcal_0_gibmag << endl;
-                    str << "fcal_1_gibmag:       " << ootx.frame.fcal_1_gibmag << endl;
-                    str << "mode:                " << (uint) ootx.frame.mode << endl;
-                    str << "faults:              " << (uint) ootx.frame.faults << endl;
-                    ROS_DEBUG_STREAM(str.str());
-                }
-            }
-        }
-        if (!successfully_decoded_ootx) {
-            // no valid ootx frame decoded, lets switch to another sensor channel
-            ootx_sensor_channel++;
-            if (ootx_sensor_channel > NUM_SENSORS)
-                ootx_sensor_channel = 0;
-            for (uint decoder = 0; decoder < darkroom_ootx_addr.size(); decoder++) {
-                IOWR(darkroom_ootx_addr[decoder], 0, ootx_sensor_channel);
-            }
-        }
-
-        roboy_middleware_msgs::DarkRoomStatus status_msg;
-        status_msg.object_id = ethaddr;
-        uint active_sensors = 0;
-        for (uint8_t i = 0; i < NUM_SENSORS; i++) {
-            int32_t val = IORD(darkroom_base, (1 << 8 | i));
-            status_msg.sensor_state.push_back(val & 0xF);
-            if (status_msg.sensor_state.back() == 1)
-                active_sensors++;
-        }
-        ROS_INFO("lighthouse sensors active %d/%d", active_sensors, NUM_SENSORS);
-        darkroom_status.publish(status_msg);
-
-        rate.sleep();
-    }
 }
 
 void RoboyPlexus::MotorStatePublisher() {
@@ -400,8 +117,6 @@ void RoboyPlexus::MotorStatePublisher() {
             msg.encoder0_pos.push_back(myoControl->GetEncoderPosition(motor,ENCODER0));
             msg.encoder1_pos.push_back(myoControl->GetEncoderPosition(motor,ENCODER1));
             msg.displacement.push_back(myoControl->GetDisplacement(motor));
-//            msg.encoder1_pos.push_back(myoControl->GetEncoderPosition(motor,ENCODER1));
-//            msg.encoder1_vel.push_back(myoControl->GetEncoderVelocity(motor,ENCODER1));
         }
         motorState.publish(msg);
         rate.sleep();
@@ -485,7 +200,9 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
                 myoControl->SetPoint(motor, msg->setpoint[i]);
                 break;
             case DIRECT_PWM:
-                if(fabsf(msg->setpoint[i])>128) {
+                bool direct_pwm_override;
+                nh->getParam("direct_pwm_override",direct_pwm_override);
+                if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
                     ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values, "
                                       "what the heck are you publishing?!");
                     break;
@@ -842,107 +559,4 @@ vector<string> RoboyPlexus::ExpandBehavior(string name) {
               std::back_inserter(actions));
 
     return actions;
-}
-
-bool RoboyPlexus::ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value) {
-    bool bSuccess = false;
-    uint8_t szValue[2];
-    // write to define register
-    szValue[0] = address;
-    szValue[1] = value;
-    if (write(file, &szValue, sizeof(szValue)) == sizeof(szValue)) {
-        bSuccess = true;
-    }
-    return bSuccess;
-}
-
-bool RoboyPlexus::ADXL345_REG_READ(int file, uint8_t address, uint8_t *value) {
-    bool bSuccess = false;
-    uint8_t Value;
-    // write to define register
-    if (write(file, &address, sizeof(address)) == sizeof(address)) {
-
-        // read back value
-        if (read(file, &Value, sizeof(Value)) == sizeof(Value)) {
-            *value = Value;
-            bSuccess = true;
-        }
-    }
-    return bSuccess;
-}
-
-bool RoboyPlexus::ADXL345_REG_MULTI_READ(int file, uint8_t readaddr, uint8_t readdata[], uint8_t len) {
-    bool bSuccess = false;
-    // write to define register
-    if (write(file, &readaddr, sizeof(readaddr)) == sizeof(readaddr)) {
-        // read back value
-        if (read(file, readdata, len) == len) {
-            bSuccess = true;
-        }
-    }
-    return bSuccess;
-}
-
-bool RoboyPlexus::ADXL345_Init(int file) {
-    bool bSuccess;
-
-    // +- 2g range, 10 bits
-    bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_DATA_FORMAT, XL345_RANGE_2G | XL345_FULL_RESOLUTION);
-
-    //Output Data Rate: 800Hz
-    if (bSuccess) {
-        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_BW_RATE, XL345_RATE_100);
-    }
-
-    //INT_Enable: Data Ready
-    if (bSuccess) {
-        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_INT_ENALBE, XL345_DATAREADY);
-    }
-
-    // stop measure
-    if (bSuccess) {
-        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_POWER_CTL, XL345_STANDBY);
-    }
-
-    // start measure
-    if (bSuccess) {
-        bSuccess = ADXL345_REG_WRITE(file, ADXL345_REG_POWER_CTL, XL345_MEASURE);
-
-    }
-
-
-    return bSuccess;
-
-}
-
-bool RoboyPlexus::ADXL345_IsDataReady(int file) {
-    bool bReady = false;
-    uint8_t data8;
-
-    if (ADXL345_REG_READ(file, ADXL345_REG_INT_SOURCE, &data8)) {
-        if (data8 & XL345_DATAREADY)
-            bReady = true;
-    }
-
-    return bReady;
-}
-
-bool RoboyPlexus::ADXL345_XYZ_Read(int file, uint16_t szData16[3]) {
-    bool bPass;
-    uint8_t szData8[6];
-    bPass = ADXL345_REG_MULTI_READ(file, 0x32, (uint8_t *) &szData8, sizeof(szData8));
-    if (bPass) {
-        szData16[0] = (szData8[1] << 8) | szData8[0];
-        szData16[1] = (szData8[3] << 8) | szData8[2];
-        szData16[2] = (szData8[5] << 8) | szData8[4];
-    }
-
-    return bPass;
-}
-
-bool RoboyPlexus::ADXL345_IdRead(int file, uint8_t *pId) {
-    bool bPass;
-    bPass = ADXL345_REG_READ(file, ADXL345_REG_DEVID, pId);
-
-    return bPass;
 }

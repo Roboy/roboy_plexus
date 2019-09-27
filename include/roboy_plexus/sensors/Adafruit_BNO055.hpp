@@ -14,8 +14,8 @@
  ***************************************************************************/
 
 #include <cstdint>
-#include "i2c.hpp"
-#include "roboy_plexus/Adafruit_Sensor.h"
+#include "roboy_plexus/i2c.hpp"
+#include "Adafruit_Sensor.h"
 #include "roboy_plexus/utility/imumaths.h"
 #include <chrono>
 

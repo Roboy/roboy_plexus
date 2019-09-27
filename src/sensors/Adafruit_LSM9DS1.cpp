@@ -12,7 +12,7 @@
   Written by Kevin Townsend for Adafruit Industries.  
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
-#include "roboy_plexus/Adafruit_LSM9DS1.hpp"
+#include "roboy_plexus/sensors/Adafruit_LSM9DS1.hpp"
 
 /***************************************************************************
  CONSTRUCTOR

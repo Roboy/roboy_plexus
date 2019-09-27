@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include "roboy_plexus/i2c.hpp"
+#include "interfaces/i2c.hpp"
 #include <iostream>
 #include <ros/ros.h>
 

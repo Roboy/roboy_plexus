@@ -47,9 +47,9 @@
 #include <sstream>
 #include <common_utilities/CommonDefinitions.h>
 #include <common_utilities/MotorConfig.hpp>
-#include <roboy_plexus/timer.hpp>
+#include <utility/timer.hpp>
 #include <ros/ros.h>
-#include <roboy_plexus/NeoPixel.hpp>
+#include <interfaces/NeoPixel.hpp>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)

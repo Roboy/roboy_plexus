@@ -30,12 +30,12 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     author: Simon Trendel ( st@gi.ai ), 2019
-    description: Class for configuring and reading 3d magnetic sensor TLE493D
+    description: Class for configuring and reading 3d magnetic sensor TLV493d
 */
 #pragma  once
 
 #include <stdint.h>
-#include "i2c.hpp"
+#include "interfaces/i2c.hpp"
 #include <vector>
 #include <ros/ros.h>
 
@@ -55,14 +55,26 @@ using namespace std;
 
 
 
-class TLE493D{
+class TLV493D{
 public:
-    TLE493D(int32_t *i2c_base);
-    ~TLE493D();
+    TLV493D(int32_t *i2c_base);
+    ~TLV493D();
     bool initTLV(uint8_t &deviceaddress, int devicepin);
     void reset();
     float convertToMilliTesla(uint8_t MSB, uint8_t LSB) ;
+    float convertToMilliTesla(uint32_t data) ;
+    void readAllRegisters(int deviceaddress, vector<uint8_t> &reg, bool print=true);
     bool read(float &fx, float &fy, float &fz);
+    void updateData();
+    bool readData100Hz(float &fx, float &fy, float &fz);
+private:
+    /// checks the parity of 32 bit val
+    /// \param val
+    /// \return true if odd, false if even
+    bool checkParity(uint32_t val);
+    vector<uint8_t> deviceAddress;
+    uint8_t gpioreg = 0;
+    uint8_t frameCounter = 0;
 public:
     boost::shared_ptr<I2C> i2c;
     int32_t *i2c_base;

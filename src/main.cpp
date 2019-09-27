@@ -41,9 +41,9 @@
 #include <stdlib.h>
 #include "hwlib.h"
 #include "socal/hps.h"
-#include "roboy_plexus/hps_0.h"
-#include "roboy_plexus/roboyPlexus.hpp"
-#include "roboy_plexus/NeoPixel.hpp"
+#include "hps_0.h"
+#include "roboyPlexus.hpp"
+#include "interfaces/NeoPixel.hpp"
 
 using namespace std;
 

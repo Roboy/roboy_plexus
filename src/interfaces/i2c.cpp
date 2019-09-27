@@ -1,4 +1,4 @@
-#include "roboy_plexus/i2c.hpp"
+#include "interfaces/i2c.hpp"
 
 I2C::I2C(void * baseAddr):h2p_lw_i2c_addr(baseAddr) {
 //    vector<uint8_t> activeDevices;

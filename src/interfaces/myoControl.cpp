@@ -1,4 +1,4 @@
-#include "roboy_plexus/myoControl.hpp"
+#include "interfaces/myoControl.hpp"
 
 MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
                         : adc_base(adc_base), neopixel(neopixel) {

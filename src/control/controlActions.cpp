@@ -1,4 +1,4 @@
-#include "roboy_plexus/controlActions.hpp"
+#include "control/controlActions.hpp"
 
 PerformMovementAction::PerformMovementAction(boost::shared_ptr<MyoControl> myoControl_, string name) :
         myoControl(myoControl_),

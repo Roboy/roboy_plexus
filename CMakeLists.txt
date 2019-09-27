@@ -28,7 +28,6 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
-            roboy_soli
             )
     include(findros)
     # Eigen
@@ -52,9 +51,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     MESSAGE(STATUS "fpga include dir: $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}")
 
     include_directories(
-            include/
-#            ../roboy_soli/include/roboy_soli
-#            ../roboy_soli/infineon/Communication\ Library/host_c/include
+            include/roboy_plexus
             ${catkin_INCLUDE_DIRS}
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
             $ENV{SOCEDS_DEST_ROOT}/ip/altera/hps/altera_hps/hwlib/include
@@ -65,32 +62,26 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     add_executable( roboy_plexus
             src/main.cpp
-            src/myoControl.cpp
-            src/i2c.cpp
+            src/interfaces/myoControl.cpp
+            src/interfaces/i2c.cpp
             src/roboyPlexus.cpp
-            src/am4096.cpp
-            src/CRC32.cpp
-            src/A1335.cpp
-            src/tlv493d.cpp
-            src/controlActions.cpp
-            src/tle493d_w2b6.cpp
-            src/UDPSocket.cpp
+            src/sensors/A1335.cpp
+            src/control/controlActions.cpp
+            src/sensors/tle493d_w2b6.cpp
+            src/utility/UDPSocket.cpp
             ../common_utilities/src/MotorConfig.cpp
-            include/roboy_plexus/myoControl.hpp
-            include/roboy_plexus/i2c.hpp
+            include/roboy_plexus/interfaces/myoControl.hpp
+            include/roboy_plexus/interfaces/i2c.hpp
             include/roboy_plexus/roboyPlexus.hpp
-            include/roboy_plexus/am4096.hpp
-            include/roboy_plexus/CRC32.h
-            include/roboy_plexus/A1335.hpp
-            include/roboy_plexus/controlActions.hpp
-            include/roboy_plexus/tle493d_w2b6.hpp
+            include/roboy_plexus/sensors/A1335.hpp
+            include/roboy_plexus/control/controlActions.hpp
+            include/roboy_plexus/sensors/tle493d_w2b6.hpp
             ../common_utilities/include/common_utilities/MotorConfig.hpp
-#            ../roboy_soli/src/roboySoli.cpp
             )
-    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_soli_gencpp)
+    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES} )
 
-    add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
+    add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
     #==============================================================================

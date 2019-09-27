@@ -1,4 +1,4 @@
-#include "roboy_plexus/tle493d_w2b6.hpp"
+#include "sensors/tle493d_w2b6.hpp"
 
 TLE493D::TLE493D(int32_t *i2c_base):i2c_base(i2c_base){
     i2c = boost::shared_ptr<I2C>(new I2C(i2c_base));

@@ -37,17 +37,11 @@
 
 #include <ros/ros.h>
 #include <vector>
-#include <roboy_plexus/myoControl.hpp>
-#include "roboy_plexus/controlActions.hpp"
-#include <roboy_plexus/am4096.hpp>
-#include <roboy_plexus/Adafruit_LSM9DS1.hpp>
-#include <roboy_soli/roboySoli.hpp>
-#include <roboy_plexus/A1335.hpp>
+#include "interfaces/myoControl.hpp"
+#include "control/controlActions.hpp"
+#include "sensors/A1335.hpp"
 #include <roboy_middleware_msgs/ADCvalue.h>
 #include <roboy_middleware_msgs/ControlMode.h>
-#include <roboy_middleware_msgs/DarkRoom.h>
-#include <roboy_middleware_msgs/DarkRoomOOTX.h>
-#include <roboy_middleware_msgs/DarkRoomStatus.h>
 #include <roboy_middleware_msgs/MagneticSensor.h>
 #include <roboy_middleware_msgs/MotorAngle.h>
 #include <roboy_middleware_msgs/MotorCalibrationService.h>
@@ -72,15 +66,14 @@
 #include <map>
 #include <chrono>
 #include <algorithm>
-#include <roboy_plexus/ADXL345.h>
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include "hwlib.h"
-#include "roboy_plexus/half.hpp"
-#include "roboy_plexus/CRC32.h"
+#include "utility/half.hpp"
+#include "utility/CRC32.h"
 #include <bitset>
-#include "roboy_plexus/tlv493d.hpp"
-#include "roboy_plexus/tle493d_w2b6.hpp"
+#include "sensors/tlv493d.hpp"
+#include "sensors/tle493d_w2b6.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -112,11 +105,6 @@ public:
 
 private:
     /**
-     * Publishes ADC values
-     */
-    void AdcPublisher();
-
-    /**
      * Service for changing the control mode of motors, perviously set PID parameters are restored
      * @param req control mode
      * @param res
@@ -124,16 +112,6 @@ private:
      */
     bool ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
                             roboy_middleware_msgs::ControlMode::Response &res);
-
-    /**
-     * Publishes lighthouse sensor values
-     */
-    void DarkRoomPublisher();
-
-    /**
-     * Publishes decoded lighthouse ootx data
-     */
-    void DarkRoomOOTXPublisher();
 
     /**
      * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
@@ -164,10 +142,6 @@ private:
     bool ExecuteActions(vector<string> actions);
 
     vector<string> ExpandBehavior(string name);
-    /**
-     * Publishes IMU data
-     */
-    void GsensorPublisher();
 
     /**
      * Service return a list of files in the requested folder
@@ -275,46 +249,6 @@ private:
     void testBenchPublisher();
 
 private:
-    /**
-     * Reverses the bit order of a byte, eg. 0b00001011 -> 0b11010000
-     * @param b input byte
-     * @return reversed byte
-     */
-    inline uint8_t rev(uint8_t b) {
-        b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-        b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-        b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-        return b;
-    }
-
-    /**
-     * Reverses the bit order of each byte in a 4 byte uint32_t
-     * @param b input
-     * @return reversed uint32_t
-     */
-    inline uint32_t reverse(uint32_t b) {
-        uint32_t a = (uint32_t) ((uint8_t) rev((uint8_t) (b >> 24 & 0xff)) << 24 |
-                                 (uint8_t) rev((uint8_t) (b >> 16 & 0xff)) << 16 |
-                                 (uint8_t) rev((uint8_t) (b >> 8 & 0xff)) << 8 |
-                                 (uint8_t) rev((uint8_t) (b & 0xff)));
-        return a;
-    }
-
-    // helper functions for reading the IMU
-    bool ADXL345_REG_WRITE(int file, uint8_t address, uint8_t value);
-
-    bool ADXL345_REG_READ(int file, uint8_t address, uint8_t *value);
-
-    bool ADXL345_REG_MULTI_READ(int file, uint8_t readaddr, uint8_t readdata[], uint8_t len);
-
-    bool ADXL345_Init(int file);
-
-    bool ADXL345_IsDataReady(int file);
-
-    bool ADXL345_XYZ_Read(int file, uint16_t szData16[3]);
-
-    bool ADXL345_IdRead(int file, uint8_t *pId);
-
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
@@ -322,60 +256,25 @@ private:
     ros::Publisher motorState, motorInfo, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
             motorAngle, magneticSensor, testbench;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
-            replayTrajectory_srv, executeActions_srv, executeBehavior_srv, handPower_srv,
-            setDisplacementForAll_srv, listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv,
-            soliGetData_srv, soli_srv, soliGetFrameFormat_srv, soliSetFrameFormat_srv, soliGetAdcSamplerate_srv,
-            soliSetAdcSamplerate_srv, soliGetChirpDuration_srv, soliSetFMCWConfiguration_srv, soliGetFMCWConfiguration_srv,
-            soliGetFrameInfo_srv, myobrick_calibration_srv;
+            replayTrajectory_srv, executeActions_srv, executeBehavior_srv, setDisplacementForAll_srv,
+            listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
     map<int, int> setPoint_backup;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
-    map<int, int> rotationCounter;
-    map<int, float> motorAngles;
     boost::shared_ptr<MyoControl> myoControl;
     boost::shared_ptr<A1335> a1335;
-//    ArmControlPtr armControl;
     boost::shared_ptr<std::thread> adcThread, darkRoomThread, darkRoomOOTXThread, motorStateThread, motorInfoThread,
-            gsensor_thread, jointAngleThread, magneticsThread, testbenchThread;
+            jointAngleThread, magneticsThread, testbenchThread;
     bool keep_publishing = true;
-    int32_t *darkroom_base, *adc_base, *switches_base;
-    vector<int32_t *> myo_base, i2c_base, darkroom_ootx_addr;
+    int32_t *adc_base, *switches_base;
+    vector<int32_t *> i2c_base;
     bool emergency_stop = false;
     int file;
     const char *filename = "/dev/i2c-0";
     uint8_t id = 0;
-    bool bSuccess;
     const int mg_per_digi = 4;
     uint16_t szXYZ[3];
     int cnt = 0, max_cnt = 0;
-
-    union {
-        uint8_t data[33];
-        struct {
-            uint16_t fw_version;        // 0x00
-            uint32_t ID;                // 0x02
-            uint16_t fcal_0_phase;      // 0x06
-            uint16_t fcal_1_phase;      // 0x08
-            uint16_t fcal_0_tilt;       // 0x0A
-            uint16_t fcal_1_tilt;       // 0x0C
-            uint8_t unlock_count;       // 0x0E
-            uint8_t hw_version;         // 0x0F
-            uint16_t fcal_0_curve;      // 0x10
-            uint16_t fcal_1_curve;      // 0x12
-            int8_t accel_dir_x;         // 0x14
-            int8_t accel_dir_y;         // 0x15
-            int8_t accel_dir_z;         // 0x16
-            uint16_t fcal_0_gibphase;   // 0x17
-            uint16_t fcal_1_gibphase;   // 0x19
-            uint16_t fcal_0_gibmag;     // 0x1B
-            uint16_t fcal_1_gibmag;     // 0x1D
-            uint8_t mode;               // 0x1F
-            uint8_t faults;             // 0x20
-        } frame;
-    } ootx;
-
-    uint32_t ootx_sensor_channel = 0;
-
     string ethaddr;
 
     int active_magnetic_sensors = 0;

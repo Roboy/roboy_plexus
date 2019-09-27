@@ -5,7 +5,7 @@
 #include <roboy_control_msgs/PerformMovementAction.h>
 #include <roboy_control_msgs/PerformMovementsAction.h>
 #include <actionlib_tutorials/FibonacciAction.h>
-#include <roboy_plexus/myoControl.hpp>
+#include <interfaces/myoControl.hpp>
 
 using namespace std;
 

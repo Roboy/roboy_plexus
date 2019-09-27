@@ -15,7 +15,6 @@
   <depend>roboy_middleware_msgs</depend>
   <depend>roboy_control_msgs</depend>
   <depend>common_utilities</depend>
-  <depend>roboy_soli</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
