@@ -108,7 +108,7 @@
 #define MYO_WRITE_outputDivider(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
-#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 2000 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
+#define MOTOR_BOARD_COMMUNICATION_FREQUENCY 100 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
 
 using namespace std;
 using namespace std::chrono;

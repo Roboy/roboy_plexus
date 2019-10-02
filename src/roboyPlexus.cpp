@@ -113,17 +113,17 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
                                              this);
 
     adc_pub = nh->advertise<roboy_middleware_msgs::ADCvalue>("/roboy/middleware/LoadCells", 1);
-    testbench_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
-
-    if (adc_base != nullptr) {
-        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
-        adcThread->detach();
-
-        vector<uint8_t> deviceIds = {0xC};
-        a1335.reset(new A1335(i2c_base[3], deviceIds));
-        testbenchThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::testBenchPublisher, this));
-        testbenchThread->detach();
-    }
+//    testbench_pub = nh->advertise<std_msgs::Float32>("/roboy/middleware/TestRigPosition", 1);
+//
+//    if (adc_base != nullptr) {
+//        adcThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::adcPublisher, this));
+//        adcThread->detach();
+//
+//        vector<uint8_t> deviceIds = {0xC};
+//        a1335.reset(new A1335(i2c_base[3], deviceIds));
+//        testbenchThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::testBenchPublisher, this));
+//        testbenchThread->detach();
+//    }
 
     setDisplacementForAll_srv = nh->advertiseService("/roboy/" + body_part + "/middleware/SetDisplacementForAll",
                                                      &RoboyPlexus::SetDisplacementForAll, this);
@@ -159,20 +159,20 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         motorAngleThread->detach();
     }
 
-    vector<int> active_i2c_bus;
-    for (int i = 0; i < i2c_base.size(); i++) {
-        if (i2c_base[i] != nullptr) {
-            tle.push_back(boost::shared_ptr<TLE493D>(new TLE493D(i2c_base[i])));
-            active_magnetic_sensors++;
-        }
-    }
-    if (active_magnetic_sensors > 0) {
-        magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
-        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticJointPublisher, this));
-        magneticsThread->detach();
-    } else {
-        ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
-    }
+//    vector<int> active_i2c_bus;
+//    for (int i = 0; i < i2c_base.size(); i++) {
+//        if (i2c_base[i] != nullptr) {
+//            tle.push_back(boost::shared_ptr<TLE493D>(new TLE493D(i2c_base[i])));
+//            active_magnetic_sensors++;
+//        }
+//    }
+//    if (active_magnetic_sensors > 0) {
+//        magneticSensor_pub = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
+//        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::magneticJointPublisher, this));
+//        magneticsThread->detach();
+//    } else {
+//        ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
+//    }
 
 //    // open i2c bus for gsensor
 //    if ((file = open(filename, O_RDWR)) < 0) {
@@ -554,10 +554,14 @@ void RoboyPlexus::motorCommandCB(const roboy_middleware_msgs::MotorCommand::Cons
                     myoControl->setDisplacement(motor, msg->set_points[i]);
                     break;
                 case DIRECT_PWM:
-                    if(fabsf(msg->set_points[i])>400) {
-                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values, "
-                                          "what the heck are you publishing?!");
-                        break;
+                    bool direct_pwm_override;
+                    nh->getParam("direct_pwm_override", direct_pwm_override);
+                    if(!direct_pwm_override) {
+                        if (fabsf(msg->set_points[i]) > 400) {
+                            ROS_WARN_THROTTLE(1, "setpoints exceeding sane direct pwm values, "
+                                                 "what the heck are you publishing?!");
+                            break;
+                        }
                     }
                     myoControl->setPWM(motor, msg->set_points[i]);
                     break;
