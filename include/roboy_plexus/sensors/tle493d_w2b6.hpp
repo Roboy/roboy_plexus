@@ -41,7 +41,7 @@
 
 using namespace std;
 
-#define bitRead(byte,pos) ((byte) & (1<<(pos)))
+#define bitRead(byte, pos) ((byte) & (1<<(pos)))
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   (byte & 0x80 ? '1' : '0'), \
@@ -54,16 +54,23 @@ using namespace std;
   (byte & 0x01 ? '1' : '0')
 
 
-
-class TLE493D{
+class TLE493D {
 public:
     TLE493D(int32_t *i2c_base);
+
     ~TLE493D();
+
     bool initTLV(uint8_t &deviceaddress, int devicepin);
+
     void reset();
-    float convertToMilliTesla(uint8_t MSB, uint8_t LSB) ;
+
+    float convertToMilliTesla(uint8_t MSB, uint8_t LSB);
+
     bool read(float &fx, float &fy, float &fz);
+
 public:
     boost::shared_ptr<I2C> i2c;
     int32_t *i2c_base;
 };
+
+typedef boost::shared_ptr<TLE493D> TLE493DPtr;

@@ -1,7 +1,7 @@
 #include "control/controlActions.hpp"
 
-PerformMovementAction::PerformMovementAction(boost::shared_ptr<MyoControl> myoControl_, string name) :
-        myoControl(myoControl_),
+PerformMovementAction::PerformMovementAction(IcebusControlPtr icebusControl, string name) :
+        icebusControl(icebusControl),
         performMovement_as(nh_, action_name, boost::bind(&PerformMovementAction::executeCB, this, _1), false),
         action_name(name)
 {
@@ -11,15 +11,15 @@ PerformMovementAction::PerformMovementAction(boost::shared_ptr<MyoControl> myoCo
 
 
 void PerformMovementAction::executeCB(const roboy_control_msgs::PerformMovementGoalConstPtr &goal) {
-    string file = myoControl->trajectories_folder + goal->action;
+    string file = icebusControl->trajectories_folder + goal->action;
     const char *fileName = file.c_str();
-    result.success = myoControl->PlayTrajectory(fileName);
+    result.success = icebusControl->PlayTrajectory(fileName);
     performMovement_as.setSucceeded(result);
 
 };
 
-PerformMovementsAction::PerformMovementsAction(boost::shared_ptr<MyoControl> myoControl_, string name) :
-        myoControl(myoControl_),
+PerformMovementsAction::PerformMovementsAction(IcebusControlPtr icebusControl, string name) :
+        icebusControl(icebusControl),
         performMovements_as(nh_, action_name, boost::bind(&PerformMovementsAction::executeCB, this, _1), false),
         action_name(name)
 {
@@ -38,12 +38,12 @@ void PerformMovementsAction::executeCB(const roboy_control_msgs::PerformMovement
             success = true && success;
         }
         else if (actionName.find("relax") != std::string::npos) {
-            myoControl->SetAllToDisplacement(0);
+            icebusControl->SetAllToDisplacement(0);
             success = true && success;
         }
         else {
-            actionName = myoControl->trajectories_folder + actionName;
-            success = myoControl->PlayTrajectory(actionName.c_str()) && success;
+            actionName = icebusControl->trajectories_folder + actionName;
+            success = icebusControl->PlayTrajectory(actionName.c_str()) && success;
         }
     }
 

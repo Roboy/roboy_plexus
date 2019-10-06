@@ -1,9 +1,11 @@
 number_of_icebuses: 1
 icebus_0:
-  number_of_motors: 8
-  motor_ids: [0,1,2,3,4,5,6,7]
-  motor_ids_global: [0,1,2,3,4,5,6,7]
-  muscle_type: ["myoMuscle","myoBrick100","myoMuscle","myoBrick100","myoMuscle","myoBrick300","myoMuscle","unknown"]
+  number_of_motors: 12
+  motor_ids: [0,1,2,3,4,5,6,7,8,9,10,11]
+  motor_ids_global: [0,1,2,3,4,5,6,7,8,9,10,11]
+  muscle_type: ["myoMuscle","myoBrick100","myoMuscle","myoBrick100","myoMuscle",
+                "myoBrick300","myoMuscle","unknown","myoMuscle","unknown",
+                "myoMuscle","unknown"]
   coeffs_force2displacement:
     - [0, 0, 0]
     - [0, 0, 0]
@@ -13,7 +15,15 @@ icebus_0:
     - [0, 0, 0]
     - [0, 0, 0]
     - [0, 0, 0]
+    - [0, 0, 0]
+    - [0, 0, 0]
+    - [0, 0, 0]
+    - [0, 0, 0]
   coeffs_displacement2force:
+    - [0, 0, 0]
+    - [0, 0, 0]
+    - [0, 0, 0]
+    - [0, 0, 0]
     - [0, 0, 0]
     - [0, 0, 0]
     - [0, 0, 0]

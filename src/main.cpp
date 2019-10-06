@@ -59,13 +59,12 @@ int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_neopixel_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
-int32_t *h2p_lw_darkroom_addr;
 int32_t *h2p_lw_a1339_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
-vector<int32_t*> h2p_lw_myo_addr;
+vector<int32_t*> h2p_lw_icebus_addr;
 vector<int32_t*> h2p_lw_i2c_addr;
 
-MyoControlPtr myoControl;
+IcebusControlPtr icebusControl;
 NeoPixelPtr neoPixel;
 
 void SigintHandler(int sig)
@@ -178,67 +177,12 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_switches_addr = nullptr;
 #endif
-#ifdef A1339_0_BASE
-    h2p_lw_a1339_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + A1339_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-#else
-    h2p_lw_a1339_addr = nullptr;
-#endif
 #ifdef ICEBOARDCONTROL_0_BASE
-    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-//    h2p_lw_myo_addr.push_back(nullptr);
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
-//    while(true){
-//        printf(
-//                "control_mode  %d\n"
-//                "sp            %d\n"
-//               "encoder0_pos  %d\n"
-//               "encoder1_pos  %d\n"
-//               "encoder0_vel  %d\n"
-//               "encoder1_vel  %d\n"
-//               "current_phase1 %d\n"
-//               "current_phase2 %d\n"
-//               "current_phase3 %d\n"
-//               "Kp            %d\n"
-//               "Ki            %d\n"
-//               "Kd            %d\n"
-//               "PWMLimit      %d\n"
-//               "IntegralLimit %d\n"
-//               "deadband      %d\n"
-//
-//               "suf           %d\n"
-//               "error_code    %x\n"
-//               "crc           %x\n"
-//               "com quality   %d\n"
-//               "-------------------------------------------------\n",
-//                MYO_READ_control_mode(h2p_lw_myo_addr[0],0),
-//                MYO_READ_sp(h2p_lw_myo_addr[0],0),
-//
-//               MYO_READ_encoder0_position(h2p_lw_myo_addr[0],0),
-//               MYO_READ_encoder1_position(h2p_lw_myo_addr[0],0),
-//               MYO_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
-//               MYO_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
-//                MYO_READ_current_phase1(h2p_lw_myo_addr[0],0),
-//                MYO_READ_current_phase2(h2p_lw_myo_addr[0],0),
-//                MYO_READ_current_phase3(h2p_lw_myo_addr[0],0),
-//                MYO_READ_Kp(h2p_lw_myo_addr[0],0),
-//                MYO_READ_Ki(h2p_lw_myo_addr[0],0),
-//                MYO_READ_Kd(h2p_lw_myo_addr[0],0),
-//               MYO_READ_PWMLimit(h2p_lw_myo_addr[0],0),
-//               MYO_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
-//               MYO_READ_deadband(h2p_lw_myo_addr[0],0),
-//               MYO_READ_update_frequency_Hz(h2p_lw_myo_addr[0]),
-//               MYO_READ_error_code(h2p_lw_myo_addr[0],0),
-//               MYO_READ_crc_checksum(h2p_lw_myo_addr[0],0),
-//                MYO_READ_communication_quality(h2p_lw_myo_addr[0],0)
-//               );
-//        usleep(100000);
-//    }
-
-    myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
-    RoboyPlexus roboyPlexus(myoControl, h2p_lw_i2c_addr, h2p_lw_darkroom_addr,
-                            h2p_lw_darkroom_ootx_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+    icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
+    RoboyPlexus roboyPlexus(icebusControl, h2p_lw_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
 //    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 //    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 //

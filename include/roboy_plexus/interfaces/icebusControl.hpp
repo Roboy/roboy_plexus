@@ -55,34 +55,34 @@
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
 // the upper 8 bit define which register, the lower 8 bit define which motor
-#define MYO_READ_Kp(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
-#define MYO_READ_Ki(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
-#define MYO_READ_Kd(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
-#define MYO_READ_encoder0_position(base, motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
-#define MYO_READ_encoder1_position(base, motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
-#define MYO_READ_PWMLimit(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
-#define MYO_READ_IntegralLimit(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
-#define MYO_READ_deadband(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
-#define MYO_READ_control_mode(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
-#define MYO_READ_sp(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
-#define MYO_READ_error_code(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
-#define MYO_READ_update_frequency_Hz(base) IORD(base, (uint32_t)(0x11<<8|0) )
-#define MYO_READ_crc_checksum(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
-#define MYO_READ_communication_quality(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
-#define MYO_READ_pwm(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
-#define MYO_READ_displacement(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
-#define MYO_READ_gearBoxRatio(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_Kp(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_Ki(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_Kd(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_encoder0_position(base, motor) IORD(base, (uint32_t)(0x04<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_encoder1_position(base, motor) IORD(base, (uint32_t)(0x05<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_PWMLimit(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_IntegralLimit(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_deadband(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_control_mode(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_sp(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_error_code(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_update_frequency_Hz(base) IORD(base, (uint32_t)(0x11<<8|0) )
+#define ICEBUS_CONTROL_READ_crc_checksum(base, motor) IORD(base, (uint32_t)(0x15<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_communication_quality(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_pwm(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_displacement(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_gearBoxRatio(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 
-#define MYO_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
-#define MYO_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
-#define MYO_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
-#define MYO_WRITE_PWMLimit(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
-#define MYO_WRITE_IntegralLimit(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
-#define MYO_WRITE_deadband(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
-#define MYO_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0B<<8|motor&0xff), data )
-#define MYO_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
-#define MYO_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
-#define MYO_WRITE_gearBoxRatio(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_PWMLimit(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_IntegralLimit(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_deadband(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0B<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
+#define ICEBUS_CONTROL_WRITE_gearBoxRatio(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define NUM_SENSORS 0
@@ -94,7 +94,7 @@
 using namespace std;
 using namespace std::chrono;
 
-class MyoControl {
+class IcebusControl {
 public:
     /**
      * Constructor
@@ -102,9 +102,9 @@ public:
      * @param adc_base adc base address (cf hps_0.h) [OPTIONAL]
      * @param neopixel neopixel base address (cf hps_0.h) [OPTIONAL]
      */
-    MyoControl(string motor_config_filepath, vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
+    IcebusControl(string motor_config_filepath, vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
 
-    ~MyoControl();
+    ~IcebusControl();
 
     /**
 	 * Changes the controller of a motor
@@ -188,19 +188,11 @@ public:
     void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
 
-
     /**
      * Gets the current control_mode of a motor
      * @param motor for this motor
      */
     uint16_t GetControlMode(int motor);
-
-    /**
-     * Fills the given params with default values for the corresponding control mode
-     * @param params pointer to control struct
-     * @param control_mode Position, Velocity, Force
-     */
-    void GetDefaultControlParams(control_Parameters_t *params, int control_mode);
 
     /**
      * Get the displacement of a muscle
@@ -386,7 +378,7 @@ public:
     MotorConfigPtr motor_config;
 private:
     Timer timer;
-    vector<int32_t *> myo_base;
+    vector<int32_t *> icebus_base;
     int iter = 0;
     bool recording = false; // keeps track of recording status
     bool replay = true;
@@ -394,4 +386,4 @@ private:
     NeoPixelPtr neopixel;
 };
 
-typedef boost::shared_ptr<MyoControl> MyoControlPtr;
+typedef boost::shared_ptr<IcebusControl> IcebusControlPtr;

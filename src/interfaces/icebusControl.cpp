@@ -1,17 +1,17 @@
-#include "interfaces/myoControl.hpp"
+#include "interfaces/icebusControl.hpp"
 
-MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
+IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
                         : adc_base(adc_base), neopixel(neopixel) {
     // initialize control mode
-    ROS_INFO("initializing myoControl for %d icebus with motor config file %s", myo_base.size(), motor_config_filepath.c_str());
+    ROS_INFO("initializing myoControl for %d icebus with motor config file %s", icebus_base.size(), motor_config_filepath.c_str());
 
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
 //    changeControl(VELOCITY);
-    myo_base = mb;
-    for (uint i = 0; i < myo_base.size(); i++) {
-        MYO_WRITE_update_frequency_Hz(myo_base[i], 99);
-        ROS_INFO("icebus %d motor update frequency %d", i, MYO_READ_update_frequency_Hz(myo_base[i]));
+    icebus_base = mb;
+    for (uint i = 0; i < icebus_base.size(); i++) {
+        ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 99);
+        ROS_INFO("icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(icebus_base[i]));
     }
 
     if(adc_base!= nullptr) {
@@ -30,200 +30,168 @@ MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int3
         neopixel->setColorAll(NeoPixelColorRGB::green);
 }
 
-MyoControl::~MyoControl() {
-    ROS_INFO("shutting down myoControl");
+IcebusControl::~IcebusControl() {
+    ROS_INFO("shutting down icebus control");
 }
 
-void MyoControl::ChangeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
+void IcebusControl::ChangeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
     ChangeControl(motor, mode, params);
-    MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, setPoint);
+    ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, setPoint);
 }
 
-void MyoControl::ChangeControl(int motor, int mode, control_Parameters_t &params) {
-    MYO_WRITE_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
-    MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kp);
-    MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kd);
-    MYO_WRITE_Ki(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Ki);
-    MYO_WRITE_deadband(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.deadband);
-    MYO_WRITE_IntegralLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.IntegralLimit);
-    MYO_WRITE_PWMLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.PWMLimit);
+void IcebusControl::ChangeControl(int motor, int mode, control_Parameters_t &params) {
+    ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
+    ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kp);
+    ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kd);
+    ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Ki);
+    ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.deadband);
+    ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.IntegralLimit);
+    ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.PWMLimit);
     if (mode == POSITION) {
-        int32_t current_position = MYO_READ_encoder0_position(myo_base[myo_base_of_motor[motor]],
+        int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
                                                      motor - motor_offset[motor]);
-        MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
+        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
     } else {
-        MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
+        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
     }
 }
 
-void MyoControl::ChangeControl(int motor, int mode) {
-    MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
-    MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
-    MYO_WRITE_Ki(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
-    MYO_WRITE_deadband(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
+void IcebusControl::ChangeControl(int motor, int mode) {
+    ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
+    ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
+    ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
+    ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
                        (control_params[motor][mode].deadband));
-    MYO_WRITE_IntegralLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
+    ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
                              control_params[motor][mode].IntegralLimit);
-    MYO_WRITE_PWMLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
+    ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
                            control_params[motor][mode].PWMLimit);
-    MYO_WRITE_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
+    ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
     if (mode == POSITION) {
-        int32_t current_position = MYO_READ_encoder0_position(myo_base[myo_base_of_motor[motor]],
+        int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
                                                      motor - motor_offset[motor]);
-        MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
+        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
     } else {
-        MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
+        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
     }
 }
 
-void MyoControl::ChangeControl(int mode) {
+void IcebusControl::ChangeControl(int mode) {
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
-        MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
-        MYO_WRITE_Ki(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
-        MYO_WRITE_deadband(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
+        ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
+        ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
+        ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
+        ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
                            (control_params[motor][mode].deadband));
-        MYO_WRITE_IntegralLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
+        ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
                                  control_params[motor][mode].IntegralLimit);
-        MYO_WRITE_PWMLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
+        ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
                                control_params[motor][mode].PWMLimit);
-        MYO_WRITE_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
+        ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
         if (mode == POSITION) {
-            int32_t current_position = MYO_READ_encoder0_position(myo_base[myo_base_of_motor[motor]],
+            int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
                                                          motor - motor_offset[motor]);
-            MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
+            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
         } else {
-            MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
+            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
         }
     }
 }
 
-void MyoControl::ChangeControlParameters(int motor, control_Parameters_t &params) {
+void IcebusControl::ChangeControlParameters(int motor, control_Parameters_t &params) {
     control_params[motor][params.control_mode] = params;
 }
 
-int32_t MyoControl::GetCommunicationQuality(int motor){
-    return MYO_READ_communication_quality(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+int32_t IcebusControl::GetCommunicationQuality(int motor){
+    return ICEBUS_CONTROL_READ_communication_quality(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-void MyoControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
+void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
                             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){
-    Kp = MYO_READ_Kp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    Ki = MYO_READ_Ki(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    Kd = MYO_READ_Kd(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    IntegralLimit = MYO_READ_IntegralLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    deadband = MYO_READ_deadband(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    PWMLimit = MYO_READ_PWMLimit(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    Kp = ICEBUS_CONTROL_READ_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    Ki = ICEBUS_CONTROL_READ_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    Kd = ICEBUS_CONTROL_READ_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    IntegralLimit = ICEBUS_CONTROL_READ_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    deadband = ICEBUS_CONTROL_READ_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    PWMLimit = ICEBUS_CONTROL_READ_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-uint16_t MyoControl::GetControlMode(int motor) {
+uint16_t IcebusControl::GetControlMode(int motor) {
 
-    return MYO_READ_control_mode(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-int16_t MyoControl::GetDisplacement(int motor) {
-    return MYO_READ_displacement(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+int16_t IcebusControl::GetDisplacement(int motor) {
+    return ICEBUS_CONTROL_READ_displacement(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-int32_t MyoControl::GetEncoderPosition(int motor, int encoder) {
+int32_t IcebusControl::GetEncoderPosition(int motor, int encoder) {
     if(encoder==0)
-        return MYO_READ_encoder0_position(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+        return ICEBUS_CONTROL_READ_encoder0_position(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
     else if(encoder==1)
-        return MYO_READ_encoder1_position(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+        return ICEBUS_CONTROL_READ_encoder1_position(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
     else
         return -1;
 }
 
-int32_t MyoControl::GetGearBoxRatio(int motor) {
-    return MYO_READ_gearBoxRatio(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+int32_t IcebusControl::GetGearBoxRatio(int motor) {
+    return ICEBUS_CONTROL_READ_gearBoxRatio(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-int32_t MyoControl::GetSetPoint(int motor){
-    return MYO_READ_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+int32_t IcebusControl::GetSetPoint(int motor){
+    return ICEBUS_CONTROL_READ_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-int32_t MyoControl::GetPWM(int motor){
-    return MYO_READ_pwm(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+int32_t IcebusControl::GetPWM(int motor){
+    return ICEBUS_CONTROL_READ_pwm(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
-void MyoControl::SetGearBoxRatio(int motor, int32_t gearBoxRatio){
-    MYO_WRITE_gearBoxRatio(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, gearBoxRatio);
+void IcebusControl::SetGearBoxRatio(int motor, int32_t gearBoxRatio){
+    ICEBUS_CONTROL_WRITE_gearBoxRatio(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, gearBoxRatio);
 }
 
-void MyoControl::SetPoint(int motor, int32_t setPoint) {
-    MYO_WRITE_sp(myo_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, (int32_t) setPoint);
+void IcebusControl::SetPoint(int motor, int32_t setPoint) {
+    ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, (int32_t) setPoint);
 }
 
-void MyoControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
-    params->PWMLimit = 128;
-
-    switch (control_mode) {
-        case POSITION:
-            params->Kp = 1;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->deadband = 0;
-            params->IntegralLimit = 100;
-            break;
-        case VELOCITY:
-            params->Kp = 1;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->deadband = 0;
-            params->IntegralLimit = 100;
-            break;
-        case DISPLACEMENT:
-            params->Kp = 1;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->deadband = 0;
-            params->IntegralLimit = 100;
-            break;
-        default:
-            ROS_ERROR("unknown control mode");
-            break;
-    }
-
-}
-
-void MyoControl::SetAllToPosition(int32_t pos) {
+void IcebusControl::SetAllToPosition(int32_t pos) {
     ChangeControl(POSITION);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         SetPoint(motor, pos);
     }
 }
 
-void MyoControl::SetAllToVelocity(int32_t vel) {
+void IcebusControl::SetAllToVelocity(int32_t vel) {
     ChangeControl(VELOCITY);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         SetPoint(motor, vel);
     }
 }
 
-void MyoControl::SetAllToDisplacement(int32_t displacement) {
+void IcebusControl::SetAllToDisplacement(int32_t displacement) {
     ChangeControl(DISPLACEMENT);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         SetPoint(motor, displacement);
     }
 }
 
-void MyoControl::SetAllToDirectPWM(int32_t pwm) {
+void IcebusControl::SetAllToDirectPWM(int32_t pwm) {
     ChangeControl(DIRECT_PWM);
     for (uint motor = 0; motor < numberOfMotors; motor++) {
         SetPoint(motor, pwm);
     }
 }
 
-void MyoControl::SetMotorUpdateFrequency(int motor, int32_t freq) {
-    MYO_WRITE_update_frequency_Hz(myo_base[motor_config->motor[motor]->icebus],freq);
+void IcebusControl::SetMotorUpdateFrequency(int motor, int32_t freq) {
+    ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[motor_config->motor[motor]->icebus],freq);
 }
 
-void MyoControl::ZeroWeight(int load_cell) {
+void IcebusControl::ZeroWeight(int load_cell) {
     uint32_t adc_value = 0;
     weight_offset = -GetWeight(load_cell, adc_value);
 }
 
-uint32_t MyoControl::ReadADC(int load_cell = 0) {
+uint32_t IcebusControl::ReadADC(int load_cell = 0) {
     // start measure
     IOWR(adc_base, 0x00, (load_cell << 1) | 0x00);
     IOWR(adc_base, 0x00, (load_cell << 1) | 0x01);
@@ -256,19 +224,19 @@ uint32_t MyoControl::ReadADC(int load_cell = 0) {
     return adc_value;
 }
 
-float MyoControl::GetWeight(int load_cell) {
+float IcebusControl::GetWeight(int load_cell) {
     uint32_t adc_value = ReadADC(load_cell);
     float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value) * 9.81f;
     return weight;
 }
 
-float MyoControl::GetWeight(int load_cell, uint32_t &adc_value) {
+float IcebusControl::GetWeight(int load_cell, uint32_t &adc_value) {
     adc_value = ReadADC(load_cell);
     float weight = (adc_weight_parameters[0] + weight_offset + adc_weight_parameters[1] * adc_value) * 9.81f;
     return weight;
 }
 
-float MyoControl::RecordTrajectories(
+float IcebusControl::RecordTrajectories(
         float samplingTime, float recordTime,
         map<int, vector<float>> &trajectories, vector<int> &idList,
         vector<int> &controlmode, string name) {
@@ -349,7 +317,7 @@ float MyoControl::RecordTrajectories(
     return elapsedTime / (double) sample * 1000.0f;
 }
 
-float MyoControl::StartRecordTrajectories(
+float IcebusControl::StartRecordTrajectories(
         float samplingTime, map<int, vector<float>> &trajectories,
         vector<int> &idList, string name) {
     string filepath = trajectories_folder + name;
@@ -429,12 +397,12 @@ float MyoControl::StartRecordTrajectories(
     return elapsedTime / (double) sample * 1000.0f;
 }
 
-void MyoControl::StopRecordTrajectories() {
+void IcebusControl::StopRecordTrajectories() {
     recording = false;
     ROS_INFO("Stopped recording a trajectory");
 }
 
-void MyoControl::SetReplay(bool status) {
+void IcebusControl::SetReplay(bool status) {
     replay = status;
     if (replay) {
         ROS_INFO("Replaying trajectories enabled");
@@ -443,7 +411,7 @@ void MyoControl::SetReplay(bool status) {
     }
 }
 
-void MyoControl::PrintStatus(int motor_id_global){
+void IcebusControl::PrintStatus(int motor_id_global){
 //        printf(
 //                "control_mode  %d\n"
 //                "sp            %d\n"
@@ -466,31 +434,31 @@ void MyoControl::PrintStatus(int motor_id_global){
 //               "crc           %x\n"
 //               "com quality   %d\n"
 //               "-------------------------------------------------\n",
-//                MYO_READ_control_mode(h2p_lw_myo_addr[0],0),
-//                MYO_READ_sp(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_control_mode(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_sp(h2p_lw_myo_addr[0],0),
 //
-//               MYO_READ_encoder0_position(h2p_lw_myo_addr[0],0),
-//               MYO_READ_encoder1_position(h2p_lw_myo_addr[0],0),
-//               MYO_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
-//               MYO_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
-//                MYO_READ_current_phase1(h2p_lw_myo_addr[0],0),
-//                MYO_READ_current_phase2(h2p_lw_myo_addr[0],0),
-//                MYO_READ_current_phase3(h2p_lw_myo_addr[0],0),
-//                MYO_READ_Kp(h2p_lw_myo_addr[0],0),
-//                MYO_READ_Ki(h2p_lw_myo_addr[0],0),
-//                MYO_READ_Kd(h2p_lw_myo_addr[0],0),
-//               MYO_READ_PWMLimit(h2p_lw_myo_addr[0],0),
-//               MYO_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
-//               MYO_READ_deadband(h2p_lw_myo_addr[0],0),
-//               MYO_READ_update_frequency_Hz(h2p_lw_myo_addr[0]),
-//               MYO_READ_error_code(h2p_lw_myo_addr[0],0),
-//               MYO_READ_crc_checksum(h2p_lw_myo_addr[0],0),
-//                MYO_READ_communication_quality(h2p_lw_myo_addr[0],0)
+//               ICEBUS_CONTROL_READ_encoder0_position(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_encoder1_position(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_current_phase1(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_current_phase2(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_current_phase3(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_Kp(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_Ki(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_Kd(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_PWMLimit(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_deadband(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_update_frequency_Hz(h2p_lw_myo_addr[0]),
+//               ICEBUS_CONTROL_READ_error_code(h2p_lw_myo_addr[0],0),
+//               ICEBUS_CONTROL_READ_crc_checksum(h2p_lw_myo_addr[0],0),
+//                ICEBUS_CONTROL_READ_communication_quality(h2p_lw_myo_addr[0],0)
 //               );
 //        usleep(100000);
 }
 
-bool MyoControl::PlayTrajectory(const char *file) {
+bool IcebusControl::PlayTrajectory(const char *file) {
 
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
@@ -561,12 +529,12 @@ bool MyoControl::PlayTrajectory(const char *file) {
     return true;
 }
 
-void MyoControl::SetPredisplacement(int value) {
+void IcebusControl::SetPredisplacement(int value) {
     predisplacement = value;
     ROS_INFO_STREAM("Now recording with displacement" + predisplacement);
 }
 
-void MyoControl::EstimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+void IcebusControl::EstimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                           uint numberOfDataPoints, float displacement_min,
                                           float displacement_max, vector<double> &load, vector<double> &displacement) {
     SetPoint(motor, 0);
@@ -610,7 +578,7 @@ void MyoControl::EstimateSpringParameters(int motor, int degree, vector<float> &
     outfile.close();
 }
 
-void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
+void IcebusControl::EstimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
                                                            uint numberOfDataPoints, float delta_revolution_negative,
                                                            float delta_revolution_positive, vector<double> &motor_angle,
                                                            vector<double> &motor_encoder) {
@@ -697,7 +665,7 @@ void MyoControl::EstimateMotorAngleLinearisationParameters(int motor, int degree
 //    outfile.close();
 }
 
-void MyoControl::PolynomialRegression(int degree, vector<double> &x, vector<double> &y,
+void IcebusControl::PolynomialRegression(int degree, vector<double> &x, vector<double> &y,
                                       vector<float> &coeffs) {
     int N = x.size(), i, j, k;
     double X[2 * degree +

@@ -5,35 +5,35 @@
 #include <roboy_control_msgs/PerformMovementAction.h>
 #include <roboy_control_msgs/PerformMovementsAction.h>
 #include <actionlib_tutorials/FibonacciAction.h>
-#include <interfaces/myoControl.hpp>
+#include <interfaces/icebusControl.hpp>
 
 using namespace std;
 
 class PerformMovementAction {
 protected:
     ros::NodeHandle nh_;
-    boost::shared_ptr<MyoControl> myoControl;
+    IcebusControlPtr icebusControl;
     string action_name;
     actionlib::SimpleActionServer<roboy_control_msgs::PerformMovementAction> performMovement_as;
     roboy_control_msgs::PerformMovementFeedback feedback;
     roboy_control_msgs::PerformMovementResult result;
 
 public:
-    PerformMovementAction(boost::shared_ptr<MyoControl> myoControl, string name);
+    PerformMovementAction(IcebusControlPtr icebusControl, string name);
     void executeCB(const roboy_control_msgs::PerformMovementGoalConstPtr &goal);
 };
 
 class PerformMovementsAction {
 protected:
     ros::NodeHandle nh_;
-    boost::shared_ptr<MyoControl> myoControl;
+    IcebusControlPtr icebusControl;
     string action_name;
     actionlib::SimpleActionServer<roboy_control_msgs::PerformMovementsAction> performMovements_as;
     roboy_control_msgs::PerformMovementsFeedback feedback;
     roboy_control_msgs::PerformMovementsResult result;
 
 public:
-    PerformMovementsAction(boost::shared_ptr<MyoControl> myoControl, string name);
+    PerformMovementsAction(IcebusControlPtr icebusControl, string name);
     void executeCB(const roboy_control_msgs::PerformMovementsGoalConstPtr &goal);
 };
 
