@@ -43,10 +43,12 @@ MyoControl::MyoControl(vector<int32_t *> &myo_base, int32_t *adc_base, NeoPixelP
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
         MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
-        usleep(10000);
-        ROS_INFO("bus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
     }
     reset();
+    usleep(1000000);
+    for (uint i = 0; i < myo_base.size(); i++) {
+        ROS_INFO("bus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
+    }
 
     if(adc_base!= nullptr) {
         // set measure number for ADC convert
