@@ -2,12 +2,9 @@
 
 IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
                         : adc_base(adc_base), neopixel(neopixel) {
-    // initialize control mode
-    ROS_INFO("initializing myoControl for %d icebus with motor config file %s", icebus_base.size(), motor_config_filepath.c_str());
-
+    ROS_INFO("initializing myoControl for %d icebus with motor config file %s", mb.size(), motor_config_filepath.c_str());
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
-//    changeControl(VELOCITY);
     icebus_base = mb;
     for (uint i = 0; i < icebus_base.size(); i++) {
         ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 99);

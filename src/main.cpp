@@ -180,21 +180,36 @@ int main(int argc, char *argv[]) {
 #ifdef ICEBOARDCONTROL_0_BASE
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
+#ifdef ICEBOARDCONTROL_1_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBOARDCONTROL_2_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBOARDCONTROL_3_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBOARDCONTROL_4_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBOARDCONTROL_5_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
 
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
     RoboyPlexus roboyPlexus(icebusControl, h2p_lw_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
-//    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
-//    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
-//
-    signal(SIGINT, SigintHandler);
+////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
+////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
+////
+//    signal(SIGINT, SigintHandler);
 //
 
 
     ros::Rate rate(30);
     if(h2p_lw_neopixel_addr!=nullptr){
-//        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
+        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
         while(ros::ok()){
-//            neoPixel->runPattern(pattern,rate);
+            neoPixel->runPattern(pattern,rate);
             rate.sleep();
         }
     }else{

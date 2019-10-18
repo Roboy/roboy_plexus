@@ -20,15 +20,26 @@
  */
 
 /*
+ * Macros for device 'neopixel_0', class 'neopixel'
+ * The macros are prefixed with 'NEOPIXEL_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define NEOPIXEL_0_COMPONENT_TYPE neopixel
+#define NEOPIXEL_0_COMPONENT_NAME neopixel_0
+#define NEOPIXEL_0_BASE 0x0
+#define NEOPIXEL_0_SPAN 1024
+#define NEOPIXEL_0_END 0x3ff
+
+/*
  * Macros for device 'LED', class 'altera_avalon_pio'
  * The macros are prefixed with 'LED_'.
  * The prefix is the slave descriptor.
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x410
+#define LED_BASE 0x400
 #define LED_SPAN 16
-#define LED_END 0x41f
+#define LED_END 0x40f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -54,7 +65,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1568919043
+#define SYSID_QSYS_TIMESTAMP 1571418150
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -73,15 +84,70 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
+ * Macros for device 'ICEboardControl_5', class 'ICEboardControl'
+ * The macros are prefixed with 'ICEBOARDCONTROL_5_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBOARDCONTROL_5_COMPONENT_TYPE ICEboardControl
+#define ICEBOARDCONTROL_5_COMPONENT_NAME ICEboardControl_5
+#define ICEBOARDCONTROL_5_BASE 0x40000
+#define ICEBOARDCONTROL_5_SPAN 262144
+#define ICEBOARDCONTROL_5_END 0x7ffff
+
+/*
+ * Macros for device 'ICEboardControl_4', class 'ICEboardControl'
+ * The macros are prefixed with 'ICEBOARDCONTROL_4_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBOARDCONTROL_4_COMPONENT_TYPE ICEboardControl
+#define ICEBOARDCONTROL_4_COMPONENT_NAME ICEboardControl_4
+#define ICEBOARDCONTROL_4_BASE 0x80000
+#define ICEBOARDCONTROL_4_SPAN 262144
+#define ICEBOARDCONTROL_4_END 0xbffff
+
+/*
+ * Macros for device 'ICEboardControl_3', class 'ICEboardControl'
+ * The macros are prefixed with 'ICEBOARDCONTROL_3_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBOARDCONTROL_3_COMPONENT_TYPE ICEboardControl
+#define ICEBOARDCONTROL_3_COMPONENT_NAME ICEboardControl_3
+#define ICEBOARDCONTROL_3_BASE 0xc0000
+#define ICEBOARDCONTROL_3_SPAN 262144
+#define ICEBOARDCONTROL_3_END 0xfffff
+
+/*
+ * Macros for device 'ICEboardControl_2', class 'ICEboardControl'
+ * The macros are prefixed with 'ICEBOARDCONTROL_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBOARDCONTROL_2_COMPONENT_TYPE ICEboardControl
+#define ICEBOARDCONTROL_2_COMPONENT_NAME ICEboardControl_2
+#define ICEBOARDCONTROL_2_BASE 0x100000
+#define ICEBOARDCONTROL_2_SPAN 262144
+#define ICEBOARDCONTROL_2_END 0x13ffff
+
+/*
+ * Macros for device 'ICEboardControl_1', class 'ICEboardControl'
+ * The macros are prefixed with 'ICEBOARDCONTROL_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBOARDCONTROL_1_COMPONENT_TYPE ICEboardControl
+#define ICEBOARDCONTROL_1_COMPONENT_NAME ICEboardControl_1
+#define ICEBOARDCONTROL_1_BASE 0x140000
+#define ICEBOARDCONTROL_1_SPAN 262144
+#define ICEBOARDCONTROL_1_END 0x17ffff
+
+/*
  * Macros for device 'ICEboardControl_0', class 'ICEboardControl'
  * The macros are prefixed with 'ICEBOARDCONTROL_0_'.
  * The prefix is the slave descriptor.
  */
 #define ICEBOARDCONTROL_0_COMPONENT_TYPE ICEboardControl
 #define ICEBOARDCONTROL_0_COMPONENT_NAME ICEboardControl_0
-#define ICEBOARDCONTROL_0_BASE 0x40000
+#define ICEBOARDCONTROL_0_BASE 0x180000
 #define ICEBOARDCONTROL_0_SPAN 262144
-#define ICEBOARDCONTROL_0_END 0x7ffff
+#define ICEBOARDCONTROL_0_END 0x1bffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */
