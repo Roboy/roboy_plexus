@@ -65,7 +65,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1571418150
+#define SYSID_QSYS_TIMESTAMP 1571844617
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -82,50 +82,6 @@
 #define JTAG_UART_READ_THRESHOLD 8
 #define JTAG_UART_WRITE_DEPTH 64
 #define JTAG_UART_WRITE_THRESHOLD 8
-
-/*
- * Macros for device 'ICEboardControl_5', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_5_'.
- * The prefix is the slave descriptor.
- */
-#define ICEBOARDCONTROL_5_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_5_COMPONENT_NAME ICEboardControl_5
-#define ICEBOARDCONTROL_5_BASE 0x40000
-#define ICEBOARDCONTROL_5_SPAN 262144
-#define ICEBOARDCONTROL_5_END 0x7ffff
-
-/*
- * Macros for device 'ICEboardControl_4', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_4_'.
- * The prefix is the slave descriptor.
- */
-#define ICEBOARDCONTROL_4_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_4_COMPONENT_NAME ICEboardControl_4
-#define ICEBOARDCONTROL_4_BASE 0x80000
-#define ICEBOARDCONTROL_4_SPAN 262144
-#define ICEBOARDCONTROL_4_END 0xbffff
-
-/*
- * Macros for device 'ICEboardControl_3', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_3_'.
- * The prefix is the slave descriptor.
- */
-#define ICEBOARDCONTROL_3_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_3_COMPONENT_NAME ICEboardControl_3
-#define ICEBOARDCONTROL_3_BASE 0xc0000
-#define ICEBOARDCONTROL_3_SPAN 262144
-#define ICEBOARDCONTROL_3_END 0xfffff
-
-/*
- * Macros for device 'ICEboardControl_2', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_2_'.
- * The prefix is the slave descriptor.
- */
-#define ICEBOARDCONTROL_2_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_2_COMPONENT_NAME ICEboardControl_2
-#define ICEBOARDCONTROL_2_BASE 0x100000
-#define ICEBOARDCONTROL_2_SPAN 262144
-#define ICEBOARDCONTROL_2_END 0x13ffff
 
 /*
  * Macros for device 'ICEboardControl_1', class 'ICEboardControl'

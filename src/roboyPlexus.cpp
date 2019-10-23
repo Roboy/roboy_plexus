@@ -227,7 +227,7 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
         res.mode.push_back(params.control_mode);
         icebusControl->ChangeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
         icebusControl->SetMotorUpdateFrequency(motor,req.config.update_frequency[i]);
-        icebusControl->SetGearBoxRatio(motor,req.config.gearBoxRatio[i]);
+//        icebusControl->SetGearBoxRatio(motor,req.config.gearBoxRatio[i]);
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
                  req.config.setpoint[i]);
         control_mode[motor] = req.config.control_mode[i];
