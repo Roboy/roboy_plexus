@@ -72,6 +72,7 @@
 #define ICEBUS_CONTROL_READ_pwm(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_displacement(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_gearBoxRatio(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_current(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
 
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
@@ -193,6 +194,12 @@ public:
      * @param motor for this motor
      */
     uint16_t GetControlMode(int motor);
+
+    /**
+     * Gets the current of a motor
+     * @param motor for this motor
+     */
+    uint16_t GetCurrent(int motor);
 
     /**
      * Get the displacement of a muscle

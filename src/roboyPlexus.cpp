@@ -113,9 +113,11 @@ void RoboyPlexus::MotorStatePublisher() {
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorState msg;
         for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
+            msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
             msg.encoder0_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER0));
             msg.encoder1_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER1));
             msg.displacement.push_back(icebusControl->GetDisplacement(motor));
+            msg.current.push_back(icebusControl->GetCurrent(motor));
         }
         motorState.publish(msg);
         rate.sleep();

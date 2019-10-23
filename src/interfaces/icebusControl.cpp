@@ -118,6 +118,11 @@ uint16_t IcebusControl::GetControlMode(int motor) {
     return ICEBUS_CONTROL_READ_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
+uint16_t IcebusControl::GetCurrent(int motor) {
+
+    return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
 int16_t IcebusControl::GetDisplacement(int motor) {
     return ICEBUS_CONTROL_READ_displacement(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
