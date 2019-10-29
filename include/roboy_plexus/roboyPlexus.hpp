@@ -38,6 +38,7 @@
 #include <ros/ros.h>
 #include <vector>
 #include "interfaces/icebusControl.hpp"
+#include "interfaces/myoControl.hpp"
 #include "control/controlActions.hpp"
 #include "sensors/A1335.hpp"
 #include <roboy_middleware_msgs/ADCvalue.h>
@@ -47,6 +48,7 @@
 #include <roboy_middleware_msgs/MotorCalibrationService.h>
 #include <roboy_middleware_msgs/MotorCommand.h>
 #include <roboy_middleware_msgs/MotorState.h>
+#include <roboy_middleware_msgs/MotorStatus.h>
 #include <roboy_middleware_msgs/MotorInfo.h>
 #include <roboy_middleware_msgs/MotorConfigService.h>
 #include <roboy_middleware_msgs/MyoBrickCalibrationService.h>
@@ -94,6 +96,7 @@ static vector<int32_t *> DEFAULT_POINTER_VECTOR;
 class RoboyPlexus {
 public:
     RoboyPlexus(IcebusControlPtr icebusControl,
+                MyoControlPtr myoControl = nullptr,
                 vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
 
@@ -198,6 +201,12 @@ private:
     void MotorStatePublisher();
 
     /**
+     * Publishes state of motors
+     */
+    [[deprecated("replaced with iCEbus")]]
+    void MotorStatusPublisher();
+
+    /**
     * Callback updates the displacement for recording trajectories
     * @param msg
     */
@@ -245,7 +254,7 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
-    ros::Publisher motorState, motorInfo, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
+    ros::Publisher motorState, motorInfo, motorStatus, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
             motorAngle, magneticSensor;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, setDisplacementForAll_srv,
@@ -253,8 +262,9 @@ private:
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode, control_mode_backup;
     IcebusControlPtr icebusControl;
+    MyoControlPtr myoControl;
     A1335Ptr a1335;
-    boost::shared_ptr<std::thread> adcThread, motorStateThread, motorInfoThread,
+    boost::shared_ptr<std::thread> adcThread, motorStateThread, motorInfoThread, motorStatusThread,
             jointAngleThread, magneticsThread;
     bool keep_publishing = true;
     int32_t *adc_base, *switches_base;

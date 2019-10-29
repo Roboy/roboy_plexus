@@ -62,60 +62,62 @@ int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_a1339_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
 vector<int32_t*> h2p_lw_icebus_addr;
+vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_i2c_addr;
 
 IcebusControlPtr icebusControl;
+MyoControlPtr myoControl;
 NeoPixelPtr neoPixel;
 
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-//    if(myoControl!= nullptr){
-//        // switch to displacement
-//        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-//            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
-//                myoControl->changeControl(motor, VELOCITY);
-//            else
-//                myoControl->changeControl(motor, DISPLACEMENT);
-//        }
-//        // relax the springs
-//        ros::Rate rate(100);
-//        bool toggle = true;
-//        for(int decrements = 99; decrements>=0; decrements-=1){
-//            if(toggle)
-//                *h2p_lw_led_addr = 0xFF;
-//            else
-//                *h2p_lw_led_addr = 0x00;
-//
-//            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-//                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
-//                    continue;
-//                int displacement = myoControl->getEncoderPosition(motor,DISPLACEMENT_ENCODER);
-//                if(displacement<=0)
-//                    continue;
-//                else
-//                    myoControl->setPoint(motor,displacement*(decrements/100.0));
-//            }
-//            rate.sleep();
-//            if(decrements%15==0) {
-//                if(!toggle)
-//                    neoPixel->setColorAll(0xF00000);
-//                else
-//                    neoPixel->setColorAll(NeoPixelColorRGB::black);
-//                toggle = !toggle;
-//                cout << "." << endl;
-//            }
-//        }
-//    }
-//    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-//        myoControl->setPoint(motor,0);
-//    }
-//
-//    if(h2p_lw_led_addr!=nullptr)
-//        *h2p_lw_led_addr = 0;
-//    neoPixel->abort = true;
-//    neoPixel->setColorAll(NeoPixelColorRGB::black);
-//    // All the default sigint handler does is call shutdown()
+    if(myoControl!= nullptr){
+        // switch to displacement
+        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+                myoControl->changeControl(motor, VELOCITY);
+            else
+                myoControl->changeControl(motor, DISPLACEMENT);
+        }
+        // relax the springs
+        ros::Rate rate(100);
+        bool toggle = true;
+        for(int decrements = 99; decrements>=0; decrements-=1){
+            if(toggle)
+                *h2p_lw_led_addr = 0xFF;
+            else
+                *h2p_lw_led_addr = 0x00;
+
+            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
+                    continue;
+                int displacement = myoControl->getDisplacement(motor);
+                if(displacement<=0)
+                    continue;
+                else
+                    myoControl->setDisplacement(motor,displacement*(decrements/100.0));
+            }
+            rate.sleep();
+            if(decrements%15==0) {
+                if(!toggle)
+                    neoPixel->setColorAll(0xF00000);
+                else
+                    neoPixel->setColorAll(NeoPixelColorRGB::black);
+                toggle = !toggle;
+                cout << "." << endl;
+            }
+        }
+    }
+    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+        myoControl->setDisplacement(motor,0);
+    }
+
+    if(h2p_lw_led_addr!=nullptr)
+        *h2p_lw_led_addr = 0;
+    neoPixel->abort = true;
+    neoPixel->setColorAll(NeoPixelColorRGB::black);
+    // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
     system("sl");
@@ -177,6 +179,15 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_switches_addr = nullptr;
 #endif
+#ifdef MYOCONTROL_0_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef MYOCONTROL_1_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef MYOCONTROL_2_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
 #ifdef ICEBOARDCONTROL_0_BASE
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
@@ -196,8 +207,9 @@ int main(int argc, char *argv[]) {
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
+    myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
-    RoboyPlexus roboyPlexus(icebusControl, h2p_lw_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+    RoboyPlexus roboyPlexus(icebusControl,myoControl,h2p_lw_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////

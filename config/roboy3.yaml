@@ -1,28 +1,41 @@
-number_of_icebuses: 1
+number_of_icebuses: 4
 icebus_0:
-  number_of_motors: 8
-  motor_ids: [0,1,2,3,4,5,6,7]
-  motor_ids_global: [0,1,2,3,4,5,6,7]
-  muscle_type: ["myoBrick300","myoBrick300","myoBrick300","myoBrick300","myoBrick300","myoBrick300","myoBrick300","myoBrick300"]
+  number_of_motors: 1
+  motor_ids: [0]
+  motor_ids_global: [0]
+  muscle_type: ["myoBrick300"]
   coeffs_force2displacement:
-    - [0, 0, 0]
-    - [0, 0, 0]
-    - [0, 0, 0]
-    - [0, 0, 0]
-    - [0, 0, 0]
-    - [0, 0, 0]
-    - [0, 0, 0]
     - [0, 0, 0]
   coeffs_displacement2force:
     - [0, 0, 0]
+icebus_1:
+  number_of_motors: 1
+  motor_ids: [0]
+  motor_ids_global: [1]
+  muscle_type: ["myoBrick300"]
+  coeffs_force2displacement:
     - [0, 0, 0]
+  coeffs_displacement2force:
     - [0, 0, 0]
+icebus_2:
+  number_of_motors: 1
+  motor_ids: [0]
+  motor_ids_global: [2]
+  muscle_type: ["myoBrick300"]
+  coeffs_force2displacement:
     - [0, 0, 0]
+  coeffs_displacement2force:
     - [0, 0, 0]
+icebus_3:
+  number_of_motors: 1
+  motor_ids: [0]
+  motor_ids_global: [3]
+  muscle_type: ["myoBrick300"]
+  coeffs_force2displacement:
     - [0, 0, 0]
-    - [0, 0, 0]
+  coeffs_displacement2force:
     - [0, 0, 0]
 body_part:
   name: ["shoulder"]
   motor_ids_global:
-    - [0,1,2,3,4,5,6,7]
+    - [0,1,2,3]

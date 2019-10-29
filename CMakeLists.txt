@@ -63,6 +63,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     add_executable( roboy_plexus
             src/main.cpp
             src/interfaces/icebusControl.cpp
+            src/interfaces/myoControl.cpp
             src/interfaces/i2c.cpp
             src/roboyPlexus.cpp
             src/sensors/A1335.cpp
@@ -71,6 +72,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/utility/UDPSocket.cpp
             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/icebusControl.hpp
+            include/roboy_plexus/interfaces/myoControl.hpp
             include/roboy_plexus/interfaces/i2c.hpp
             include/roboy_plexus/roboyPlexus.hpp
             include/roboy_plexus/sensors/A1335.hpp

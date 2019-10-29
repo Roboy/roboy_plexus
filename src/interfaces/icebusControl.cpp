@@ -2,7 +2,7 @@
 
 IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
                         : adc_base(adc_base), neopixel(neopixel) {
-    ROS_INFO("initializing myoControl for %d icebus with motor config file %s", mb.size(), motor_config_filepath.c_str());
+    ROS_INFO("initializing icebusControl for %d icebus with motor config file %s", mb.size(), motor_config_filepath.c_str());
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
     icebus_base = mb;
