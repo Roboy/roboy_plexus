@@ -85,7 +85,8 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
         icebusControl->SetGearBoxRatio(motor,53);
         icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor,ENCODER0));
-        icebusControl->ChangeControl(motor, POSITION);
+        myoControl->changeControl(motor,POSITION);
+        icebusControl->ChangeControl(motor,ENCODER1);
         control_mode[motor] = POSITION;
     }
 
@@ -202,37 +203,43 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
     uint i = 0;
     for (auto motor:msg->motor) {
         switch (control_mode[motor]) {
-            case POSITION:
+            case 0:
                 if(!msg->legacy)
                     icebusControl->SetPoint(motor, msg->setpoint[i]);
                 else
                     myoControl->setPosition(motor, msg->setpoint[i]);
                 break;
-            case VELOCITY:
+            case 1:
                 if(!msg->legacy)
                     icebusControl->SetPoint(motor, msg->setpoint[i]);
                 else
                     myoControl->setVelocity(motor, msg->setpoint[i]);
                 break;
-            case DISPLACEMENT:
+            case 2:
                 if(!msg->legacy)
                     icebusControl->SetPoint(motor, msg->setpoint[i]);
                 else
                     myoControl->setDisplacement(motor, msg->setpoint[i]);
                 break;
-            case FORCE:
-                if(!msg->legacy)
-                    icebusControl->SetPoint(motor, msg->setpoint[i]);
-                break;
-            case DIRECT_PWM:
+            case 3:
                 bool direct_pwm_override;
                 nh->getParam("direct_pwm_override",direct_pwm_override);
-                if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
-                    ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values, "
-                                      "what the heck are you publishing?!");
-                    break;
+                if(!msg->legacy){
+                    if(fabsf(msg->setpoint[i])>1000000 && !direct_pwm_override) {
+                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>1000000), "
+                                            "what the heck are you publishing?!");
+                        break;
+                    }
+                    icebusControl->SetPoint(motor, msg->setpoint[i]);
+                }else{
+                    if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
+                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>128), "
+                                            "what the heck are you publishing?!");
+                        break;
+                    }
+                    myoControl->setPWM(motor, msg->setpoint[i]);
                 }
-                icebusControl->SetPoint(motor, msg->setpoint[i]);
+
                 break;
         }
         i++;
@@ -246,29 +253,38 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
     for (int motor:req.config.motor) {
         if(!req.legacy) {
             control_Parameters_t params;
+            icebusControl->getDefaultControlParams(&params, req.config.control_mode[i]);
+            params.control_mode = req.config.control_mode[i];
             if (req.config.control_mode[i] == 0)
                 str << "\t" << (int) motor << ": ENCODER0";
             if (req.config.control_mode[i] == VELOCITY)
                 str << "\t" << (int) motor << ": ENCODER1";
             if (req.config.control_mode[i] == DISPLACEMENT)
-                str << "\t" << (int) motor << ": DIRECT_PWM";
-            if (req.config.control_mode[i] == DIRECT_PWM)
                 str << "\t" << (int) motor << ": DISPLACEMENT";
-            params.PWMLimit = req.config.PWMLimit[i];
-            params.Kp = req.config.Kp[i];
-            params.Ki = req.config.Ki[i];
-            params.Kd = req.config.Kd[i];
-            params.deadband = req.config.deadband[i];
-            params.IntegralLimit = req.config.IntegralLimit[i];
+            if (req.config.control_mode[i] == DIRECT_PWM)
+                str << "\t" << (int) motor << ": DIRECT_PWM";
+            if(i<req.config.PWMLimit.size())
+                params.PWMLimit = req.config.PWMLimit[i];
+            if(i<req.config.Kp.size())
+                params.Kp = req.config.Kp[i];
+            if(i<req.config.Ki.size())
+                params.Ki = req.config.Ki[i];
+            if(i<req.config.Kd.size())
+                params.Kd = req.config.Kd[i];
+            if(i<req.config.deadband.size())
+                params.deadband = req.config.deadband[i];
+            if(i<req.config.IntegralLimit.size())
+                params.IntegralLimit = req.config.IntegralLimit[i];
+            if(i<req.config.update_frequency.size())
+                icebusControl->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
             params.control_mode = req.config.control_mode[i];
             icebusControl->ChangeControlParameters(motor, params);
             res.mode.push_back(params.control_mode);
             icebusControl->ChangeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
-            icebusControl->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
-//        icebusControl->SetGearBoxRatio(motor,req.config.gearBoxRatio[i]);
         }else{
             control_Parameters_legacy params;
             myoControl->getDefaultControlParams(&params, req.config.control_mode[i]);
+            params.control_mode = req.config.control_mode[i];
             if (req.config.control_mode[i] == POSITION)
                 str << "\t" << (int) motor << ": POSITION";
             if (req.config.control_mode[i] == VELOCITY)
@@ -277,14 +293,22 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
                 str << "\t" << (int) motor << ": DISPLACEMENT";
             if (req.config.control_mode[i] == DIRECT_PWM)
                 str << "\t" << (int) motor << ": DIRECT_PWM";
-            params.outputPosMax = req.config.PWMLimit[i];
-            params.outputNegMax = -req.config.PWMLimit[i];
-            params.Kp = req.config.Kp[i];
-            params.Ki = req.config.Ki[i];
-            params.Kd = req.config.Kd[i];
-            params.deadBand = req.config.deadband[i];
-            params.IntegralPosMax = req.config.IntegralLimit[i];
-            params.IntegralNegMax = -req.config.IntegralLimit[i];
+            if(i<req.config.PWMLimit.size()) {
+                params.outputPosMax = req.config.PWMLimit[i];
+                params.outputNegMax = -req.config.PWMLimit[i];
+            }
+            if(i<req.config.Kp.size())
+                params.Kp = req.config.Kp[i];
+            if(i<req.config.Ki.size())
+                params.Ki = req.config.Ki[i];
+            if(i<req.config.Kd.size())
+                params.Kd = req.config.Kd[i];
+            if(i<req.config.deadband.size())
+                params.deadBand = req.config.deadband[i];
+            if(i<req.config.IntegralLimit.size()) {
+                params.IntegralPosMax = req.config.IntegralLimit[i];
+                params.IntegralNegMax = -req.config.IntegralLimit[i];
+            }
             params.control_mode = req.config.control_mode[i];
             myoControl->changeControlParameters(motor, params);
             res.mode.push_back(params.control_mode);

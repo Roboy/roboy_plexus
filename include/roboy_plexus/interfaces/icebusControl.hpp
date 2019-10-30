@@ -95,6 +95,11 @@
 using namespace std;
 using namespace std::chrono;
 
+#define ENCODER0 0
+#define ENCODER1 1
+#define DISPLACEMENT 2
+#define DIRECT_PWM 3
+
 class IcebusControl {
 public:
     /**
@@ -200,6 +205,13 @@ public:
      * @param motor for this motor
      */
     uint16_t GetCurrent(int motor);
+
+    /**
+     * Getting default parameters for a control mode
+     * @param params
+     * @param control_mode
+     */
+    void getDefaultControlParams(control_Parameters_t *params, int control_mode);
 
     /**
      * Get the displacement of a muscle

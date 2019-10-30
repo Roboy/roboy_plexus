@@ -123,6 +123,47 @@ uint16_t IcebusControl::GetCurrent(int motor) {
     return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
 
+void IcebusControl::getDefaultControlParams(control_Parameters_t *params, int control_mode) {
+    switch (control_mode) {
+        case ENCODER0:
+            params->IntegralLimit = 500000;
+            params->Kp = 1;
+            params->Ki = 0;
+            params->Kd = 0;
+            params->deadband = 0;
+            params->PWMLimit = 1000000;
+            break;
+        case ENCODER1:
+            params->IntegralLimit = 500000;
+            params->Kp = 1;
+            params->Ki = 0;
+            params->Kd = 0;
+            params->deadband = 0;
+            params->PWMLimit = 1000000;
+            break;
+        case DISPLACEMENT:
+            params->IntegralLimit = 500000;
+            params->Kp = 1;
+            params->Ki = 0;
+            params->Kd = 0;
+            params->deadband = 0;
+            params->PWMLimit = 1000000;
+            break;
+        case DIRECT_PWM:
+            params->IntegralLimit = 500000;
+            params->Kp = 1;
+            params->Ki = 0;
+            params->Kd = 0;
+            params->deadband = 0;
+            params->PWMLimit = 1000000;
+            break;
+        default:
+            ROS_ERROR("unknown control mode %d", control_mode);
+            break;
+    }
+
+}
+
 int16_t IcebusControl::GetDisplacement(int motor) {
     return ICEBUS_CONTROL_READ_displacement(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
 }
@@ -262,7 +303,7 @@ float IcebusControl::RecordTrajectories(
         for (auto it = idList.begin(); it != idList.end(); it++) {
             if (controlmode[*it] == POSITION)
                 trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER0));
-            else if (controlmode[*it] == FORCE)
+            else if (controlmode[*it] == DISPLACEMENT)
                 trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER1));
         }
         sample++;

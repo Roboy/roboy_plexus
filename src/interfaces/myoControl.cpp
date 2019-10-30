@@ -307,7 +307,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
     params->radPerEncoderCount = 2 * 3.14159265359 / (2000.0 * 53.0);
 
     switch (control_mode) {
-        case POSITION:
+        case 0:
 //            params->outputPosMax = 4000;
 //            params->outputNegMax = -4000;
             params->spPosMax = 10000000;
@@ -321,7 +321,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
             params->IntegralNegMax = -100;
             params->outputDivider = 5;
             break;
-        case VELOCITY:
+        case 1:
             params->spPosMax = 100000;
             params->spNegMax = -100000;
             params->Kp = 30;
@@ -333,7 +333,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
             params->IntegralNegMax = -100;
             params->outputDivider = 0;
             break;
-        case DISPLACEMENT:
+        case 2:
             params->spPosMax = 100000;
             params->spNegMax = 0;
             params->Kp = 100;
@@ -345,9 +345,9 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
             params->IntegralNegMax = 0;
             params->outputDivider = 0;
             break;
-        case DIRECT_PWM:
-            params->spPosMax = 500;
-            params->spNegMax = -500;
+        case 3:
+            params->spPosMax = 256;
+            params->spNegMax = -256;
             params->Kp = 1;
             params->Ki = 0;
             params->Kd = 0;
@@ -358,7 +358,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
             params->outputDivider = 0;
             break;
         default:
-            ROS_ERROR("unknown control mode");
+            ROS_ERROR("unknown control mode %d", control_mode);
             break;
     }
 
