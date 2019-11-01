@@ -44,34 +44,6 @@
 #include <utility/timer.hpp>
 #include <common_utilities/MotorConfig.hpp>
 
-typedef struct {
-    float control_mode;
-    float outputPosMax = 4000; /*!< maximum control output in the positive direction in counts, max 4000*/
-    float outputNegMax = -4000; /*!< maximum control output in the negative direction in counts, max -4000*/
-    float spPosMax;/*<!Positive limit for the set point.*/
-    float spNegMax;/*<!Negative limit for the set point.*/
-    float Kp = 100;/*!<Gain of the proportional component*/
-    float Ki = 0;/*!<Gain of the integral component*/
-    float Kd = 0;/*!<Gain of the differential component*/
-    float forwardGain = 0; /*!<Gain of  the feed-forward term*/
-    float deadBand = 0;/*!<Optional deadband threshold for the control response*/
-    float IntegralPosMax; /*!<Integral positive component maximum*/
-    float IntegralNegMax; /*!<Integral negative component maximum*/
-    float radPerEncoderCount = {2 * 3.14159265359f / (2000.0f * 53.0f)};
-    float outputDivider = 100; /*! This divides the output of the PID controllers */
-} control_Parameters_legacy;
-
-#define POSITION 0
-#define VELOCITY 1
-#define DISPLACEMENT 2
-#define FORCE 3
-#define DIRECT_PWM 4
-
-#define NUMBER_OF_MOTORS_PER_FPGA 4
-#define NUMBER_OF_MOTORS_MYOCONTROL_0 4
-#define NUMBER_OF_MOTORS_MYOCONTROL_1 0
-#define NUMBER_OF_MOTORS_MYOCONTROL_2 0
-
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
@@ -133,7 +105,7 @@ typedef struct {
 using namespace std;
 using namespace std::chrono;
 
-class MyoControl {
+class MyoControl: public MotorControl  {
 public:
     /**
      * Constructor
@@ -153,7 +125,7 @@ public:
 	 * @param params with these controller parameters
      * @param setPoint new setPoint
 	 */
-    void changeControl(int motor, int mode, control_Parameters_legacy &params, int32_t setPoint);
+    bool SetControlMode(int motor, int mode, control_Parameters_legacy &params, int32_t setPoint);
 
     /**
      * Changes the controller of a motor
@@ -161,20 +133,22 @@ public:
      * @param mode choose from Position, Velocity or Displacement
      * @param params with these controller parameters
      */
-    void changeControl(int motor, int mode, control_Parameters_legacy &params);
+    bool SetControlMode(int motor, int mode, control_Parameters_legacy &params);
 
     /**
      * Changes the controller of a motor with the saved controller parameters
      * @param motor for this motor
      * @param mode choose from Position, Velocity or Displacement
      */
-    void changeControl(int motor, int mode);
+    bool SetControlMode(int motor, int mode);
 
     /**
      * Changes the controller of ALL motors with the saved controller parameters
      * @param mode choose from Position, Velocity or Displacement
      */
-    void changeControl(int mode);
+    bool SetControlMode(int mode);
+
+    void SetPoint(int motor, int32_t setpoint);
 
     /**
     * Changes the controller parameters of a motor
@@ -214,109 +188,43 @@ public:
      * Gets the current control_mode of a motor
      * @param motor for this motor
      */
-    uint16_t getControlMode(int motor);
-
-    /**
-     * Gets the motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getMotorAngle(int motor);
-
-    /**
-     * Gets the motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getMotorAnglePrev(int motor);
-
-    /**
-     * Gets the raw motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getRawMotorAngle(int motor);
-
-    /**
-     * Gets the raw motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getRelativeMotorAngle(int motor);
-
-    /**
-     * Gets the raw motor angle of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getMotorAngleOffset(int motor);
-
-    /**
-     * Gets the motor angle revolution counter of a myo brick
-     * @param motor
-     * @return angle in ticks
-     */
-    int32_t getRevolutionCounter(int motor);
+    uint8_t GetControlMode(int motor) override;
 
     /**
      * Get the power sense
      * @return true (power on), false (power off)
      */
-    bool getPowerSense();
+    bool GetPowerSense();
 
     /**
      * Gets the current pwm of a motor
      * @param motor for this motor
      */
-    int16_t getPWM(int motor);
+    int32_t GetPWM(int motor);
 
     /**
      * Gets the current position of a motor in radians
      * @param motor for this motor
      */
-    int32_t getPosition(int motor);
+    int32_t GetEncoderPosition(int motor, int encoder);
 
     /**
      * Gets the current velocity of a motor in radians/seconds
      * @param motor for this motor
      */
-    int32_t getVelocity(int motor);
+    int32_t GetEncoderVelocity(int motor, int encoder);
 
     /**
      * Gets the displacement in encoder ticks
      * @param motor for this motor
      */
-    int32_t getDisplacement(int motor);
+    int32_t GetDisplacement(int motor);
 
     /**
      * Gets the current in Ampere
      * @param motor for this motor
      */
-    int16_t getCurrent(int motor);
-
-    /**
-	 * Sets the position of a motor in radians
-	 * @param motor for this motor
-	 */
-    void setPosition(int motor, int32_t setPoint);
-
-    /**
-     * Sets the current velocity of a motor in radians/seconds
-     * @param motor for this motor
-     */
-    void setVelocity(int motor, int32_t setPoint);
-
-    /**
-     * Set the displacement in encoder ticks
-     * @param motor for this motor
-     */
-    void setDisplacement(int motor, int32_t setPoint);
-
-    /**
-     * Set the pwm
-     * @param motor for this motor
-     */
-    void setPWM(int motor, int32_t setPoint);
+    int16_t GetCurrent(int motor);
 
     /**
      * Configures motors to be handled as myoBricks
@@ -335,58 +243,6 @@ public:
     void getDefaultControlParams(control_Parameters_legacy *params, int control_mode);
 
     /**
-     * Changes the control mode for all motors to Position
-     * @param pos new setPoint
-     */
-    void allToPosition(int32_t pos);
-
-    /**
-     * Changes the control mode for all motors to Velocity
-     * @param pos new setPoint
-     */
-    void allToVelocity(int32_t vel);
-
-    /**
-     * Changes the control mode for all motors to Displacement
-     * @param displacement new setPoint
-     */
-    void allToDisplacement(int32_t displacement);
-
-    /**
-     * Changes the control mode for all motors to Direct PWM
-     * @param pwm new setPoint
-     */
-    void allToDirectPWM(int32_t pwm);
-
-    /**
-     * Zeros the weight for a load cell
-     * @param load_cell for this load cell
-     */
-    void zeroWeight(int load_cell = 0);
-
-    /**
-	 * Returns the current adc of the load cell
-	 * @param load_cell for this load cell
-     * @return the adc value
-	 */
-    uint32_t readADC(int load_cell);
-
-    /**
-	 * Returns the current weight according to adc_weight_parameters of a load_cell
-	 * @param load_cell for this load cell
-	 * @return the load
-	 */
-    float getWeight(int load_cell);
-
-    /**
-     * Returns the current weight according to adc_weight_parameters of a load_cell
-     * @param load_cell for this load cell
-     * @param the adc value
-     * @return the load
-     */
-    float getWeight(int load_cell, uint32_t &adc_value);
-
-    /**
      * records positions of motors in Displacement mode
      * @param samplingTime
      * @param recordTime
@@ -395,7 +251,7 @@ public:
      * @param controlmode in this mode
      * @param name filename
      */
-    float recordTrajectories(
+    float RecordTrajectories(
             float samplingTime, float recordTime,
             map<int, vector<float>> &trajectories, vector<int> &idList,
             vector<int> &controlmode, string name);
@@ -407,33 +263,33 @@ public:
 	 * @param idList record these motors
 	 * @param name filename
 	 */
-    float startRecordTrajectories(
+    float StartRecordTrajectories(
             float samplingTime, map<int, vector<float>> &trajectories,
             vector<int> &idList, string name);
 
     /**
      * stops recording a trajectory and writes to file
      */
-    void stopRecordTrajectories();
+    void StopRecordTrajectories();
 
     /**
      * Plays back a trajectory
      * @param file
      * @return success
      */
-    bool playTrajectory(const char *file);
+    bool PlayTrajectory(const char *file);
 
     /**
      * Sets predisplacement for recording trajectories (50 by default)
      * @param value
      */
-    void setPredisplacement(int value);
+    void SetPredisplacement(int value);
 
     /**
      * Enables/disables replaying trajectory
      * @param replay
      */
-    void setReplay(bool status);
+    void SetReplay(bool status);
 
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces
@@ -454,24 +310,6 @@ public:
                                   float displacement_max, vector<double> &load, vector<double> &displacement);
 
     /**
-	 * Estimates the linearisation parameters of a myobrick by turning the motor and measuring the positions
-     * from the motor angle sensor. The optical encoder data is then used to estimate linearisation parameters
-	 * @param motor for this motor
-	 * @param degree the degree for the polynomial regression
-	 * @param coeffs these are the result from the polynomial regression
-	 * @param timeout in milliseconds
-	 * @param numberOfDataPoints how many samples do you wanne collect
-	 * @param delta_revolution_negative value to turn the motor to into negative direction in degrees
-	 * @param delta_revolution_positive value to turn the motor to into negative direction in degrees
-	 * @param motor_angle will be filled with the a1339 motor_angle data (values between 0-4095)
-	 * @param motor_encoder will be filled with positions from the optical encoder (values between 0-4095)
-	 */
-    void estimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
-                                                   uint numberOfDataPoints, float delta_revolution_negative,
-                                                   float delta_revolution_positive, vector<double> &motor_angle,
-                                                   vector<double> &motor_encoder);
-
-    /**
      * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)
      * @param degree (e.g. 2 -> a * x^0 + b * x^1 + c * x^2)
      * @param coeffs the estimated coefficients
@@ -481,10 +319,6 @@ public:
     void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
                               vector<float> &coeffs);
 
-
-    void gpioControl(bool power);
-
-    int myo_base_of_motor[NUMBER_OF_MOTORS_PER_FPGA], motor_offset[NUMBER_OF_MOTORS_PER_FPGA];
     map<int, map<int, control_Parameters_legacy>> control_params;
     vector<int32_t> myo_bricks, myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
     int32_t *adc_base;

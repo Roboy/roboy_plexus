@@ -260,7 +260,7 @@ private:
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, setDisplacementForAll_srv,
             listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
-    map<int, int> control_mode, control_mode_backup;
+    map<int, int> control_mode_backup;
     IcebusControlPtr icebusControl;
     MyoControlPtr myoControl;
     A1335Ptr a1335;

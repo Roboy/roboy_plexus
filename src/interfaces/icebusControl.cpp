@@ -2,7 +2,7 @@
 
 IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
                         : adc_base(adc_base), neopixel(neopixel) {
-    ROS_INFO("initializing icebusControl for %d icebus with motor config file %s", mb.size(), motor_config_filepath.c_str());
+    ROS_INFO("initializing icebusControl for %d icebuses with motor config file %s", mb.size(), motor_config_filepath.c_str());
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
     icebus_base = mb;
@@ -31,101 +31,140 @@ IcebusControl::~IcebusControl() {
     ROS_INFO("shutting down icebus control");
 }
 
-void IcebusControl::ChangeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
-    ChangeControl(motor, mode, params);
-    ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, setPoint);
+bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
+    if(!SetControlMode(motor, mode, params))
+        return false;
+    ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id, setPoint);
+    return true;
 }
 
-void IcebusControl::ChangeControl(int motor, int mode, control_Parameters_t &params) {
-    ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
-    ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kp);
-    ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Kd);
-    ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.Ki);
-    ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.deadband);
-    ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.IntegralLimit);
-    ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, params.PWMLimit);
-    if (mode == POSITION) {
-        int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
-                                                     motor - motor_offset[motor]);
-        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
-    } else {
-        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
-    }
-}
-
-void IcebusControl::ChangeControl(int motor, int mode) {
-    ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
-    ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
-    ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
-    ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
-                       (control_params[motor][mode].deadband));
-    ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
-                             control_params[motor][mode].IntegralLimit);
-    ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
-                           control_params[motor][mode].PWMLimit);
-    ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
-    if (mode == POSITION) {
-        int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
-                                                     motor - motor_offset[motor]);
-        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
-    } else {
-        ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
-    }
-}
-
-void IcebusControl::ChangeControl(int mode) {
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kp);
-        ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Kd);
-        ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, control_params[motor][mode].Ki);
-        ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
-                           (control_params[motor][mode].deadband));
-        ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
-                                 control_params[motor][mode].IntegralLimit);
-        ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id,
-                               control_params[motor][mode].PWMLimit);
-        ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, mode);
-        if (mode == POSITION) {
+bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &params) {
+    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->bus],
+                                          motor_config->motor[motor]->bus_id, mode);
+        ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                params.Kp);
+        ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                params.Kd);
+        ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                params.Ki);
+        ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                      params.deadband);
+        ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->bus],
+                                           motor_config->motor[motor]->bus_id, params.IntegralLimit);
+        ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                      params.PWMLimit);
+        if (mode == ENCODER0_POSITION || ENCODER1_POSITION) {
             int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
-                                                         motor - motor_offset[motor]);
-            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, current_position);
+                                                                             motor - motor_offset[motor]);
+            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    current_position);
         } else {
-            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, 0);
+            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    0);
         }
+        return true;
+    }else{
+        return false;
     }
 }
 
-void IcebusControl::ChangeControlParameters(int motor, control_Parameters_t &params) {
-    control_params[motor][params.control_mode] = params;
+bool IcebusControl::SetControlMode(int motor, int mode) {
+    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                control_params[motor][mode].Kp);
+        ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                control_params[motor][mode].Kd);
+        ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                control_params[motor][mode].Ki);
+        ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                      (control_params[motor][mode].deadband));
+        ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->bus],
+                                           motor_config->motor[motor]->bus_id,
+                                           control_params[motor][mode].IntegralLimit);
+        ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                      control_params[motor][mode].PWMLimit);
+        ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->bus],
+                                          motor_config->motor[motor]->bus_id, mode);
+        if (mode == ENCODER0_POSITION || ENCODER1_POSITION) {
+            int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
+                                                                             motor - motor_offset[motor]);
+            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    current_position);
+        } else {
+            ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    0);
+        }
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool IcebusControl::SetControlMode(int mode) {
+    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        for (uint motor = 0; motor < numberOfMotors; motor++) {
+            ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    control_params[motor][mode].Kp);
+            ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    control_params[motor][mode].Kd);
+            ICEBUS_CONTROL_WRITE_Ki(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id,
+                                    control_params[motor][mode].Ki);
+            ICEBUS_CONTROL_WRITE_deadband(icebus_base[motor_config->motor[motor]->bus],
+                                          motor_config->motor[motor]->bus_id,
+                                          (control_params[motor][mode].deadband));
+            ICEBUS_CONTROL_WRITE_IntegralLimit(icebus_base[motor_config->motor[motor]->bus],
+                                               motor_config->motor[motor]->bus_id,
+                                               control_params[motor][mode].IntegralLimit);
+            ICEBUS_CONTROL_WRITE_PWMLimit(icebus_base[motor_config->motor[motor]->bus],
+                                          motor_config->motor[motor]->bus_id,
+                                          control_params[motor][mode].PWMLimit);
+            ICEBUS_CONTROL_WRITE_control_mode(icebus_base[motor_config->motor[motor]->bus],
+                                              motor_config->motor[motor]->bus_id, mode);
+            if (mode == ENCODER0_POSITION || ENCODER1_POSITION) {
+                int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(icebus_base[myo_base_of_motor[motor]],
+                                                                                 motor - motor_offset[motor]);
+                ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus],
+                                        motor_config->motor[motor]->bus_id, current_position);
+            } else {
+                ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus],
+                                        motor_config->motor[motor]->bus_id, 0);
+            }
+        }
+        return true;
+    }else{
+        ROS_WARN("control_mode %d invalid, ignoring...");
+        return false;
+    }
 }
 
 int32_t IcebusControl::GetCommunicationQuality(int motor){
-    return ICEBUS_CONTROL_READ_communication_quality(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_communication_quality(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
                             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){
-    Kp = ICEBUS_CONTROL_READ_Kp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    Ki = ICEBUS_CONTROL_READ_Ki(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    Kd = ICEBUS_CONTROL_READ_Kd(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    IntegralLimit = ICEBUS_CONTROL_READ_IntegralLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    deadband = ICEBUS_CONTROL_READ_deadband(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
-    PWMLimit = ICEBUS_CONTROL_READ_PWMLimit(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    Kp = ICEBUS_CONTROL_READ_Kp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
+    Ki = ICEBUS_CONTROL_READ_Ki(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
+    Kd = ICEBUS_CONTROL_READ_Kd(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
+    IntegralLimit = ICEBUS_CONTROL_READ_IntegralLimit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
+    deadband = ICEBUS_CONTROL_READ_deadband(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
+    PWMLimit = ICEBUS_CONTROL_READ_PWMLimit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
-uint16_t IcebusControl::GetControlMode(int motor) {
+uint8_t IcebusControl::GetControlMode(int motor) {
 
-    return ICEBUS_CONTROL_READ_control_mode(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_control_mode(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
-uint16_t IcebusControl::GetCurrent(int motor) {
+int16_t IcebusControl::GetCurrent(int motor) {
 
-    return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
-void IcebusControl::getDefaultControlParams(control_Parameters_t *params, int control_mode) {
+void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
     switch (control_mode) {
-        case ENCODER0:
+        case ENCODER0_POSITION:
             params->IntegralLimit = 500000;
             params->Kp = 1;
             params->Ki = 0;
@@ -133,7 +172,7 @@ void IcebusControl::getDefaultControlParams(control_Parameters_t *params, int co
             params->deadband = 0;
             params->PWMLimit = 1000000;
             break;
-        case ENCODER1:
+        case ENCODER1_POSITION:
             params->IntegralLimit = 500000;
             params->Kp = 1;
             params->Ki = 0;
@@ -141,13 +180,23 @@ void IcebusControl::getDefaultControlParams(control_Parameters_t *params, int co
             params->deadband = 0;
             params->PWMLimit = 1000000;
             break;
-        case DISPLACEMENT:
-            params->IntegralLimit = 500000;
-            params->Kp = 1;
+        case ENCODER0_VELOCITY: //TODO: velocity control not implemented yet
+            params->IntegralLimit = 0;
+            params->Kp = 0;
             params->Ki = 0;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 1000000;
+            params->PWMLimit = 0;
+            ROS_WARN("velocity control not available yet, disabling controller");
+            break;
+        case ENCODER1_VELOCITY: //TODO: velocity control not implemented yet
+            params->IntegralLimit = 0;
+            params->Kp = 0;
+            params->Ki = 0;
+            params->Kd = 0;
+            params->deadband = 0;
+            params->PWMLimit = 0;
+            ROS_WARN("velocity control not available yet, disabling controller");
             break;
         case DIRECT_PWM:
             params->IntegralLimit = 500000;
@@ -165,68 +214,49 @@ void IcebusControl::getDefaultControlParams(control_Parameters_t *params, int co
 }
 
 int16_t IcebusControl::GetDisplacement(int motor) {
-    return ICEBUS_CONTROL_READ_displacement(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_displacement(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 int32_t IcebusControl::GetEncoderPosition(int motor, int encoder) {
     if(encoder==0)
-        return ICEBUS_CONTROL_READ_encoder0_position(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+        return ICEBUS_CONTROL_READ_encoder0_position(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
     else if(encoder==1)
-        return ICEBUS_CONTROL_READ_encoder1_position(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+        return ICEBUS_CONTROL_READ_encoder1_position(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
     else
         return -1;
 }
 
 int32_t IcebusControl::GetGearBoxRatio(int motor) {
-    return ICEBUS_CONTROL_READ_gearBoxRatio(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_gearBoxRatio(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 int32_t IcebusControl::GetSetPoint(int motor){
-    return ICEBUS_CONTROL_READ_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 int32_t IcebusControl::GetPWM(int motor){
-    return ICEBUS_CONTROL_READ_pwm(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_pwm(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 void IcebusControl::SetGearBoxRatio(int motor, int32_t gearBoxRatio){
-    ICEBUS_CONTROL_WRITE_gearBoxRatio(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, gearBoxRatio);
+    ICEBUS_CONTROL_WRITE_gearBoxRatio(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id, gearBoxRatio);
 }
 
 void IcebusControl::SetPoint(int motor, int32_t setPoint) {
-    ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id, (int32_t) setPoint);
+    ICEBUS_CONTROL_WRITE_sp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id, (int32_t) setPoint);
 }
 
-void IcebusControl::SetAllToPosition(int32_t pos) {
-    ChangeControl(POSITION);
+bool IcebusControl::AllToSetpoint(int control_mode, int32_t setpoint) {
+    if(!SetControlMode(control_mode))
+        return false;
     for (uint motor = 0; motor < numberOfMotors; motor++) {
-        SetPoint(motor, pos);
+        SetPoint(motor, setpoint);
     }
-}
-
-void IcebusControl::SetAllToVelocity(int32_t vel) {
-    ChangeControl(VELOCITY);
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        SetPoint(motor, vel);
-    }
-}
-
-void IcebusControl::SetAllToDisplacement(int32_t displacement) {
-    ChangeControl(DISPLACEMENT);
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        SetPoint(motor, displacement);
-    }
-}
-
-void IcebusControl::SetAllToDirectPWM(int32_t pwm) {
-    ChangeControl(DIRECT_PWM);
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        SetPoint(motor, pwm);
-    }
+    return true;
 }
 
 void IcebusControl::SetMotorUpdateFrequency(int motor, int32_t freq) {
-    ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[motor_config->motor[motor]->icebus],freq);
+    ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[motor_config->motor[motor]->bus],freq);
 }
 
 void IcebusControl::ZeroWeight(int load_cell) {
@@ -287,7 +317,7 @@ float IcebusControl::RecordTrajectories(
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     string filepath = trajectories_folder + name;
     // this will be filled with the trajectories
-    SetAllToDisplacement(predisplacement);
+    AllToSetpoint(DISPLACEMENT, predisplacement);
 
     // samplingTime milli -> seconds
     samplingTime /= 1000.0f;
@@ -301,10 +331,10 @@ float IcebusControl::RecordTrajectories(
         dt = elapsedTime;
 //        for (uint motor = 0; motor < idList.size(); motor++) {
         for (auto it = idList.begin(); it != idList.end(); it++) {
-            if (controlmode[*it] == POSITION)
-                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER0));
-            else if (controlmode[*it] == DISPLACEMENT)
-                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER1));
+            if (controlmode[*it] == ENCODER0_POSITION)
+                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER0_POSITION));
+            else if (controlmode[*it] == ENCODER1_POSITION)
+                trajectories[idList[*it]].push_back(GetEncoderPosition(*it,ENCODER1_POSITION));
         }
         sample++;
         elapsedTime = timer.elapsedTime();
@@ -317,7 +347,7 @@ float IcebusControl::RecordTrajectories(
     } while (elapsedTime < recordTime);
 
     // set force to zero
-    SetAllToDisplacement(0);
+    AllToSetpoint(DISPLACEMENT,0);
 
     // done recording
     if (filepath.empty()) {
@@ -368,7 +398,7 @@ float IcebusControl::StartRecordTrajectories(
     ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
     for(auto motor:idList) {
-        ChangeControl(motor,DISPLACEMENT);
+        SetControlMode(motor,DISPLACEMENT);
         SetPoint(motor,predisplacement);
     }
 
@@ -384,7 +414,7 @@ float IcebusControl::StartRecordTrajectories(
         dt = elapsedTime;
         for (auto it:  idList)//.begin(); it != idList.end(); it++ ) {
         {
-            trajectories[it].push_back(GetEncoderPosition(it,ENCODER0));
+            trajectories[it].push_back(GetEncoderPosition(it,ENCODER0_POSITION));
         }
         sample++;
         rate.sleep();
@@ -392,7 +422,7 @@ float IcebusControl::StartRecordTrajectories(
 
 
     for(auto motor:idList) {
-        ChangeControl(motor,DISPLACEMENT);
+        SetControlMode(motor,DISPLACEMENT);
         SetPoint(motor,10);
     }
 
@@ -420,7 +450,7 @@ float IcebusControl::StartRecordTrajectories(
         for (uint m = 0; m < idList.size(); m++) {
             sprintf(motorname, "motor%d", idList[m]);
             ss << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
-               << POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
+               << ENCODER0_POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
                << std::endl;
             ss << "<waypointlist>" << std::endl;
             for (uint i = 0; i < trajectories[idList[m]].size(); i++)
@@ -560,7 +590,7 @@ bool IcebusControl::PlayTrajectory(const char *file) {
         dt = elapsedTime;
         for (auto &motor : trajectories) {
             if (sample == 0) {
-                ChangeControl(motor.first, POSITION);
+                SetControlMode(motor.first, ENCODER0_POSITION);
             }
 
             SetPoint(motor.first, motor.second[sample]);
@@ -581,7 +611,7 @@ void IcebusControl::EstimateSpringParameters(int motor, int degree, vector<float
                                           uint numberOfDataPoints, float displacement_min,
                                           float displacement_max, vector<double> &load, vector<double> &displacement) {
     SetPoint(motor, 0);
-    ChangeControl(motor, DISPLACEMENT);
+    SetControlMode(motor, DISPLACEMENT);
     milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
     ofstream outfile;
     char str[100];
@@ -604,7 +634,7 @@ void IcebusControl::EstimateSpringParameters(int motor, int degree, vector<float
         // note the weight
         load.push_back(GetWeight(0)); // TODO: use a different load_cell for each motor
         // note the force
-        displacement.push_back(GetEncoderPosition(motor,ENCODER1));
+        displacement.push_back(GetEncoderPosition(motor,ENCODER1_POSITION));
         outfile << displacement.back() << ", " << load.back() << endl;
         ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         cout << "setPoint: \t" << f << "\tdisplacement:\t" << displacement.back() << "\tload:\t" <<

@@ -1,7 +1,6 @@
 #include "roboyPlexus.hpp"
 
-RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
-                         MyoControlPtr myoControl,
+RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoControl,
         vector<int32_t *> &i2c_base, int32_t *adc_base, int32_t *switches_base) :
         i2c_base(i2c_base),  adc_base(adc_base), icebusControl(icebusControl), myoControl(myoControl),
         switches_base(switches_base) {
@@ -72,6 +71,12 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     spinner->start();
 
     if(myoControl!=nullptr){
+        for (auto &myo_bus:myoControl->motor_config->myobus) {
+            for(auto &motor:myo_bus.second){
+                myoControl->SetControlMode(motor->motor_id_global,ENCODER0_POSITION);
+            }
+        }
+
         motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatusPublisher, this));
         motorStatusThread->detach();
     }
@@ -85,9 +90,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
         icebusControl->SetGearBoxRatio(motor,53);
         icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor,ENCODER0));
-        myoControl->changeControl(motor,POSITION);
-        icebusControl->ChangeControl(motor,ENCODER1);
-        control_mode[motor] = POSITION;
+        icebusControl->SetControlMode(motor,ENCODER1_POSITION);
     }
 
     vector<int> active_i2c_bus;
@@ -123,8 +126,8 @@ void RoboyPlexus::MotorStatePublisher() {
         roboy_middleware_msgs::MotorState msg;
         for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
             msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
-            msg.encoder0_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER0));
-            msg.encoder1_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER1));
+            msg.encoder0_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER0_POSITION));
+            msg.encoder1_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER1_POSITION));
             msg.displacement.push_back(icebusControl->GetDisplacement(motor));
             msg.current.push_back(icebusControl->GetCurrent(motor));
         }
@@ -137,14 +140,18 @@ void RoboyPlexus::MotorStatusPublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorStatus msg;
-        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
+        for (auto &myo_bus:myoControl->motor_config->myobus) {
+            for(auto &motor:myo_bus.second){
+                myoControl->GetPowerSense(motor->motor_id_global,DISPLACEMENT);
+            }
+        }
             msg.power_sense = myoControl->getPowerSense();
             msg.pwm_ref.push_back(myoControl->getPWM(motor));
             msg.position.push_back(myoControl->getPosition(motor));
             msg.velocity.push_back(myoControl->getVelocity(motor));
             msg.displacement.push_back(myoControl->getDisplacement(motor));
             msg.current.push_back(myoControl->getCurrent(motor));
-        }
+
         motorStatus.publish(msg);
         rate.sleep();
     }

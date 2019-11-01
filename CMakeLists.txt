@@ -79,6 +79,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/control/controlActions.hpp
             include/roboy_plexus/sensors/tle493d_w2b6.hpp
             ../common_utilities/include/common_utilities/MotorConfig.hpp
+            include/roboy_plexus/interfaces/motorControl.hpp
             )
     add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES} )

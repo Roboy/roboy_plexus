@@ -89,18 +89,10 @@
 #define NUM_SENSORS 0
 #define NUMBER_OF_LOADCELLS 1
 
-#define ENCODER0 0
-#define ENCODER1 1
-
 using namespace std;
 using namespace std::chrono;
 
-#define ENCODER0 0
-#define ENCODER1 1
-#define DISPLACEMENT 2
-#define DIRECT_PWM 3
-
-class IcebusControl {
+class IcebusControl: public MotorControl {
 public:
     /**
      * Constructor
@@ -112,42 +104,7 @@ public:
 
     ~IcebusControl();
 
-    /**
-	 * Changes the controller of a motor
-	 * @param motor for this motor
-	 * @param mode choose from Position, Velocity or Displacement
-	 * @param params with these controller parameters
-     * @param setPoint new setPoint
-	 */
-    void ChangeControl(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
-
-    /**
-     * Changes the controller of a motor
-     * @param motor for this motor
-     * @param mode choose from Position, Velocity or Displacement
-     * @param params with these controller parameters
-     */
-    void ChangeControl(int motor, int mode, control_Parameters_t &params);
-
-    /**
-     * Changes the controller of a motor with the saved controller parameters
-     * @param motor for this motor
-     * @param mode choose from Position, Velocity or Displacement
-     */
-    void ChangeControl(int motor, int mode);
-
-    /**
-     * Changes the controller of ALL motors with the saved controller parameters
-     * @param mode choose from Position, Velocity or Displacement
-     */
-    void ChangeControl(int mode);
-
-    /**
-    * Changes the controller parameters of a motor
-    * @param motor for this motor
-    * @param params with these controller parameters
-    */
-    void ChangeControlParameters(int motor, control_Parameters_t &params);
+    bool AllToSetpoint(int control_mode, int32_t setPoint);
 
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces
@@ -184,6 +141,7 @@ public:
                                                    uint numberOfDataPoints, float delta_revolution_negative,
                                                    float delta_revolution_positive, vector<double> &motor_angle,
                                                    vector<double> &motor_encoder);
+
     /**
      * Gets the communication Quality of a motor
      * @param motor
@@ -191,27 +149,24 @@ public:
      */
     int32_t GetCommunicationQuality(int motor);
 
-    void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
-
     /**
      * Gets the current control_mode of a motor
      * @param motor for this motor
      */
-    uint16_t GetControlMode(int motor);
+    uint8_t GetControlMode(int motor) override;
 
     /**
      * Gets the current of a motor
      * @param motor for this motor
      */
-    uint16_t GetCurrent(int motor);
+    int16_t GetCurrent(int motor) override;
 
     /**
      * Getting default parameters for a control mode
      * @param params
      * @param control_mode
      */
-    void getDefaultControlParams(control_Parameters_t *params, int control_mode);
+    void GetDefaultControlParams(control_Parameters_t *params, int control_mode);
 
     /**
      * Get the displacement of a muscle
@@ -225,7 +180,7 @@ public:
      * @param motor for this motor
      * @param encoder of this encoder
      */
-    int32_t GetEncoderPosition(int motor,int encoder);
+    int32_t GetEncoderPosition(int motor,int encoder) override;
 
     /**
      * Get the displacement of a motor
@@ -234,11 +189,14 @@ public:
      */
     int32_t GetGearBoxRatio(int motor);
 
+    void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
+                                int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
+
     /**
      * Get PWM of motor
      * @param pwm
      */
-    int32_t GetPWM(int motor);
+    int32_t GetPWM(int motor) override;
 
     /**
      * Gets the setpoint of a motor
@@ -263,11 +221,88 @@ public:
     float GetWeight(int load_cell, uint32_t &adc_value);
 
     /**
+     * Changes the controller of ALL motors with the saved controller parameters
+     * @param mode choose from Position, Velocity or Displacement
+     * @return success
+     */
+    bool SetControlMode(int mode) override;
+
+    /**
+     * Changes the controller of a motor with the saved controller parameters
+     * @param motor for this motor
+     * @param mode choose from Position, Velocity or Displacement
+     */
+    bool SetControlMode(int motor, int mode) override;
+
+    /**
+    * Changes the controller of a motor
+    * @param motor for this motor
+    * @param mode choose from Position, Velocity or Displacement
+    * @param params with these controller parameters
+    */
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params);
+
+    /**
+	 * Changes the controller of a motor
+	 * @param motor for this motor
+	 * @param mode choose from Position, Velocity or Displacement
+	 * @param params with these controller parameters
+     * @param setPoint new setPoint
+	 */
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
+
+    /**
+     * Sets the gearbox ratio of a motor
+     * @param motor
+     * @param gearBoxRatio
+     */
+    void SetGearBoxRatio(int motor, int32_t gearBoxRatio);
+
+    /**
+     * Sets a new setpoint for a motor
+     * @param motor
+     * @param setpoint
+     */
+    void SetPoint(int motor, int32_t setpoint) override;
+
+    /**
+     * Sets the motor update frequency, this is done per bus,
+     * so the motor id is only used to check which bus is controlling it
+     * @param motor
+     * @param freq
+     */
+    void SetMotorUpdateFrequency(int motor, int32_t freq);
+
+    void SetPredisplacement(int value) override;
+
+    /**
+     * Enables/disables replaying trajectory
+     * @param replay
+     */
+    void SetReplay(bool status) override;
+
+    /**
+	 * starts recording positions of motors in Displacement mode
+	 * @param samplingTime
+	 * @param trajectories will be filled with positions
+	 * @param idList record these motors
+	 * @param name filename
+	 */
+    float StartRecordTrajectories(
+            float samplingTime, map<int, vector<float>> &trajectories,
+            vector<int> &idList, string name) override;
+
+    /**
+     * stops recording a trajectory and writes to file
+     */
+    void StopRecordTrajectories() override;
+
+    /**
      * Plays back a trajectory
      * @param file
      * @return success
      */
-    bool PlayTrajectory(const char *file);
+    bool PlayTrajectory(const char *file) override;
 
     /**
      * Prints all information about a motor
@@ -307,80 +342,6 @@ public:
             vector<int> &controlmode, string name);
 
     /**
-     * Sets the gearbox ratio of a motor
-     * @param motor
-     * @param gearBoxRatio
-     */
-    void SetGearBoxRatio(int motor, int32_t gearBoxRatio);
-
-    /**
-     * Sets a new setpoint for a motor
-     * @param motor
-     * @param setpoint
-     */
-    void SetPoint(int motor, int32_t setpoint);
-
-    /**
-    * Sets predisplacement for recording trajectories (50 by default)
-    * @param value
-    */
-    void SetPredisplacement(int value);
-
-    /**
-    * Changes the control mode for all motors to Direct PWM
-    * @param pwm new setPoint
-    */
-    void SetAllToDirectPWM(int32_t pwm);
-
-    /**
-     * Sets the motor update frequency, this is done per bus,
-     * so the motor id is only used to check which bus is controlling it
-     * @param motor
-     * @param freq
-     */
-    void SetMotorUpdateFrequency(int motor, int32_t freq);
-
-    /**
-     * Changes the control mode for all motors to Displacement
-     * @param displacement new setPoint
-     */
-    void SetAllToDisplacement(int32_t displacement);
-
-    /**
-     * Changes the control mode for all motors to Position
-     * @param pos new setPoint
-     */
-    void SetAllToPosition(int32_t pos);
-
-    /**
-     * Enables/disables replaying trajectory
-     * @param replay
-     */
-    void SetReplay(bool status);
-
-    /**
-     * Changes the control mode for all motors to Velocity
-     * @param pos new setPoint
-     */
-    void SetAllToVelocity(int32_t vel);
-
-    /**
-	 * starts recording positions of motors in Displacement mode
-	 * @param samplingTime
-	 * @param trajectories will be filled with positions
-	 * @param idList record these motors
-	 * @param name filename
-	 */
-    float StartRecordTrajectories(
-            float samplingTime, map<int, vector<float>> &trajectories,
-            vector<int> &idList, string name);
-
-    /**
-     * stops recording a trajectory and writes to file
-     */
-    void StopRecordTrajectories();
-
-    /**
      * Zeros the weight for a load cell
      * @param load_cell for this load cell
      */
@@ -397,7 +358,7 @@ public:
     MotorConfigPtr motor_config;
 private:
     Timer timer;
-    vector<int32_t *> icebus_base;
+    vector<int32_t *> icebus_base, myobus_base;
     int iter = 0;
     bool recording = false; // keeps track of recording status
     bool replay = true;

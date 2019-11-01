@@ -12,28 +12,28 @@ using namespace std;
 class PerformMovementAction {
 protected:
     ros::NodeHandle nh_;
-    IcebusControlPtr icebusControl;
+    MotorControlPtr motorControl;
     string action_name;
     actionlib::SimpleActionServer<roboy_control_msgs::PerformMovementAction> performMovement_as;
     roboy_control_msgs::PerformMovementFeedback feedback;
     roboy_control_msgs::PerformMovementResult result;
 
 public:
-    PerformMovementAction(IcebusControlPtr icebusControl, string name);
+    PerformMovementAction(MotorControlPtr motorControl, string name);
     void executeCB(const roboy_control_msgs::PerformMovementGoalConstPtr &goal);
 };
 
 class PerformMovementsAction {
 protected:
     ros::NodeHandle nh_;
-    IcebusControlPtr icebusControl;
+    MotorControlPtr motorControl;
     string action_name;
     actionlib::SimpleActionServer<roboy_control_msgs::PerformMovementsAction> performMovements_as;
     roboy_control_msgs::PerformMovementsFeedback feedback;
     roboy_control_msgs::PerformMovementsResult result;
 
 public:
-    PerformMovementsAction(IcebusControlPtr icebusControl, string name);
+    PerformMovementsAction(MotorControlPtr motorControl, string name);
     void executeCB(const roboy_control_msgs::PerformMovementsGoalConstPtr &goal);
 };
 

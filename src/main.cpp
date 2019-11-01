@@ -74,11 +74,10 @@ void SigintHandler(int sig)
     cout << "shutting down" << endl;
     if(myoControl!= nullptr){
         // switch to displacement
-        for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-            if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
-                myoControl->changeControl(motor, VELOCITY);
-            else
-                myoControl->changeControl(motor, DISPLACEMENT);
+        for (auto &myo_bus:myoControl->motor_config->myobus) {
+            for(auto &motor:myo_bus.second){
+                myoControl->SetControlMode(motor->motor_id_global,DISPLACEMENT);
+            }
         }
         // relax the springs
         ros::Rate rate(100);
@@ -89,14 +88,14 @@ void SigintHandler(int sig)
             else
                 *h2p_lw_led_addr = 0x00;
 
-            for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-                if(find(myoControl->myo_bricks.begin(), myoControl->myo_bricks.end(), motor)!=myoControl->myo_bricks.end())
-                    continue;
-                int displacement = myoControl->getDisplacement(motor);
-                if(displacement<=0)
-                    continue;
-                else
-                    myoControl->setDisplacement(motor,displacement*(decrements/100.0));
+            for (auto &myo_bus:myoControl->motor_config->myobus) {
+                for(auto &motor:myo_bus.second){
+                    int displacement = myoControl->getDisplacement(motor->motor_id_global);
+                    if(displacement<=0)
+                        continue;
+                    else
+                        myoControl->setDisplacement(motor->motor_id_global,displacement*(decrements/100.0));
+                }
             }
             rate.sleep();
             if(decrements%15==0) {
@@ -109,8 +108,10 @@ void SigintHandler(int sig)
             }
         }
     }
-    for (uint motor = 0; motor < NUMBER_OF_MOTORS_PER_FPGA; motor++) {
-        myoControl->setDisplacement(motor,0);
+    for (auto &myo_bus:myoControl->motor_config->myobus) {
+        for(auto &motor:myo_bus.second){
+            myoControl->setDisplacement(motor->motor_id_global,0);
+        }
     }
 
     if(h2p_lw_led_addr!=nullptr)
