@@ -51,6 +51,7 @@ struct A1335State{
     uint8_t address;
     bool isOK;
     float angle; // in deg
+    uint16_t angle_raw;
     uint8_t angle_flags : 2; // error, new
     uint8_t status_flags : 4;
     uint16_t err_flags : 12;

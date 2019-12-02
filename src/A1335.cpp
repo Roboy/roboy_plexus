@@ -142,7 +142,8 @@ bool A1335::readDeviceState(uint8_t deviceaddress, A1335State* state){
 
     state->isOK = checkDefaultSettings(state);
 
-    state->angle = (float)((uint16_t)((state->rawData[0][0] & 0xf) << 8) | state->rawData[0][1]) * 360 / 4096 ;
+    state->angle_raw = ((uint16_t)((state->rawData[0][0] & 0xf) << 8) | state->rawData[0][1]);
+    state->angle = (float) state->angle_raw* 360 / 4096 ;
     state->angle_flags = (state->rawData[0][0] >> 5) & 0b11;
 
     state->status_flags = state->rawData[1][0] & 0xf;

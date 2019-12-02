@@ -95,6 +95,15 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     add_executable( automaticRoboyPlexusLauncher src/ROS_MASTER_URI_receiver.cpp src/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
+    add_executable( bldc_testbed
+            src/bldc_testbed.cpp
+            include/roboy_plexus/A1335.hpp
+            src/A1335.cpp
+            include/roboy_plexus/i2c.hpp
+            src/i2c.cpp
+            )
+    target_link_libraries( bldc_testbed -lpthread -lrt ${ros_LIBRARIES} )
+
     #==============================================================================
     # Installation
     #==============================================================================
