@@ -191,6 +191,13 @@ public:
      */
     int32_t GetCommunicationQuality(int motor);
 
+    /**
+     * Gets the error code of a motor
+     * @param motor
+     * @return error code
+     */
+    uint32_t GetErrorCode(int motor);
+
     void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
 

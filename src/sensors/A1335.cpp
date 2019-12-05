@@ -49,7 +49,7 @@ bool A1335::readAngleData(vector<A1335State> &states){
             ROS_DEBUG_STREAM_THROTTLE(1,"motor sensor " << device << " is active");
             deviceActive = true; // at least one is active
         }else{
-            ROS_DEBUG_STREAM_THROTTLE(1,"motor sensor " << device << " is NOT active, check cables (did you use a level shifter?!)");
+            ROS_WARN_STREAM_THROTTLE(1,"motor sensor " << device << " is NOT active, check cables (did you use a level shifter?!)");
         }
         states.push_back(state);
     }

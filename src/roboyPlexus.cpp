@@ -165,7 +165,9 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.IntegralLimit.push_back(IntegralLimit);
             msg.PWMLimit.push_back(PWMLimit);
             int32_t communication_quality = icebusControl->GetCommunicationQuality(motor);
+            uint32_t error_code = icebusControl->GetErrorCode(motor);
             msg.communication_quality.push_back(communication_quality);
+            msg.error_code.push_back(error_code);
             msg.gearBoxRatio.push_back(icebusControl->GetGearBoxRatio(motor));
             msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
             msg.pwm.push_back(icebusControl->GetPWM(motor));
