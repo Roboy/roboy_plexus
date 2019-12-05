@@ -142,6 +142,10 @@ int32_t IcebusControl::GetCommunicationQuality(int motor){
     return ICEBUS_CONTROL_READ_communication_quality(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
+uint32_t IcebusControl::GetErrorCode(int motor){
+    return ICEBUS_CONTROL_READ_error_code(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+}
+
 void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
                             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){
     Kp = ICEBUS_CONTROL_READ_Kp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);

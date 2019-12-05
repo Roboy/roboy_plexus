@@ -87,6 +87,15 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
+    add_executable( elbow_control
+            src/elbow_control.cpp
+            src/interfaces/icebusControl.cpp
+            src/interfaces/i2c.cpp
+            src/sensors/A1335.cpp
+            ../common_utilities/src/MotorConfig.cpp
+            )
+    target_link_libraries( elbow_control -lpthread -lrt ${ros_LIBRARIES} )
+
     #==============================================================================
     # Installation
     #==============================================================================

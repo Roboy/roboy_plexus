@@ -31,15 +31,37 @@
 #define NEOPIXEL_0_END 0x3ff
 
 /*
+ * Macros for device 'I2C_1', class 'I2C'
+ * The macros are prefixed with 'I2C_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_1_COMPONENT_TYPE I2C
+#define I2C_1_COMPONENT_NAME I2C_1
+#define I2C_1_BASE 0x400
+#define I2C_1_SPAN 64
+#define I2C_1_END 0x43f
+
+/*
+ * Macros for device 'I2C_0', class 'I2C'
+ * The macros are prefixed with 'I2C_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_0_COMPONENT_TYPE I2C
+#define I2C_0_COMPONENT_NAME I2C_0
+#define I2C_0_BASE 0x440
+#define I2C_0_SPAN 64
+#define I2C_0_END 0x47f
+
+/*
  * Macros for device 'LED', class 'altera_avalon_pio'
  * The macros are prefixed with 'LED_'.
  * The prefix is the slave descriptor.
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x400
+#define LED_BASE 0x480
 #define LED_SPAN 16
-#define LED_END 0x40f
+#define LED_END 0x48f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -65,7 +87,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1572315746
+#define SYSID_QSYS_TIMESTAMP 1572682802
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
