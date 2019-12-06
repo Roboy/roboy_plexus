@@ -45,7 +45,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             roboy_middleware_msgs
             roboy_control_msgs
             common_utilities
-            roboy_soli
+
             bondcpp
             )
 
@@ -86,7 +86,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/controlActions.hpp
 #            include/roboy_plexus/armControl.hpp
             )
-    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_soli_gencpp)
+    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES})
 
     add_executable( msj_platform_fpga

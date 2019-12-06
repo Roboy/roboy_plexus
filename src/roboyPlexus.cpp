@@ -201,7 +201,7 @@ string RoboyPlexus::getBodyPart() {
 }
 
 void RoboyPlexus::jointStatusPublisher() {
-    ros::Rate rate(50);
+    ros::Rate rate(200);
     while (keep_publishing) {
         roboy_middleware_msgs::JointStatus msg;
         msg.absAngles.resize(jointAngle.size());

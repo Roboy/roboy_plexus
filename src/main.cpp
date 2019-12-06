@@ -239,6 +239,8 @@ int main(int argc, char *argv[]) {
 //    }
 //
     I2C i2c0(h2p_lw_i2c_addr[0]), i2c1(h2p_lw_i2c_addr[1]), i2c(h2p_lw_i2c_addr[2]);
+
+
 //    ros::Duration d(0.1);
 //    while(ros::ok()) {
 //        vector<uint8_t> data;
@@ -320,6 +322,17 @@ int main(int argc, char *argv[]) {
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 
 
+    ROS_INFO("Started testing i2c");
+    I2C i2c2(h2p_lw_i2c_addr[3]);
+    ros::Rate rate1(1);
+    while (1) {
+      ROS_INFO("blurp");
+      // i2c2.write(0x5e,0xFF00,1);
+      // rate1.sleep();
+      i2c2.write(0x5e,0xFF00,1);
+      rate1.sleep();
+    }
+    ROS_INFO("Finished.");
 
     signal(SIGINT, SigintHandler);
 
