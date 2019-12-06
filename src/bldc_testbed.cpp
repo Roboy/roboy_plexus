@@ -68,11 +68,16 @@ int32_t *h2p_lw_pwm_addr;
 int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_switches_addr;
 vector<int32_t *> h2p_lw_i2c_addr;
+vector<int32_t *> h2p_lw_tli_addr;
 
 int commute_state = 0;
 const int INHA = 0, INLA = 1, INHB = 2, INLB = 3, INHC = 4, INLC = 5;
 int motor_position = 0, motor_position_prev = 0, motor_pos_absolute = 0, motor_offset = 0, rev_counter = 0, pwm = 3000;
+float current[3] = {0,0};
 vector<size_t> commute_state_transition = {0,1,2,3,4,5}, cw_transition = {0,1,2,3,4,5}, ccw_transition = {5,4,3,2,1,0};
+
+const int TLI4970_CURRENT_OFFSET = 4096;
+const int TLI4970_CURRENT_DIVIDER = 80;
 
 void SigintHandler(int sig)
 {
@@ -167,14 +172,17 @@ bool auto_phase_cb(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response 
     ROS_INFO("running on full revolution now...");
     int start_pos =  motor_pos_absolute;
     int i = 0;
-    ros::Duration delay(0.06);
+    ros::Duration delay(0.1);
+    t0 = ros::Time::now();
     do{
         commute_state = cw_transition[i++];
-        ROS_INFO("running commute_state %d",i);
+//        ROS_INFO("running commute_state %d",i);
         delay.sleep();
         if(i>5)
             i = 0;
-    }while((motor_pos_absolute-start_pos)<4096);
+    }while((motor_pos_absolute-start_pos)<4096 && ((ros::Time::now()-t0).toSec()<10));
+    ROS_INFO("done");
+    return true;
 }
 
 uint32_t readADC(int load_cell = 0) {
@@ -242,26 +250,18 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-#ifdef SWITCHES_BASE
     h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-#else
-    h2p_lw_switches_addr = nullptr;
-#endif
-#ifdef I2C_0_BASE
+
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#else
-    h2p_lw_i2c_addr.push_back(nullptr);
-#endif
-#ifdef PWM_0_BASE
+
     h2p_lw_pwm_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + PWM_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-#else
-    h2p_lw_pwm_addr = nullptr;
-#endif
-#ifdef ADC_LTC2308_0_BASE
+
     h2p_lw_adc_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ADC_LTC2308_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-#else
-    h2p_lw_adc_addr = nullptr;
-#endif
+
+    h2p_lw_tli_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + TLI_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+    h2p_lw_tli_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + TLI_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+    h2p_lw_tli_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + TLI_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+
 
     control_all_mosfet(0);
 
@@ -270,8 +270,11 @@ int main(int argc, char *argv[]) {
     ros::AsyncSpinner spinner(0);
     spinner.start();
 
-    ros::Publisher adc_pub = nh.advertise<std_msgs::Int32>("adc",1);
-    ros::Publisher motor_pos_pub = nh.advertise<std_msgs::Int32>("pos",1);
+//    ros::Publisher adc_pub = nh.advertise<std_msgs::Int32>("adc",1);
+    ros::Publisher motor_pos_pub = nh.advertise<std_msgs::Float32>("pos",1);
+    ros::Publisher current_0_pub = nh.advertise<std_msgs::Float32>("current_0",1);
+    ros::Publisher current_1_pub = nh.advertise<std_msgs::Float32>("current_1",1);
+    ros::Publisher current_2_pub = nh.advertise<std_msgs::Float32>("current_2",1);
     ros::Subscriber commute_sub = nh.subscribe("commute_state",1,commute_state_cb);
     ros::ServiceServer auto_phase = nh.advertiseService("auto_phase",auto_phase_cb);
 
@@ -282,13 +285,15 @@ int main(int argc, char *argv[]) {
     A1335 pos(h2p_lw_i2c_addr[0],deviceIDs);
 
     ros::Rate rate(10);
-    std_msgs::Int32 msg;
+    std_msgs::Float32 msg;
 
+    int commute_state_prev = 0;
 
     while(ros::ok()){
-        int32_t adc_value = readADC(0);
-        msg.data = adc_value;
-        adc_pub.publish(msg);
+
+//        int32_t adc_value = readADC(0);
+//        msg.data = adc_value;
+//        adc_pub.publish(msg);
         vector<A1335State> state;
         pos.readAngleData(state);
         motor_position = state[0].angle_raw;
@@ -302,8 +307,24 @@ int main(int argc, char *argv[]) {
 
         msg.data = motor_pos_absolute;
         motor_pos_pub.publish(msg);
-//        ROS_INFO_THROTTLE(0.1,"%d",motor_pos_absolute);
-        rate.sleep();
+        current[0] = (IORD(h2p_lw_tli_addr[0],0)-4096)/80;
+        msg.data = current[0];
+        current_0_pub.publish(msg);
+        current[1] = (IORD(h2p_lw_tli_addr[1],0)-4096)/80;
+        msg.data = current[1];
+        current_1_pub.publish(msg);
+        current[2] = (IORD(h2p_lw_tli_addr[2],0)-4096)/80;
+        msg.data = current[2];
+        current_2_pub.publish(msg);
+
+//        rate.sleep();
+        if(commute_state_prev!=commute_state){
+            commute_state_prev = commute_state;
+            control_all_mosfet(0);
+            // dead time, to make sure that mosfets are off
+            ros::Duration delay(0.1);
+        }
+
         switch(commute_state){
             case 0: // B -> C
                 control_mosfet(INHA,0);

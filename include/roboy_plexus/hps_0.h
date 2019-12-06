@@ -20,26 +20,72 @@
  */
 
 /*
+ * Macros for device 'TLI_2', class 'TLI4970'
+ * The macros are prefixed with 'TLI_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define TLI_2_COMPONENT_TYPE TLI4970
+#define TLI_2_COMPONENT_NAME TLI_2
+#define TLI_2_BASE 0x0
+#define TLI_2_SPAN 1024
+#define TLI_2_END 0x3ff
+
+/*
+ * Macros for device 'TLI_1', class 'TLI4970'
+ * The macros are prefixed with 'TLI_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define TLI_1_COMPONENT_TYPE TLI4970
+#define TLI_1_COMPONENT_NAME TLI_1
+#define TLI_1_BASE 0x400
+#define TLI_1_SPAN 1024
+#define TLI_1_END 0x7ff
+
+/*
+ * Macros for device 'TLI_0', class 'TLI4970'
+ * The macros are prefixed with 'TLI_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define TLI_0_COMPONENT_TYPE TLI4970
+#define TLI_0_COMPONENT_NAME TLI_0
+#define TLI_0_BASE 0x800
+#define TLI_0_SPAN 1024
+#define TLI_0_END 0xbff
+
+/*
+ * Macros for device 'TLI4970_0', class 'TLI4970'
+ * The macros are prefixed with 'TLI4970_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define TLI4970_0_COMPONENT_TYPE TLI4970
+#define TLI4970_0_COMPONENT_NAME TLI4970_0
+#define TLI4970_0_BASE 0xc00
+#define TLI4970_0_SPAN 1024
+#define TLI4970_0_END 0xfff
+
+/*
+ * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
+ * The macros are prefixed with 'SYSID_QSYS_'.
+ * The prefix is the slave descriptor.
+ */
+#define SYSID_QSYS_COMPONENT_TYPE altera_avalon_sysid_qsys
+#define SYSID_QSYS_COMPONENT_NAME sysid_qsys
+#define SYSID_QSYS_BASE 0x1000
+#define SYSID_QSYS_SPAN 8
+#define SYSID_QSYS_END 0x1007
+#define SYSID_QSYS_ID 114415
+#define SYSID_QSYS_TIMESTAMP 1575637864
+
+/*
  * Macros for device 'adc_ltc2308_0', class 'adc_ltc2308'
  * The macros are prefixed with 'ADC_LTC2308_0_'.
  * The prefix is the slave descriptor.
  */
 #define ADC_LTC2308_0_COMPONENT_TYPE adc_ltc2308
 #define ADC_LTC2308_0_COMPONENT_NAME adc_ltc2308_0
-#define ADC_LTC2308_0_BASE 0xb0
+#define ADC_LTC2308_0_BASE 0x1008
 #define ADC_LTC2308_0_SPAN 8
-#define ADC_LTC2308_0_END 0xb7
-
-/*
- * Macros for device 'I2C_0', class 'I2C'
- * The macros are prefixed with 'I2C_0_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_0_COMPONENT_TYPE I2C
-#define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x540
-#define I2C_0_SPAN 64
-#define I2C_0_END 0x57f
+#define ADC_LTC2308_0_END 0x100f
 
 /*
  * Macros for device 'pio_0', class 'altera_avalon_pio'
@@ -48,9 +94,9 @@
  */
 #define PIO_0_COMPONENT_TYPE altera_avalon_pio
 #define PIO_0_COMPONENT_NAME pio_0
-#define PIO_0_BASE 0x580
+#define PIO_0_BASE 0x1010
 #define PIO_0_SPAN 16
-#define PIO_0_END 0x58f
+#define PIO_0_END 0x101f
 #define PIO_0_BIT_CLEARING_EDGE_REGISTER 0
 #define PIO_0_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define PIO_0_CAPTURE 0
@@ -72,9 +118,9 @@
  */
 #define SWITCHES_COMPONENT_TYPE altera_avalon_pio
 #define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x590
+#define SWITCHES_BASE 0x1020
 #define SWITCHES_SPAN 16
-#define SWITCHES_END 0x59f
+#define SWITCHES_END 0x102f
 #define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
 #define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SWITCHES_CAPTURE 0
@@ -96,9 +142,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x5a0
+#define LED_BASE 0x1030
 #define LED_SPAN 16
-#define LED_END 0x5af
+#define LED_END 0x103f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -114,17 +160,15 @@
 #define LED_RESET_VALUE 0
 
 /*
- * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
- * The macros are prefixed with 'SYSID_QSYS_'.
+ * Macros for device 'I2C_0', class 'I2C'
+ * The macros are prefixed with 'I2C_0_'.
  * The prefix is the slave descriptor.
  */
-#define SYSID_QSYS_COMPONENT_TYPE altera_avalon_sysid_qsys
-#define SYSID_QSYS_COMPONENT_NAME sysid_qsys
-#define SYSID_QSYS_BASE 0x1000
-#define SYSID_QSYS_SPAN 8
-#define SYSID_QSYS_END 0x1007
-#define SYSID_QSYS_ID 114415
-#define SYSID_QSYS_TIMESTAMP 1575289888
+#define I2C_0_COMPONENT_TYPE I2C
+#define I2C_0_COMPONENT_NAME I2C_0
+#define I2C_0_BASE 0x1040
+#define I2C_0_SPAN 64
+#define I2C_0_END 0x107f
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
