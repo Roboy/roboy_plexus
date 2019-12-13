@@ -43,6 +43,7 @@
 #include <interfaces/NeoPixel.hpp>
 #include <utility/timer.hpp>
 #include <common_utilities/MotorConfig.hpp>
+#include "interfaces/motorControl.hpp"
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
@@ -101,6 +102,11 @@
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define MOTOR_BOARD_COMMUNICATION_FREQUENCY 100 // in Hz, sets the communication frequency between fpga and motor boards, used to scale the motor velocity
+
+#define POSITION 0
+#define VELOCITY 1
+#define DISPLACEMENT 2
+#define DIRECT_PWM 4
 
 using namespace std;
 using namespace std::chrono;
@@ -194,7 +200,7 @@ public:
      * Get the power sense
      * @return true (power on), false (power off)
      */
-    bool GetPowerSense();
+    bool GetPowerSense() override;
 
     /**
      * Gets the current pwm of a motor
@@ -254,7 +260,7 @@ public:
     float RecordTrajectories(
             float samplingTime, float recordTime,
             map<int, vector<float>> &trajectories, vector<int> &idList,
-            vector<int> &controlmode, string name);
+            vector<int> &controlmode, string name) override {ROS_ERROR("not implemented");};
 
     /**
 	 * starts recording positions of motors in Displacement mode
@@ -265,31 +271,31 @@ public:
 	 */
     float StartRecordTrajectories(
             float samplingTime, map<int, vector<float>> &trajectories,
-            vector<int> &idList, string name);
+            vector<int> &idList, string name) override {ROS_ERROR("not implemented");};
 
     /**
      * stops recording a trajectory and writes to file
      */
-    void StopRecordTrajectories();
+    void StopRecordTrajectories() override {ROS_ERROR("not implemented");};
 
     /**
      * Plays back a trajectory
      * @param file
      * @return success
      */
-    bool PlayTrajectory(const char *file);
+    bool PlayTrajectory(const char *file) override {ROS_ERROR("not implemented");};
 
     /**
      * Sets predisplacement for recording trajectories (50 by default)
      * @param value
      */
-    void SetPredisplacement(int value);
+    void SetPredisplacement(int value) override {ROS_ERROR("not implemented");};
 
     /**
      * Enables/disables replaying trajectory
      * @param replay
      */
-    void SetReplay(bool status);
+    void SetReplay(bool status) override {ROS_ERROR("not implemented");};
 
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces

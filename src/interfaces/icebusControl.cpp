@@ -143,7 +143,7 @@ int32_t IcebusControl::GetCommunicationQuality(int motor){
 }
 
 uint32_t IcebusControl::GetErrorCode(int motor){
-    return ICEBUS_CONTROL_READ_error_code(icebus_base[motor_config->motor[motor]->icebus], motor_config->motor[motor]->icebus_id);
+    return ICEBUS_CONTROL_READ_error_code(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
@@ -228,6 +228,10 @@ int32_t IcebusControl::GetEncoderPosition(int motor, int encoder) {
         return ICEBUS_CONTROL_READ_encoder1_position(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
     else
         return -1;
+}
+
+int32_t IcebusControl::GetEncoderVelocity(int motor, int encoder) {
+    return 0;
 }
 
 int32_t IcebusControl::GetGearBoxRatio(int motor) {

@@ -142,15 +142,14 @@ void RoboyPlexus::MotorStatusPublisher() {
         roboy_middleware_msgs::MotorStatus msg;
         for (auto &myo_bus:myoControl->motor_config->myobus) {
             for(auto &motor:myo_bus.second){
-                myoControl->GetPowerSense(motor->motor_id_global,DISPLACEMENT);
+                msg.power_sense = myoControl->GetPowerSense();
+                msg.pwm_ref.push_back(myoControl->GetPWM(motor->bus_id));
+                msg.position.push_back(myoControl->GetEncoderPosition(motor->bus_id,0));
+                msg.velocity.push_back(myoControl->GetEncoderVelocity(motor->bus_id,0));
+                msg.displacement.push_back(myoControl->GetDisplacement(motor->bus_id));
+                msg.current.push_back(myoControl->GetCurrent(motor->bus_id));
             }
         }
-            msg.power_sense = myoControl->getPowerSense();
-            msg.pwm_ref.push_back(myoControl->getPWM(motor));
-            msg.position.push_back(myoControl->getPosition(motor));
-            msg.velocity.push_back(myoControl->getVelocity(motor));
-            msg.displacement.push_back(myoControl->getDisplacement(motor));
-            msg.current.push_back(myoControl->getCurrent(motor));
 
         motorStatus.publish(msg);
         rate.sleep();
@@ -216,19 +215,19 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
                 if(!msg->legacy)
                     icebusControl->SetPoint(motor, msg->setpoint[i]);
                 else
-                    myoControl->setPosition(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                 break;
             case 1:
                 if(!msg->legacy)
                     icebusControl->SetPoint(motor, msg->setpoint[i]);
                 else
-                    myoControl->setVelocity(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                 break;
             case 2:
                 if(!msg->legacy)
                     icebusControl->SetPoint(motor, msg->setpoint[i]);
                 else
-                    myoControl->setDisplacement(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                 break;
             case 3:
                 bool direct_pwm_override;
@@ -246,7 +245,7 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
                                             "what the heck are you publishing?!");
                         break;
                     }
-                    myoControl->setPWM(motor, msg->setpoint[i]);
+                    myoControl->SetPoint(motor, msg->setpoint[i]);
                 }
 
                 break;
@@ -262,7 +261,7 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
     for (int motor:req.config.motor) {
         if(!req.legacy) {
             control_Parameters_t params;
-            icebusControl->getDefaultControlParams(&params, req.config.control_mode[i]);
+            icebusControl->GetDefaultControlParams(&params, req.config.control_mode[i]);
             params.control_mode = req.config.control_mode[i];
             if (req.config.control_mode[i] == 0)
                 str << "\t" << (int) motor << ": ENCODER0";
@@ -287,9 +286,9 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
             if(i<req.config.update_frequency.size())
                 icebusControl->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
             params.control_mode = req.config.control_mode[i];
-            icebusControl->ChangeControlParameters(motor, params);
+            icebusControl->SetControlMode(motor, req.config.control_mode[i], params);
             res.mode.push_back(params.control_mode);
-            icebusControl->ChangeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+            icebusControl->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
         }else{
             control_Parameters_legacy params;
             myoControl->getDefaultControlParams(&params, req.config.control_mode[i]);
@@ -321,7 +320,7 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
             params.control_mode = req.config.control_mode[i];
             myoControl->changeControlParameters(motor, params);
             res.mode.push_back(params.control_mode);
-            myoControl->changeControl(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+            myoControl->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
         }
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
                  req.config.setpoint[i]);
@@ -337,54 +336,14 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                                      roboy_middleware_msgs::ControlMode::Response &res) {
     if (!emergency_stop) {
         if (req.motor_id.empty()) {
-            switch (req.control_mode) {
-                case POSITION:
-                    ROS_INFO("switch to POSITION control");
-                    for (auto &mode:control_mode)
-                        mode.second = POSITION;
-                    if(!req.legacy)
-                        icebusControl->SetAllToPosition(req.set_point);
-                    else
-                        myoControl->allToPosition(req.set_point);
-                    break;
-                case VELOCITY:
-                    ROS_INFO("switch to VELOCITY control");
-                    for (auto &mode:control_mode)
-                        mode.second = VELOCITY;
-                    if(!req.legacy)
-                        icebusControl->SetAllToVelocity(req.set_point);
-                    else
-                        myoControl->allToPosition(req.set_point);
-                    break;
-                case DISPLACEMENT:
-                    ROS_INFO("switch to DISPLACEMENT control");
-                    for (auto &mode:control_mode)
-                        mode.second = DISPLACEMENT;
-                    if(!req.legacy)
-                        icebusControl->SetAllToDisplacement(req.set_point);
-                    else
-                        myoControl->allToPosition(req.set_point);
-                    break;
-                case DIRECT_PWM:
-                    ROS_INFO("switch to DIRECT_PWM control");
-                    for (auto &mode:control_mode)
-                        mode.second = DIRECT_PWM;
-                    if(!req.legacy)
-                        icebusControl->SetAllToDirectPWM(req.set_point);
-                    else
-                        myoControl->allToPosition(req.set_point);
-                    break;
-                default:
-                    ROS_ERROR(
-                            "invalid control mode requested, available: POSITION, VELOCITY, DISPLACEMENT, FORCE, DIRECT_PWM");
-                    return false;
-            }
+            ROS_ERROR("no motor ids defined, cannot change control mode");
+            return false;
         } else {
             for (int motor:req.motor_id) {
                 if(!req.legacy)
-                    icebusControl->ChangeControl(motor, req.control_mode);
+                    icebusControl->SetControlMode(motor, req.control_mode);
                 else
-                    myoControl->allToPosition(req.set_point);
+                    myoControl->SetControlMode(motor, req.set_point);
                 control_mode[motor] = req.control_mode;
             }
         }
@@ -457,14 +416,14 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         params.Kd = 0;
         params.PWMLimit = 0;
         for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-            icebusControl->ChangeControl(motor, DISPLACEMENT, params);
+            icebusControl->SetControlMode(motor, DISPLACEMENT, params);
         }
         emergency_stop = true;
     } else {
         ROS_INFO("resuming normal operation");
         uint motor = 0;
         for (auto &params:control_params_backup) {
-            icebusControl->ChangeControl(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
+            icebusControl->SetControlMode(motor, control_mode_backup[motor], params.second[control_mode_backup[motor]]);
             motor++;
         }
         emergency_stop = false;
@@ -544,7 +503,7 @@ bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request
                                         roboy_middleware_msgs::SetInt16::Request &res) {
     ROS_INFO("all to displacement %d called", req.setpoint);
     for (auto motor:req.motors) {
-        icebusControl->ChangeControl(motor, DISPLACEMENT);
+        icebusControl->SetControlMode(motor, DISPLACEMENT);
         icebusControl->SetPoint(motor, req.setpoint);
         control_mode[motor] = DISPLACEMENT;
     }
@@ -603,7 +562,7 @@ bool RoboyPlexus::ExecuteAction(string actionName) {
         ros::Duration(pause).sleep();
         success = true && success;
     } else if (actionName.find("relax") != std::string::npos) {
-        icebusControl->SetAllToDisplacement(0);
+//        icebusControl->SetAllToDisplacement(0);
         success = true && success;
     } else {
         actionName = icebusControl->trajectories_folder + actionName;

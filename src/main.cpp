@@ -72,47 +72,6 @@ NeoPixelPtr neoPixel;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-    if(myoControl!= nullptr){
-        // switch to displacement
-        for (auto &myo_bus:myoControl->motor_config->myobus) {
-            for(auto &motor:myo_bus.second){
-                myoControl->SetControlMode(motor->motor_id_global,DISPLACEMENT);
-            }
-        }
-        // relax the springs
-        ros::Rate rate(100);
-        bool toggle = true;
-        for(int decrements = 99; decrements>=0; decrements-=1){
-            if(toggle)
-                *h2p_lw_led_addr = 0xFF;
-            else
-                *h2p_lw_led_addr = 0x00;
-
-            for (auto &myo_bus:myoControl->motor_config->myobus) {
-                for(auto &motor:myo_bus.second){
-                    int displacement = myoControl->getDisplacement(motor->motor_id_global);
-                    if(displacement<=0)
-                        continue;
-                    else
-                        myoControl->setDisplacement(motor->motor_id_global,displacement*(decrements/100.0));
-                }
-            }
-            rate.sleep();
-            if(decrements%15==0) {
-                if(!toggle)
-                    neoPixel->setColorAll(0xF00000);
-                else
-                    neoPixel->setColorAll(NeoPixelColorRGB::black);
-                toggle = !toggle;
-                cout << "." << endl;
-            }
-        }
-    }
-    for (auto &myo_bus:myoControl->motor_config->myobus) {
-        for(auto &motor:myo_bus.second){
-            myoControl->setDisplacement(motor->motor_id_global,0);
-        }
-    }
 
     if(h2p_lw_led_addr!=nullptr)
         *h2p_lw_led_addr = 0;

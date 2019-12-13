@@ -200,6 +200,10 @@ void MyoControl::setPIDcontrollerParams(uint16_t Pgain, uint16_t Igain, uint16_t
     control_params[motor][mode].deadBand = deadband;
 }
 
+uint8_t MyoControl::GetControlMode(int motor){
+    return MYO_READ_control(myo_base[0],motor);
+}
+
 bool MyoControl::GetPowerSense() {
     return (bool) MYO_READ_power_sense(myo_base[0]);
 }
@@ -233,6 +237,10 @@ void MyoControl::SetPoint(int motor, int32_t setPoint) {
     int32_t *bus = myo_base[motor_config->motor[motor]->bus];
     int bus_id = motor_config->motor[motor]->bus_id;
     MYO_WRITE_sp(bus, bus_id, (int32_t) setPoint);
+}
+
+void MyoControl::changeControlParameters(int motor, control_Parameters_legacy &params){
+    ROS_ERROR("not implemented");
 }
 
 bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
@@ -338,303 +346,6 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
 
 }
 
-float MyoControl::recordTrajectories(
-        float samplingTime, float recordTime,
-        map<int, vector<float>> &trajectories, vector<int> &idList,
-        vector<int> &controlmode, string name) {
-
-    ROS_INFO_STREAM("Started recording a trajectory " + name);
-    string filepath = trajectories_folder + name;
-    // this will be filled with the trajectories
-    allToDisplacement(predisplacement);
-
-    // samplingTime milli -> seconds
-    samplingTime /= 1000.0f;
-
-    double elapsedTime = 0.0, dt;
-    long sample = 0;
-
-    // start recording
-    timer.start();
-    do {
-        dt = elapsedTime;
-//        for (uint motor = 0; motor < idList.size(); motor++) {
-        for (auto it = idList.begin(); it != idList.end(); it++) {
-            if (controlmode[*it] == ENCODER0_POSITION)
-                trajectories[idList[*it]].push_back(getPosition(*it));
-            else if (controlmode[*it] == ENCODER0_VELOCITY)
-                trajectories[idList[*it]].push_back(getVelocity(*it));
-            else if (controlmode[*it] == FORCE)
-                trajectories[idList[*it]].push_back(getDisplacement(*it));
-        }
-        sample++;
-        elapsedTime = timer.elapsedTime();
-        dt = elapsedTime - dt;
-        // if faster than sampling time sleep for difference
-        if (dt < samplingTime) {
-            usleep((samplingTime - dt) * 1000000.0);
-            elapsedTime = timer.elapsedTime();
-        }
-    } while (elapsedTime < recordTime);
-
-    // set force to zero
-    allToDisplacement(0);
-
-    // done recording
-    if (filepath.empty()) {
-        time_t rawtime;
-        struct tm *timeinfo;
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        char str[200];
-        sprintf(str, "recording_%s.log",
-                asctime(timeinfo));
-        filepath = str;
-    }
-
-    std::ofstream outfile(filepath, ofstream::binary);
-    stringstream ss;
-    if (outfile.is_open()) {
-        ss << "<?xml version=\"1.0\" ?>"
-           << std::endl;
-        uint m = 0;
-        char motorname[10];
-        for (uint m = 0; m < idList.size(); m++) {
-            sprintf(motorname, "motor%d", idList[m]);
-            ss << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
-               << controlmode[m] << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
-               << std::endl;
-            ss << "<waypointlist>" << std::endl;
-            for (uint i = 0; i < trajectories[idList[m]].size(); i++)
-                ss << trajectories[idList[m]][i] << " ";
-            ss << "</waypointlist>" << std::endl;
-            ss << "</trajectory>" << std::endl;
-        }
-        ss << "</roboybehavior>" << std::endl;
-        outfile << ss.rdbuf();
-        outfile.close();
-    }
-
-    ROS_INFO_STREAM("Saved trajectory " + name);
-
-    // return average sampling time in milliseconds
-    return elapsedTime / (double) sample * 1000.0f;
-}
-
-float MyoControl::startRecordTrajectories(
-        float samplingTime, map<int, vector<float>> &trajectories,
-        vector<int> &idList, string name) {
-    string filepath = trajectories_folder + name;
-    recording = true;
-    ROS_INFO_STREAM("Started recording a trajectory " + name);
-    // this will be filled with the trajectories
-    for(auto motor:idList) {
-        SetControlMode(motor,DISPLACEMENT);
-        setDisplacement(motor,predisplacement);
-    }
-
-    // samplingTime milli -> seconds
-    samplingTime /= 1000.0f;
-
-    double elapsedTime = 0.0, dt;
-    long sample = 0;
-    ros::Rate rate(1.0 / samplingTime);
-//    ROS_INFO_STREAM(1.0/samplingTime);
-    // start recording
-    do {
-        dt = elapsedTime;
-        for (auto it:  idList)//.begin(); it != idList.end(); it++ ) {
-        {
-            trajectories[it].push_back(getPosition(it));
-        }
-        sample++;
-        rate.sleep();
-    } while (recording);
-
-
-    for(auto motor:idList) {
-        SetControlMode(motor,DISPLACEMENT);
-        setDisplacement(motor,10);
-    }
-
-    // done recording
-
-    if (filepath.empty()) {
-        time_t rawtime;
-        struct tm *timeinfo;
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        char str[200];
-        sprintf(str, "recording_%s.log",
-                asctime(timeinfo));
-        filepath = str;
-    }
-
-    std::ofstream outfile(filepath, ofstream::binary);
-    stringstream ss;
-    if (outfile.is_open()) {
-        ss << "<?xml version=\"1.0\" ?>"
-           << std::endl;
-        uint m = 0;
-        char motorname[10];
-        ss << "<behavior>" << std::endl;
-        for (uint m = 0; m < idList.size(); m++) {
-            sprintf(motorname, "motor%d", idList[m]);
-            ss << "<trajectory motorid=\"" << idList[m] << "\" controlmode=\""
-               << ENCODER0_POSITION << "\" samplingTime=\"" << samplingTime * 1000.0f << "\">"
-               << std::endl;
-            ss << "<waypointlist>" << std::endl;
-            for (uint i = 0; i < trajectories[idList[m]].size(); i++)
-                ss << trajectories[idList[m]][i] << " ";
-            ss << "</waypointlist>" << std::endl;
-            ss << "</trajectory>" << std::endl;
-        }
-        ss << "</behavior>" << std::endl;
-//        outfile.write(buffer, buffer.size());
-        outfile << ss.rdbuf();
-        outfile.close();
-    }
-
-    ROS_INFO_STREAM("Saved trajectory " + name);
-
-    // return average sampling time in milliseconds
-    return elapsedTime / (double) sample * 1000.0f;
-}
-
-void MyoControl::stopRecordTrajectories() {
-    recording = false;
-    ROS_INFO("Stopped recording a trajectory");
-}
-
-void MyoControl::setReplay(bool status) {
-    replay = status;
-    if (replay) {
-        ROS_INFO("Replaying trajectories enabled");
-    } else {
-        ROS_INFO("Replaying trajectories disabled");
-    }
-}
-
-bool MyoControl::playTrajectory(const char *file) {
-
-    TiXmlDocument doc(file);
-    if (!doc.LoadFile()) {
-        ROS_ERROR("could not load xml trajectory %s", file);
-        return false;
-    }
-
-    TiXmlElement *root = doc.FirstChildElement("behavior");
-
-    map<int, vector<float>> trajectories;
-    int samplingTime, numberOfSamples;
-
-    // Constructs the myoMuscles by parsing custom xml.
-
-//    ROS_INFO_STREAM("Found trajectory " + string(file));
-
-    TiXmlElement *trajectory_it = NULL;
-
-    for (trajectory_it = root->FirstChildElement("trajectory"); trajectory_it;
-
-
-         trajectory_it = trajectory_it->NextSiblingElement("trajectory")) {
-
-        if (trajectory_it->QueryIntAttribute("samplingTime", &samplingTime) == TIXML_SUCCESS) {
-            int motor;
-            if (trajectory_it->QueryIntAttribute("motorid", &motor) != TIXML_SUCCESS) {
-                ROS_ERROR("no motorid found");
-                return false;
-            }
-            TiXmlElement *waypointlist_it = trajectory_it->FirstChildElement("waypointlist");
-            stringstream stream(waypointlist_it->GetText());
-            while (1) {
-                int n;
-                stream >> n;
-                trajectories[motor].push_back(n);
-                if (!stream) {
-                    numberOfSamples = trajectories[motor].size();
-                    break;
-                }
-            }
-        } else {
-            return false;
-        }
-    }
-
-//    allToDisplacement(0);
-    ROS_INFO_STREAM("Replaying trajectory " + string(file));
-    timer.start();
-    double elapsedTime = 0.0, dt;
-    int sample = 0;
-
-    samplingTime;
-    ros::Rate rate(1.0 / (samplingTime / 1000.0f));
-//    ROS_INFO_STREAM(1.0/(samplingTime/1000.0f));
-    do {
-        dt = elapsedTime;
-        for (auto &motor : trajectories) {
-            if (sample == 0) {
-                SetControlMode(motor.first, ENCODER0_POSITION);
-            }
-
-            setPosition(motor.first, motor.second[sample]);
-        }
-        sample++;
-        rate.sleep();
-    } while (sample < numberOfSamples && replay);
-
-    return true;
-}
-
-void MyoControl::setPredisplacement(int value) {
-    predisplacement = value;
-    ROS_INFO_STREAM("Now recording with displacement" + predisplacement);
-}
-
-void MyoControl::estimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,
-                                          uint numberOfDataPoints, float displacement_min,
-                                          float displacement_max, vector<double> &load, vector<double> &displacement) {
-    setDisplacement(motor, 0);
-    SetControlMode(motor, DISPLACEMENT);
-    milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop, t0, t1;
-    ofstream outfile;
-    char str[100];
-    sprintf(str, "springParameters_calibration_motor%d.csv", motor);
-    outfile.open(str);
-    if (!outfile.is_open()) {
-        cout << "could not open file " << str << " for writing, aborting!" << endl;
-        return;
-    }
-    outfile << "displacement[ticks], load[N]" << endl;
-    do {
-        float f = (rand() / (float) RAND_MAX) * (displacement_max - displacement_min) + displacement_min;
-        setDisplacement(motor, f);
-        t0 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        do {// wait a bit until force is applied
-            // update control
-            t1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        } while ((t1 - t0).count() < 1000);
-
-        // note the weight
-        load.push_back(getWeight(0)); // TODO: use a different load_cell for each motor
-        // note the force
-        displacement.push_back(getDisplacement(motor));
-        outfile << displacement.back() << ", " << load.back() << endl;
-        ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        cout << "setPoint: \t" << f << "\tdisplacement:\t" << displacement.back() << "\tload:\t" <<
-             load.back() << endl;
-    } while ((ms_stop - ms_start).count() < timeout && load.size() < numberOfDataPoints);
-    setDisplacement(motor, 0);
-    polynomialRegression(degree, displacement, load, coeffs);
-    outfile << "regression coefficients for polynomial of " << degree << " degree:" << endl;
-    for (float coef:coeffs) {
-        outfile << coef << "\t";
-    }
-    outfile << endl;
-//	polyPar[motor] = coeffs;
-    outfile.close();
-}
-
 void MyoControl::polynomialRegression(int degree, vector<double> &x, vector<double> &y,
                                       vector<float> &coeffs) {
     int N = x.size(), i, j, k;
@@ -694,8 +405,4 @@ void MyoControl::polynomialRegression(int degree, vector<double> &x, vector<doub
     }
     for (i = 0; i < degree; i++)
         coeffs.push_back(a[i]);    //the values of x^0,x^1,x^2,x^3,....
-}
-
-void MyoControl::gpioControl(bool power) {
-    MYO_WRITE_gpio(myo_base[0], power);
 }

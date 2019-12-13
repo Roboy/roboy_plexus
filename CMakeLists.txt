@@ -64,6 +64,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/main.cpp
             src/interfaces/icebusControl.cpp
             src/interfaces/myoControl.cpp
+            src/interfaces/motorControl.cpp
             src/interfaces/i2c.cpp
             src/roboyPlexus.cpp
             src/sensors/A1335.cpp
@@ -73,6 +74,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/icebusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp
+            include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/interfaces/i2c.hpp
             include/roboy_plexus/roboyPlexus.hpp
             include/roboy_plexus/sensors/A1335.hpp
@@ -88,6 +90,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
     add_executable( elbow_control
+            src/interfaces/motorControl.cpp
             src/elbow_control.cpp
             src/interfaces/icebusControl.cpp
             src/interfaces/i2c.cpp

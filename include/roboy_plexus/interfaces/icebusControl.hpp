@@ -47,6 +47,7 @@
 #include <sstream>
 #include <common_utilities/CommonDefinitions.h>
 #include <common_utilities/MotorConfig.hpp>
+#include "interfaces/motorControl.hpp"
 #include <utility/timer.hpp>
 #include <ros/ros.h>
 #include <interfaces/NeoPixel.hpp>
@@ -104,7 +105,11 @@ public:
 
     ~IcebusControl();
 
-    bool AllToSetpoint(int control_mode, int32_t setPoint);
+    bool AllToSetpoint(int control_mode, int32_t setPoint) override;
+
+    string whoami() override{
+        return "icebus";
+    }
 
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces
@@ -193,14 +198,22 @@ public:
     int32_t GetEncoderPosition(int motor,int encoder) override;
 
     /**
+     * Gets the current position of a motor in encoder ticks
+     * @param motor for this motor
+     * @param encoder of this encoder
+     */
+    int32_t GetEncoderVelocity(int motor,int encoder) override;
+
+    /**
      * Get the displacement of a motor
      * @param motor
      * @return displacement
      */
     int32_t GetGearBoxRatio(int motor);
 
-    void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-                                int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
+    bool GetPowerSense() override{
+        return false;
+    }
 
     /**
      * Get PWM of motor
@@ -349,7 +362,7 @@ public:
     float RecordTrajectories(
             float samplingTime, float recordTime,
             map<int, vector<float>> &trajectories, vector<int> &idList,
-            vector<int> &controlmode, string name);
+            vector<int> &controlmode, string name) override;
 
     /**
      * Zeros the weight for a load cell
