@@ -340,10 +340,12 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
             return false;
         } else {
             for (int motor:req.motor_id) {
-                if(!req.legacy)
+                if(!req.legacy) {
                     icebusControl->SetControlMode(motor, req.control_mode);
-                else
+                }else {
                     myoControl->SetControlMode(motor, req.set_point);
+                }
+                ROS_INFO("changing control mode of motor %d to %d", motor, req.control_mode);
                 control_mode[motor] = req.control_mode;
             }
         }
