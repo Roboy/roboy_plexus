@@ -12,8 +12,13 @@ MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int3
         usleep(10000);
         ROS_INFO("myobus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
     }
+    for(int mode = POSITION;mode<=DIRECT_PWM;mode++) {
+        for (int i = 0; i < 8; i++) {
+            getDefaultControlParams(&control_params[i][mode],mode);
+        }
+    }
 
-    SetControlMode(ENCODER0_POSITION);
+    SetControlMode(POSITION);
 
     for (uint i = 0; i < myo_base.size(); i++) {
 //        MYO_WRITE_update_frequency(myo_base[i], 0); // as fast as possible
@@ -59,7 +64,7 @@ bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &
 }
 
 bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &params) {
-    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+    if(mode>=POSITION && mode<=DIRECT_PWM) {
         int32_t *bus = myo_base[motor_config->motor[motor]->bus];
         int bus_id = motor_config->motor[motor]->bus_id;
         motor_config->motor[motor]->control_mode = mode;
@@ -82,7 +87,7 @@ bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &
                                params.outputNegMax);
         MYO_WRITE_outputDivider(bus, bus_id,
                                 params.outputDivider);
-        if (mode == ENCODER0_POSITION) {
+        if (mode == POSITION) {
             int32_t current_position = MYO_READ_position(bus, bus_id);
             MYO_WRITE_sp(bus, bus_id,
                          current_position);
@@ -96,7 +101,7 @@ bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &
 }
 
 bool MyoControl::SetControlMode(int motor, int mode) {
-    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+    if(mode>=POSITION && mode<=DIRECT_PWM) {
         int32_t *bus = myo_base[motor_config->motor[motor]->bus];
         int bus_id = motor_config->motor[motor]->bus_id;
         motor_config->motor[motor]->control_mode = mode;
@@ -122,7 +127,7 @@ bool MyoControl::SetControlMode(int motor, int mode) {
         MYO_WRITE_control(bus, bus_id, mode);
         MYO_WRITE_outputDivider(bus, bus_id,
                                 control_params[motor][mode].outputDivider);
-        if (mode == ENCODER0_POSITION) {
+        if (mode == POSITION) {
             int32_t current_position = MYO_READ_position(bus, bus_id);
             MYO_WRITE_sp(bus, bus_id,
                          current_position);
@@ -158,7 +163,7 @@ bool MyoControl::SetControlMode(int mode) {
         MYO_WRITE_control(bus, bus_id, mode);
         MYO_WRITE_outputDivider(bus, bus_id,
                                 control_params[motor][mode].outputDivider);
-        if (mode == ENCODER0_POSITION) {
+        if (mode == POSITION) {
             int32_t current_position = MYO_READ_position(bus, bus_id);
             MYO_WRITE_sp(bus, bus_id, current_position);
         } else {

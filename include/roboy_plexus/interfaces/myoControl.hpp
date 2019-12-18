@@ -106,7 +106,7 @@
 #define POSITION 0
 #define VELOCITY 1
 #define DISPLACEMENT 2
-#define DIRECT_PWM 4
+#define DIRECT_PWM 3
 
 using namespace std;
 using namespace std::chrono;
