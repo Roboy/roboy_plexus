@@ -59,6 +59,7 @@ int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_darkroom_addr;
 int32_t *h2p_lw_a1339_addr;
+int32_t *h2p_lw_myoquad_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
 vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_i2c_addr;
@@ -120,6 +121,15 @@ void SigintHandler(int sig)
     system("fortune");
 }
 
+
+float displacement = 0;
+float setpoint = 0;
+int pos_0, pos_1, dis, in_diff, in;
+
+void dispSub(const std_msgs::Float32::ConstPtr &msg){
+    setpoint = msg->data;
+}
+
 int main(int argc, char *argv[]) {
     void *virtual_base;
     int fd;
@@ -140,7 +150,7 @@ int main(int argc, char *argv[]) {
     }
 
     h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
-    if(*h2p_lw_sysid_addr!=0x0001beef){ // if the system id does not match, we abort
+    if(*h2p_lw_sysid_addr!=0x1beef){ // if the system id does not match, we abort
         ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, 0x0001beef);
         // clean up our memory mapping and exit
         if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
@@ -232,6 +242,11 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_adc_addr = nullptr;
 #endif
+#ifdef MYOQUAD_0_BASE
+    h2p_lw_myoquad_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOQUAD_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_myoquad_addr = nullptr;
+#endif
 
     neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
 
@@ -242,13 +257,54 @@ int main(int argc, char *argv[]) {
     PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 
     signal(SIGINT, SigintHandler);
+    ros::NodeHandle nh;
 
-    ros::Rate rate(30);
-    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
+    ros::Subscriber disp = nh.subscribe("disp",1,&dispSub);
+
+//    ros::Rate rate(30);
+//    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
+//ros::Time::init();
+
+    float integral = 0;
     while(ros::ok()){
-        neoPixel->runPattern(pattern,rate);
+//        neoPixel->runPattern(pattern,rate);
 //        neoPixel->setColor(1,0x80);
-        rate.sleep();
+//        rate.sleep();
+        if(h2p_lw_myoquad_addr!=nullptr){
+            pos_0 = IORD(h2p_lw_myoquad_addr,0);
+            pos_1 = IORD(h2p_lw_myoquad_addr,1);
+            displacement = pos_0 - 108544.0f/57600.0f*pos_1;
+            dis = IORD(h2p_lw_myoquad_addr,2);
+            in_diff = IORD(h2p_lw_myoquad_addr,5);
+            in = IORD(h2p_lw_myoquad_addr,6);
+            float error = (setpoint-pos_0);
+//            float error = (setpoint-pos_1);
+//            float error = (setpoint-displacement);
+            integral += 0.001*error;
+            if(integral>200)
+                integral = 200;
+            if(integral<-200)
+                integral = -200;
+            float result = error + integral;
+
+            if(result<-2000)
+                result = -2000;
+            if(result>2000)
+                result = 2000;
+
+            myoControl->allToDirectPWM(result);
+
+            ROS_INFO_THROTTLE(0.1, "----------------\n"
+                                 "pos_0: %d\n"
+                                 "pos_1: %d\n"
+                                 "dis  : %d\n"
+                                 "dif  : %x\n"
+                                 "in   : %x\n"
+                                 "disp : %f\n"
+                                 "res  : %f", pos_0, pos_1, dis, in_diff, in, displacement,result);
+
+
+        }
     }
 
     // clean up our memory mapping and exit

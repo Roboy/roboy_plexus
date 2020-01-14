@@ -31,15 +31,26 @@
 #define NEOPIXEL_0_END 0x3ff
 
 /*
+ * Macros for device 'MYOQuad_0', class 'MYOQuad'
+ * The macros are prefixed with 'MYOQUAD_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define MYOQUAD_0_COMPONENT_TYPE MYOQuad
+#define MYOQUAD_0_COMPONENT_NAME MYOQuad_0
+#define MYOQUAD_0_BASE 0x400
+#define MYOQUAD_0_SPAN 64
+#define MYOQUAD_0_END 0x43f
+
+/*
  * Macros for device 'I2C_5', class 'I2C'
  * The macros are prefixed with 'I2C_5_'.
  * The prefix is the slave descriptor.
  */
 #define I2C_5_COMPONENT_TYPE I2C
 #define I2C_5_COMPONENT_NAME I2C_5
-#define I2C_5_BASE 0x400
+#define I2C_5_BASE 0x440
 #define I2C_5_SPAN 64
-#define I2C_5_END 0x43f
+#define I2C_5_END 0x47f
 
 /*
  * Macros for device 'I2C_4', class 'I2C'
@@ -48,9 +59,9 @@
  */
 #define I2C_4_COMPONENT_TYPE I2C
 #define I2C_4_COMPONENT_NAME I2C_4
-#define I2C_4_BASE 0x440
+#define I2C_4_BASE 0x480
 #define I2C_4_SPAN 64
-#define I2C_4_END 0x47f
+#define I2C_4_END 0x4bf
 
 /*
  * Macros for device 'I2C_3', class 'I2C'
@@ -59,9 +70,9 @@
  */
 #define I2C_3_COMPONENT_TYPE I2C
 #define I2C_3_COMPONENT_NAME I2C_3
-#define I2C_3_BASE 0x480
+#define I2C_3_BASE 0x4c0
 #define I2C_3_SPAN 64
-#define I2C_3_END 0x4bf
+#define I2C_3_END 0x4ff
 
 /*
  * Macros for device 'I2C_2', class 'I2C'
@@ -70,9 +81,9 @@
  */
 #define I2C_2_COMPONENT_TYPE I2C
 #define I2C_2_COMPONENT_NAME I2C_2
-#define I2C_2_BASE 0x4c0
+#define I2C_2_BASE 0x500
 #define I2C_2_SPAN 64
-#define I2C_2_END 0x4ff
+#define I2C_2_END 0x53f
 
 /*
  * Macros for device 'I2C_1', class 'I2C'
@@ -81,9 +92,9 @@
  */
 #define I2C_1_COMPONENT_TYPE I2C
 #define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x500
+#define I2C_1_BASE 0x540
 #define I2C_1_SPAN 64
-#define I2C_1_END 0x53f
+#define I2C_1_END 0x57f
 
 /*
  * Macros for device 'I2C_0', class 'I2C'
@@ -92,9 +103,9 @@
  */
 #define I2C_0_COMPONENT_TYPE I2C
 #define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x540
+#define I2C_0_BASE 0x580
 #define I2C_0_SPAN 64
-#define I2C_0_END 0x57f
+#define I2C_0_END 0x5bf
 
 /*
  * Macros for device 'pio_0', class 'altera_avalon_pio'
@@ -103,9 +114,9 @@
  */
 #define PIO_0_COMPONENT_TYPE altera_avalon_pio
 #define PIO_0_COMPONENT_NAME pio_0
-#define PIO_0_BASE 0x580
+#define PIO_0_BASE 0x5c0
 #define PIO_0_SPAN 16
-#define PIO_0_END 0x58f
+#define PIO_0_END 0x5cf
 #define PIO_0_BIT_CLEARING_EDGE_REGISTER 0
 #define PIO_0_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define PIO_0_CAPTURE 0
@@ -127,9 +138,9 @@
  */
 #define SWITCHES_COMPONENT_TYPE altera_avalon_pio
 #define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x590
+#define SWITCHES_BASE 0x5d0
 #define SWITCHES_SPAN 16
-#define SWITCHES_END 0x59f
+#define SWITCHES_END 0x5df
 #define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
 #define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SWITCHES_CAPTURE 0
@@ -151,9 +162,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x5a0
+#define LED_BASE 0x5e0
 #define LED_SPAN 16
-#define LED_END 0x5af
+#define LED_END 0x5ef
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -179,7 +190,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 114415
-#define SYSID_QSYS_TIMESTAMP 1564417873
+#define SYSID_QSYS_TIMESTAMP 1578661036
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

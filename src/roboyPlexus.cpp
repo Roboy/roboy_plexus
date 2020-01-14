@@ -6,7 +6,7 @@ RoboyPlexus::RoboyPlexus(MyoControlPtr myoControl, vector<int32_t *> &myo_base, 
         myo_base(myo_base), i2c_base(i2c_base), darkroom_base(darkroom_base), darkroom_ootx_addr(darkroom_ootx_addr),
         adc_base(adc_base), myoControl(myoControl), switches_base(switches_base) {
 
-    id = IORD(switches_base, 0) & 0x7;
+    id = 3;//IORD(switches_base, 0) & 0x7;
 //    string body_part;
     switch (id) {
         case SHOULDER_LEFT:
