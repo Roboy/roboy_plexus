@@ -31,15 +31,37 @@
 #define NEOPIXEL_0_END 0x3ff
 
 /*
+ * Macros for device 'I2C_2', class 'I2C'
+ * The macros are prefixed with 'I2C_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_2_COMPONENT_TYPE I2C
+#define I2C_2_COMPONENT_NAME I2C_2
+#define I2C_2_BASE 0x400
+#define I2C_2_SPAN 64
+#define I2C_2_END 0x43f
+
+/*
+ * Macros for device 'I2C_3', class 'I2C'
+ * The macros are prefixed with 'I2C_3_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_3_COMPONENT_TYPE I2C
+#define I2C_3_COMPONENT_NAME I2C_3
+#define I2C_3_BASE 0x440
+#define I2C_3_SPAN 64
+#define I2C_3_END 0x47f
+
+/*
  * Macros for device 'I2C_1', class 'I2C'
  * The macros are prefixed with 'I2C_1_'.
  * The prefix is the slave descriptor.
  */
 #define I2C_1_COMPONENT_TYPE I2C
 #define I2C_1_COMPONENT_NAME I2C_1
-#define I2C_1_BASE 0x400
+#define I2C_1_BASE 0x4c0
 #define I2C_1_SPAN 64
-#define I2C_1_END 0x43f
+#define I2C_1_END 0x4ff
 
 /*
  * Macros for device 'I2C_0', class 'I2C'
@@ -48,9 +70,33 @@
  */
 #define I2C_0_COMPONENT_TYPE I2C
 #define I2C_0_COMPONENT_NAME I2C_0
-#define I2C_0_BASE 0x440
+#define I2C_0_BASE 0x500
 #define I2C_0_SPAN 64
-#define I2C_0_END 0x47f
+#define I2C_0_END 0x53f
+
+/*
+ * Macros for device 'SWITCHES', class 'altera_avalon_pio'
+ * The macros are prefixed with 'SWITCHES_'.
+ * The prefix is the slave descriptor.
+ */
+#define SWITCHES_COMPONENT_TYPE altera_avalon_pio
+#define SWITCHES_COMPONENT_NAME SWITCHES
+#define SWITCHES_BASE 0x540
+#define SWITCHES_SPAN 16
+#define SWITCHES_END 0x54f
+#define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
+#define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define SWITCHES_CAPTURE 0
+#define SWITCHES_DATA_WIDTH 4
+#define SWITCHES_DO_TEST_BENCH_WIRING 0
+#define SWITCHES_DRIVEN_SIM_VALUE 0
+#define SWITCHES_EDGE_TYPE NONE
+#define SWITCHES_FREQ 50000000
+#define SWITCHES_HAS_IN 1
+#define SWITCHES_HAS_OUT 0
+#define SWITCHES_HAS_TRI 0
+#define SWITCHES_IRQ_TYPE NONE
+#define SWITCHES_RESET_VALUE 0
 
 /*
  * Macros for device 'LED', class 'altera_avalon_pio'
@@ -59,9 +105,9 @@
  */
 #define LED_COMPONENT_TYPE altera_avalon_pio
 #define LED_COMPONENT_NAME LED
-#define LED_BASE 0x480
+#define LED_BASE 0x550
 #define LED_SPAN 16
-#define LED_END 0x48f
+#define LED_END 0x55f
 #define LED_BIT_CLEARING_EDGE_REGISTER 0
 #define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define LED_CAPTURE 0
@@ -87,7 +133,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1576246860
+#define SYSID_QSYS_TIMESTAMP 1579185645
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -106,37 +152,15 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
- * Macros for device 'ICEboardControl_3', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_3_'.
- * The prefix is the slave descriptor.
- */
-#define ICEBOARDCONTROL_3_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_3_COMPONENT_NAME ICEboardControl_3
-#define ICEBOARDCONTROL_3_BASE 0x40000
-#define ICEBOARDCONTROL_3_SPAN 262144
-#define ICEBOARDCONTROL_3_END 0x7ffff
-
-/*
- * Macros for device 'ICEboardControl_2', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_2_'.
- * The prefix is the slave descriptor.
- */
-#define ICEBOARDCONTROL_2_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_2_COMPONENT_NAME ICEboardControl_2
-#define ICEBOARDCONTROL_2_BASE 0x80000
-#define ICEBOARDCONTROL_2_SPAN 262144
-#define ICEBOARDCONTROL_2_END 0xbffff
-
-/*
  * Macros for device 'ICEboardControl_1', class 'ICEboardControl'
  * The macros are prefixed with 'ICEBOARDCONTROL_1_'.
  * The prefix is the slave descriptor.
  */
 #define ICEBOARDCONTROL_1_COMPONENT_TYPE ICEboardControl
 #define ICEBOARDCONTROL_1_COMPONENT_NAME ICEboardControl_1
-#define ICEBOARDCONTROL_1_BASE 0xc0000
+#define ICEBOARDCONTROL_1_BASE 0x40000
 #define ICEBOARDCONTROL_1_SPAN 262144
-#define ICEBOARDCONTROL_1_END 0xfffff
+#define ICEBOARDCONTROL_1_END 0x7ffff
 
 /*
  * Macros for device 'MYOControl_0', class 'MYOControl'
@@ -145,9 +169,9 @@
  */
 #define MYOCONTROL_0_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_0_COMPONENT_NAME MYOControl_0
-#define MYOCONTROL_0_BASE 0x100000
+#define MYOCONTROL_0_BASE 0x80000
 #define MYOCONTROL_0_SPAN 262144
-#define MYOCONTROL_0_END 0x13ffff
+#define MYOCONTROL_0_END 0xbffff
 
 /*
  * Macros for device 'ICEboardControl_0', class 'ICEboardControl'
@@ -156,9 +180,9 @@
  */
 #define ICEBOARDCONTROL_0_COMPONENT_TYPE ICEboardControl
 #define ICEBOARDCONTROL_0_COMPONENT_NAME ICEboardControl_0
-#define ICEBOARDCONTROL_0_BASE 0x140000
+#define ICEBOARDCONTROL_0_BASE 0xc0000
 #define ICEBOARDCONTROL_0_SPAN 262144
-#define ICEBOARDCONTROL_0_END 0x17ffff
+#define ICEBOARDCONTROL_0_END 0xfffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */
