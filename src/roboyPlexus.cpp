@@ -88,7 +88,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
     motorInfoThread->detach();
 
     for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-        icebusControl->SetGearBoxRatio(motor,53);
+        icebusControl->SetNeopixelColor(motor,0x0000F0);
         icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor,ENCODER0));
         icebusControl->SetControlMode(motor,ENCODER1_POSITION);
     }
@@ -174,7 +174,7 @@ void RoboyPlexus::MotorInfoPublisher() {
             uint32_t error_code = icebusControl->GetErrorCode(motor);
             msg.communication_quality.push_back(communication_quality);
             msg.error_code.push_back(error_code);
-            msg.gearBoxRatio.push_back(icebusControl->GetGearBoxRatio(motor));
+            msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(motor));
             msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
             msg.pwm.push_back(icebusControl->GetPWM(motor));
         }

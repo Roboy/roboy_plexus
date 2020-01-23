@@ -234,8 +234,8 @@ int32_t IcebusControl::GetEncoderVelocity(int motor, int encoder) {
     return 0;
 }
 
-int32_t IcebusControl::GetGearBoxRatio(int motor) {
-    return ICEBUS_CONTROL_READ_gearBoxRatio(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
+int32_t IcebusControl::GetNeopixelColor(int motor) {
+    return ICEBUS_CONTROL_READ_neopxl_color(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
 int32_t IcebusControl::GetSetPoint(int motor){
@@ -246,8 +246,8 @@ int32_t IcebusControl::GetPWM(int motor){
     return ICEBUS_CONTROL_READ_pwm(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id);
 }
 
-void IcebusControl::SetGearBoxRatio(int motor, int32_t gearBoxRatio){
-    ICEBUS_CONTROL_WRITE_gearBoxRatio(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id, gearBoxRatio);
+void IcebusControl::SetNeopixelColor(int motor, int32_t color){
+    ICEBUS_CONTROL_WRITE_neopxl_color(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->bus_id, color);
 }
 
 void IcebusControl::SetPoint(int motor, int32_t setPoint) {

@@ -72,8 +72,8 @@
 #define ICEBUS_CONTROL_READ_communication_quality(base, motor) IORD(base, (uint32_t)(0x16<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_pwm(base, motor) IORD(base, (uint32_t)(0x17<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_displacement(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
-#define ICEBUS_CONTROL_READ_gearBoxRatio(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
-#define ICEBUS_CONTROL_READ_current(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_current(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_neopxl_color(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
 
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
@@ -84,7 +84,7 @@
 #define ICEBUS_CONTROL_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0B<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
-#define ICEBUS_CONTROL_WRITE_gearBoxRatio(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_neopxl_color(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define NUM_SENSORS 0
@@ -205,11 +205,11 @@ public:
     int32_t GetEncoderVelocity(int motor,int encoder) override;
 
     /**
-     * Get the displacement of a motor
+     * Get the neopixel color of a motor
      * @param motor
-     * @return displacement
+     * @return color
      */
-    int32_t GetGearBoxRatio(int motor);
+    int32_t GetNeopixelColor(int motor);
 
     bool GetPowerSense() override{
         return false;
@@ -275,11 +275,11 @@ public:
     bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
 
     /**
-     * Sets the gearbox ratio of a motor
+     * Sets the neopixel color of a motor
      * @param motor
-     * @param gearBoxRatio
+     * @param color
      */
-    void SetGearBoxRatio(int motor, int32_t gearBoxRatio);
+    void SetNeopixelColor(int motor, int32_t color);
 
     /**
      * Sets a new setpoint for a motor
