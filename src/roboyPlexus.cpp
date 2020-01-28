@@ -253,16 +253,16 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
                     if(fabsf(msg->setpoint[i])>1000000 && !direct_pwm_override) {
                         ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>1000000), "
                                             "what the heck are you publishing?!");
-                        break;
+                    }else {
+                        icebusControl->SetPoint(motor, msg->setpoint[i]);
                     }
-                    icebusControl->SetPoint(motor, msg->setpoint[i]);
                 }else{
                     if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
                         ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>128), "
                                             "what the heck are you publishing?!");
-                        break;
+                    }else {
+                        myoControl->SetPoint(motor, msg->setpoint[i]);
                     }
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
                 }
 
                 break;
