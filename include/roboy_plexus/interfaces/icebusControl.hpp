@@ -56,6 +56,7 @@
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
 // the upper 8 bit define which register, the lower 8 bit define which motor
+#define ICEBUS_CONTROL_READ_id(base, motor) IORD(base, (uint32_t)(0x00<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_Kp(base, motor) IORD(base, (uint32_t)(0x01<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_Ki(base, motor) IORD(base, (uint32_t)(0x02<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_Kd(base, motor) IORD(base, (uint32_t)(0x03<<8|motor&0xff) )
@@ -75,6 +76,7 @@
 #define ICEBUS_CONTROL_READ_current(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_neopxl_color(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
 
+#define ICEBUS_CONTROL_WRITE_id(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x03<<8|motor&0xff), data )
@@ -205,6 +207,13 @@ public:
     int32_t GetEncoderVelocity(int motor,int encoder) override;
 
     /**
+     * Gets the bus_id of a motor
+     * @param motor
+     * @return id
+     */
+    int32_t GetID(int motor);
+
+    /**
      * Get the neopixel color of a motor
      * @param motor
      * @return color
@@ -273,6 +282,14 @@ public:
      * @param setPoint new setPoint
 	 */
     bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
+
+    /**
+     * Sets the bus_id of a motor
+     * @param motor
+     * @param id
+     * @return success
+     */
+    bool SetID(int motor, int id);
 
     /**
      * Sets the neopixel color of a motor

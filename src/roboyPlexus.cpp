@@ -88,9 +88,12 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
     motorInfoThread->detach();
 
     for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-        icebusControl->SetNeopixelColor(motor,0x0000F0);
-        icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor,ENCODER0));
-        icebusControl->SetControlMode(motor,ENCODER1_POSITION);
+        icebusControl->SetNeopixelColor(motor,0xF00000);
+        if(icebusControl->GetCommunicationQuality(motor)!=0)
+            icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor,ENCODER0));
+        else
+            icebusControl->SetPoint(motor, 0);
+        icebusControl->SetControlMode(motor,3);
     }
 
     vector<int> active_i2c_bus;
@@ -157,7 +160,9 @@ void RoboyPlexus::MotorStatusPublisher() {
 }
 
 void RoboyPlexus::MotorInfoPublisher() {
-    ros::Rate rate(100);
+    ros::Rate rate(20);
+    int32_t light_up_motor = 0;
+    bool dir = true;
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorInfo msg;
         for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
@@ -177,7 +182,19 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(motor));
             msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
             msg.pwm.push_back(icebusControl->GetPWM(motor));
+            if(light_up_motor==motor)
+                icebusControl->SetNeopixelColor(motor,0x0F0000);
+            else
+                icebusControl->SetNeopixelColor(motor,0);
         }
+        if(dir)
+            light_up_motor++;
+        else
+            light_up_motor--;
+        if(light_up_motor>=8 && dir)
+            dir = false;
+        if(light_up_motor<0 && !dir)
+            dir = true;
         motorInfo.publish(msg);
         rate.sleep();
     }
@@ -343,10 +360,17 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                 if(!req.legacy) {
                     icebusControl->SetControlMode(motor, req.control_mode);
                 }else {
-                    myoControl->SetControlMode(motor, req.set_point);
+                    myoControl->SetControlMode(motor, req.control_mode);
                 }
                 ROS_INFO("changing control mode of motor %d to %d", motor, req.control_mode);
                 control_mode[motor] = req.control_mode;
+                if(req.set_point!=0){
+                    if(!req.legacy) {
+                        icebusControl->SetPoint(motor, req.set_point);
+                    }else {
+                        myoControl->SetPoint(motor, req.set_point);
+                    }
+                }
             }
         }
         return true;
