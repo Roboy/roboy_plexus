@@ -71,6 +71,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/control/controlActions.cpp
             src/sensors/tle493d_w2b6.cpp
             src/utility/UDPSocket.cpp
+            src/interfaces/hand.cpp
             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/icebusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp
@@ -82,6 +83,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/sensors/tle493d_w2b6.hpp
             ../common_utilities/include/common_utilities/MotorConfig.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
+            include/roboy_plexus/interfaces/hand.hpp
             )
     add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES} )

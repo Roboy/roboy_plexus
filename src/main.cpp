@@ -44,6 +44,7 @@
 #include "hps_0.h"
 #include "roboyPlexus.hpp"
 #include "interfaces/NeoPixel.hpp"
+#include "interfaces/hand.hpp"
 
 using namespace std;
 
@@ -60,6 +61,7 @@ int32_t *h2p_lw_neopixel_addr;
 int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
 int32_t *h2p_lw_a1339_addr;
+int32_t *h2p_lw_uart_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
 vector<int32_t*> h2p_lw_icebus_addr;
 vector<int32_t*> h2p_lw_myo_addr;
@@ -178,10 +180,16 @@ int main(int argc, char *argv[]) {
 #ifdef I2C_3_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
+#ifdef UART_HAND_BASE
+    h2p_lw_uart_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + UART_HAND_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#endif
+
+
 
     myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
     RoboyPlexus roboyPlexus(icebusControl,myoControl,h2p_lw_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+    UART hand_uart(h2p_lw_uart_addr,9600);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////
