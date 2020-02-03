@@ -122,13 +122,13 @@ void SigintHandler(int sig)
 }
 
 
-float displacement = 0;
-float setpoint = 0;
-int pos_0, pos_1, dis, in_diff, in;
-
-void dispSub(const std_msgs::Float32::ConstPtr &msg){
-    setpoint = msg->data;
-}
+//float displacement = 0;
+//float setpoint = 0;
+//int pos_0, pos_1, dis, in_diff, in;
+//
+//void dispSub(const std_msgs::Float32::ConstPtr &msg){
+//    setpoint = msg->data;
+//}
 
 int main(int argc, char *argv[]) {
     void *virtual_base;
@@ -259,52 +259,14 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, SigintHandler);
     ros::NodeHandle nh;
 
-    ros::Subscriber disp = nh.subscribe("disp",1,&dispSub);
+//    ros::Subscriber disp = nh.subscribe("disp",1,&dispSub);
 
-//    ros::Rate rate(30);
-//    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
-//ros::Time::init();
+    ros::Rate rate(30);
+    auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
 
-    float integral = 0;
     while(ros::ok()){
-//        neoPixel->runPattern(pattern,rate);
-//        neoPixel->setColor(1,0x80);
-//        rate.sleep();
-        if(h2p_lw_myoquad_addr!=nullptr){
-            pos_0 = IORD(h2p_lw_myoquad_addr,0);
-            pos_1 = IORD(h2p_lw_myoquad_addr,1);
-            displacement = pos_0 - 108544.0f/57600.0f*pos_1;
-            dis = IORD(h2p_lw_myoquad_addr,2);
-            in_diff = IORD(h2p_lw_myoquad_addr,5);
-            in = IORD(h2p_lw_myoquad_addr,6);
-            float error = (setpoint-pos_0);
-//            float error = (setpoint-pos_1);
-//            float error = (setpoint-displacement);
-            integral += 0.001*error;
-            if(integral>200)
-                integral = 200;
-            if(integral<-200)
-                integral = -200;
-            float result = error + integral;
-
-            if(result<-2000)
-                result = -2000;
-            if(result>2000)
-                result = 2000;
-
-            myoControl->allToDirectPWM(result);
-
-            ROS_INFO_THROTTLE(0.1, "----------------\n"
-                                 "pos_0: %d\n"
-                                 "pos_1: %d\n"
-                                 "dis  : %d\n"
-                                 "dif  : %x\n"
-                                 "in   : %x\n"
-                                 "disp : %f\n"
-                                 "res  : %f", pos_0, pos_1, dis, in_diff, in, displacement,result);
-
-
-        }
+        neoPixel->runPattern(pattern,rate);
+        rate.sleep();
     }
 
     // clean up our memory mapping and exit
