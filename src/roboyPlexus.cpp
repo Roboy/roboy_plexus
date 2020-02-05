@@ -4,22 +4,22 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
         vector<int32_t *> &i2c_base, int32_t *adc_base, int32_t *switches_base) :
         i2c_base(i2c_base),  adc_base(adc_base), icebusControl(icebusControl), myoControl(myoControl),
         switches_base(switches_base) {
-//
-//    id = IORD(switches_base, 0) & 0x7;
-////    string body_part;
-//    switch (id) {
-//        case SHOULDER_LEFT:
-//            body_part = "shoulder_left";
-//            break;
-//        case SHOULDER_RIGHT:
-//            body_part = "shoulder_right";
-//            break;
-//        default:
-//            body_part = "unknown";
-//    }
-//
+
+    id = IORD(switches_base, 0) & 0x7;
+//    string body_part;
+    switch (id) {
+        case 3:
+            body_part = "shoulder_left";
+            break;
+        case 4:
+            body_part = "shoulder_right";
+            break;
+        default:
+            body_part = "joint_sensors";
+    }
+
     ROS_INFO("roboy3 plexus initializing");
-    body_part = "roboy3";
+    // body_part = "roboy3";
 
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
@@ -35,80 +35,95 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
+    if(body_part!="joint_sensors") {
+        motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
-    // TODO add body part to start record
-    startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1,
-                                              &RoboyPlexus::StartRecordTrajectoryCB, this);
-    stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
-                                             &RoboyPlexus::StopRecordTrajectoryCB, this);
-    saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
-    enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
-    predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB, this);
+        // TODO add body part to start record
+        startRecordTrajectory_sub = nh->subscribe("/roboy/control/StartRecordTrajectory", 1,
+                                                  &RoboyPlexus::StartRecordTrajectoryCB, this);
+        stopRecordTrajectory_sub = nh->subscribe("/roboy/control/StopRecordTrajectory", 1,
+                                                 &RoboyPlexus::StopRecordTrajectoryCB, this);
+        saveBehavior_sub = nh->subscribe("/roboy/control/SaveBehavior", 1, &RoboyPlexus::SaveBehaviorCB, this);
+        enablePlayback_sub = nh->subscribe("/roboy/control/EnablePlayback", 1, &RoboyPlexus::EnablePlaybackCB, this);
+        predisplacement_sub = nh->subscribe("/roboy/middleware/PreDisplacement", 1, &RoboyPlexus::PredisplacementCB,
+                                            this);
 
-    motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
-                                           &RoboyPlexus::MotorConfigService, this);
-    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
-                                           &RoboyPlexus::ControlModeService, this);
-    emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
-                                             &RoboyPlexus::EmergencyStopService,
-                                             this);
+        motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
+                                               &RoboyPlexus::MotorConfigService, this);
+        controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
+                                               &RoboyPlexus::ControlModeService, this);
+        emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
+                                                 &RoboyPlexus::EmergencyStopService,
+                                                 this);
 
-    setDisplacementForAll_srv = nh->advertiseService("/roboy/middleware/SetDisplacementForAll",
-                                                     &RoboyPlexus::SetDisplacementForAll, this);
-    listExistingTrajectories_srv = nh->advertiseService("/roboy/control/ListExistingTrajectories",
-                                                        &RoboyPlexus::ListExistingItemsService, this);
-    listExistingBehaviors_srv = nh->advertiseService("/roboy/control/ListExistingBehaviors",
-                                                     &RoboyPlexus::ListExistingItemsService, this);
-    expandBehavior_srv = nh->advertiseService("/roboy/control/ExpandBehavior",
-                                              &RoboyPlexus::ExpandBehaviorService, this);
+        setDisplacementForAll_srv = nh->advertiseService("/roboy/middleware/SetDisplacementForAll",
+                                                         &RoboyPlexus::SetDisplacementForAll, this);
+        listExistingTrajectories_srv = nh->advertiseService("/roboy/control/ListExistingTrajectories",
+                                                            &RoboyPlexus::ListExistingItemsService, this);
+        listExistingBehaviors_srv = nh->advertiseService("/roboy/control/ListExistingBehaviors",
+                                                         &RoboyPlexus::ListExistingItemsService, this);
+        expandBehavior_srv = nh->advertiseService("/roboy/control/ExpandBehavior",
+                                                  &RoboyPlexus::ExpandBehaviorService, this);
 
-    motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
-    motorStatus = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
-    motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
+        motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
+        motorStatus = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
+        motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
 
-    spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
-    spinner->start();
+        spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
+        spinner->start();
 
-    if(myoControl!=nullptr){
-        for (auto &myo_bus:myoControl->motor_config->myobus) {
-            for(auto &motor:myo_bus.second){
-                myoControl->SetControlMode(motor->motor_id_global,ENCODER0_POSITION);
+        if (myoControl != nullptr) {
+            for (auto &myo_bus:myoControl->motor_config->myobus) {
+                for (auto &motor:myo_bus.second) {
+                    myoControl->SetControlMode(motor->motor_id_global, ENCODER0_POSITION);
+                }
             }
+
+            motorStatusThread = boost::shared_ptr<std::thread>(
+                    new std::thread(&RoboyPlexus::MotorStatusPublisher, this));
+            motorStatusThread->detach();
         }
 
-        motorStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatusPublisher, this));
-        motorStatusThread->detach();
-    }
+        motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
+        motorStateThread->detach();
 
-    motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
-    motorStateThread->detach();
+        motorInfoThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorInfoPublisher, this));
+        motorInfoThread->detach();
 
-    motorInfoThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorInfoPublisher, this));
-    motorInfoThread->detach();
-
-    for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-        icebusControl->SetNeopixelColor(motor,0xF00000);
-        if(icebusControl->GetCommunicationQuality(motor)!=0)
-            icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor,ENCODER0));
-        else
-            icebusControl->SetPoint(motor, 0);
-        icebusControl->SetControlMode(motor,3);
-    }
-
-    vector<int> active_i2c_bus;
-    for (int i = 0; i < i2c_base.size(); i++) {
-        if (i2c_base[i] != nullptr) {
+        for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
+            icebusControl->SetNeopixelColor(motor, 0xF00000);
+            if (icebusControl->GetCommunicationQuality(motor) != 0)
+                icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor, ENCODER0));
+            else
+                icebusControl->SetPoint(motor, 0);
+            icebusControl->SetControlMode(motor, 3);
+        }
+    }else {
+        vector<int> active_i2c_bus;
+        for (int i = 0; i < 4; i++) {
             tle.push_back(boost::shared_ptr<TLE493D>(new TLE493D(i2c_base[i])));
             active_magnetic_sensors++;
         }
-    }
-    if (active_magnetic_sensors > 0) {
-        magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor", 1);
-        magneticsThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
-        magneticsThread->detach();
-    } else {
-        ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
+        if (active_magnetic_sensors > 0) {
+            magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
+                                                                                  1);
+            magneticsThread = boost::shared_ptr<std::thread>(
+                    new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
+            magneticsThread->detach();
+        } else {
+            ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
+        }
+        ROS_INFO("initializing elbow joints");
+        if(i2c_base.size()>4){
+            vector <uint8_t> ids = {0xD};
+            a1335.push_back(A1335Ptr(new A1335(i2c_base[4],ids)));
+            // a1335.push_back(A1335Ptr(new A1335(i2c_base[5],ids)));
+        }
+
+        jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
+        elbowJointAngleThread = boost::shared_ptr<std::thread>(
+                new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
+        elbowJointAngleThread->detach();
     }
 
     ROS_INFO("roboy plexus initialized");
@@ -377,6 +392,24 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
     } else {
         ROS_WARN("emergency stop active, can NOT change control mode");
         return false;
+    }
+}
+
+void RoboyPlexus::ElbowJointPublisher(){
+    sensor_msgs::JointState msg;
+    msg.name = {"joint_elbow_0","joint_elbow_1"};
+    msg.position = {0,0};
+    msg.velocity = {0,0};
+    msg.effort = {0,0};
+    ros::Rate rate(10);
+    while(ros::ok()){
+        vector<A1335State> state;
+        a1335[0]->readAngleData(state);
+        for(int i=0;i<state.size();i++){
+            msg.position[i] = state[i].angle;
+        }
+        jointState.publish(msg);
+        rate.sleep();
     }
 }
 

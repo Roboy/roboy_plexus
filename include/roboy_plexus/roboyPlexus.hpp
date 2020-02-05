@@ -64,6 +64,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/JointState.h>
 #include <thread>
 #include <map>
 #include <chrono>
@@ -76,6 +77,7 @@
 #include <bitset>
 #include "sensors/tlv493d.hpp"
 #include "sensors/tle493d_w2b6.hpp"
+#include "sensors/A1335.hpp"
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -112,6 +114,9 @@ private:
      */
     bool ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
                             roboy_middleware_msgs::ControlMode::Response &res);
+
+
+    void ElbowJointPublisher();
 
     /**
      * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
@@ -255,7 +260,7 @@ private:
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
             enablePlayback_sub, predisplacement_sub;
     ros::Publisher motorState, motorInfo, motorStatus, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
-            motorAngle, magneticSensor;
+            motorAngle, magneticSensor, jointState;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
             replayTrajectory_srv, executeActions_srv, executeBehavior_srv, setDisplacementForAll_srv,
             listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
@@ -263,9 +268,9 @@ private:
     map<int, int> control_mode_backup,control_mode;
     IcebusControlPtr icebusControl;
     MyoControlPtr myoControl;
-    A1335Ptr a1335;
+    vector<A1335Ptr> a1335;
     boost::shared_ptr<std::thread> adcThread, motorStateThread, motorInfoThread, motorStatusThread,
-            jointAngleThread, magneticsThread;
+            elbowJointAngleThread, magneticsThread;
     bool keep_publishing = true;
     int32_t *adc_base, *switches_base;
     vector<int32_t *> i2c_base;

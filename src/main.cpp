@@ -178,6 +178,18 @@ int main(int argc, char *argv[]) {
 #ifdef I2C_3_BASE
     h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
+#ifdef I2C_4_BASE
+    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef I2C_5_BASE
+    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef I2C_6_BASE
+    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_6_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef I2C_7_BASE
+    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_7_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
 
     myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
