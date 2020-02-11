@@ -253,6 +253,12 @@ public:
     float GetWeight(int load_cell, uint32_t &adc_value);
 
     /**
+     * Returns if this motor is part of this bus
+     * @param return true if the motor belongs to this bus
+    */
+    bool MyMotor(int motor);
+
+    /**
      * Changes the controller of ALL motors with the saved controller parameters
      * @param mode choose from Position, Velocity or Displacement
      * @return success

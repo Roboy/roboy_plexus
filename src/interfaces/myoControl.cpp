@@ -179,6 +179,10 @@ void MyoControl::reset() {
     }
 }
 
+bool MyoControl::MyMotor(int motor){
+ return motor_config->motor.find(motor) == motor_config->motor.end();
+}
+
 bool MyoControl::setSPIactive(int motor, bool active) {
     MYO_WRITE_spi_activated(myo_base[motor_config->motor[motor]->bus], active);
 }

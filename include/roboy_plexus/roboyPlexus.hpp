@@ -187,6 +187,12 @@ private:
     void MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg);
 
     /**
+     * Callback for motor control
+     * @param msg motor control
+     */
+    void MotorControl(const roboy_middleware_msgs::MotorControl::ConstPtr &msg);
+
+    /**
      * Service for changing motor PID parameters
      * @param req PID parameters
      * @param res success
@@ -258,7 +264,7 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
-            enablePlayback_sub, predisplacement_sub;
+            enablePlayback_sub, predisplacement_sub, motorControl_sub;
     ros::Publisher motorState, motorInfo, motorStatus, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
             motorAngle, magneticSensor, jointState;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
@@ -266,6 +272,7 @@ private:
             listExistingTrajectories_srv, listExistingBehaviors_srv, expandBehavior_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode_backup,control_mode;
+    vector<MotorControlPtr> motorControl;
     IcebusControlPtr icebusControl;
     MyoControlPtr myoControl;
     vector<A1335Ptr> a1335;

@@ -341,6 +341,10 @@ float IcebusControl::GetWeight(int load_cell, uint32_t &adc_value) {
     return weight;
 }
 
+bool IcebusControl::MyMotor(int m){
+  return motor_config->motor.find(m) == motor_config->motor.end();
+}
+
 float IcebusControl::RecordTrajectories(
         float samplingTime, float recordTime,
         map<int, vector<float>> &trajectories, vector<int> &idList,

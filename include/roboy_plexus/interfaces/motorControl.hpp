@@ -61,6 +61,11 @@ public:
     virtual int32_t GetPWM(int motor){};
 
     /**
+     * Returns if this motor is part of this bus
+     * @param return true if the motor belongs to this bus
+    */
+    virtual bool MyMotor(int motor){};
+    /**
      * records positions of motors in Displacement mode
      * @param samplingTime
      * @param recordTime

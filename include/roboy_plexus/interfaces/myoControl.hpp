@@ -168,6 +168,8 @@ public:
      */
     void reset();
 
+    bool MyMotor(int motor);
+
     /**
      * Sets the spi state for the interface of a motor
      * @param motor

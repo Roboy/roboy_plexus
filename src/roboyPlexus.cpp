@@ -58,6 +58,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
         motorStatus = nh->advertise<roboy_middleware_msgs::MotorStatus>("/roboy/middleware/MotorStatus", 1);
 
         if (myoControl != nullptr) {
+            motorControl.push_back(myoControl);
             for (auto &myo_bus:myoControl->motor_config->myobus) {
                 for (auto &motor:myo_bus.second) {
                     myoControl->SetControlMode(motor->motor_id_global, ENCODER0_POSITION);
@@ -113,6 +114,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
                 icebusControl->SetPoint(motor, 0);
             icebusControl->SetControlMode(motor, 3);
         }
+        motorControl.push_back(icebusControl);
     }
     motorConfig_srv = nh->advertiseService("/roboy/middleware/"+body_part+"/MotorConfig",
                                            &RoboyPlexus::MotorConfigService, this);
@@ -121,7 +123,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
     emergencyStop_srv = nh->advertiseService("/roboy/middleware/"+body_part+"/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
-
+    motorControl_sub = nh->subscribe("/roboy/middleware/MotorControl", 1, &RoboyPlexus::MotorControl, this);
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
@@ -280,6 +282,18 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
                 }
 
                 break;
+        }
+        i++;
+    }
+}
+
+void RoboyPlexus::MotorControl(const roboy_middleware_msgs::MotorControl::ConstPtr &msg) {
+    uint i = 0;
+    for (auto motor:msg->motor) {
+        for(auto &bus:motorControl){
+          if(bus->MyMotor(motor)){
+            bus->SetPoint(msg->setpoint[i]);
+          }
         }
         i++;
     }
