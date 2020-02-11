@@ -156,6 +156,8 @@ public:
 
     void SetPoint(int motor, int32_t setpoint);
 
+    void SetNeopixelColor(int motor, int32_t color) override;
+
     /**
     * Changes the controller parameters of a motor
     * @param motor for this motor

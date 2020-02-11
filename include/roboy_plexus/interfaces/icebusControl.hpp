@@ -302,7 +302,7 @@ public:
      * @param motor
      * @param color
      */
-    void SetNeopixelColor(int motor, int32_t color);
+    void SetNeopixelColor(int motor, int32_t color) override;
 
     /**
      * Sets a new setpoint for a motor

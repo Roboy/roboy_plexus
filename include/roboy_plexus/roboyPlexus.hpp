@@ -47,11 +47,13 @@
 #include <roboy_middleware_msgs/MotorAngle.h>
 #include <roboy_middleware_msgs/MotorCalibrationService.h>
 #include <roboy_middleware_msgs/MotorCommand.h>
+#include <roboy_middleware_msgs/MotorControl.h>
 #include <roboy_middleware_msgs/MotorState.h>
 #include <roboy_middleware_msgs/MotorStatus.h>
 #include <roboy_middleware_msgs/MotorInfo.h>
 #include <roboy_middleware_msgs/MotorConfigService.h>
 #include <roboy_middleware_msgs/MyoBrickCalibrationService.h>
+#include <roboy_middleware_msgs/Neopixel.h>
 #include <roboy_middleware_msgs/SetInt16.h>
 #include <roboy_control_msgs/Behavior.h>
 #include <roboy_control_msgs/StartRecordTrajectory.h>
@@ -217,6 +219,8 @@ private:
     [[deprecated("replaced with iCEbus")]]
     void MotorStatusPublisher();
 
+    void Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg);
+
     /**
     * Callback updates the displacement for recording trajectories
     * @param msg
@@ -264,7 +268,7 @@ private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, startRecordTrajectory_sub, stopRecordTrajectory_sub, saveBehavior_sub,
-            enablePlayback_sub, predisplacement_sub, motorControl_sub;
+            enablePlayback_sub, predisplacement_sub, motorControl_sub, neopixel_sub;
     ros::Publisher motorState, motorInfo, motorStatus, darkroom, darkroom_ootx, darkroom_status, adc, gsensor,
             motorAngle, magneticSensor, jointState;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, motorCalibration_srv,
@@ -292,6 +296,8 @@ private:
 
     int active_magnetic_sensors = 0;
     vector<TLE493DPtr> tle;
+
+    bool external_led_control = false;
 
     string body_part;
     vector<string> body_parts;

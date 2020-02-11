@@ -99,6 +99,13 @@ public:
     virtual void SetPoint(int motor, int32_t setPoint){};
 
     /**
+   * Sets the color of a motorboard
+   * @param motor for this motor
+   * @param color rgb color
+   */
+    virtual void SetNeopixelColor(int motor, int32_t color){};
+
+    /**
 	 * starts recording positions of motors in Displacement mode
 	 * @param samplingTime
 	 * @param trajectories will be filled with positions

@@ -187,6 +187,10 @@ bool MyoControl::setSPIactive(int motor, bool active) {
     MYO_WRITE_spi_activated(myo_base[motor_config->motor[motor]->bus], active);
 }
 
+void MyoControl::SetNeopixelColor(int motor, int32_t color){
+  ROS_WARN_ONCE("you are trying to set the neopixel color of a legacy motorboard...thou shall not pass");
+};
+
 void MyoControl::getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
                                         int &setPoint, int &outputDivider, int motor) {
     int32_t *bus = myo_base[motor_config->motor[motor]->bus];

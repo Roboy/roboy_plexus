@@ -106,6 +106,8 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
         motorInfoThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorInfoPublisher, this));
         motorInfoThread->detach();
 
+        neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
+
         for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
             icebusControl->SetNeopixelColor(motor, 0xF00000);
             if (icebusControl->GetCommunicationQuality(motor) != 0)
@@ -198,22 +200,39 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(motor));
             msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
             msg.pwm.push_back(icebusControl->GetPWM(motor));
-            if(light_up_motor==motor)
-                icebusControl->SetNeopixelColor(motor,0x0F0000);
-            else
-                icebusControl->SetNeopixelColor(motor,0);
+            if(!external_led_control){
+              if(light_up_motor==motor)
+                  icebusControl->SetNeopixelColor(motor,0x0F0000);
+              else
+                  icebusControl->SetNeopixelColor(motor,0);
+            }
         }
-        if(dir)
-            light_up_motor++;
-        else
-            light_up_motor--;
-        if(light_up_motor>=8 && dir)
-            dir = false;
-        if(light_up_motor<0 && !dir)
-            dir = true;
+        if(!external_led_control){
+          if(dir)
+              light_up_motor++;
+          else
+              light_up_motor--;
+          if(light_up_motor>=8 && dir)
+              dir = false;
+          if(light_up_motor<0 && !dir)
+              dir = true;
+        }
         motorInfo.publish(msg);
         rate.sleep();
     }
+}
+
+void RoboyPlexus::Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg){
+  uint i = 0;
+  for (auto motor:msg->motor) {
+      for(auto &bus:motorControl){
+        if(bus->MyMotor(motor)){
+          int32_t color = int32_t(msg->r<<16|msg->g<<8|msg->b);
+          bus->SetNeopixelColor(motor, color);
+        }
+      }
+      i++;
+  }
 }
 
 void RoboyPlexus::MagneticJointPublisher() {
@@ -292,7 +311,7 @@ void RoboyPlexus::MotorControl(const roboy_middleware_msgs::MotorControl::ConstP
     for (auto motor:msg->motor) {
         for(auto &bus:motorControl){
           if(bus->MyMotor(motor)){
-            bus->SetPoint(msg->setpoint[i]);
+            bus->SetPoint(motor, msg->setpoint[i]);
           }
         }
         i++;
