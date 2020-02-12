@@ -86,16 +86,22 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
         }
         ROS_INFO("initializing elbow joints");
         if(i2c_base.size()>4){
-            vector <uint8_t> ids = {0xC,0xD};
+          {
+            vector <uint8_t> ids = {0xC};
             a1335.push_back(A1335Ptr(new A1335(i2c_base[4],ids)));
-            // a1335.push_back(A1335Ptr(new A1335(i2c_base[5],ids)));
+          }
+          {
+            vector <uint8_t> ids = {0xD};
+            a1335.push_back(A1335Ptr(new A1335(i2c_base[5],ids)));
+          }
+
         }
 
         // TODO wait for juri
-        // jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
-        // elbowJointAngleThread = boost::shared_ptr<std::thread>(
-        //         new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
-        // elbowJointAngleThread->detach();
+        jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
+        elbowJointAngleThread = boost::shared_ptr<std::thread>(
+                new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
+        elbowJointAngleThread->detach();
 
         motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
         motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
@@ -429,16 +435,32 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
 
 void RoboyPlexus::ElbowJointPublisher(){
     sensor_msgs::JointState msg;
-    msg.name = {"joint_elbow_0","joint_elbow_1"};
+    msg.name = {"elbow_left_axis0","elbow_left_axis1"};
     msg.position = {0,0};
     msg.velocity = {0,0};
     msg.effort = {0,0};
-    ros::Rate rate(10);
+    ros::Rate rate(30);
+    vector<float> offsets = {94, -17.3};
+    vector<float> angles = {0,0}, angles_prev = {0,0};
+    vector<int> overflow_counter = {0,0};
+    vector<int> sign = {-1,1};
+    vector<int> order = {1,0};
+
     while(ros::ok()){
-        vector<A1335State> state;
-        a1335[0]->readAngleData(state);
-        for(int i=0;i<state.size();i++){
-            msg.position[i] = state[i].angle;
+        int k = 0;
+        for(int j=0;j<a1335.size();j++){
+          vector<A1335State> state;
+          a1335[j]->readAngleData(state);
+          for(int i=0;i<state.size();i++){
+              if(angles_prev[k]>340 && state[i].angle < 20)
+                overflow_counter[k]++;
+              if(angles_prev[k]<20 && state[i].angle > 340)
+                overflow_counter[k]--;
+              angles[k] = 0.2f*(state[i].angle + overflow_counter[k]*360 - offsets[k]) + 0.8f*angles[k];
+              angles_prev[k] = state[i].angle;
+              msg.position[order[k]] = angles[k]*M_PI/180.0f*sign[k];
+              k++;
+          }
         }
         jointState.publish(msg);
         rate.sleep();
