@@ -41,6 +41,7 @@
 #include "interfaces/myoControl.hpp"
 #include "control/controlActions.hpp"
 #include "sensors/A1335.hpp"
+#include "sensors/BallJoint.hpp"
 #include <roboy_middleware_msgs/ADCvalue.h>
 #include <roboy_middleware_msgs/ControlMode.h>
 #include <roboy_middleware_msgs/MagneticSensor.h>
@@ -100,6 +101,7 @@ static vector<int32_t *> DEFAULT_POINTER_VECTOR;
 class RoboyPlexus {
 public:
     RoboyPlexus(IcebusControlPtr icebusControl,
+                vector<BallJointPtr> balljoints,
                 MyoControlPtr myoControl = nullptr,
                 vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
                 int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
@@ -285,6 +287,7 @@ private:
     bool keep_publishing = true;
     int32_t *adc_base, *switches_base;
     vector<int32_t *> i2c_base;
+    vector<BallJointPtr> balljoints;
     bool emergency_stop = false;
     int file;
     const char *filename = "/dev/i2c-0";
@@ -293,9 +296,6 @@ private:
     uint16_t szXYZ[3];
     int cnt = 0, max_cnt = 0;
     string ethaddr;
-
-    int active_magnetic_sensors = 0;
-    vector<TLE493DPtr> tle;
 
     bool external_led_control = false;
 

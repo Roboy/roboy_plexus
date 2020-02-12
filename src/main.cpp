@@ -63,7 +63,10 @@ int32_t *h2p_lw_a1339_addr;
 vector<int32_t*> h2p_lw_darkroom_ootx_addr;
 vector<int32_t*> h2p_lw_icebus_addr;
 vector<int32_t*> h2p_lw_myo_addr;
-vector<int32_t*> h2p_lw_i2c_addr;
+vector<int32_t*> h2p_lw_auxilliary_i2c_addr;
+vector<int32_t*> h2p_lw_sensor0_i2c_addr;
+vector<int32_t*> h2p_lw_sensor1_i2c_addr;
+vector<int32_t*> h2p_lw_sensor2_i2c_addr;
 
 IcebusControlPtr icebusControl;
 MyoControlPtr myoControl;
@@ -128,8 +131,8 @@ int main(int argc, char *argv[]) {
 #else
     h2p_lw_led_addr = nullptr;
 #endif
-#ifdef NEOPIXEL_0_BASE
-    h2p_lw_neopixel_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + NEOPIXEL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#ifdef NEOPIXEL_BASE
+    h2p_lw_neopixel_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + NEOPIXEL_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     neoPixel.reset(new NeoPixel(h2p_lw_neopixel_addr,10));
 #else
     h2p_lw_neopixel_addr = nullptr;
@@ -145,9 +148,7 @@ int main(int argc, char *argv[]) {
 #ifdef MYOCONTROL_1_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef MYOCONTROL_2_BASE
-    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
+
 #ifdef ICEBOARDCONTROL_0_BASE
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
@@ -157,43 +158,66 @@ int main(int argc, char *argv[]) {
 #ifdef ICEBOARDCONTROL_2_BASE
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef ICEBOARDCONTROL_3_BASE
-    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+
+#ifdef AUXILLIARY_I2C_0_BASE
+    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef ICEBOARDCONTROL_4_BASE
-    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef AUXILLIARY_I2C_1_BASE
+    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef ICEBOARDCONTROL_5_BASE
-    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef AUXILLIARY_I2C_2_BASE
+    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_0_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef AUXILLIARY_I2C_3_BASE
+    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_1_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+
+#ifdef SENSOR_0_I2C_3_BASE
+    h2p_lw_sensor0_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_0_I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_2_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef SENSOR_0_I2C_2_BASE
+    h2p_lw_sensor0_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_0_I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_3_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef SENSOR_0_I2C_1_BASE
+    h2p_lw_sensor0_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_0_I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_4_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef SENSOR_0_I2C_0_BASE
+    h2p_lw_sensor0_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_0_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_5_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+
+#ifdef SENSOR_1_I2C_3_BASE
+    h2p_lw_sensor1_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_1_I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_6_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_6_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef SENSOR_1_I2C_2_BASE
+    h2p_lw_sensor1_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_1_I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-#ifdef I2C_7_BASE
-    h2p_lw_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + I2C_7_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef SENSOR_1_I2C_1_BASE
+    h2p_lw_sensor1_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_1_I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef SENSOR_1_I2C_0_BASE
+    h2p_lw_sensor1_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_1_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+
+#ifdef SENSOR_2_I2C_3_BASE
+    h2p_lw_sensor2_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_2_I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef SENSOR_2_I2C_2_BASE
+    h2p_lw_sensor2_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_2_I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef SENSOR_2_I2C_1_BASE
+    h2p_lw_sensor2_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_2_I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef SENSOR_2_I2C_0_BASE
+    h2p_lw_sensor2_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SENSOR_2_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
     myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
-    RoboyPlexus roboyPlexus(icebusControl,myoControl,h2p_lw_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
+    vector<BallJointPtr> balljoints;
+    balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor0_i2c_addr)));
+    balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor1_i2c_addr)));
+    balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor2_i2c_addr)));
+    RoboyPlexus roboyPlexus(icebusControl,balljoints,myoControl,h2p_lw_auxilliary_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////

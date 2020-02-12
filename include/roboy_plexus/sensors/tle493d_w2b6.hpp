@@ -60,8 +60,6 @@ public:
 
     ~TLE493D();
 
-    bool initTLV(uint8_t &deviceaddress, int devicepin);
-
     void reset();
 
     float convertToMilliTesla(uint8_t MSB, uint8_t LSB);
