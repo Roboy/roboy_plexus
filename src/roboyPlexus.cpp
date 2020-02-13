@@ -19,7 +19,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
     }
 
     ROS_INFO("roboy3 plexus initializing");
-    // body_part = "shoulder_right";
+    body_part = "shoulder_left";
 
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
@@ -270,47 +270,23 @@ void RoboyPlexus::MagneticJointPublisher() {
 void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
     uint i = 0;
     for (auto motor:msg->motor) {
-        switch (control_mode[motor]) {
-            case 0:
-                if(!msg->legacy)
-                    icebusControl->SetPoint(motor, msg->setpoint[i]);
-                else
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                break;
-            case 1:
-                if(!msg->legacy)
-                    icebusControl->SetPoint(motor, msg->setpoint[i]);
-                else
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                break;
-            case 2:
-                if(!msg->legacy)
-                    icebusControl->SetPoint(motor, msg->setpoint[i]);
-                else
-                    myoControl->SetPoint(motor, msg->setpoint[i]);
-                break;
-            case 3:
-                bool direct_pwm_override;
-                nh->getParam("direct_pwm_override",direct_pwm_override);
-                if(!msg->legacy){
-                    if(fabsf(msg->setpoint[i])>1000000 && !direct_pwm_override) {
-                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>1000000), "
-                                            "what the heck are you publishing?!");
-                    }else {
-                        icebusControl->SetPoint(motor, msg->setpoint[i]);
-                    }
-                }else{
-                    if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
-                        ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>128), "
-                                            "what the heck are you publishing?!");
-                    }else {
-                        myoControl->SetPoint(motor, msg->setpoint[i]);
-                    }
-                }
-
-                break;
+      for(auto &bus:motorControl){
+        if(bus->MyMotor(motor)){
+          if(control_mode[motor]!=3){
+            bus->SetPoint(motor, msg->setpoint[i]);
+          }else{
+            bool direct_pwm_override;
+            nh->getParam("direct_pwm_override",direct_pwm_override);
+            if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
+                ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>128), "
+                                    "what the heck are you publishing?!");
+            }else {
+                bus->SetPoint(motor, msg->setpoint[i]);
+            }
+          }
         }
-        i++;
+      }
+      i++;
     }
 }
 

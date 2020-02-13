@@ -342,7 +342,7 @@ float IcebusControl::GetWeight(int load_cell, uint32_t &adc_value) {
 }
 
 bool IcebusControl::MyMotor(int m){
-  return motor_config->motor.find(m) == motor_config->motor.end();
+  return motor_config->motor.find(m) != motor_config->motor.end();
 }
 
 float IcebusControl::RecordTrajectories(

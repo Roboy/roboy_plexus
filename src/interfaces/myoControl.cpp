@@ -180,7 +180,7 @@ void MyoControl::reset() {
 }
 
 bool MyoControl::MyMotor(int motor){
- return motor_config->motor.find(motor) == motor_config->motor.end();
+ return motor_config->motor.find(motor) != motor_config->motor.end();
 }
 
 bool MyoControl::setSPIactive(int motor, bool active) {
