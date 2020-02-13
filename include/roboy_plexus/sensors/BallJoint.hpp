@@ -1,7 +1,7 @@
 /*
     BSD 3-Clause License
 
-    Copyright (c) 2019, Roboy
+    Copyright (c) 2017, Roboy
             All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,46 +29,28 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    author: Simon Trendel ( st@gi.ai ), 2019
-    description: Class for configuring and reading 3d magnetic sensor TLE493D
+    author: Daniel Schubert, Simon Trendel ( simon.trendel@tum.de ), 2018
+    description: A1335 - Precision Hall-Effect Angle Sensor IC
 */
-#pragma  once
 
-#include <stdint.h>
-#include "interfaces/i2c.hpp"
-#include <vector>
+#pragma once
+
+#include <iostream>
 #include <ros/ros.h>
+#include "sensors/tle493d_w2b6.hpp"
 
-using namespace std;
-
-#define bitRead(byte, pos) ((byte) & (1<<(pos)))
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  (byte & 0x80 ? '1' : '0'), \
-  (byte & 0x40 ? '1' : '0'), \
-  (byte & 0x20 ? '1' : '0'), \
-  (byte & 0x10 ? '1' : '0'), \
-  (byte & 0x08 ? '1' : '0'), \
-  (byte & 0x04 ? '1' : '0'), \
-  (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0')
-
-
-class TLE493D {
+class BallJoint{
 public:
-    TLE493D(int32_t *i2c_base);
+    /**
+     * Constructor
+     * @param i2c_base i2c base (cf hps_0.h )
+     */
+    BallJoint(vector<int32_t*> i2c_base);
 
-    ~TLE493D();
+    void readMagneticData(vector<float> &mx,vector<float> &my,vector<float> &mz);
 
-    void reset();
-
-    float convertToMilliTesla(uint8_t MSB, uint8_t LSB);
-
-    bool read(float &fx, float &fy, float &fz);
-
-public:
-    boost::shared_ptr<I2C> i2c;
-    int32_t *i2c_base;
+private:
+  vector<TLE493DPtr> tle;
 };
 
-typedef boost::shared_ptr<TLE493D> TLE493DPtr;
+typedef boost::shared_ptr<BallJoint> BallJointPtr;

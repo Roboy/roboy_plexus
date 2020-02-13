@@ -1,9 +1,10 @@
 #include "roboyPlexus.hpp"
 
-RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoControl,
+RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, vector<BallJointPtr> balljoints,
+        MyoControlPtr myoControl,
         vector<int32_t *> &i2c_base, int32_t *adc_base, int32_t *switches_base) :
         i2c_base(i2c_base),  adc_base(adc_base), icebusControl(icebusControl), myoControl(myoControl),
-        switches_base(switches_base) {
+        switches_base(switches_base), balljoints(balljoints) {
 
     id = IORD(switches_base, 0) & 0x7;
 //    string body_part;
@@ -70,19 +71,14 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
             motorStatusThread->detach();
         }
     }else {
-        vector<int> active_i2c_bus;
-        for (int i = 0; i < 4; i++) {
-            tle.push_back(boost::shared_ptr<TLE493D>(new TLE493D(i2c_base[i])));
-            active_magnetic_sensors++;
-        }
-        if (active_magnetic_sensors > 0) {
+        if (!balljoints.empty()) {
             magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
                                                                                   1);
             magneticsThread = boost::shared_ptr<std::thread>(
                     new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
             magneticsThread->detach();
         } else {
-            ROS_WARN("no active i2c buses, cannot read magnetic sensor data");
+            ROS_WARN("no active ball joints");
         }
         ROS_INFO("initializing elbow joints");
         if(i2c_base.size()>4){
@@ -149,14 +145,24 @@ RoboyPlexus::~RoboyPlexus() {
 
 void RoboyPlexus::MotorStatePublisher() {
     ros::Rate rate(200);
+    roboy_middleware_msgs::MotorState msg;
+    for (auto &m:icebusControl->motor_config->motor) {
+      msg.global_id.push_back(m.second->motor_id_global);
+    }
+    msg.setpoint.resize(icebusControl->motor_config->motor.size());
+    msg.encoder0_pos.resize(icebusControl->motor_config->motor.size());
+    msg.encoder1_pos.resize(icebusControl->motor_config->motor.size());
+    msg.displacement.resize(icebusControl->motor_config->motor.size());
+    msg.current.resize(icebusControl->motor_config->motor.size());
     while (keep_publishing && ros::ok()) {
-        roboy_middleware_msgs::MotorState msg;
+        int i = 0;
         for (auto &m:icebusControl->motor_config->motor) {
-            msg.setpoint.push_back(icebusControl->GetSetPoint(m.second->motor_id_global));
-            msg.encoder0_pos.push_back(icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER0_POSITION));
-            msg.encoder1_pos.push_back(icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER1_POSITION));
-            msg.displacement.push_back(icebusControl->GetDisplacement(m.second->motor_id_global));
-            msg.current.push_back(icebusControl->GetCurrent(m.second->motor_id_global));
+            msg.setpoint[i] = icebusControl->GetSetPoint(m.second->motor_id_global);
+            msg.encoder0_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER0_POSITION);
+            msg.encoder1_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER1_POSITION);
+            msg.displacement[i] = icebusControl->GetDisplacement(m.second->motor_id_global);
+            msg.current[i] = icebusControl->GetCurrent(m.second->motor_id_global);
+            i++;
         }
         motorState.publish(msg);
         rate.sleep();
@@ -245,25 +251,16 @@ void RoboyPlexus::Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg)
 
 void RoboyPlexus::MagneticJointPublisher() {
     ros::Rate rate(100);
-    roboy_middleware_msgs::MagneticSensor msg;
-    msg.id = id;
-    for(int i=0;i<tle.size();i++){
-        msg.sensor_id.push_back(i);
-        msg.x.push_back(0);
-        msg.y.push_back(0);
-        msg.z.push_back(0);
-    }
-
-    float fx = 0, fy = 0, fz = 0;
     while (ros::ok()) {
-        rate.sleep();
-        for (int i = 0; i < tle.size(); i++) {
-            tle[i]->read(fx, fy, fz);
-            msg.x[i] = fx;
-            msg.y[i] = fy;
-            msg.z[i] = fz;
-        }
+      int i=0;
+      for(auto ball:balljoints){
+        roboy_middleware_msgs::MagneticSensor msg;
+        msg.id = i;
+        ball->readMagneticData(msg.x,msg.y,msg.z);
         magneticSensor.publish(msg);
+        i++;
+      }
+      rate.sleep();
     }
 }
 
@@ -387,21 +384,19 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
             ROS_ERROR("no motor ids defined, cannot change control mode");
             return false;
         } else {
+            int i=0;
             for (int motor:req.motor_id) {
-                if(!req.legacy) {
-                    icebusControl->SetControlMode(motor, req.control_mode);
-                }else {
-                    myoControl->SetControlMode(motor, req.control_mode);
-                }
-                ROS_INFO("changing control mode of motor %d to %d", motor, req.control_mode);
-                control_mode[motor] = req.control_mode;
-                if(req.set_point!=0){
-                    if(!req.legacy) {
-                        icebusControl->SetPoint(motor, req.set_point);
-                    }else {
-                        myoControl->SetPoint(motor, req.set_point);
+                for(auto &bus:motorControl){
+                  if(bus->MyMotor(motor)){
+                    bus->SetControlMode(motor, req.control_mode);
+                    control_mode[motor] = req.control_mode;
+                    if(i<req.set_points.size()){
+                      bus->SetPoint(motor, req.set_points[i]);
                     }
+                    ROS_INFO("changing control mode of motor %d on %s to %d", motor, bus->whoami().c_str(), req.control_mode);
+                  }
                 }
+                i++;
             }
         }
         return true;

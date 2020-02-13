@@ -71,6 +71,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/control/controlActions.cpp
             src/sensors/tle493d_w2b6.cpp
             src/utility/UDPSocket.cpp
+            src/sensors/BallJoint.cpp
             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/icebusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp
@@ -82,22 +83,13 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/sensors/tle493d_w2b6.hpp
             ../common_utilities/include/common_utilities/MotorConfig.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
+            include/roboy_plexus/sensors/BallJoint.hpp
             )
-    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp)
+    add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_simulation_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES} )
 
     add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
-
-    add_executable( elbow_control
-            src/interfaces/motorControl.cpp
-            src/elbow_control.cpp
-            src/interfaces/icebusControl.cpp
-            src/interfaces/i2c.cpp
-            src/sensors/A1335.cpp
-            ../common_utilities/src/MotorConfig.cpp
-            )
-    target_link_libraries( elbow_control -lpthread -lrt ${ros_LIBRARIES} )
 
     #==============================================================================
     # Installation
