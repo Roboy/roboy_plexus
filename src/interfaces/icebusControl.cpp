@@ -14,7 +14,7 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb
     for(auto &bus:motor_config->icebus){
         int j = 0;
         for(auto &m:bus.second){
-            if(!SetID(m->motor_id_global,m->bus_id))
+            if(!SetID(m->motor_id,m->bus_id))
                 ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
         }
     }

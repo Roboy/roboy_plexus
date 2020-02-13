@@ -114,13 +114,13 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, MyoControlPtr myoContro
 
         neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
 
-        for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-            icebusControl->SetNeopixelColor(motor, 0xF00000);
-            if (icebusControl->GetCommunicationQuality(motor) != 0)
-                icebusControl->SetPoint(motor, icebusControl->GetEncoderPosition(motor, ENCODER0));
+        for (auto &m:icebusControl->motor_config->motor) {
+            icebusControl->SetNeopixelColor(m.second->motor_id_global, 0xF00000);
+            if (icebusControl->GetCommunicationQuality(m.second->motor_id_global) != 0)
+                icebusControl->SetPoint(m.second->motor_id_global, icebusControl->GetEncoderPosition(m.second->motor_id_global, ENCODER0));
             else
-                icebusControl->SetPoint(motor, 0);
-            icebusControl->SetControlMode(motor, 3);
+                icebusControl->SetPoint(m.second->motor_id_global, 0);
+            icebusControl->SetControlMode(m.second->motor_id_global, 3);
         }
         motorControl.push_back(icebusControl);
     }
@@ -151,12 +151,12 @@ void RoboyPlexus::MotorStatePublisher() {
     ros::Rate rate(200);
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorState msg;
-        for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-            msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
-            msg.encoder0_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER0_POSITION));
-            msg.encoder1_pos.push_back(icebusControl->GetEncoderPosition(motor,ENCODER1_POSITION));
-            msg.displacement.push_back(icebusControl->GetDisplacement(motor));
-            msg.current.push_back(icebusControl->GetCurrent(motor));
+        for (auto &m:icebusControl->motor_config->motor) {
+            msg.setpoint.push_back(icebusControl->GetSetPoint(m.second->motor_id_global));
+            msg.encoder0_pos.push_back(icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER0_POSITION));
+            msg.encoder1_pos.push_back(icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER1_POSITION));
+            msg.displacement.push_back(icebusControl->GetDisplacement(m.second->motor_id_global));
+            msg.current.push_back(icebusControl->GetCurrent(m.second->motor_id_global));
         }
         motorState.publish(msg);
         rate.sleep();
@@ -189,36 +189,38 @@ void RoboyPlexus::MotorInfoPublisher() {
     bool dir = true;
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorInfo msg;
-        for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
+        int motor = 0;
+        for (auto &m:icebusControl->motor_config->motor) {
             int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
-            icebusControl->GetControllerParameter(motor, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
-            msg.control_mode.push_back(icebusControl->GetControlMode(motor));
+            icebusControl->GetControllerParameter(m.second->motor_id_global, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
+            msg.control_mode.push_back(icebusControl->GetControlMode(m.second->motor_id_global));
             msg.Kp.push_back(Kp);
             msg.Ki.push_back(Ki);
             msg.Kd.push_back(Kd);
             msg.deadband.push_back(deadband);
             msg.IntegralLimit.push_back(IntegralLimit);
             msg.PWMLimit.push_back(PWMLimit);
-            int32_t communication_quality = icebusControl->GetCommunicationQuality(motor);
-            uint32_t error_code = icebusControl->GetErrorCode(motor);
+            int32_t communication_quality = icebusControl->GetCommunicationQuality(m.second->motor_id_global);
+            uint32_t error_code = icebusControl->GetErrorCode(m.second->motor_id_global);
             msg.communication_quality.push_back(communication_quality);
             msg.error_code.push_back(error_code);
-            msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(motor));
-            msg.setpoint.push_back(icebusControl->GetSetPoint(motor));
-            msg.pwm.push_back(icebusControl->GetPWM(motor));
+            msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(m.second->motor_id_global));
+            msg.setpoint.push_back(icebusControl->GetSetPoint(m.second->motor_id_global));
+            msg.pwm.push_back(icebusControl->GetPWM(m.second->motor_id_global));
             if(!external_led_control){
               if(light_up_motor==motor)
-                  icebusControl->SetNeopixelColor(motor,0x0F0000);
+                  icebusControl->SetNeopixelColor(m.second->motor_id_global,0x0F0000);
               else
-                  icebusControl->SetNeopixelColor(motor,0);
+                  icebusControl->SetNeopixelColor(m.second->motor_id_global,0);
             }
+            motor++;
         }
         if(!external_led_control){
           if(dir)
               light_up_motor++;
           else
               light_up_motor--;
-          if(light_up_motor>=8 && dir)
+          if(light_up_motor>=icebusControl->motor_config->total_number_of_motors && dir)
               dir = false;
           if(light_up_motor<0 && !dir)
               dir = true;

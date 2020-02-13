@@ -177,7 +177,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1580936753
+#define SYSID_QSYS_TIMESTAMP 1581542603
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -196,15 +196,26 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
+ * Macros for device 'ICEboardControl_2', class 'ICEboardControl'
+ * The macros are prefixed with 'ICEBOARDCONTROL_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBOARDCONTROL_2_COMPONENT_TYPE ICEboardControl
+#define ICEBOARDCONTROL_2_COMPONENT_NAME ICEboardControl_2
+#define ICEBOARDCONTROL_2_BASE 0x40000
+#define ICEBOARDCONTROL_2_SPAN 262144
+#define ICEBOARDCONTROL_2_END 0x7ffff
+
+/*
  * Macros for device 'ICEboardControl_1', class 'ICEboardControl'
  * The macros are prefixed with 'ICEBOARDCONTROL_1_'.
  * The prefix is the slave descriptor.
  */
 #define ICEBOARDCONTROL_1_COMPONENT_TYPE ICEboardControl
 #define ICEBOARDCONTROL_1_COMPONENT_NAME ICEboardControl_1
-#define ICEBOARDCONTROL_1_BASE 0x40000
+#define ICEBOARDCONTROL_1_BASE 0x80000
 #define ICEBOARDCONTROL_1_SPAN 262144
-#define ICEBOARDCONTROL_1_END 0x7ffff
+#define ICEBOARDCONTROL_1_END 0xbffff
 
 /*
  * Macros for device 'MYOControl_0', class 'MYOControl'
@@ -213,9 +224,9 @@
  */
 #define MYOCONTROL_0_COMPONENT_TYPE MYOControl
 #define MYOCONTROL_0_COMPONENT_NAME MYOControl_0
-#define MYOCONTROL_0_BASE 0x80000
+#define MYOCONTROL_0_BASE 0xc0000
 #define MYOCONTROL_0_SPAN 262144
-#define MYOCONTROL_0_END 0xbffff
+#define MYOCONTROL_0_END 0xfffff
 
 /*
  * Macros for device 'ICEboardControl_0', class 'ICEboardControl'
@@ -224,9 +235,9 @@
  */
 #define ICEBOARDCONTROL_0_COMPONENT_TYPE ICEboardControl
 #define ICEBOARDCONTROL_0_COMPONENT_NAME ICEboardControl_0
-#define ICEBOARDCONTROL_0_BASE 0xc0000
+#define ICEBOARDCONTROL_0_BASE 0x100000
 #define ICEBOARDCONTROL_0_SPAN 262144
-#define ICEBOARDCONTROL_0_END 0xfffff
+#define ICEBOARDCONTROL_0_END 0x13ffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */
