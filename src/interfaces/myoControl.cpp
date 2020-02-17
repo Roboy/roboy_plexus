@@ -289,7 +289,7 @@ bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
     return true;
 }
 
-int16_t MyoControl::GetCurrent(int motor) {
+float MyoControl::GetCurrent(int motor) {
     int32_t *bus = myo_base[motor_config->motor[motor]->bus];
     int bus_id = motor_config->motor[motor]->bus_id;
     return MYO_READ_current(bus, bus_id);

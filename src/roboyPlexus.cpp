@@ -20,7 +20,6 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, vector<BallJointPtr> ba
     }
 
     ROS_INFO("roboy3 plexus initializing");
-    body_part = "shoulder_left";
 
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
@@ -162,6 +161,7 @@ void RoboyPlexus::MotorStatePublisher() {
             msg.encoder1_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER1_POSITION);
             msg.displacement[i] = icebusControl->GetDisplacement(m.second->motor_id_global);
             msg.current[i] = icebusControl->GetCurrent(m.second->motor_id_global);
+            // ROS_INFO_THROTTLE(1,"%x",msg.current[i]);
             i++;
         }
         motorState.publish(msg);
@@ -238,15 +238,30 @@ void RoboyPlexus::MotorInfoPublisher() {
 
 void RoboyPlexus::Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg){
   uint i = 0;
+  external_led_control = true;
   for (auto motor:msg->motor) {
       for(auto &bus:motorControl){
         if(bus->MyMotor(motor)){
-          int32_t color = int32_t(msg->r<<16|msg->g<<8|msg->b);
+          int32_t color = int32_t(msg->g<<16|msg->r<<8|msg->b);
           bus->SetNeopixelColor(motor, color);
         }
       }
       i++;
   }
+}
+
+uint8_t RoboyPlexus::reverseBits(uint8_t v){
+  uint8_t r = v; // r will be reversed bits of v; first get LSB of v
+  int s = sizeof(v) * CHAR_BIT - 1; // extra shift needed at end
+
+  for (v >>= 1; v; v >>= 1)
+  {
+    r <<= 1;
+    r |= v & 1;
+    s--;
+  }
+  r <<= s; // shift when v's highest bits are zero
+  return r;
 }
 
 void RoboyPlexus::MagneticJointPublisher() {

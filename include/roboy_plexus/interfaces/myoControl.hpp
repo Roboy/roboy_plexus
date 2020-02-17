@@ -234,7 +234,7 @@ public:
      * Gets the current in Ampere
      * @param motor for this motor
      */
-    int16_t GetCurrent(int motor);
+    float GetCurrent(int motor);
 
     /**
      * Configures motors to be handled as myoBricks

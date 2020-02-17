@@ -176,7 +176,7 @@ public:
      * Gets the current of a motor
      * @param motor for this motor
      */
-    int16_t GetCurrent(int motor) override;
+    float GetCurrent(int motor) override;
 
     /**
      * Getting default parameters for a control mode

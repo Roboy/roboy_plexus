@@ -29,7 +29,7 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    author: Simon Trendel ( simon.trendel@tum.de ), 2018
+    author: Simon Trendel ( simon.trendel@tum.de ), 2020
     description: main
 */
 
@@ -214,9 +214,9 @@ int main(int argc, char *argv[]) {
     myoControl = MyoControlPtr(new MyoControl(motor_config_file_path,h2p_lw_myo_addr,h2p_lw_adc_addr,neoPixel));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
     vector<BallJointPtr> balljoints;
-    balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor0_i2c_addr)));
-    balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor1_i2c_addr)));
-    balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor2_i2c_addr)));
+    // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor0_i2c_addr)));
+    // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor1_i2c_addr)));
+    // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor2_i2c_addr)));
     RoboyPlexus roboyPlexus(icebusControl,balljoints,myoControl,h2p_lw_auxilliary_i2c_addr, h2p_lw_adc_addr, h2p_lw_switches_addr);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");

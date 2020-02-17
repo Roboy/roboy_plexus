@@ -32,7 +32,7 @@ public:
         * Gets the current in Ampere
         * @param motor for this motor
         */
-    virtual int16_t GetCurrent(int motor){};
+    virtual float GetCurrent(int motor){};
 
     /**
      * Gets the current position of a motor in radians

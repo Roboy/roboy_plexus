@@ -223,6 +223,8 @@ private:
 
     void Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg);
 
+    uint8_t reverseBits(uint8_t a);
+
     /**
     * Callback updates the displacement for recording trajectories
     * @param msg

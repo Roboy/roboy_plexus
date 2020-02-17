@@ -185,9 +185,8 @@ uint8_t IcebusControl::GetControlMode(int motor) {
     return ICEBUS_CONTROL_READ_control_mode(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
-int16_t IcebusControl::GetCurrent(int motor) {
-
-    return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+float IcebusControl::GetCurrent(int motor) {
+    return ((ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)&0x1fff)-4096)/80.0f;
 }
 
 void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
