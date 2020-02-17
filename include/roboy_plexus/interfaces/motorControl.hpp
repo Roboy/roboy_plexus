@@ -35,6 +35,12 @@ public:
     virtual float GetCurrent(int motor){};
 
     /**
+        * Gets the current limit in Ampere
+        * @param motor for this motor
+        */
+    virtual float GetCurrentLimit(int motor){};
+
+    /**
      * Gets the current position of a motor in radians
      * @param motor for this motor
      * @param encoder of this encoder
@@ -91,6 +97,13 @@ public:
      * @param mode choose from Position, Velocity or Displacement
      */
     virtual bool SetControlMode(int mode){};
+
+    /**
+      * Sets the current limit in Ampere
+      * @param motor for this motor
+      * @param limit in ampere
+      */
+    virtual bool SetCurrentLimit(int motor, float limit){};
 
     /**
 	 * Sets the setpoint of a motor

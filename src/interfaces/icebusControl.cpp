@@ -186,7 +186,13 @@ uint8_t IcebusControl::GetControlMode(int motor) {
 }
 
 float IcebusControl::GetCurrent(int motor) {
-    return ((ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)&0x1fff)-4096)/80.0f;
+    // ROS_INFO_THROTTLE(1,"%x",ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id));
+    return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+}
+
+float IcebusControl::GetCurrentLimit(int motor) {
+    int16_t current_limit = ICEBUS_CONTROL_READ_current_limit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+    return current_limit/80.f;
 }
 
 void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
@@ -267,6 +273,12 @@ int32_t IcebusControl::GetSetPoint(int motor){
 
 int32_t IcebusControl::GetPWM(int motor){
     return ICEBUS_CONTROL_READ_pwm(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+}
+
+bool IcebusControl::SetCurrentLimit(int motor, float limit) {
+    int16_t current_limit = limit*80;
+    ICEBUS_CONTROL_WRITE_current_limit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,current_limit);
+    return (ICEBUS_CONTROL_READ_current_limit(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)==current_limit);
 }
 
 void IcebusControl::SetNeopixelColor(int motor, int32_t color){

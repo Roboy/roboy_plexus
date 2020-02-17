@@ -240,6 +240,16 @@ int32_t MyoControl::GetEncoderVelocity(int motor, int encoder) {
     return ((int32_t) vel) * MOTOR_BOARD_COMMUNICATION_FREQUENCY;
 }
 
+float MyoControl::GetCurrentLimit(int motor){
+  ROS_WARN_ONCE("not implemented");
+  return -1;
+}
+
+bool MyoControl::SetCurrentLimit(int motor, float limit){
+  ROS_WARN_ONCE("not implemented");
+  return false;
+}
+
 int32_t MyoControl::GetDisplacement(int motor) {
     int32_t *bus = myo_base[motor_config->motor[motor]->bus];
     int bus_id = motor_config->motor[motor]->bus_id;

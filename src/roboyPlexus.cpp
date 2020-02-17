@@ -116,6 +116,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, vector<BallJointPtr> ba
             else
                 icebusControl->SetPoint(m.second->motor_id_global, 0);
             icebusControl->SetControlMode(m.second->motor_id_global, 3);
+            icebusControl->SetCurrentLimit(m.second->motor_id_global, 1.5);
         }
         motorControl.push_back(icebusControl);
     }
@@ -160,7 +161,7 @@ void RoboyPlexus::MotorStatePublisher() {
             msg.encoder0_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER0_POSITION);
             msg.encoder1_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER1_POSITION);
             msg.displacement[i] = icebusControl->GetDisplacement(m.second->motor_id_global);
-            msg.current[i] = icebusControl->GetCurrent(m.second->motor_id_global);
+            msg.current[i] = icebusControl->GetCurrent(m.second->motor_id_global); // running mean filter the current
             // ROS_INFO_THROTTLE(1,"%x",msg.current[i]);
             i++;
         }
@@ -190,7 +191,7 @@ void RoboyPlexus::MotorStatusPublisher() {
 }
 
 void RoboyPlexus::MotorInfoPublisher() {
-    ros::Rate rate(20);
+    ros::Rate rate(10);
     int32_t light_up_motor = 0;
     bool dir = true;
     while (keep_publishing && ros::ok()) {
@@ -206,6 +207,7 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.deadband.push_back(deadband);
             msg.IntegralLimit.push_back(IntegralLimit);
             msg.PWMLimit.push_back(PWMLimit);
+            msg.current_limit.push_back(icebusControl->GetCurrentLimit(m.second->motor_id_global));
             int32_t communication_quality = icebusControl->GetCommunicationQuality(m.second->motor_id_global);
             uint32_t error_code = icebusControl->GetErrorCode(m.second->motor_id_global);
             msg.communication_quality.push_back(communication_quality);
@@ -215,7 +217,7 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.pwm.push_back(icebusControl->GetPWM(m.second->motor_id_global));
             if(!external_led_control){
               if(light_up_motor==motor)
-                  icebusControl->SetNeopixelColor(m.second->motor_id_global,0x0F0000);
+                  icebusControl->SetNeopixelColor(m.second->motor_id_global,0x00000F);
               else
                   icebusControl->SetNeopixelColor(m.second->motor_id_global,0);
             }

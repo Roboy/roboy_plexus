@@ -75,6 +75,7 @@
 #define ICEBUS_CONTROL_READ_displacement(base, motor) IORD(base, (uint32_t)(0x18<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_current(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_neopxl_color(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_current_limit(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
 
 #define ICEBUS_CONTROL_WRITE_id(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -87,6 +88,7 @@
 #define ICEBUS_CONTROL_WRITE_sp(base, motor, data) IOWR(base, (uint32_t)(0x0C<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
 #define ICEBUS_CONTROL_WRITE_neopxl_color(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_current_limit(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define NUM_SENSORS 0
@@ -177,6 +179,13 @@ public:
      * @param motor for this motor
      */
     float GetCurrent(int motor) override;
+
+    /**
+     * Gets the current limit of a motor
+     * @param motor for this motor
+     * return the current_limit in ampere
+     */
+    float GetCurrentLimit(int motor) override;
 
     /**
      * Getting default parameters for a control mode
@@ -288,6 +297,13 @@ public:
      * @param setPoint new setPoint
 	 */
     bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
+
+    /**
+     * Gets the current limit of a motor
+     * @param motor for this motor
+     * @param limit in ampere
+     */
+    bool SetCurrentLimit(int motor, float limit) override;
 
     /**
      * Sets the bus_id of a motor

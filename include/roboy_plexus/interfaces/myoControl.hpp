@@ -237,6 +237,12 @@ public:
     float GetCurrent(int motor);
 
     /**
+     * Gets the current limit in Ampere
+     * @param motor for this motor
+     */
+    float GetCurrentLimit(int motor);
+
+    /**
      * Configures motors to be handled as myoBricks
      * @param motorIDs these are the ids of the motors
      * @param encoderMultiplier this multiplies the output of the optical encoder
@@ -300,6 +306,14 @@ public:
      * @param replay
      */
     void SetReplay(bool status) override {ROS_ERROR("not implemented");};
+
+    /**
+     * Gets the current limit in Ampere
+     * @param motor for this motor
+     * @param limit in ampere
+     * @return success
+     */
+    bool SetCurrentLimit(int motor, float limit);
 
     /**
      * Estimates the spring parameters of a motor by pulling with variable forces
