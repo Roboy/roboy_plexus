@@ -7,7 +7,7 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb
     motor_config->readConfig(motor_config_filepath);
     icebus_base = mb;
     for (uint i = 0; i < icebus_base.size(); i++) {
-        ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 99);
+        ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 500);
         ROS_INFO("icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(icebus_base[i]));
     }
 
@@ -18,21 +18,6 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb
                 ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
         }
     }
-
-    if(adc_base!= nullptr) {
-        // set measure number for ADC convert
-        IOWR(adc_base, 0x01, NUMBER_OF_ADC_SAMPLES);
-
-        // start measure
-        for (uint channel = 0; channel < 8; channel++) {
-            IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-            IOWR(adc_base, 0x00, (channel << 1) | 0x01);
-            IOWR(adc_base, 0x00, (channel << 1) | 0x00);
-            usleep(1);
-        }
-    }
-    if(neopixel!=nullptr)
-        neopixel->setColorAll(NeoPixelColorRGB::green);
 }
 
 IcebusControl::~IcebusControl() {
@@ -198,17 +183,17 @@ float IcebusControl::GetCurrentLimit(int motor) {
 void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
     switch (control_mode) {
         case ENCODER0_POSITION:
-            params->IntegralLimit = 50;
+            params->IntegralLimit = 25;
             params->Kp = 1;
-            params->Ki = 0;
+            params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
             params->PWMLimit = 500;
             break;
         case ENCODER1_POSITION:
-            params->IntegralLimit = 50;
+            params->IntegralLimit = 25;
             params->Kp = 1;
-            params->Ki = 0;
+            params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
             params->PWMLimit = 500;
@@ -232,9 +217,9 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
 //            ROS_WARN("velocity control not available yet, disabling controller");
 //            break;
         case DIRECT_PWM:
-            params->IntegralLimit = 50;
+            params->IntegralLimit = 25;
             params->Kp = 1;
-            params->Ki = 0;
+            params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
             params->PWMLimit = 500;
