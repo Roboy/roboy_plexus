@@ -7,7 +7,7 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb
     motor_config->readConfig(motor_config_filepath);
     icebus_base = mb;
     for (uint i = 0; i < icebus_base.size(); i++) {
-        ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 500);
+        ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 100);
         ROS_INFO("icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(icebus_base[i]));
     }
 
@@ -151,8 +151,13 @@ int32_t IcebusControl::GetCommunicationQuality(int motor){
     return ICEBUS_CONTROL_READ_communication_quality(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
-uint32_t IcebusControl::GetErrorCode(int motor){
-    return ICEBUS_CONTROL_READ_error_code(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+string IcebusControl::GetErrorCode(int motor){
+    switch(ICEBUS_CONTROL_READ_error_code(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)){
+      case 0: return "ok";
+      case 0xDEADBEAF: return "timeout";
+      case 0xBAADC0DE: return "crc";
+      default: return "ok";
+    }
 }
 
 void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
@@ -173,6 +178,11 @@ uint8_t IcebusControl::GetControlMode(int motor) {
 float IcebusControl::GetCurrent(int motor) {
     // ROS_INFO_THROTTLE(1,"%x",ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id));
     return ICEBUS_CONTROL_READ_current(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+}
+
+int IcebusControl::GetCurrentAverage() {
+    // return ICEBUS_CONTROL_READ_current_average(icebus_base[motor_config->motor[motor]->bus]);
+    return 0;
 }
 
 float IcebusControl::GetCurrentLimit(int motor) {

@@ -1,13 +1,10 @@
 #include "roboyPlexus.hpp"
 
-RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, vector<BallJointPtr> balljoints,
-        MyoControlPtr myoControl,
-        vector<int32_t *> &i2c_base, int32_t *adc_base, int32_t *switches_base) :
-        i2c_base(i2c_base),  adc_base(adc_base), icebusControl(icebusControl), myoControl(myoControl),
-        switches_base(switches_base), balljoints(balljoints) {
-
-    id = IORD(switches_base, 0) & 0x7;
-
+RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
+        vector<BallJointPtr> balljoints,
+        vector<FanControlPtr> fanControls,
+        vector<int32_t *> &i2c_base) :
+        icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints), i2c_base(i2c_base){
     ROS_INFO("roboy3 plexus initializing");
 
     ifstream ifile("/sys/class/net/eth0/address");
@@ -72,21 +69,39 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl, vector<BallJointPtr> ba
         control_Parameters_t params;
         icebusControl->GetDefaultControlParams(&params, 3);
         icebusControl->SetControlMode(m.second->motor_id_global, 3, params);
-        icebusControl->SetCurrentLimit(m.second->motor_id_global, 1.5);
+        icebusControl->SetCurrentLimit(m.second->motor_id_global, 2.0);
     }
     motorControl.push_back(icebusControl);
 
-    motorConfig_srv = nh->advertiseService("/roboy/middleware/"+body_part+"/MotorConfig",
+    motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
                                            &RoboyPlexus::MotorConfigService, this);
-    controlMode_srv = nh->advertiseService("/roboy/middleware/"+body_part+"/ControlMode",
+    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
                                            &RoboyPlexus::ControlModeService, this);
-    emergencyStop_srv = nh->advertiseService("/roboy/middleware/"+body_part+"/EmergencyStop",
+    emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
     motorControl_sub = nh->subscribe("/roboy/middleware/MotorControl", 1, &RoboyPlexus::MotorControl, this);
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
+
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
+
+    if(!fanControls.empty()){
+      for(auto fan:fanControls){
+        fan->SetAutoFan(true);
+        ROS_INFO("auto fan is %s", (fan->GetAutoFan()?"on":"off"));
+        fan->SetSensitivity(1);
+        ROS_INFO("fan pwm freq %d, duty %d",fan->GetPWMFrequency(), fan->GetDuty());
+      }
+      ros::Rate rate(10);
+
+      while(ros::ok()){
+        for(auto fan:fanControls){
+          ROS_INFO("duty %d, average current %d",fan->GetDuty(), fan->GetCurrentAverage());
+          rate.sleep();
+        }
+      }
+    }
     ROS_INFO("roboy plexus initialized");
 }
 
@@ -126,26 +141,6 @@ void RoboyPlexus::MotorStatePublisher() {
     }
 }
 
-void RoboyPlexus::MotorStatusPublisher() {
-    ros::Rate rate(200);
-    while (keep_publishing && ros::ok()) {
-        roboy_middleware_msgs::MotorStatus msg;
-        for (auto &myo_bus:myoControl->motor_config->myobus) {
-            for(auto &motor:myo_bus.second){
-                msg.power_sense = myoControl->GetPowerSense();
-                msg.pwm_ref.push_back(myoControl->GetPWM(motor->bus_id));
-                msg.position.push_back(myoControl->GetEncoderPosition(motor->bus_id,0));
-                msg.velocity.push_back(myoControl->GetEncoderVelocity(motor->bus_id,0));
-                msg.displacement.push_back(myoControl->GetDisplacement(motor->bus_id));
-                msg.current.push_back(myoControl->GetCurrent(motor->bus_id));
-            }
-        }
-
-        motorStatus.publish(msg);
-        rate.sleep();
-    }
-}
-
 void RoboyPlexus::MotorInfoPublisher() {
     ros::Rate rate(10);
     int32_t light_up_motor = 0;
@@ -165,7 +160,9 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.PWMLimit.push_back(PWMLimit);
             msg.current_limit.push_back(icebusControl->GetCurrentLimit(m.second->motor_id_global));
             int32_t communication_quality = icebusControl->GetCommunicationQuality(m.second->motor_id_global);
-            uint32_t error_code = icebusControl->GetErrorCode(m.second->motor_id_global);
+            string error_code = icebusControl->GetErrorCode(m.second->motor_id_global);
+            if(communication_quality==0 && error_code!="timeout")
+              error_code = "---";
             msg.communication_quality.push_back(communication_quality);
             msg.error_code.push_back(error_code);
             msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(m.second->motor_id_global));
@@ -277,69 +274,36 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
     stringstream str;
     uint i = 0;
     for (int motor:req.config.motor) {
-        if(!req.legacy) {
-            control_Parameters_t params;
-            icebusControl->GetDefaultControlParams(&params, req.config.control_mode[i]);
-            params.control_mode = req.config.control_mode[i];
-            if (req.config.control_mode[i] == 0)
-                str << "\t" << (int) motor << ": ENCODER0";
-            if (req.config.control_mode[i] == VELOCITY)
-                str << "\t" << (int) motor << ": ENCODER1";
-            if (req.config.control_mode[i] == DISPLACEMENT)
-                str << "\t" << (int) motor << ": DISPLACEMENT";
-            if (req.config.control_mode[i] == DIRECT_PWM)
-                str << "\t" << (int) motor << ": DIRECT_PWM";
-            if(i<req.config.PWMLimit.size())
-                params.PWMLimit = req.config.PWMLimit[i];
-            if(i<req.config.Kp.size())
-                params.Kp = req.config.Kp[i];
-            if(i<req.config.Ki.size())
-                params.Ki = req.config.Ki[i];
-            if(i<req.config.Kd.size())
-                params.Kd = req.config.Kd[i];
-            if(i<req.config.deadband.size())
-                params.deadband = req.config.deadband[i];
-            if(i<req.config.IntegralLimit.size())
-                params.IntegralLimit = req.config.IntegralLimit[i];
-            if(i<req.config.update_frequency.size())
-                icebusControl->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
-            params.control_mode = req.config.control_mode[i];
-            icebusControl->SetControlMode(motor, req.config.control_mode[i], params);
-            res.mode.push_back(params.control_mode);
-            icebusControl->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
-        }else{
-            control_Parameters_legacy params;
-            myoControl->getDefaultControlParams(&params, req.config.control_mode[i]);
-            params.control_mode = req.config.control_mode[i];
-            if (req.config.control_mode[i] == POSITION)
-                str << "\t" << (int) motor << ": POSITION";
-            if (req.config.control_mode[i] == VELOCITY)
-                str << "\t" << (int) motor << ": VELOCITY";
-            if (req.config.control_mode[i] == DISPLACEMENT)
-                str << "\t" << (int) motor << ": DISPLACEMENT";
-            if (req.config.control_mode[i] == DIRECT_PWM)
-                str << "\t" << (int) motor << ": DIRECT_PWM";
-            if(i<req.config.PWMLimit.size()) {
-                params.outputPosMax = req.config.PWMLimit[i];
-                params.outputNegMax = -req.config.PWMLimit[i];
-            }
-            if(i<req.config.Kp.size())
-                params.Kp = req.config.Kp[i];
-            if(i<req.config.Ki.size())
-                params.Ki = req.config.Ki[i];
-            if(i<req.config.Kd.size())
-                params.Kd = req.config.Kd[i];
-            if(i<req.config.deadband.size())
-                params.deadBand = req.config.deadband[i];
-            if(i<req.config.IntegralLimit.size()) {
-                params.IntegralPosMax = req.config.IntegralLimit[i];
-                params.IntegralNegMax = -req.config.IntegralLimit[i];
-            }
-            params.control_mode = req.config.control_mode[i];
-            myoControl->changeControlParameters(motor, params);
-            res.mode.push_back(params.control_mode);
-            myoControl->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
-        }
+        control_Parameters_t params;
+        icebusControl->GetDefaultControlParams(&params, req.config.control_mode[i]);
+        params.control_mode = req.config.control_mode[i];
+        if (req.config.control_mode[i] == 0)
+            str << "\t" << (int) motor << ": ENCODER0";
+        if (req.config.control_mode[i] == 1)
+            str << "\t" << (int) motor << ": ENCODER1";
+        if (req.config.control_mode[i] == 2)
+            str << "\t" << (int) motor << ": DISPLACEMENT";
+        if (req.config.control_mode[i] == 3)
+            str << "\t" << (int) motor << ": DIRECT_PWM";
+        if(i<req.config.PWMLimit.size())
+            params.PWMLimit = req.config.PWMLimit[i];
+        if(i<req.config.Kp.size())
+            params.Kp = req.config.Kp[i];
+        if(i<req.config.Ki.size())
+            params.Ki = req.config.Ki[i];
+        if(i<req.config.Kd.size())
+            params.Kd = req.config.Kd[i];
+        if(i<req.config.deadband.size())
+            params.deadband = req.config.deadband[i];
+        if(i<req.config.IntegralLimit.size())
+            params.IntegralLimit = req.config.IntegralLimit[i];
+        if(i<req.config.update_frequency.size())
+            icebusControl->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
+        params.control_mode = req.config.control_mode[i];
+        icebusControl->SetControlMode(motor, req.config.control_mode[i], params);
+        res.mode.push_back(params.control_mode);
+        icebusControl->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+
         ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
                  req.config.setpoint[i]);
         control_mode[motor] = req.config.control_mode[i];

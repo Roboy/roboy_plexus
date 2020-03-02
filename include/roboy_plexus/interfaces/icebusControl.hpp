@@ -1,7 +1,7 @@
 /*
     BSD 3-Clause License
 
-    Copyright (c) 2019, Roboy
+    Copyright (c) 2020, Roboy
             All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    author: Simon Trendel ( st@gi.ai ), 2019
+    author: Simon Trendel ( st@gi.ai ), 2020
     description: Class for interfacing iceboards connected via icebus
 */
 
@@ -76,6 +76,7 @@
 #define ICEBUS_CONTROL_READ_current(base, motor) IORD(base, (uint32_t)(0x19<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_neopxl_color(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_current_limit(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
+#define ICEBUS_CONTROL_READ_current_average(base) IORD(base, (uint32_t)(0x1C<<8|0x00) )
 
 #define ICEBUS_CONTROL_WRITE_id(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -163,7 +164,7 @@ public:
      * @param motor
      * @return error code
      */
-    uint32_t GetErrorCode(int motor);
+    string GetErrorCode(int motor);
 
     void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
@@ -179,6 +180,11 @@ public:
      * @param motor for this motor
      */
     float GetCurrent(int motor) override;
+
+    /**
+     * Gets the average current of all motors connected on the bus
+     */
+    int GetCurrentAverage();
 
     /**
      * Gets the current limit of a motor

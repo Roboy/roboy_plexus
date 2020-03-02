@@ -37,20 +37,34 @@
 
 #include <iostream>
 #include <ros/ros.h>
-#include "sensors/tle493d_w2b6.hpp"
+
+#define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
+#define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
+
+// the upper 8 bit define which register, the lower 8 bit define which sensor
+#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x00<<8|sensor&0xff) )
+#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x01<<8|sensor&0xff) )
+#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x02<<8|sensor&0xff) )
+#define BALL_JOINT_READ_temperature(base, sensor) IORD(base, (uint32_t)(0x03<<8|sensor&0xff) )
+#define BALL_JOINT_READ_update_frequency(base) IORD(base, (uint32_t)(0x04<<8|0x00) )
+
+#define BALL_JOINT_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x00<<8|0x00), data )
+#define BALL_JOINT_WRITE_reset(base, data) IOWR(base, (uint32_t)(0x01<<8|0x00), data )
+
+using namespace std;
 
 class BallJoint{
 public:
     /**
      * Constructor
-     * @param i2c_base i2c base (cf hps_0.h )
+     * @param base base (cf hps_0.h )
      */
-    BallJoint(vector<int32_t*> i2c_base);
+    BallJoint(int32_t* base);
 
     void readMagneticData(vector<float> &mx,vector<float> &my,vector<float> &mz);
 
 private:
-  vector<TLE493DPtr> tle;
+  int32_t *base;
 };
 
 typedef boost::shared_ptr<BallJoint> BallJointPtr;

@@ -69,6 +69,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/roboyPlexus.cpp
             src/sensors/A1335.cpp
             src/control/controlActions.cpp
+            src/control/fanControl.cpp
             src/sensors/tle493d_w2b6.cpp
             src/utility/UDPSocket.cpp
             src/sensors/BallJoint.cpp
@@ -80,6 +81,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/roboyPlexus.hpp
             include/roboy_plexus/sensors/A1335.hpp
             include/roboy_plexus/control/controlActions.hpp
+            include/roboy_plexus/control/fanControl.hpp
             include/roboy_plexus/sensors/tle493d_w2b6.hpp
             ../common_utilities/include/common_utilities/MotorConfig.hpp
             include/roboy_plexus/interfaces/motorControl.hpp

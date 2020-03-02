@@ -1,7 +1,7 @@
 /*
     BSD 3-Clause License
 
-    Copyright (c) 2017, Roboy
+    Copyright (c) 2020, Roboy
             All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
     OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-    author: Simon Trendel ( st@gi.ai ), 2018
+    author: Simon Trendel ( st@gi.ai ), 2020
     description: Roboys nervous system
 */
 
@@ -38,8 +38,8 @@
 #include <ros/ros.h>
 #include <vector>
 #include "interfaces/icebusControl.hpp"
-#include "interfaces/myoControl.hpp"
 #include "control/controlActions.hpp"
+#include "control/fanControl.hpp"
 #include "sensors/A1335.hpp"
 #include "sensors/BallJoint.hpp"
 #include <roboy_middleware_msgs/ADCvalue.h>
@@ -102,9 +102,8 @@ class RoboyPlexus {
 public:
     RoboyPlexus(IcebusControlPtr icebusControl,
                 vector<BallJointPtr> balljoints,
-                MyoControlPtr myoControl = nullptr,
-                vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR,
-                int32_t *adc_base = nullptr, int32_t *switches_base = nullptr);
+                vector<FanControlPtr> fanControls,
+                vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR);
 
     ~RoboyPlexus();
 
@@ -282,7 +281,7 @@ private:
     map<int, int> control_mode_backup,control_mode;
     vector<MotorControlPtr> motorControl;
     IcebusControlPtr icebusControl;
-    MyoControlPtr myoControl;
+    vector<FanControlPtr> fanControls;
     vector<A1335Ptr> a1335;
     boost::shared_ptr<std::thread> adcThread, motorStateThread, motorInfoThread, motorStatusThread,
             elbowJointAngleThread, magneticsThread;
