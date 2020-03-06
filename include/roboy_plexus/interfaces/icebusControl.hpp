@@ -77,6 +77,7 @@
 #define ICEBUS_CONTROL_READ_neopxl_color(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_current_limit(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_current_average(base) IORD(base, (uint32_t)(0x1C<<8|0x00) )
+#define ICEBUS_CONTROL_READ_baudrate(base) IORD(base, (uint32_t)(0x1D<<8|0x00) )
 
 #define ICEBUS_CONTROL_WRITE_id(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -90,6 +91,7 @@
 #define ICEBUS_CONTROL_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
 #define ICEBUS_CONTROL_WRITE_neopxl_color(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_current_limit(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
+#define ICEBUS_CONTROL_WRITE_baudrate(base, data) IOWR(base, (uint32_t)(0x14<<8|0), data )
 
 #define NUMBER_OF_ADC_SAMPLES 50
 #define NUM_SENSORS 0
@@ -151,6 +153,11 @@ public:
                                                    uint numberOfDataPoints, float delta_revolution_negative,
                                                    float delta_revolution_positive, vector<double> &motor_angle,
                                                    vector<double> &motor_encoder);
+
+   /**
+    * Gets the baudrate for a motor
+   */
+   int32_t GetBaudrate(int motor);
 
     /**
      * Gets the communication Quality of a motor
@@ -272,6 +279,11 @@ public:
      * @param return true if the motor belongs to this bus
     */
     bool MyMotor(int motor);
+
+    /**
+     * Sets the baudrate for a motor
+    */
+    void SetBaudrate(int motor, int baudrate);
 
     /**
      * Changes the controller of ALL motors with the saved controller parameters

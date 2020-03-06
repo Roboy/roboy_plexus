@@ -93,14 +93,14 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         fan->SetSensitivity(1);
         ROS_INFO("fan pwm freq %d, duty %d",fan->GetPWMFrequency(), fan->GetDuty());
       }
-      ros::Rate rate(10);
-
-      while(ros::ok()){
-        for(auto fan:fanControls){
-          ROS_INFO("duty %d, average current %d",fan->GetDuty(), fan->GetCurrentAverage());
-          rate.sleep();
-        }
-      }
+      // ros::Rate rate(10);
+      //
+      // while(ros::ok()){
+      //   for(auto fan:fanControls){
+      //     ROS_INFO("duty %d, average current %d",fan->GetDuty(), fan->GetCurrentAverage());
+      //     rate.sleep();
+      //   }
+      // }
     }
     ROS_INFO("roboy plexus initialized");
 }

@@ -14,8 +14,11 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb
     for(auto &bus:motor_config->icebus){
         int j = 0;
         for(auto &m:bus.second){
-            if(!SetID(m->motor_id,m->bus_id))
+            if(!SetID(m->motor_id,m->bus_id)){
                 ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
+            }else{
+              ROS_INFO("icebus motor has baudrate %d",GetBaudrate(m->motor_id));
+            }
         }
     }
 }
@@ -145,6 +148,10 @@ bool IcebusControl::SetControlMode(int mode) {
         ROS_WARN("control_mode %d invalid, ignoring...");
         return false;
     }
+}
+
+int32_t IcebusControl::GetBaudrate(int motor){
+    return ICEBUS_CONTROL_READ_baudrate(icebus_base[motor_config->motor[motor]->bus]);
 }
 
 int32_t IcebusControl::GetCommunicationQuality(int motor){
@@ -291,6 +298,10 @@ bool IcebusControl::AllToSetpoint(int control_mode, int32_t setpoint) {
         SetPoint(motor, setpoint);
     }
     return true;
+}
+
+void IcebusControl::SetBaudrate(int motor, int baudrate){
+  ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[motor_config->motor[motor]->bus],baudrate);
 }
 
 void IcebusControl::SetMotorUpdateFrequency(int motor, int32_t freq) {
