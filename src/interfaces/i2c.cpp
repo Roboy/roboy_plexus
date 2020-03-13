@@ -49,7 +49,7 @@ void I2C::read(uint8_t i2cAddr, uint8_t reg, uint8_t number_of_bytes, vector<uin
     // read the fifo biatch
     uint32_t val;
     if(number_of_bytes>4) {
-        for(uint i=0;i<number_of_bytes/4;i++){
+        for(size_t i=0;i<number_of_bytes/4;i++){
             val = IORD(h2p_lw_i2c_addr, DATA);
             data.push_back((val>>24)&0xff);
             data.push_back((val>>16)&0xff);
@@ -60,13 +60,13 @@ void I2C::read(uint8_t i2cAddr, uint8_t reg, uint8_t number_of_bytes, vector<uin
         if ((number_of_bytes % 4) > 0) {
             val = IORD(h2p_lw_i2c_addr, DATA);
             uint8_t rest_bytes = number_of_bytes % 4;
-            for (uint i = 0; i < rest_bytes; i++) {
+            for (size_t i = 0; i < rest_bytes; i++) {
                 data.push_back((val >> (3 - i) * 8) & 0xff);
             }
         }
     }else{
         val = IORD(h2p_lw_i2c_addr, DATA);
-        for (uint i = 0; i < number_of_bytes; i++) {
+        for (size_t i = 0; i < number_of_bytes; i++) {
             data.push_back((val >> (3 - i) * 8) & 0xff);
         }
     }
@@ -91,7 +91,7 @@ void I2C::read_continuous(uint8_t i2cAddr, uint8_t number_of_bytes, vector<uint8
 
     // read the fifo biatch
     uint32_t reg;
-    for(uint i=0;i<number_of_bytes/4;i++){
+    for(size_t i=0;i<number_of_bytes/4;i++){
         reg = IORD(h2p_lw_i2c_addr, DATA);
         data.push_back((reg>>24)&0xff);
         data.push_back((reg>>16)&0xff);
@@ -101,7 +101,7 @@ void I2C::read_continuous(uint8_t i2cAddr, uint8_t number_of_bytes, vector<uint8
     if((number_of_bytes%4)>0){
         reg = IORD(h2p_lw_i2c_addr, DATA);
         uint8_t rest_bytes = number_of_bytes%4;
-        for(uint i=0;i<rest_bytes;i++){
+        for(size_t i=0;i<rest_bytes;i++){
             data.push_back((reg>>(3-i)*8)&0xff);
         }
     }

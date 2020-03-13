@@ -37,6 +37,8 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
+
 // #include <ros/ros.h>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))

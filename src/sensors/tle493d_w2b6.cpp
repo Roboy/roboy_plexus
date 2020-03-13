@@ -1,7 +1,7 @@
 #include "sensors/tle493d_w2b6.hpp"
 
 TLE493D::TLE493D(int32_t *i2c_base):i2c_base(i2c_base){
-    i2c = boost::shared_ptr<I2C>(new I2C(i2c_base));
+    i2c = std::shared_ptr<I2C>(new I2C(i2c_base));
     // configure to 1-byte protocol
     i2c->write(0x35, ((0x11 << 24) | 0x10 << 16), 2);
 }

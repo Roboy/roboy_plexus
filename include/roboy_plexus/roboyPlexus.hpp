@@ -60,7 +60,7 @@
 #include <roboy_middleware_msgs/msg/neopixel.hpp>
 #include <roboy_middleware_msgs/srv/set_int16.hpp>
 #include <roboy_control_msgs/msg/behavior.hpp>
-// #include <roboy_control_msgs/srv/start_record_trajectory.hpp>
+#include <roboy_control_msgs/msg/start_record_trajectory.hpp>
 #include <roboy_middleware_msgs/srv/system_check.hpp>
 #include <roboy_control_msgs/srv/list_items.hpp>
 #include <std_srvs/srv/set_bool.hpp>
@@ -131,14 +131,14 @@ private:
      * @param res
      * @return
      */
-    bool EmergencyStopService(const shared_ptr<std_srvs::srv::SetBool::Request> req,
+    void EmergencyStopService(const shared_ptr<std_srvs::srv::SetBool::Request> req,
                               shared_ptr<std_srvs::srv::SetBool::Response> res);
 
     /**
      * Stops replaying the trajectory
      * @param msg
      */
-    void EnablePlaybackCB(const std_msgs::msg::Bool::ConstPtr &msg);
+    void EnablePlaybackCB(const std_msgs::msg::Bool::SharedPtr msg);
 
     /**
      * Service returns the list of actions in the requested behavior
@@ -146,7 +146,7 @@ private:
      * @param res
      * @return
      */
-    bool ExpandBehaviorService(const shared_ptr<roboy_control_msgs::srv::ListItems::Request> req,
+    void ExpandBehaviorService(const shared_ptr<roboy_control_msgs::srv::ListItems::Request> req,
                                shared_ptr<roboy_control_msgs::srv::ListItems::Response> res);
 
     bool ExecuteAction(string actions);
@@ -161,7 +161,7 @@ private:
      * @param res
      * @return
      */
-    bool ListExistingItemsService(const shared_ptr<roboy_control_msgs::srv::ListItems::Request> req,
+    void ListExistingItemsService(const shared_ptr<roboy_control_msgs::srv::ListItems::Request> req,
                                   shared_ptr<roboy_control_msgs::srv::ListItems::Response> res);
 
     /**
@@ -175,7 +175,7 @@ private:
      * @param res
      * @return
      */
-    bool MotorCalibrationService(const shared_ptr<roboy_middleware_msgs::srv::MotorCalibrationService::Request> req,
+    void MotorCalibrationService(const shared_ptr<roboy_middleware_msgs::srv::MotorCalibrationService::Request> req,
                                  shared_ptr<roboy_middleware_msgs::srv::MotorCalibrationService::Response> res);
 
     /**
@@ -184,20 +184,20 @@ private:
      * @param res
      * @return
      */
-    bool MyoBrickCalibrationService(const shared_ptr<roboy_middleware_msgs::srv::MyoBrickCalibrationService::Request> req,
+    void MyoBrickCalibrationService(const shared_ptr<roboy_middleware_msgs::srv::MyoBrickCalibrationService::Request> req,
                                     shared_ptr<roboy_middleware_msgs::srv::MyoBrickCalibrationService::Response> res);
 
     /**
      * Callback for motor command
      * @param msg motor command
      */
-    void MotorCommand(const roboy_middleware_msgs::msg::MotorCommand::ConstPtr &msg);
+    void MotorCommand(const roboy_middleware_msgs::msg::MotorCommand::SharedPtr msg);
 
     /**
      * Callback for motor control
      * @param msg motor control
      */
-    void MotorControl(const roboy_middleware_msgs::msg::MotorControl::ConstPtr &msg);
+    void MotorControl(const roboy_middleware_msgs::msg::MotorControl::SharedPtr msg);
 
     /**
      * Service for changing motor PID parameters
@@ -205,7 +205,7 @@ private:
      * @param res success
      * @return success
      */
-    bool MotorConfigService(const shared_ptr<roboy_middleware_msgs::srv::MotorConfigService::Request> req,
+    void MotorConfigService(const shared_ptr<roboy_middleware_msgs::srv::MotorConfigService::Request> req,
                             shared_ptr<roboy_middleware_msgs::srv::MotorConfigService::Response> res);
 
     /**
@@ -224,7 +224,7 @@ private:
     [[deprecated("replaced with iCEbus")]]
     void MotorStatusPublisher();
 
-    void Neopixel(const roboy_middleware_msgs::msg::Neopixel::ConstPtr &msg);
+    void Neopixel(const roboy_middleware_msgs::msg::Neopixel::SharedPtr msg);
 
     uint8_t reverseBits(uint8_t a);
 
@@ -246,21 +246,21 @@ private:
      * @param res
      * @return
      */
-    bool SetDisplacementForAll(const shared_ptr<roboy_middleware_msgs::srv::SetInt16::Request> req,
+    void SetDisplacementForAll(const shared_ptr<roboy_middleware_msgs::srv::SetInt16::Request> req,
                                shared_ptr<roboy_middleware_msgs::srv::SetInt16::Request> res);
     // /**
     //  * Motor setpoints trajectory recording callback.
     //  * @param msg
     //  * @return
     //  */
-    // void StartRecordTrajectoryCB(const roboy_control_msgs::msg::StartRecordTrajectory::ConstPtr &msg);
+     void StartRecordTrajectoryCB(const roboy_control_msgs::msg::StartRecordTrajectory::SharedPtr msg);
     //
     // /**
     // * Callback stops recording the trajectory
     // * @param msg
     // * @return
     // */
-    // void StopRecordTrajectoryCB(const std_msgs::msg::Empty::ConstPtr &msg);
+     void StopRecordTrajectoryCB(const std_msgs::msg::Empty::SharedPtr msg);
 
     /**
      * Service for system check
@@ -268,7 +268,7 @@ private:
      * @param res
      * @return
      */
-    bool SystemCheckService(const shared_ptr<roboy_middleware_msgs::srv::SystemCheck::Request> req,
+    void SystemCheckService(const shared_ptr<roboy_middleware_msgs::srv::SystemCheck::Request> req,
                             shared_ptr<roboy_middleware_msgs::srv::SystemCheck::Response> res);
 
 private:
@@ -301,9 +301,9 @@ private:
 
     rclcpp::Service<roboy_middleware_msgs::srv::MotorConfigService>::SharedPtr motorConfig_srv;
     rclcpp::Service<roboy_middleware_msgs::srv::ControlMode>::SharedPtr controlMode_srv;
-    rclcpp::Service<roboy_middleware_msgs::srv::EmergencyStop>::SharedPtr emergencyStop_srv;
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr emergencyStop_srv;
     rclcpp::Service<roboy_middleware_msgs::srv::MotorCalibrationService>::SharedPtr motorCalibration_srv;
-    // rclcpp::Service<roboy_middleware_msgs::srv::SetPredisplacement>::SharedPtr setDisplacementForAll_srv;
+     rclcpp::Service<roboy_middleware_msgs::srv::SetInt16>::SharedPtr setDisplacementForAll_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode_backup,control_mode;
     vector<MotorControlPtr> motorControl;

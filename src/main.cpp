@@ -75,7 +75,7 @@ void SigintHandler(int sig)
     cout << "shutting down" << endl;
 
     // All the default sigint handler does is call shutdown()
-    ros::shutdown();
+    rclcpp::shutdown();
     *h2p_lw_led_addr = 0x00;
     system("sl");
     system("fortune | cowsay");
@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
 
     h2p_lw_sysid_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SYSID_QSYS_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
     if(*h2p_lw_sysid_addr!=SYSTEM_ID){ // if the system id does not match, we abort
-        ROS_ERROR("system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, SYSTEM_ID);
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"system id %x does not match this version of plexus %x, make sure you loaded the correct fpga image",*h2p_lw_sysid_addr, SYSTEM_ID);
         // clean up our memory mapping and exit
         if( munmap( virtual_base, HW_REGS_SPAN ) != 0 ) {
             printf( "ERROR: munmap() failed...\n" );
@@ -173,15 +173,16 @@ int main(int argc, char *argv[]) {
 //
 
 
-    ros::Rate rate(30);
+    // TODO: fix rate
+    rclcpp::Rate rate(30);
     if(h2p_lw_neopixel_addr!=nullptr){
-        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
-        while(ros::ok()){
-            neoPixel->runPattern(pattern,rate);
+//        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
+        while(rclcpp::ok()){
+//            neoPixel->runPattern(pattern,rate);
             rate.sleep();
         }
     }else{
-        while(ros::ok()){
+        while(rclcpp::ok()){
             rate.sleep();
         }
     }

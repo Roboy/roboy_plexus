@@ -38,7 +38,7 @@
 #include "interfaces/i2c.hpp"
 #include <iostream>
 #include <memory>
-// #include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 using namespace std;
 

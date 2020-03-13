@@ -30,7 +30,7 @@ void FanControl::SetAutoFan(bool autofan){
 
 void FanControl::SetDuty(int duty){
   if(duty<0||duty>100){
-    ROS_ERROR("exceeding duty range [0-100]: %d", duty);
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"exceeding duty range [0-100]: %d", duty);
     return;
   }
   IOWR(base,1,duty);
@@ -38,7 +38,7 @@ void FanControl::SetDuty(int duty){
 
 void FanControl::SetPWMFrequency(int freq){
   if(freq==0){
-    ROS_ERROR("a frequency of 0 does not make sense friend, keeping current frequency %d",GetPWMFrequency());
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"a frequency of 0 does not make sense friend, keeping current frequency %d",GetPWMFrequency());
     return;
   }
   IOWR(base,0,freq);

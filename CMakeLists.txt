@@ -20,6 +20,7 @@ SET(CMAKE_BUILD_TYPE Debug)
     find_package(ament_cmake REQUIRED)
     find_package(rclcpp REQUIRED)
     find_package(std_msgs  REQUIRED)
+    find_package(sensor_msgs  REQUIRED)
     find_package(roboy_middleware_msgs REQUIRED)
     find_package(roboy_control_msgs REQUIRED)
 
@@ -49,6 +50,9 @@ SET(CMAKE_BUILD_TYPE Debug)
     find_package(yaml-cpp REQUIRED yaml-cpp)
     include_directories(${yaml-cpp_INCLUDE_DIRS})
 
+    find_package(tinyxml_vendor REQUIRED)
+    find_package(TinyXML REQUIRED)
+    include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 #    catkin_package(CATKIN_DEPENDS
 #            message_runtime
 #            roboy_middleware_msgs
@@ -71,20 +75,20 @@ SET(CMAKE_BUILD_TYPE Debug)
     # Application
     #==============================================================================
     add_executable( roboy_plexus
-              src/test.cpp
-#             src/main.cpp
-#             src/interfaces/icebusControl.cpp
-#             src/interfaces/myoControl.cpp
-#             src/interfaces/motorControl.cpp
-#             src/interfaces/i2c.cpp
-#             src/roboyPlexus.cpp
-#             src/sensors/A1335.cpp
+#              src/test.cpp
+             src/main.cpp
+             src/interfaces/icebusControl.cpp
+             src/interfaces/myoControl.cpp
+             src/interfaces/motorControl.cpp
+             src/interfaces/i2c.cpp
+             src/roboyPlexus.cpp
+             src/sensors/A1335.cpp
 #             src/control/controlActions.cpp
-#             src/control/fanControl.cpp
-#             src/sensors/tle493d_w2b6.cpp
-# #            src/utility/UDPSocket.cpp
-#             src/sensors/BallJoint.cpp
-#             ../common_utilities/src/MotorConfig.cpp
+             src/control/fanControl.cpp
+             src/sensors/tle493d_w2b6.cpp
+ #            src/utility/UDPSocket.cpp
+             src/sensors/BallJoint.cpp
+             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/icebusControl.hpp
             # include/roboy_plexus/interfaces/myoControl.hpp
             # include/roboy_plexus/interfaces/motorControl.hpp
@@ -99,8 +103,8 @@ SET(CMAKE_BUILD_TYPE Debug)
             # include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/sensors/BallJoint.hpp
             )
-    ament_target_dependencies(roboy_plexus rclcpp roboy_middleware_msgs roboy_control_msgs yaml-cpp)
-    target_link_libraries( roboy_plexus -lpthread -lrt )
+    ament_target_dependencies(roboy_plexus rclcpp sensor_msgs roboy_middleware_msgs roboy_control_msgs yaml-cpp )
+    target_link_libraries( roboy_plexus  ${TinyXML_LIBRARIES} yaml-cpp -lpthread -lrt  ) 
 
 #    add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
 #    target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )

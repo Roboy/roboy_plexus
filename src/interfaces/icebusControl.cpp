@@ -2,30 +2,30 @@
 
 IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
                         : adc_base(adc_base), neopixel(neopixel) {
-    ROS_INFO("initializing icebusControl for %d icebuses with motor config file %s", mb.size(), motor_config_filepath.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"initializing icebusControl for %d icebuses with motor config file %s", mb.size(), motor_config_filepath.c_str());
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
     icebus_base = mb;
     for (uint i = 0; i < icebus_base.size(); i++) {
         ICEBUS_CONTROL_WRITE_update_frequency_Hz(icebus_base[i], 500);
-        ROS_INFO("icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(icebus_base[i]));
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(icebus_base[i]));
     }
 
     for(auto &bus:motor_config->icebus){
         int j = 0;
         for(auto &m:bus.second){
             if(!SetID(m->motor_id,m->bus_id)){
-                ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
+                RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"something went wrong writing the bus_ids, check your roboy3.yaml file");
             }else{
               SetBaudrate(m->motor_id,2000000);
-              ROS_INFO("icebus motor has baudrate %d",GetBaudrate(m->motor_id));
+              RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"icebus motor has baudrate %d",GetBaudrate(m->motor_id));
             }
         }
     }
 }
 
 IcebusControl::~IcebusControl() {
-    ROS_INFO("shutting down icebus control");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"shutting down icebus control");
 }
 
 bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
@@ -40,10 +40,10 @@ bool IcebusControl::SetID(int motor, int id){
         return false;
     ICEBUS_CONTROL_WRITE_id(icebus_base[motor_config->motor[motor]->bus],motor,id);
     if(ICEBUS_CONTROL_READ_id(icebus_base[motor_config->motor[motor]->bus],motor)==id){
-        ROS_INFO("motor %d now has bus_id %d", motor, id);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"motor %d now has bus_id %d", motor, id);
         motor_config->motor[motor]->bus_id = id;
     }else{
-        ROS_ERROR("unable to change bus_id of motor %d from id %d -> %d",
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"unable to change bus_id of motor %d from id %d -> %d",
                 motor,ICEBUS_CONTROL_READ_id(icebus_base[motor_config->motor[motor]->bus],motor),id );
         return false;
     }
@@ -83,7 +83,7 @@ bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &pa
 
 bool IcebusControl::SetControlMode(int motor, int mode) {
     if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
-//        ROS_INFO("motor_id %d", motor_config->motor[motor]->motor_id);
+//        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"motor_id %d", motor_config->motor[motor]->motor_id);
         ICEBUS_CONTROL_WRITE_Kp(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
                                 control_params[motor][mode].Kp);
         ICEBUS_CONTROL_WRITE_Kd(icebus_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
@@ -146,7 +146,7 @@ bool IcebusControl::SetControlMode(int mode) {
         }
         return true;
     }else{
-        ROS_WARN("control_mode %d invalid, ignoring...");
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"control_mode %d invalid, ignoring...");
         return false;
     }
 }
@@ -223,7 +223,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
 //            params->Kd = 0;
 //            params->deadband = 0;
 //            params->PWMLimit = 0;
-//            ROS_WARN("velocity control not available yet, disabling controller");
+//            RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"velocity control not available yet, disabling controller");
 //            break;
 //        case ENCODER1_VELOCITY: //TODO: velocity control not implemented yet
 //            params->IntegralLimit = 0;
@@ -232,7 +232,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
 //            params->Kd = 0;
 //            params->deadband = 0;
 //            params->PWMLimit = 0;
-//            ROS_WARN("velocity control not available yet, disabling controller");
+//            RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"velocity control not available yet, disabling controller");
 //            break;
         case DIRECT_PWM:
             params->IntegralLimit = 25;
@@ -243,7 +243,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->PWMLimit = 500;
             break;
         default:
-            ROS_ERROR("unknown control mode %d", control_mode);
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"unknown control mode %d", control_mode);
             break;
     }
 
@@ -368,7 +368,7 @@ float IcebusControl::RecordTrajectories(
         map<int, vector<float>> &trajectories, vector<int> &idList,
         vector<int> &controlmode, string name) {
 
-    ROS_INFO_STREAM("Started recording a trajectory " + name);
+//    ROS_INFO_STREAM("Started recording a trajectory " + name);
     string filepath = trajectories_folder + name;
     // this will be filled with the trajectories
     AllToSetpoint(DISPLACEMENT, predisplacement);
@@ -438,7 +438,7 @@ float IcebusControl::RecordTrajectories(
         outfile.close();
     }
 
-    ROS_INFO_STREAM("Saved trajectory " + name);
+//    ROS_INFO_STREAM("Saved trajectory " + name);
 
     // return average sampling time in milliseconds
     return elapsedTime / (double) sample * 1000.0f;
@@ -449,7 +449,7 @@ float IcebusControl::StartRecordTrajectories(
         vector<int> &idList, string name) {
     string filepath = trajectories_folder + name;
     recording = true;
-    ROS_INFO_STREAM("Started recording a trajectory " + name);
+//    ROS_INFO_STREAM("Started recording a trajectory " + name);
     // this will be filled with the trajectories
     for(auto motor:idList) {
         SetControlMode(motor,DISPLACEMENT);
@@ -461,7 +461,7 @@ float IcebusControl::StartRecordTrajectories(
 
     double elapsedTime = 0.0, dt;
     long sample = 0;
-    ros::Rate rate(1.0 / samplingTime);
+    rclcpp::Rate rate(1.0 / samplingTime);
 //    ROS_INFO_STREAM(1.0/samplingTime);
     // start recording
     do {
@@ -518,7 +518,7 @@ float IcebusControl::StartRecordTrajectories(
         outfile.close();
     }
 
-    ROS_INFO_STREAM("Saved trajectory " + name);
+//    ROS_INFO_STREAM("Saved trajectory " + name);
 
     // return average sampling time in milliseconds
     return elapsedTime / (double) sample * 1000.0f;
@@ -526,15 +526,15 @@ float IcebusControl::StartRecordTrajectories(
 
 void IcebusControl::StopRecordTrajectories() {
     recording = false;
-    ROS_INFO("Stopped recording a trajectory");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Stopped recording a trajectory");
 }
 
 void IcebusControl::SetReplay(bool status) {
     replay = status;
     if (replay) {
-        ROS_INFO("Replaying trajectories enabled");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Replaying trajectories enabled");
     } else {
-        ROS_INFO("Replaying trajectories disabled");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Replaying trajectories disabled");
     }
 }
 
@@ -589,7 +589,7 @@ bool IcebusControl::PlayTrajectory(const char *file) {
 
     TiXmlDocument doc(file);
     if (!doc.LoadFile()) {
-        ROS_ERROR("could not load xml trajectory %s", file);
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"could not load xml trajectory %s", file);
         return false;
     }
 
@@ -612,7 +612,7 @@ bool IcebusControl::PlayTrajectory(const char *file) {
         if (trajectory_it->QueryIntAttribute("samplingTime", &samplingTime) == TIXML_SUCCESS) {
             int motor;
             if (trajectory_it->QueryIntAttribute("motorid", &motor) != TIXML_SUCCESS) {
-                ROS_ERROR("no motorid found");
+                RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"no motorid found");
                 return false;
             }
             TiXmlElement *waypointlist_it = trajectory_it->FirstChildElement("waypointlist");
@@ -632,13 +632,13 @@ bool IcebusControl::PlayTrajectory(const char *file) {
     }
 
 //    allToDisplacement(0);
-    ROS_INFO_STREAM("Replaying trajectory " + string(file));
+//    ROS_INFO_STREAM("Replaying trajectory " + string(file));
     timer.start();
     double elapsedTime = 0.0, dt;
     int sample = 0;
 
     samplingTime;
-    ros::Rate rate(1.0 / (samplingTime / 1000.0f));
+    rclcpp::Rate rate(1.0 / (samplingTime / 1000.0f));
 //    ROS_INFO_STREAM(1.0/(samplingTime/1000.0f));
     do {
         dt = elapsedTime;
@@ -658,7 +658,7 @@ bool IcebusControl::PlayTrajectory(const char *file) {
 
 void IcebusControl::SetPredisplacement(int value) {
     predisplacement = value;
-    ROS_INFO_STREAM("Now recording with displacement" + predisplacement);
+//    RCLCPP_INFO("Now recording with displacement" + predisplacement);
 }
 
 void IcebusControl::EstimateSpringParameters(int motor, int degree, vector<float> &coeffs, int timeout,

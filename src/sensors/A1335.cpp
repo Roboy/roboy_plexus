@@ -6,7 +6,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
 //        if(!clearStatusRegisters(device))
 //            ROS_WARN("failed to clear status register for A1335 with deviceID %x", device);
 //        else {
-//            ROS_INFO("motor angle sensor active with deviceID %x", device);
+//            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"motor angle sensor active with deviceID %x", device);
             // enter KEYCODE
             i2c->write(device,(0x1F<<24|0x46<<16),2);
             // set to IDLE
@@ -14,7 +14,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             usleep(500); // takes a1335 up to 128us to transition to IDLE from RUN
             vector<uint8_t> data;
             i2c->read(device,0x23, 1, data);
-            ROS_INFO("STA register %x", data[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"STA register %x", data[0]);
             // configure output rate
             i2c->write(device,(0x03<<24|0xff<<16),2);
             i2c->write(device,(0x02<<24|0xd0<<16),2);
@@ -24,7 +24,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             i2c->write(device,(0x08<<24|0x08<<16),2);
             usleep(500);
             i2c->read(device,0x09, 1, data);
-            ROS_INFO("EWCS register %x", data[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"EWCS register %x", data[0]);
             // enter KEYCODE
             i2c->write(device,(0x1F<<24|0xB9<<16),2);
             // set to RUN
@@ -32,7 +32,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             usleep(500); // takes a1335 up to 128us to transition to IDLE from RUN
             data.clear();
             i2c->read(device,0x23, 1, data);
-            ROS_INFO("STA register %x", data[0]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"STA register %x", data[0]);
 //        }
     }
 }
@@ -46,10 +46,10 @@ bool A1335::readAngleData(vector<A1335State> &states){
     for(auto device:deviceIDs){
         A1335State state;
         if(readDeviceState(device, &state)){
-            ROS_DEBUG_STREAM_THROTTLE(1,"motor sensor " << device << " is active");
+            RCUTILS_LOG_WARN_THROTTLE(rcutils_steady_time_now, 1,"motor sensor %f is active", device);
             deviceActive = true; // at least one is active
         }else{
-            ROS_WARN_STREAM_ONCE("motor sensor " << device << " is NOT active, check cables (did you use a level shifter?!). This warning will be displayed only once.");
+            RCLCPP_WARN_ONCE(rclcpp::get_logger("rclcpp"), "motor sensor %f is NOT active, check cables (did you use a level shifter?!). This warning will be displayed only once.", device);
         }
         states.push_back(state);
     }

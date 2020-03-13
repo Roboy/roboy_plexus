@@ -2,7 +2,7 @@
 
 MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int32_t *adc_base, NeoPixelPtr neopixel)
     : adc_base(adc_base), neopixel(neopixel) {
-    ROS_INFO("initializing myoControl for %d myobuses with motor config file %s", mb.size(), motor_config_filepath.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"initializing myoControl for %d myobuses with motor config file %s", mb.size(), motor_config_filepath.c_str());
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
     myo_base = mb;
@@ -10,7 +10,7 @@ MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int3
         MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
         usleep(10000);
-        ROS_INFO("myobus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"myobus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
     }
     for(int mode = POSITION;mode<=DIRECT_PWM;mode++) {
         for (int i = 0; i < 8; i++) {
@@ -25,7 +25,7 @@ MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int3
         MYO_WRITE_update_frequency(myo_base[i], MOTOR_BOARD_COMMUNICATION_FREQUENCY);
         MYO_WRITE_spi_activated(myo_base[i], true);
         usleep(10000);
-        ROS_INFO("bus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"bus %d motor update frequency %d", i, MYO_READ_update_frequency(myo_base[i]));
     }
     reset();
 
@@ -46,7 +46,7 @@ MyoControl::MyoControl(string motor_config_filepath, vector<int32_t *> &mb, int3
 }
 
 MyoControl::~MyoControl() {
-    ROS_INFO("shutting down myoControl");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"shutting down myoControl");
 }
 
 bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &params, int32_t setPoint) {
@@ -58,7 +58,7 @@ bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &
     MYO_WRITE_sp(bus, bus_id, setPoint);
     int kp, ki, kd, fg, db, sp, od;
     getPIDcontrollerParams(kp, ki, kd, fg, db, sp, od, motor);
-    ROS_INFO("change control motor %d (Kp: %d, Kd %d, Ki %d, ForwardGain %d, deadband %d, "
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"change control motor %d (Kp: %d, Kd %d, Ki %d, ForwardGain %d, deadband %d, "
              "OutputDivider %d, setPoint %d)", motor, kp, ki, kd, fg, db, od, sp);
     return true;
 }
@@ -188,7 +188,7 @@ bool MyoControl::setSPIactive(int motor, bool active) {
 }
 
 void MyoControl::SetNeopixelColor(int motor, int32_t color){
-  ROS_WARN_ONCE("you are trying to set the neopixel color of a legacy motorboard...thou shall not pass");
+  RCLCPP_WARN_ONCE(rclcpp::get_logger("rclcpp"),"you are trying to set the neopixel color of a legacy motorboard...thou shall not pass");
 };
 
 void MyoControl::getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
@@ -241,12 +241,12 @@ int32_t MyoControl::GetEncoderVelocity(int motor, int encoder) {
 }
 
 float MyoControl::GetCurrentLimit(int motor){
-  ROS_WARN_ONCE("not implemented");
+  RCLCPP_WARN_ONCE(rclcpp::get_logger("rclcpp"),"not implemented");
   return -1;
 }
 
 bool MyoControl::SetCurrentLimit(int motor, float limit){
-  ROS_WARN_ONCE("not implemented");
+  RCLCPP_WARN_ONCE(rclcpp::get_logger("rclcpp"),"not implemented");
   return false;
 }
 
@@ -263,7 +263,7 @@ void MyoControl::SetPoint(int motor, int32_t setPoint) {
 }
 
 void MyoControl::changeControlParameters(int motor, control_Parameters_legacy &params){
-    ROS_ERROR("not implemented");
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");
 }
 
 bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
@@ -280,7 +280,7 @@ bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
     for (auto motor_id:motorIDs) {
         int32_t *bus = myo_base[motor_config->motor[motor_id]->bus];
         int bus_id = motor_config->motor[motor_id]->bus_id;
-        ROS_INFO("myoBrick %d of myoControl %d", bus_id, motor_config->motor[motor_id]->bus);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"myoBrick %d of myoControl %d", bus_id, motor_config->motor[motor_id]->bus);
         myo_brick |= (1 << bus_id);
         MYO_WRITE_myo_brick_gear_box_ratio(bus,bus_id, gearBoxRatio[i]);
         MYO_WRITE_myo_brick_encoder_multiplier(bus,bus_id, encoderMultiplier[i]);
@@ -288,14 +288,14 @@ bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
         int multiplier = MYO_READ_myo_brick_encoder_multiplier(bus,bus_id);
         if (ratio != gearBoxRatio[i] ||
             multiplier != encoderMultiplier[i]) { // if the value was not written correctly, we abort!
-            ROS_FATAL("id %d, ratio %d, multiplier %d", motor_id, ratio, multiplier);
+            RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"id %d, ratio %d, multiplier %d", motor_id, ratio, multiplier);
             return false;
         }
         str << (int) motor_id << "\t\t| " << ratio << "\t\t| " << multiplier << endl;
         MYO_WRITE_myo_brick(bus, myo_brick);
         i++;
     }
-    ROS_INFO_STREAM(str.str());
+//    ROS_INFO_STREAM(str.str());
     return true;
 }
 
@@ -363,7 +363,7 @@ void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int 
             params->outputDivider = 0;
             break;
         default:
-            ROS_ERROR("unknown control mode %d", control_mode);
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"unknown control mode %d", control_mode);
             break;
     }
 

@@ -39,7 +39,7 @@ public:
     ~NeoPixel(){
 
     }
-    void runPattern(map<int,vector<int>> pattern, rclcpp::Rate rate, bool loop = false, int timeOut = -1){
+    void runPattern(map<int,vector<int>> pattern, rclcpp::Rate::SharedPtr rate, bool loop = false, int timeOut = -1){
         for(int j=1;j<=number_of_neopixel;j++){
             IOWR(base,j,NeoPixelColorRGB::black);
         }
@@ -56,7 +56,7 @@ public:
             }
             //latch
             IOWR(base,0,true);
-            rate.sleep();
+            rate->sleep();
             i++;
         }while(i<pattern_length && !abort);
     }

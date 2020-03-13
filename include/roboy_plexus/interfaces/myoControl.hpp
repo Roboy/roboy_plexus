@@ -40,7 +40,7 @@
 #include <sstream>
 #include <memory>
 //#include <common_utilities/CommonDefinitions.h>
-#include <rclcpp/rclcpp.h>
+#include <rclcpp/rclcpp.hpp>
 #include <interfaces/NeoPixel.hpp>
 #include <utility/timer.hpp>
 #include <common_utilities/MotorConfig.hpp>
@@ -271,7 +271,7 @@ public:
     float RecordTrajectories(
             float samplingTime, float recordTime,
             map<int, vector<float>> &trajectories, vector<int> &idList,
-            vector<int> &controlmode, string name) override {RCLCPP_ERROR("not implemented");};
+            vector<int> &controlmode, string name) override {RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");};
 
     /**
 	 * starts recording positions of motors in Displacement mode
@@ -282,31 +282,31 @@ public:
 	 */
     float StartRecordTrajectories(
             float samplingTime, map<int, vector<float>> &trajectories,
-            vector<int> &idList, string name) override {RCLCPP_ERROR("not implemented");};
+            vector<int> &idList, string name) override {RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");};
 
     /**
      * stops recording a trajectory and writes to file
      */
-    void StopRecordTrajectories() override {RCLCPP_ERROR("not implemented");};
+    void StopRecordTrajectories() override {RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");};
 
     /**
      * Plays back a trajectory
      * @param file
      * @return success
      */
-    bool PlayTrajectory(const char *file) override {RCLCPP_ERROR("not implemented");};
+    bool PlayTrajectory(const char *file) override {RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");};
 
     /**
      * Sets predisplacement for recording trajectories (50 by default)
      * @param value
      */
-    void SetPredisplacement(int value) override {RCLCPP_ERROR("not implemented");};
+    void SetPredisplacement(int value) override {RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");};
 
     /**
      * Enables/disables replaying trajectory
      * @param replay
      */
-    void SetReplay(bool status) override {RCLCPP_ERROR("not implemented");};
+    void SetReplay(bool status) override {RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"not implemented");};
 
     /**
      * Gets the current limit in Ampere
