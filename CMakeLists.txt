@@ -23,6 +23,7 @@ SET(CMAKE_BUILD_TYPE Debug)
     find_package(sensor_msgs  REQUIRED)
     find_package(roboy_middleware_msgs REQUIRED)
     find_package(roboy_control_msgs REQUIRED)
+    find_package(common_utilities REQUIRED)
 
 
 #    find_package(catkin REQUIRED COMPONENTS
@@ -66,6 +67,7 @@ SET(CMAKE_BUILD_TYPE Debug)
 
     include_directories(
             include/roboy_plexus
+            ${common_utilities_INCLUDE_DIRS}
 #            ${catkin_INCLUDE_DIRS}
             /home/missxa/intel/embedded/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
             /home/missxa/intel/embedded/ip/altera/hps/altera_hps/hwlib/include
@@ -88,7 +90,7 @@ SET(CMAKE_BUILD_TYPE Debug)
              src/sensors/tle493d_w2b6.cpp
  #            src/utility/UDPSocket.cpp
              src/sensors/BallJoint.cpp
-             ../common_utilities/src/MotorConfig.cpp
+#             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/icebusControl.hpp
             # include/roboy_plexus/interfaces/myoControl.hpp
             # include/roboy_plexus/interfaces/motorControl.hpp
@@ -98,13 +100,13 @@ SET(CMAKE_BUILD_TYPE Debug)
             # include/roboy_plexus/control/controlActions.hpp
             # include/roboy_plexus/control/fanControl.hpp
             include/roboy_plexus/sensors/tle493d_w2b6.hpp
-            # ../common_utilities/include/common_utilities/MotorConfig.hpp
-            include/roboy_plexus/common_utilities/CommonDefinitions.h
+#            common_utilities/include/common_utilities/MotorConfig.hpp
+#            include/roboy_plexus/common_utilities/CommonDefinitions.h
             # include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/sensors/BallJoint.hpp
             )
-    ament_target_dependencies(roboy_plexus rclcpp sensor_msgs roboy_middleware_msgs roboy_control_msgs yaml-cpp )
-    target_link_libraries( roboy_plexus  ${TinyXML_LIBRARIES} yaml-cpp -lpthread -lrt  ) 
+    ament_target_dependencies(roboy_plexus rclcpp common_utilities sensor_msgs roboy_middleware_msgs roboy_control_msgs yaml-cpp )
+    target_link_libraries( roboy_plexus  ${common_utilities_LIBRARIES} ${TinyXML_LIBRARIES} yaml-cpp -lpthread -lrt  )
 
 #    add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
 #    target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
