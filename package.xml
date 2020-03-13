@@ -18,7 +18,7 @@
   <!-- <depend>communication</depend> -->
   <depend>roboy_middleware_msgs</depend>
   <depend>roboy_control_msgs</depend>
-  <!-- <depend>common_utilities</depend> -->
+   <depend>common_utilities</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
