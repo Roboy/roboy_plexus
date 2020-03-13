@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ros/ros.h>
+#include <memory>
 #include <interfaces/NeoPixel.hpp>
 
 class MotorControl {
@@ -156,4 +156,4 @@ public:
     string trajectories_folder = "/home/root/trajectories";
 };
 
-typedef boost::shared_ptr<MotorControl> MotorControlPtr;
+typedef std::shared_ptr<MotorControl> MotorControlPtr;

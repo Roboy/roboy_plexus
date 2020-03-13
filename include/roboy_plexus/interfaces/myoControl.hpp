@@ -38,8 +38,9 @@
 #include <tinyxml.h>
 #include <string>
 #include <sstream>
+#include <memory>
 //#include <common_utilities/CommonDefinitions.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.h>
 #include <interfaces/NeoPixel.hpp>
 #include <utility/timer.hpp>
 #include <common_utilities/MotorConfig.hpp>
@@ -270,7 +271,7 @@ public:
     float RecordTrajectories(
             float samplingTime, float recordTime,
             map<int, vector<float>> &trajectories, vector<int> &idList,
-            vector<int> &controlmode, string name) override {ROS_ERROR("not implemented");};
+            vector<int> &controlmode, string name) override {RCLCPP_ERROR("not implemented");};
 
     /**
 	 * starts recording positions of motors in Displacement mode
@@ -281,31 +282,31 @@ public:
 	 */
     float StartRecordTrajectories(
             float samplingTime, map<int, vector<float>> &trajectories,
-            vector<int> &idList, string name) override {ROS_ERROR("not implemented");};
+            vector<int> &idList, string name) override {RCLCPP_ERROR("not implemented");};
 
     /**
      * stops recording a trajectory and writes to file
      */
-    void StopRecordTrajectories() override {ROS_ERROR("not implemented");};
+    void StopRecordTrajectories() override {RCLCPP_ERROR("not implemented");};
 
     /**
      * Plays back a trajectory
      * @param file
      * @return success
      */
-    bool PlayTrajectory(const char *file) override {ROS_ERROR("not implemented");};
+    bool PlayTrajectory(const char *file) override {RCLCPP_ERROR("not implemented");};
 
     /**
      * Sets predisplacement for recording trajectories (50 by default)
      * @param value
      */
-    void SetPredisplacement(int value) override {ROS_ERROR("not implemented");};
+    void SetPredisplacement(int value) override {RCLCPP_ERROR("not implemented");};
 
     /**
      * Enables/disables replaying trajectory
      * @param replay
      */
-    void SetReplay(bool status) override {ROS_ERROR("not implemented");};
+    void SetReplay(bool status) override {RCLCPP_ERROR("not implemented");};
 
     /**
      * Gets the current limit in Ampere
@@ -363,4 +364,4 @@ private:
 
 };
 
-typedef boost::shared_ptr<MyoControl> MyoControlPtr;
+typedef std::shared_ptr<MyoControl> MyoControlPtr;

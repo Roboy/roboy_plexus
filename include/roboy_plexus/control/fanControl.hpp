@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ros/ros.h>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
@@ -21,8 +22,8 @@ public:
     void SetPWMFrequency(int freq);
     void SetSensitivity(int sensitivity);
 private:
-    ros::NodeHandlePtr nh;
+    rclcpp::Node::SharedPtr nh;
     int32_t* base;
 };
 
-typedef boost::shared_ptr<FanControl> FanControlPtr;
+typedef std::shared_ptr<FanControl> FanControlPtr;

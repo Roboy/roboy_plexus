@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ros/ros.h>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
 
 using namespace std;
 
@@ -38,7 +39,7 @@ public:
     ~NeoPixel(){
 
     }
-    void runPattern(map<int,vector<int>> pattern, ros::Rate rate, bool loop = false, int timeOut = -1){
+    void runPattern(map<int,vector<int>> pattern, rclcpp::Rate rate, bool loop = false, int timeOut = -1){
         for(int j=1;j<=number_of_neopixel;j++){
             IOWR(base,j,NeoPixelColorRGB::black);
         }
@@ -144,4 +145,4 @@ private:
     map<string,map<int,vector<int>>> pattern;
 };
 
-typedef boost::shared_ptr<NeoPixel> NeoPixelPtr;
+typedef std::shared_ptr<NeoPixel> NeoPixelPtr;

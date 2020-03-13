@@ -49,7 +49,8 @@
 #include <common_utilities/MotorConfig.hpp>
 #include "interfaces/motorControl.hpp"
 #include <utility/timer.hpp>
-#include <ros/ros.h>
+#include <memory>
+// #include <ros/ros.h>
 #include <interfaces/NeoPixel.hpp>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
@@ -446,4 +447,4 @@ private:
     NeoPixelPtr neopixel;
 };
 
-typedef boost::shared_ptr<IcebusControl> IcebusControlPtr;
+typedef std::shared_ptr<IcebusControl> IcebusControlPtr;

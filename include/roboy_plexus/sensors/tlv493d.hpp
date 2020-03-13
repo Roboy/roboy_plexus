@@ -37,7 +37,8 @@
 #include <stdint.h>
 #include "interfaces/i2c.hpp"
 #include <vector>
-#include <ros/ros.h>
+#include <memory>
+// #include <ros/ros.h>
 
 using namespace std;
 
@@ -76,6 +77,6 @@ private:
     uint8_t gpioreg = 0;
     uint8_t frameCounter = 0;
 public:
-    boost::shared_ptr<I2C> i2c;
+    shared_ptr<I2C> i2c;
     int32_t *i2c_base;
 };

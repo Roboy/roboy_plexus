@@ -37,7 +37,8 @@
 
 #include "interfaces/i2c.hpp"
 #include <iostream>
-#include <ros/ros.h>
+#include <memory>
+// #include <ros/ros.h>
 
 using namespace std;
 
@@ -181,4 +182,4 @@ private:
     string str;
 };
 
-typedef boost::shared_ptr<A1335> A1335Ptr;
+typedef std::shared_ptr<A1335> A1335Ptr;

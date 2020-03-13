@@ -37,7 +37,8 @@
 #include <stdint.h>
 #include "interfaces/i2c.hpp"
 #include <vector>
-#include <ros/ros.h>
+#include <memory>
+// #include <ros/ros.h>
 
 using namespace std;
 
@@ -67,8 +68,8 @@ public:
     bool read(float &fx, float &fy, float &fz);
 
 public:
-    boost::shared_ptr<I2C> i2c;
+    std::shared_ptr<I2C> i2c;
     int32_t *i2c_base;
 };
 
-typedef boost::shared_ptr<TLE493D> TLE493DPtr;
+typedef std::shared_ptr<TLE493D> TLE493DPtr;

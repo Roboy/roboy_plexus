@@ -36,7 +36,8 @@
 #pragma once
 
 #include <iostream>
-#include <ros/ros.h>
+#include <memory>
+// #include <ros/ros.h>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
@@ -67,4 +68,4 @@ private:
   int32_t *base;
 };
 
-typedef boost::shared_ptr<BallJoint> BallJointPtr;
+typedef std::shared_ptr<BallJoint> BallJointPtr;
