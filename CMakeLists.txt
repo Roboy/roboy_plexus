@@ -67,9 +67,9 @@ SET(CMAKE_BUILD_TYPE Debug)
     include_directories(
             include/roboy_plexus
 #            ${catkin_INCLUDE_DIRS}
-            /home/missxa/intel/embedded/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
-            /home/missxa/intel/embedded/ip/altera/hps/altera_hps/hwlib/include
-            /home/missxa/intel/embedded/ip/altera/hps/altera_hps/hwlib/include/${ALT_DEVICE_FAMILY}
+            /custom-data/embedded/ip/altera/hps/altera_hps/hwlib/${ALT_DEVICE_FAMILY}
+            /custom-data/embedded/ip/altera/hps/altera_hps/hwlib/include
+            /custom-data/embedded/ip/altera/hps/altera_hps/hwlib/include/${ALT_DEVICE_FAMILY}
     )
     #==============================================================================
     # Application
@@ -104,7 +104,7 @@ SET(CMAKE_BUILD_TYPE Debug)
             include/roboy_plexus/sensors/BallJoint.hpp
             )
     ament_target_dependencies(roboy_plexus rclcpp sensor_msgs roboy_middleware_msgs roboy_control_msgs yaml-cpp )
-    target_link_libraries( roboy_plexus  ${TinyXML_LIBRARIES} yaml-cpp -lpthread -lrt  ) 
+    target_link_libraries( roboy_plexus  ${TinyXML_LIBRARIES} yaml-cpp -lpthread -lrt  )
 
 #    add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
 #    target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
