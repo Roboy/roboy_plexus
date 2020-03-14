@@ -23,7 +23,7 @@ SET(CMAKE_BUILD_TYPE Debug)
     find_package(sensor_msgs  REQUIRED)
     find_package(roboy_middleware_msgs REQUIRED)
     find_package(roboy_control_msgs REQUIRED)
-    find_package(common_utilities REQUIRED)
+    find_package(common_utilities REQUIRED COMPONENTS motor_cofig)
 
 
 #    find_package(catkin REQUIRED COMPONENTS
@@ -105,7 +105,7 @@ SET(CMAKE_BUILD_TYPE Debug)
             # include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/sensors/BallJoint.hpp
             )
-    ament_target_dependencies(roboy_plexus rclcpp common_utilities sensor_msgs roboy_middleware_msgs roboy_control_msgs yaml-cpp )
+    ament_target_dependencies(roboy_plexus rclcpp motor_config sensor_msgs roboy_middleware_msgs roboy_control_msgs yaml-cpp )
     target_link_libraries( roboy_plexus  ${common_utilities_LIBRARIES} ${TinyXML_LIBRARIES} yaml-cpp -lpthread -lrt  )
 
 #    add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
