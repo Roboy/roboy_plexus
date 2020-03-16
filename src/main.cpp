@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 #ifdef FANCONTROL_0_BASE
     h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "icebus init");
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
     vector<BallJointPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)
@@ -165,6 +165,7 @@ int main(int argc, char *argv[]) {
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
     // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor1_i2c_addr)));
     // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor2_i2c_addr)));
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "roboy plexus init");
     RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,h2p_lw_auxilliary_i2c_addr);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");

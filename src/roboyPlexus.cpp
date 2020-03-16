@@ -7,7 +7,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         vector<FanControlPtr> fanControls,
         vector<int32_t *> &i2c_base) :
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints), i2c_base(i2c_base){
-    RCLCPP_INFO(nh->get_logger(), "roboy3 plexus initializing");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "roboy3 plexus initializing");
 
     ifstream ifile("/sys/class/net/eth0/address");
     ifile >> ethaddr;
@@ -88,7 +88,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 //    using rclcpp::executors::MultiThreadedExecutor;
     rclcpp::executors::MultiThreadedExecutor executor;
     executor.add_node(nh);
-    
+    executor.spin(); 
 //    spinner = shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
 //    spinner->start();
 
@@ -267,9 +267,11 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::msg::MotorCommand::S
 
 void RoboyPlexus::MotorControl(const roboy_middleware_msgs::msg::MotorControl::SharedPtr msg) {
     uint i = 0;
+    RCLCPP_INFO(nh->get_logger(), "Got MotorControl msg");
     for (auto motor:msg->motor) {
         for(auto &bus:motorControl){
           if(bus->MyMotor(motor)){
+	      RCLCPP_INFO(nh->get_logger(), "setting motor %d %d", motor, msg->setpoint[i]);
             bus->SetPoint(motor, msg->setpoint[i]);
           }
         }
