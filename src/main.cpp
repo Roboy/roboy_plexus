@@ -43,7 +43,6 @@
 #include "socal/hps.h"
 #include "hps_0.h"
 #include "roboyPlexus.hpp"
-#include "interfaces/NeoPixel.hpp"
 
 using namespace std;
 
@@ -56,24 +55,24 @@ using namespace std;
 
 int32_t *h2p_lw_sysid_addr;
 int32_t *h2p_lw_led_addr;
-int32_t *h2p_lw_neopixel_addr;
-int32_t *h2p_lw_adc_addr;
 int32_t *h2p_lw_switches_addr;
-int32_t *h2p_lw_a1339_addr;
-vector<int32_t*> h2p_lw_darkroom_ootx_addr;
+vector<int32_t*> h2p_lw_armbus_addr;
 vector<int32_t*> h2p_lw_icebus_addr;
-vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_auxilliary_i2c_addr;
 vector<int32_t*> h2p_lw_ball_joint_addr;
 vector<int32_t*> h2p_lw_fan_control_addr;
 
 IcebusControlPtr icebusControl;
-NeoPixelPtr neoPixel;
 
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-
+    ros::Rate rate(5);
+    *h2p_lw_led_addr = 0;
+    for(int i=0;i<10;i++){
+      *h2p_lw_led_addr = ~(*h2p_lw_led_addr);
+      rate.sleep();
+    }
     // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
@@ -126,14 +125,8 @@ int main(int argc, char *argv[]) {
     h2p_lw_led_addr = nullptr;
 #endif
 
-#ifdef ICEBOARDCONTROL_0_BASE
-    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef ICEBOARDCONTROL_1_BASE
-    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef ICEBOARDCONTROL_2_BASE
-    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBOARDCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#ifdef ICEBUSCONTROL_0_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
 #ifdef AUXILLIARY_I2C_0_BASE
@@ -156,7 +149,7 @@ int main(int argc, char *argv[]) {
     h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
-    icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr,h2p_lw_adc_addr,neoPixel));
+    icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr));
     vector<BallJointPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)
       balljoints.push_back(BallJointPtr(new BallJoint(addr)));
@@ -174,16 +167,9 @@ int main(int argc, char *argv[]) {
 
 
     ros::Rate rate(30);
-    if(h2p_lw_neopixel_addr!=nullptr){
-        auto pattern = neoPixel->getPattern("nightrider",NeoPixelColorRGB::blue);
-        while(ros::ok()){
-            neoPixel->runPattern(pattern,rate);
-            rate.sleep();
-        }
-    }else{
-        while(ros::ok()){
-            rate.sleep();
-        }
+
+    while(ros::ok()){
+        rate.sleep();
     }
 
 

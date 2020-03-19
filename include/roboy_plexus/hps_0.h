@@ -20,65 +20,6 @@
  */
 
 /*
- * Macros for device 'FanControl_0', class 'FanControl'
- * The macros are prefixed with 'FANCONTROL_0_'.
- * The prefix is the slave descriptor.
- */
-#define FANCONTROL_0_COMPONENT_TYPE FanControl
-#define FANCONTROL_0_COMPONENT_NAME FanControl_0
-#define FANCONTROL_0_BASE 0x0
-#define FANCONTROL_0_SPAN 32
-#define FANCONTROL_0_END 0x1f
-
-/*
- * Macros for device 'SWITCHES', class 'altera_avalon_pio'
- * The macros are prefixed with 'SWITCHES_'.
- * The prefix is the slave descriptor.
- */
-#define SWITCHES_COMPONENT_TYPE altera_avalon_pio
-#define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x20
-#define SWITCHES_SPAN 16
-#define SWITCHES_END 0x2f
-#define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
-#define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define SWITCHES_CAPTURE 0
-#define SWITCHES_DATA_WIDTH 4
-#define SWITCHES_DO_TEST_BENCH_WIRING 0
-#define SWITCHES_DRIVEN_SIM_VALUE 0
-#define SWITCHES_EDGE_TYPE NONE
-#define SWITCHES_FREQ 50000000
-#define SWITCHES_HAS_IN 1
-#define SWITCHES_HAS_OUT 0
-#define SWITCHES_HAS_TRI 0
-#define SWITCHES_IRQ_TYPE NONE
-#define SWITCHES_RESET_VALUE 0
-
-/*
- * Macros for device 'LED', class 'altera_avalon_pio'
- * The macros are prefixed with 'LED_'.
- * The prefix is the slave descriptor.
- */
-#define LED_COMPONENT_TYPE altera_avalon_pio
-#define LED_COMPONENT_NAME LED
-#define LED_BASE 0x30
-#define LED_SPAN 16
-#define LED_END 0x3f
-#define LED_BIT_CLEARING_EDGE_REGISTER 0
-#define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define LED_CAPTURE 0
-#define LED_DATA_WIDTH 8
-#define LED_DO_TEST_BENCH_WIRING 0
-#define LED_DRIVEN_SIM_VALUE 0
-#define LED_EDGE_TYPE NONE
-#define LED_FREQ 50000000
-#define LED_HAS_IN 0
-#define LED_HAS_OUT 1
-#define LED_HAS_TRI 0
-#define LED_IRQ_TYPE NONE
-#define LED_RESET_VALUE 0
-
-/*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
  * The macros are prefixed with 'SYSID_QSYS_'.
  * The prefix is the slave descriptor.
@@ -89,7 +30,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1583141210
+#define SYSID_QSYS_TIMESTAMP 1584634723
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
@@ -108,15 +49,15 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
- * Macros for device 'ICEboardControl_0', class 'ICEboardControl'
- * The macros are prefixed with 'ICEBOARDCONTROL_0_'.
+ * Macros for device 'iCEbusControl_0', class 'iCEbusControl'
+ * The macros are prefixed with 'ICEBUSCONTROL_0_'.
  * The prefix is the slave descriptor.
  */
-#define ICEBOARDCONTROL_0_COMPONENT_TYPE ICEboardControl
-#define ICEBOARDCONTROL_0_COMPONENT_NAME ICEboardControl_0
-#define ICEBOARDCONTROL_0_BASE 0x80000
-#define ICEBOARDCONTROL_0_SPAN 262144
-#define ICEBOARDCONTROL_0_END 0xbffff
+#define ICEBUSCONTROL_0_COMPONENT_TYPE iCEbusControl
+#define ICEBUSCONTROL_0_COMPONENT_NAME iCEbusControl_0
+#define ICEBUSCONTROL_0_BASE 0x40000
+#define ICEBUSCONTROL_0_SPAN 262144
+#define ICEBUSCONTROL_0_END 0x7ffff
 
 
 #endif /* _ALTERA_HPS_0_H_ */

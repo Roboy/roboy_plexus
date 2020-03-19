@@ -1,4 +1,4 @@
-#include "control/fanControl.hpp"
+#include "interfaces/fanControl.hpp"
 
 FanControl::FanControl(int32_t* base):base(base){
 

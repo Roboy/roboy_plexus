@@ -31,6 +31,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         ROS_WARN("no active ball joints");
     }
     ROS_INFO("initializing elbow joints");
+
     if(i2c_base.size()>4){
       {
         vector <uint8_t> ids = {0xC};
@@ -40,14 +41,11 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         vector <uint8_t> ids = {0xD};
         a1335.push_back(A1335Ptr(new A1335(i2c_base[5],ids)));
       }
-
+      jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
+      elbowJointAngleThread = boost::shared_ptr<std::thread>(
+              new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
+      elbowJointAngleThread->detach();
     }
-
-    // TODO wait for juri
-    jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
-    elbowJointAngleThread = boost::shared_ptr<std::thread>(
-            new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
-    elbowJointAngleThread->detach();
 
     motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
     motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
@@ -60,7 +58,10 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 
     neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
 
+    ROS_INFO("initializing icebus");
     for (auto &m:icebusControl->motor_config->motor) {
+        icebusControl->SetMotorUpdateFrequency(m.second->motor_id_global,2);
+        icebusControl->SetBaudrate(m.second->motor_id_global,9600);
         icebusControl->SetNeopixelColor(m.second->motor_id_global, 0xF00000);
         if (icebusControl->GetCommunicationQuality(m.second->motor_id_global) != 0)
             icebusControl->SetPoint(m.second->motor_id_global, icebusControl->GetEncoderPosition(m.second->motor_id_global, ENCODER0));
@@ -80,7 +81,6 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
-    motorControl_sub = nh->subscribe("/roboy/middleware/MotorControl", 1, &RoboyPlexus::MotorControl, this);
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
@@ -110,12 +110,10 @@ RoboyPlexus::~RoboyPlexus() {
         motorStateThread->join();
     if (motorInfoThread->joinable())
         motorInfoThread->join();
-    if (file)
-        close(file);
 }
 
 void RoboyPlexus::MotorStatePublisher() {
-    ros::Rate rate(200);
+    ros::Rate rate(100);
     roboy_middleware_msgs::MotorState msg;
     for (auto &m:icebusControl->motor_config->motor) {
       msg.global_id.push_back(m.second->motor_id_global);
@@ -161,8 +159,8 @@ void RoboyPlexus::MotorInfoPublisher() {
             msg.current_limit.push_back(icebusControl->GetCurrentLimit(m.second->motor_id_global));
             int32_t communication_quality = icebusControl->GetCommunicationQuality(m.second->motor_id_global);
             string error_code = icebusControl->GetErrorCode(m.second->motor_id_global);
-            if(communication_quality==0 && error_code!="timeout")
-              error_code = "---";
+            // if(communication_quality==0 && error_code!="timeout")
+            //   error_code = "---";
             msg.communication_quality.push_back(communication_quality);
             msg.error_code.push_back(error_code);
             msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(m.second->motor_id_global));
@@ -254,18 +252,6 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
         }
       }
       i++;
-    }
-}
-
-void RoboyPlexus::MotorControl(const roboy_middleware_msgs::MotorControl::ConstPtr &msg) {
-    uint i = 0;
-    for (auto motor:msg->motor) {
-        for(auto &bus:motorControl){
-          if(bus->MyMotor(motor)){
-            bus->SetPoint(motor, msg->setpoint[i]);
-          }
-        }
-        i++;
     }
 }
 
@@ -377,42 +363,6 @@ void RoboyPlexus::ElbowJointPublisher(){
     }
 }
 
-bool RoboyPlexus::MotorCalibrationService(roboy_middleware_msgs::MotorCalibrationService::Request &req,
-                                          roboy_middleware_msgs::MotorCalibrationService::Response &res) {
-    if (!emergency_stop) {
-        ROS_INFO("serving motor calibration service for motor %d", req.motor);
-        icebusControl->EstimateSpringParameters(req.motor, req.degree, res.estimated_spring_parameters,
-                                             req.timeout, req.number_of_data_points, req.displacement_min,
-                                             req.displacement_max, res.load, res.displacement);
-        cout << "coefficients:\t";
-        for (uint i = 0; i < req.degree; i++) {
-            cout << res.estimated_spring_parameters[i] << "\t";
-        }
-        cout << endl;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool RoboyPlexus::MyoBrickCalibrationService(roboy_middleware_msgs::MyoBrickCalibrationService::Request &req,
-                                             roboy_middleware_msgs::MyoBrickCalibrationService::Response &res) {
-    if (!emergency_stop) {
-        ROS_INFO("serving myobrick calibration service for motor %d", req.motor);
-        icebusControl->EstimateMotorAngleLinearisationParameters(req.motor, req.degree, res.estimated_spring_parameters,
-                                                              req.timeout, req.number_of_data_points, req.min_degree,
-                                                              req.max_degree, res.motor_angle, res.motor_encoder);
-        cout << "coefficients:\t";
-        for (uint i = 0; i < req.degree; i++) {
-            cout << res.estimated_spring_parameters[i] << "\t";
-        }
-        cout << endl;
-        return true;
-    } else {
-        return false;
-    }
-}
-
 bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
                                        std_srvs::SetBool::Response &res) {
 
@@ -520,123 +470,4 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
 //        }
 //    }
 //    return system_check_successful;
-}
-
-bool RoboyPlexus::SetDisplacementForAll(roboy_middleware_msgs::SetInt16::Request &req,
-                                        roboy_middleware_msgs::SetInt16::Request &res) {
-    ROS_INFO("all to displacement %d called", req.setpoint);
-    for (auto motor:req.motors) {
-        icebusControl->SetControlMode(motor, DISPLACEMENT);
-        icebusControl->SetPoint(motor, req.setpoint);
-        control_mode[motor] = DISPLACEMENT;
-    }
-    return true;
-}
-
-void RoboyPlexus::StartRecordTrajectoryCB(const roboy_control_msgs::StartRecordTrajectory::ConstPtr &msg) {
-    bool its_for_me = false;
-    stringstream str;
-    for (auto b:body_parts) {
-        if (std::find(msg->body_parts.begin(), msg->body_parts.end(), b) != msg->body_parts.end()) {
-            str << body_part << " recording " << b << " with " << msg->id_list.size() << " motors" << endl;
-            its_for_me = true;
-        }
-    }
-    if (!its_for_me)
-        return;
-    for (int i:msg->id_list)
-        str << i << "\t";
-    ROS_INFO_STREAM(str.str());
-    float samplingTime = 5; // 200 Hz is the fastest update rate for the motors
-    string name = body_part + "_" + msg->name;
-    vector<int> idList(begin(msg->id_list), end(msg->id_list));
-    map<int, vector<float>> trajectories;
-
-    icebusControl->StartRecordTrajectories(samplingTime, trajectories, idList, name);
-
-}
-
-void RoboyPlexus::StopRecordTrajectoryCB(const std_msgs::Empty::ConstPtr &msg) {
-    icebusControl->StopRecordTrajectories();
-}
-
-void RoboyPlexus::SaveBehaviorCB(const roboy_control_msgs::Behavior &msg) {
-
-    ofstream output_file(icebusControl->behaviors_folder + msg.name);
-    ostream_iterator<std::string> output_iterator(output_file, "\n");
-    std::copy(msg.actions.begin(), msg.actions.end(), output_iterator);
-}
-
-bool RoboyPlexus::ExecuteActions(vector<string> actions) {
-
-    bool success;
-    for (string actionName: actions) {
-        success = ExecuteAction(actionName);
-    }
-    return success;
-}
-
-bool RoboyPlexus::ExecuteAction(string actionName) {
-
-    bool success;
-    if (actionName.find("pause") != std::string::npos) {
-        string delimiter = "_";
-        int pause = stoi(actionName.substr(0, actionName.find(delimiter)));
-        ros::Duration(pause).sleep();
-        success = true && success;
-    } else if (actionName.find("relax") != std::string::npos) {
-//        icebusControl->SetAllToDisplacement(0);
-        success = true && success;
-    } else {
-        actionName = icebusControl->trajectories_folder + actionName;
-        success = icebusControl->PlayTrajectory(actionName.c_str()) && success;
-    }
-
-    return success;
-}
-
-void RoboyPlexus::EnablePlaybackCB(const std_msgs::Bool::ConstPtr &msg) {
-    icebusControl->SetReplay(msg->data);
-}
-
-void RoboyPlexus::PredisplacementCB(const std_msgs::Int32 &msg) {
-    icebusControl->SetPredisplacement(msg.data);
-}
-
-
-bool RoboyPlexus::ListExistingItemsService(roboy_control_msgs::ListItems::Request &req,
-                                           roboy_control_msgs::ListItems::Response &res) {
-
-    // read filenames in the specified folder
-    DIR *dirp = opendir(req.name.c_str());
-    struct dirent *dp;
-    if (!dirp) {
-        mkdir(req.name.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-        ROS_INFO("created trajectories folder");
-        dirp = opendir(req.name.c_str());
-    }
-    while ((dp = readdir(dirp)) != NULL) {
-        if (dp->d_type != DT_DIR) {
-            res.items.push_back(dp->d_name);
-        }
-    }
-    closedir(dirp);
-    return true;
-}
-
-bool RoboyPlexus::ExpandBehaviorService(roboy_control_msgs::ListItems::Request &req,
-                                        roboy_control_msgs::ListItems::Response &res) {
-
-    res.items = ExpandBehavior(req.name);
-    return true;
-}
-
-vector<string> RoboyPlexus::ExpandBehavior(string name) {
-    std::vector<string> actions;
-    ifstream input_file(icebusControl->behaviors_folder + name);
-    std::copy(std::istream_iterator<std::string>(input_file),
-              std::istream_iterator<std::string>(),
-              std::back_inserter(actions));
-
-    return actions;
 }

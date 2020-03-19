@@ -30,7 +30,7 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     author: Simon Trendel ( st@gi.ai ), 2020
-    description: Class for interfacing iceboards connected via icebus
+    description: Class for interfacing icebus
 */
 
 #pragma once
@@ -50,7 +50,6 @@
 #include "interfaces/motorControl.hpp"
 #include <utility/timer.hpp>
 #include <ros/ros.h>
-#include <interfaces/NeoPixel.hpp>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
@@ -77,7 +76,7 @@
 #define ICEBUS_CONTROL_READ_neopxl_color(base, motor) IORD(base, (uint32_t)(0x1A<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_current_limit(base, motor) IORD(base, (uint32_t)(0x1B<<8|motor&0xff) )
 #define ICEBUS_CONTROL_READ_current_average(base) IORD(base, (uint32_t)(0x1C<<8|0x00) )
-#define ICEBUS_CONTROL_READ_baudrate(base) IORD(base, (uint32_t)(0x1D<<8|0x00) )
+#define ICEBUS_CONTROL_READ_baudrate(base, motor) IORD(base, (uint32_t)(0x1D<<8|motor&0xff) )
 
 #define ICEBUS_CONTROL_WRITE_id(base, motor, data) IOWR(base, (uint32_t)(0x00<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<8|motor&0xff), data )
@@ -91,11 +90,7 @@
 #define ICEBUS_CONTROL_WRITE_update_frequency_Hz(base, data) IOWR(base, (uint32_t)(0x11<<8|0), data )
 #define ICEBUS_CONTROL_WRITE_neopxl_color(base, motor, data) IOWR(base, (uint32_t)(0x12<<8|motor&0xff), data )
 #define ICEBUS_CONTROL_WRITE_current_limit(base, motor, data) IOWR(base, (uint32_t)(0x13<<8|motor&0xff), data )
-#define ICEBUS_CONTROL_WRITE_baudrate(base, data) IOWR(base, (uint32_t)(0x14<<8|0), data )
-
-#define NUMBER_OF_ADC_SAMPLES 50
-#define NUM_SENSORS 0
-#define NUMBER_OF_LOADCELLS 1
+#define ICEBUS_CONTROL_WRITE_baudrate(base, motor, data) IOWR(base, (uint32_t)(0x14<<8|motor&0xff), data )
 
 using namespace std;
 using namespace std::chrono;
@@ -105,10 +100,8 @@ public:
     /**
      * Constructor
      * @param myo_base vector of myo base addresses (cf hps_0.h)
-     * @param adc_base adc base address (cf hps_0.h) [OPTIONAL]
-     * @param neopixel neopixel base address (cf hps_0.h) [OPTIONAL]
      */
-    IcebusControl(string motor_config_filepath, vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
+    IcebusControl(string motor_config_filepath, vector<int32_t *> &base);
 
     ~IcebusControl();
 
@@ -260,21 +253,6 @@ public:
     int32_t GetSetPoint(int motor);
 
     /**
-     * Returns the current weight according to adc_weight_parameters of a load_cell
-     * @param load_cell for this load cell
-     * @return the load
-     */
-    float GetWeight(int load_cell);
-
-    /**
-     * Returns the current weight according to adc_weight_parameters of a load_cell
-     * @param load_cell for this load cell
-     * @param the adc value
-     * @return the load
-     */
-    float GetWeight(int load_cell, uint32_t &adc_value);
-
-    /**
      * Returns if this motor is part of this bus
      * @param return true if the motor belongs to this bus
     */
@@ -401,13 +379,6 @@ public:
                               vector<float> &coeffs);
 
     /**
-	 * Returns the current adc of the load cell
-	 * @param load_cell for this load cell
-     * @return the adc value
-	 */
-    uint32_t ReadADC(int load_cell);
-
-    /**
      * records positions of motors in Displacement mode
      * @param samplingTime
      * @param recordTime
@@ -421,29 +392,18 @@ public:
             map<int, vector<float>> &trajectories, vector<int> &idList,
             vector<int> &controlmode, string name) override;
 
-    /**
-     * Zeros the weight for a load cell
-     * @param load_cell for this load cell
-     */
-    void ZeroWeight(int load_cell = 0);
-
-    map<int,int> myo_base_of_motor, motor_offset;
     map<int, map<int, control_Parameters_t>> control_params;
-    int32_t *adc_base;
-    float weight_offset = 0;
-    float adc_weight_parameters[2] = {-89.6187, 0.1133}; // b + a*x = y
     uint numberOfMotors;
     const string trajectories_folder = "/home/root/trajectories/";
     const string behaviors_folder = "/home/root/behaviors/";
     MotorConfigPtr motor_config;
 private:
     Timer timer;
-    vector<int32_t *> icebus_base, myobus_base;
+    vector<int32_t *> base;
     int iter = 0;
     bool recording = false; // keeps track of recording status
     bool replay = true;
     int predisplacement = 100;
-    NeoPixelPtr neopixel;
 };
 
 typedef boost::shared_ptr<IcebusControl> IcebusControlPtr;

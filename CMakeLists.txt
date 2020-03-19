@@ -62,27 +62,23 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     #==============================================================================
     add_executable( roboy_plexus
             src/main.cpp
-            src/interfaces/icebusControl.cpp
+            src/interfaces/iCEbusControl.cpp
             src/interfaces/myoControl.cpp
             src/interfaces/motorControl.cpp
+            src/interfaces/fanControl.cpp
             src/interfaces/i2c.cpp
             src/roboyPlexus.cpp
             src/sensors/A1335.cpp
-            src/control/controlActions.cpp
-            src/control/fanControl.cpp
-            src/sensors/tle493d_w2b6.cpp
             src/utility/UDPSocket.cpp
             src/sensors/BallJoint.cpp
             ../common_utilities/src/MotorConfig.cpp
-            include/roboy_plexus/interfaces/icebusControl.hpp
+            include/roboy_plexus/interfaces/iCEbusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/interfaces/i2c.hpp
             include/roboy_plexus/roboyPlexus.hpp
             include/roboy_plexus/sensors/A1335.hpp
-            include/roboy_plexus/control/controlActions.hpp
-            include/roboy_plexus/control/fanControl.hpp
-            include/roboy_plexus/sensors/tle493d_w2b6.hpp
+            include/roboy_plexus/interfaces/fanControl.hpp
             ../common_utilities/include/common_utilities/MotorConfig.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/sensors/BallJoint.hpp
