@@ -171,13 +171,19 @@ int32_t IcebusControl::GetCommunicationQuality(int motor){
 
 string IcebusControl::GetErrorCode(int motor){
     uint32_t code = ICEBUS_CONTROL_READ_error_code(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+
     switch(code){
       case 0: return "ok";
-      case 1: return "receiving";
+      case 1: return "header match";
       case 2: return "checking crc";
-      case 3: return "---";
+      case 3: return "incorrect id";
       case 0xDEADBEAF: return "timeout";
-      case 0xBAADC0DE: return "crc";
+      case 0xBAADC0DE: {
+        char str[100];
+        uint32_t crc = ICEBUS_CONTROL_READ_crc_checksum(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+        sprintf(str,"crc calculated %x received %x", uint16_t(crc>>16), uint16_t(crc&0xffff));
+        return str;
+      }
       default: return to_string(code) + " bytes received";
     }
 }
