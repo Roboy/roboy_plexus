@@ -60,8 +60,8 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 
     ROS_INFO("initializing icebus");
     for (auto &m:icebusControl->motor_config->motor) {
-        icebusControl->SetMotorUpdateFrequency(m.second->motor_id_global,2);
-        icebusControl->SetBaudrate(m.second->motor_id_global,9600);
+        icebusControl->SetMotorUpdateFrequency(m.second->motor_id_global,10);
+        icebusControl->SetBaudrate(m.second->motor_id_global,19200);
         icebusControl->SetNeopixelColor(m.second->motor_id_global, 0xF00000);
         if (icebusControl->GetCommunicationQuality(m.second->motor_id_global) != 0)
             icebusControl->SetPoint(m.second->motor_id_global, icebusControl->GetEncoderPosition(m.second->motor_id_global, ENCODER0));

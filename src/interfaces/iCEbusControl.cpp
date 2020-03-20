@@ -5,7 +5,7 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &ba
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
     for (uint i = 0; i < base.size(); i++) {
-        ICEBUS_CONTROL_WRITE_update_frequency_Hz(base[i], 5);
+        ICEBUS_CONTROL_WRITE_update_frequency_Hz(base[i], 10);
         ROS_INFO("icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(base[i]));
     }
 
