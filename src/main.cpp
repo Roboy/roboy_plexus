@@ -43,6 +43,7 @@
 #include "socal/hps.h"
 #include "hps_0.h"
 #include "roboyPlexus.hpp"
+#include "sensors/tle493d_w2b6.hpp"
 
 using namespace std;
 
@@ -54,6 +55,8 @@ using namespace std;
 #define HW_REGS_MASK ( HW_REGS_SPAN - 1 )
 
 int32_t *h2p_lw_sysid_addr;
+int32_t *h2p_lw_power_sense_addr;
+int32_t *h2p_lw_power_control_addr;
 int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_switches_addr;
 vector<int32_t*> h2p_lw_armbus_addr;
@@ -73,6 +76,8 @@ void SigintHandler(int sig)
       *h2p_lw_led_addr = ~(*h2p_lw_led_addr);
       rate.sleep();
     }
+    // turn of 5V and 12V power
+    *h2p_lw_power_control_addr = 0x3;
     // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
@@ -125,6 +130,24 @@ int main(int argc, char *argv[]) {
     h2p_lw_led_addr = nullptr;
 #endif
 
+#ifdef SWITCHES_BASE
+    h2p_lw_switches_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + SWITCHES_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_switches_addr = nullptr;
+#endif
+
+#ifdef POWER_SENSE_BASE
+    h2p_lw_power_sense_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + POWER_SENSE_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_power_sense_addr = nullptr;
+#endif
+
+#ifdef POWER_CONTROL_BASE
+    h2p_lw_power_control_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + POWER_CONTROL_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_power_control_addr = nullptr;
+#endif
+
 #ifdef ICEBUSCONTROL_0_BASE
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
@@ -145,8 +168,30 @@ int main(int argc, char *argv[]) {
 #ifdef BALLJOINT_0_BASE
     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
+#ifdef BALLJOINT_1_BASE
+    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef BALLJOINT_2_BASE
+    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef BALLJOINT_3_BASE
+    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef BALLJOINT_4_BASE
+    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+
 #ifdef FANCONTROL_0_BASE
     h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef FANCONTROL_1_BASE
+    h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef FANCONTROL_2_BASE
+    h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef FANCONTROL_3_BASE
+    h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr));
@@ -156,20 +201,52 @@ int main(int argc, char *argv[]) {
     vector<FanControlPtr> fanControls;
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
-    // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor1_i2c_addr)));
-    // balljoints.push_back(BallJointPtr(new BallJoint(h2p_lw_sensor2_i2c_addr)));
-    RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,h2p_lw_auxilliary_i2c_addr);
+    RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,
+        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////
-//    signal(SIGINT, SigintHandler);
-//
+    signal(SIGINT, SigintHandler);
+// //
 
+    if (!ros::isInitialized()) {
+        int argc = 0;
+        char **argv = NULL;
+        ros::init(argc, argv, "magnetic_sensor_test", ros::init_options::NoSigintHandler);
+    }
 
-    ros::Rate rate(30);
+    ros::NodeHandle nh;
+    ros::AsyncSpinner spinner = ros::AsyncSpinner(0);
+    spinner.start();
+
+    // ros::Publisher magneticSensor = nh.advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
+    //                                                                       1);
+    //
+    // vector<TLE493DPtr> sensor;
+    // for(auto base:h2p_lw_auxilliary_i2c_addr){
+    //   sensor.push_back(TLE493DPtr(new TLE493D(base)));
+    // }
+    ros::Rate rate(10);
 
     while(ros::ok()){
         rate.sleep();
+
+        // char str[200];
+        // stringstream stream;
+        // stream << endl;
+        // roboy_middleware_msgs::MagneticSensor msg;
+        // int i=0;
+        // for(auto s:sensor){
+        //   float fx,fy,fz;
+        //   s->read(fx,fy,fz);
+        //   sprintf(str,"%.3f %.3f %.3f\n",fx,fy,fz);
+        //   stream << str;
+        //   msg.x.push_back(fx);
+        //   msg.y.push_back(fy);
+        //   msg.z.push_back(fz);
+        // }
+        // magneticSensor.publish(msg);
+        // ROS_INFO_STREAM_THROTTLE(1,stream.str());
     }
 
 

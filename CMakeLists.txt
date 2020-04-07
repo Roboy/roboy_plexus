@@ -71,6 +71,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/sensors/A1335.cpp
             src/utility/UDPSocket.cpp
             src/sensors/BallJoint.cpp
+            src/sensors/tle493d_w2b6.cpp
             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/iCEbusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp

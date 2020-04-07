@@ -3,8 +3,14 @@
 RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         vector<BallJointPtr> balljoints,
         vector<FanControlPtr> fanControls,
+        int32_t *led,
+        int32_t *switches,
+        int32_t *power_control,
+        int32_t *power_sense,
         vector<int32_t *> &i2c_base) :
-        icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints), i2c_base(i2c_base){
+        icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
+        power_control(power_control), power_sense(power_sense), switches(switches), led(led),
+        i2c_base(i2c_base){
     ROS_INFO("roboy3 plexus initializing");
 
     ifstream ifile("/sys/class/net/eth0/address");
@@ -49,12 +55,16 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 
     motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
     motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
+    roboyState = nh->advertise<roboy_middleware_msgs::RoboyState>("/roboy/middleware/RoboyState", 1);
 
     motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
     motorStateThread->detach();
 
     motorInfoThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorInfoPublisher, this));
     motorInfoThread->detach();
+
+    roboyStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::RoboyStatePublisher, this));
+    roboyStateThread->detach();
 
     neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
 
@@ -81,6 +91,12 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
+    power5V_srv = nh->advertiseService("/roboy/middleware/PowerService5V",
+                           &RoboyPlexus::PowerService5V,
+                           this);
+    power12V_srv = nh->advertiseService("/roboy/middleware/PowerService12V",
+                          &RoboyPlexus::PowerService12V,
+                          this);
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
@@ -187,6 +203,15 @@ void RoboyPlexus::MotorInfoPublisher() {
         motorInfo.publish(msg);
         rate.sleep();
     }
+}
+
+void RoboyPlexus::RoboyStatePublisher(){
+  roboy_middleware_msgs::RoboyState msg;
+  ros::Rate rate(2);
+  while(ros::ok()){
+    roboyState.publish(msg);
+    rate.sleep();
+  }
 }
 
 void RoboyPlexus::Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg){
@@ -471,3 +496,27 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
 //    }
 //    return system_check_successful;
 }
+
+bool RoboyPlexus::PowerService5V(std_srvs::SetBool::Request &req,
+                    std_srvs::SetBool::Response &res){
+                      power_5V_enabled = req.data;
+                      *power_control = (!power_5V_enabled<<1|!power_12V_enabled);
+                      res.success = true;
+                      if(power_5V_enabled)
+                        res.message = "5V enabled";
+                      else
+                        res.message = "5V disabled";
+                      return true;
+}
+
+bool RoboyPlexus::PowerService12V(std_srvs::SetBool::Request &req,
+                    std_srvs::SetBool::Response &res){
+                      power_12V_enabled = req.data;
+                      *power_control = (!power_5V_enabled<<1|!power_12V_enabled);
+                      res.success = true;
+                      if(power_12V_enabled)
+                        res.message = "12V enabled";
+                      else
+                        res.message = "12V disabled";
+                      return true;
+                    }

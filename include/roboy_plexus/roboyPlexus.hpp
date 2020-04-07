@@ -61,6 +61,7 @@
 #include <roboy_middleware_msgs/MotorInfo.h>
 #include <roboy_middleware_msgs/MotorConfigService.h>
 #include <roboy_middleware_msgs/Neopixel.h>
+#include <roboy_middleware_msgs/RoboyState.h>
 #include <roboy_middleware_msgs/SystemCheck.h>
 #include <std_srvs/SetBool.h>
 #include <sensor_msgs/JointState.h>
@@ -79,7 +80,11 @@ public:
     RoboyPlexus(IcebusControlPtr icebusControl,
                 vector<BallJointPtr> balljoints,
                 vector<FanControlPtr> fanControls,
-                vector<int32_t *> &i2c_base = DEFAULT_POINTER_VECTOR);
+                int32_t *led,
+                int32_t *switches,
+                int32_t *power_control,
+                int32_t *power_sense,
+                vector<int32_t *> &i2c_base);
 
     ~RoboyPlexus();
 
@@ -147,6 +152,11 @@ private:
     uint8_t reverseBits(uint8_t a);
 
     /**
+     * Publishes state of roboy
+     */
+    void RoboyStatePublisher();
+
+    /**
      * Service for system check
      * @param req
      * @param res
@@ -155,20 +165,39 @@ private:
     bool SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
                             roboy_middleware_msgs::SystemCheck::Response &res);
 
+    /**
+     * Service for controlling the 5V line
+     * @param req
+     * @param res
+     * @return
+     */
+    bool PowerService5V(std_srvs::SetBool::Request &req,
+                        std_srvs::SetBool::Response &res);
+
+    /**
+     * Service for controlling the 12V line
+     * @param req
+     * @param res
+     * @return
+     */
+    bool PowerService12V(std_srvs::SetBool::Request &req,
+                        std_srvs::SetBool::Response &res);
+
 private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, neopixel_sub;
-    ros::Publisher motorInfo, motorState, magneticSensor, jointState;
-    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv;
+    ros::Publisher jointState, magneticSensor, motorInfo, motorState, roboyState;
+    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, power5V_srv, power12V_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode_backup,control_mode;
     vector<MotorControlPtr> motorControl;
     IcebusControlPtr icebusControl;
     vector<FanControlPtr> fanControls;
+    int32_t *power_control, *power_sense, *switches, *led;
     vector<A1335Ptr> a1335;
-    boost::shared_ptr<std::thread> motorInfoThread, motorStateThread,
-            elbowJointAngleThread, magneticsThread;
+    boost::shared_ptr<std::thread> elbowJointAngleThread, magneticsThread,
+        motorInfoThread, motorStateThread, roboyStateThread;
     bool keep_publishing = true;
     vector<int32_t *> i2c_base;
     vector<BallJointPtr> balljoints;
@@ -176,7 +205,7 @@ private:
     string ethaddr;
 
     bool external_led_control = false;
-
+    bool power_5V_enabled = false, power_12V_enabled = false;
     string body_part;
     vector<string> body_parts;
 };
