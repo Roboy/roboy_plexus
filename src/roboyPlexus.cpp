@@ -67,6 +67,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     roboyStateThread->detach();
 
     neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
+    fan_control_sub = nh->subscribe("/roboy/middleware/FanControl", 1, &RoboyPlexus::FanControl, this);
 
     ROS_INFO("initializing icebus");
     for (auto &m:icebusControl->motor_config->motor) {
@@ -83,6 +84,10 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         icebusControl->SetCurrentLimit(m.second->motor_id_global, 2.0);
     }
     motorControl.push_back(icebusControl);
+
+    fan_control_srv = nh->advertiseService("/roboy/middleware/FanControl",
+                          &RoboyPlexus::FanControlService,
+                          this);
 
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
                                            &RoboyPlexus::MotorConfigService, this);
@@ -207,8 +212,16 @@ void RoboyPlexus::MotorInfoPublisher() {
 
 void RoboyPlexus::RoboyStatePublisher(){
   roboy_middleware_msgs::RoboyState msg;
+  msg.power_sense.resize(6);
   ros::Rate rate(2);
   while(ros::ok()){
+    int32_t state = *power_sense;
+    int j = msg.power_sense.size()-1;
+    for(int i=0;i<msg.power_sense.size();i++){
+      msg.power_sense[j--] = !((state>>i)&0x1);
+    }
+    msg.power_5V_enabled = power_5V_enabled;
+    msg.power_12V_enabled = power_12V_enabled;
     roboyState.publish(msg);
     rate.sleep();
   }
@@ -426,6 +439,28 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
         }
         emergency_stop = false;
     }
+    return true;
+}
+
+void RoboyPlexus::FanControl(std_msgs::Int32 duty){
+  for(auto fan:fanControls){
+    if(!fan->GetAutoFan()){
+      fan->SetDuty(duty.data);
+    }
+  }
+}
+
+bool RoboyPlexus::FanControlService(std_srvs::SetBool::Request &req,
+                  std_srvs::SetBool::Response &res){
+    for(auto fan:fanControls){
+      fan->SetAutoFan(req.data);
+    }
+    if(req.data){
+      res.message = "auto fan enabled";
+    }else{
+      res.message = "auto fan disabled";
+    }
+    res.success = true;
     return true;
 }
 

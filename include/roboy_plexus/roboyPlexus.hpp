@@ -65,6 +65,7 @@
 #include <roboy_middleware_msgs/SystemCheck.h>
 #include <std_srvs/SetBool.h>
 #include <sensor_msgs/JointState.h>
+#include <std_msgs/Int32.h>
 
 using namespace std;
 using namespace chrono;
@@ -110,6 +111,17 @@ private:
      */
     bool EmergencyStopService(std_srvs::SetBool::Request &req,
                               std_srvs::SetBool::Response &res);
+
+    void FanControl(std_msgs::Int32 duty);
+
+    /**
+    * Service for controlling the auto fan mode
+    * @param req
+    * @param res
+    * @return
+    */
+    bool FanControlService(std_srvs::SetBool::Request &req,
+                      std_srvs::SetBool::Response &res);
 
     /**
      * Publishes 3d magnetic information about joint
@@ -186,9 +198,9 @@ private:
 private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub, neopixel_sub;
+    ros::Subscriber motorCommand_sub, neopixel_sub, fan_control_sub;
     ros::Publisher jointState, magneticSensor, motorInfo, motorState, roboyState;
-    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, power5V_srv, power12V_srv;
+    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, power5V_srv, power12V_srv, fan_control_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode_backup,control_mode;
     vector<MotorControlPtr> motorControl;
