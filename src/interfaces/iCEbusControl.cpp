@@ -4,10 +4,6 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &ba
     ROS_INFO("initializing icebusControl for %d icebuses with motor config file %s", base.size(), motor_config_filepath.c_str());
     motor_config = MotorConfigPtr(new MotorConfig);
     motor_config->readConfig(motor_config_filepath);
-    for (uint i = 0; i < base.size(); i++) {
-        ICEBUS_CONTROL_WRITE_update_frequency_Hz(base[i], 10);
-        ROS_INFO("icebus %d motor update frequency %d", i, ICEBUS_CONTROL_READ_update_frequency_Hz(base[i]));
-    }
 
     for(auto &bus:motor_config->icebus){
         int j = 0;
@@ -15,8 +11,9 @@ IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &ba
             if(!SetID(m->motor_id,m->bus_id)){
                 ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
             }else{
-              SetBaudrate(m->motor_id,2000000);
-              ROS_INFO("icebus motor has baudrate %d",GetBaudrate(m->motor_id));
+              SetMotorUpdateFrequency(m->motor_id,m->update_frequency);
+              SetBaudrate(m->motor_id,m->baudrate);
+              ROS_INFO("icebus motor has baudrate %d and update_frequency %d",GetBaudrate(m->motor_id), GetMotorUpdateFrequency(m->motor_id));
             }
         }
     }
@@ -284,6 +281,10 @@ int32_t IcebusControl::GetEncoderPosition(int motor, int encoder) {
 
 int32_t IcebusControl::GetEncoderVelocity(int motor, int encoder) {
     return 0;
+}
+
+int32_t IcebusControl::GetMotorUpdateFrequency(int motor){
+  return ICEBUS_CONTROL_READ_update_frequency_Hz(base[motor_config->motor[motor]->bus]);
 }
 
 int32_t IcebusControl::GetNeopixelColor(int motor) {

@@ -151,6 +151,27 @@ int main(int argc, char *argv[]) {
 #ifdef ICEBUSCONTROL_0_BASE
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
+#ifdef ICEBUSCONTROL_1_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBUSCONTROL_2_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBUSCONTROL_3_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBUSCONTROL_4_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBUSCONTROL_5_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBUSCONTROL_6_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_6_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef ICEBUSCONTROL_7_BASE
+    h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_7_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
 
 #ifdef AUXILLIARY_I2C_0_BASE
     h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));

@@ -235,6 +235,8 @@ public:
      */
     int32_t GetNeopixelColor(int motor);
 
+    int32_t GetMotorUpdateFrequency(int motor);
+
     bool GetPowerSense() override{
         return false;
     }
