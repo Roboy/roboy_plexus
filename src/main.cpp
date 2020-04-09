@@ -70,15 +70,16 @@ IcebusControlPtr icebusControl;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-    system("sl&");
-    ros::Rate rate(5);
+    // turn of 5V and 12V power
+    *h2p_lw_power_control_addr = 0x3;
+    system("sl -ae");
+    ros::Rate rate(10);
     *h2p_lw_led_addr = 0;
     for(int i=0;i<10;i++){
       *h2p_lw_led_addr = ~(*h2p_lw_led_addr);
       rate.sleep();
     }
-    // turn of 5V and 12V power
-    *h2p_lw_power_control_addr = 0x3;
+
     // All the default sigint handler does is call shutdown()
     ros::shutdown();
     *h2p_lw_led_addr = 0x00;
