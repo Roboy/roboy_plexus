@@ -262,7 +262,7 @@ void RoboyPlexus::MagneticJointPublisher() {
       for(auto ball:balljoints){
         roboy_middleware_msgs::MagneticSensor msg;
         msg.id = i;
-        ball->readMagneticData(msg.x,msg.y,msg.z);
+        ball->readMagneticData(msg.sensor_id,msg.x,msg.y,msg.z);
         magneticSensor.publish(msg);
         i++;
       }

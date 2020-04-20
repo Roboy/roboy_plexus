@@ -13,7 +13,8 @@ int FanControl::GetCurrentAverage() {
 }
 
 int FanControl::GetDuty(){
-  return IORD(base,1);
+  float duty = IORD(base,1)/50e6/IORD(base,0)*100.0f;  // dutyticks/50 MHz clock/pwm_freq*100
+  return duty;
 }
 
 int FanControl::GetPWMFrequency(){
@@ -33,7 +34,8 @@ void FanControl::SetDuty(int duty){
     ROS_ERROR("exceeding duty range [0-100]: %d", duty);
     return;
   }
-  IOWR(base,1,duty);
+  int dutyticks = 50e6/IORD(base,0)*duty/100.0f; // 50 MHz clock/pwm_freq*percent
+  IOWR(base,1,dutyticks);
 }
 
 void FanControl::SetPWMFrequency(int freq){

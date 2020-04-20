@@ -42,14 +42,13 @@
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
 // the upper 8 bit define which register, the lower 8 bit define which sensor
-#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x00<<8|sensor&0xff) )
-#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x01<<8|sensor&0xff) )
-#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x02<<8|sensor&0xff) )
-#define BALL_JOINT_READ_temperature(base, sensor) IORD(base, (uint32_t)(0x03<<8|sensor&0xff) )
-#define BALL_JOINT_READ_update_frequency(base) IORD(base, (uint32_t)(0x04<<8|0x00) )
+#define BALL_JOINT_READ_mag_x(base, sensor) IORD(base, (uint32_t)(0x00<<2|sensor&0x3) )
+#define BALL_JOINT_READ_mag_y(base, sensor) IORD(base, (uint32_t)(0x01<<2|sensor&0x3) )
+#define BALL_JOINT_READ_mag_z(base, sensor) IORD(base, (uint32_t)(0x02<<2|sensor&0x3) )
+#define BALL_JOINT_READ_temperature(base, sensor) IORD(base, (uint32_t)(0x03<<2|sensor&0x3) )
 
-#define BALL_JOINT_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x00<<8|0x00), data )
-#define BALL_JOINT_WRITE_reset(base, data) IOWR(base, (uint32_t)(0x01<<8|0x00), data )
+#define BALL_JOINT_WRITE_update_frequency(base, data) IOWR(base, (uint32_t)(0x00<<2|0x00), data )
+#define BALL_JOINT_WRITE_reset(base, data) IOWR(base, (uint32_t)(0x01<<2|0x00), data )
 
 using namespace std;
 
@@ -59,12 +58,15 @@ public:
      * Constructor
      * @param base base (cf hps_0.h )
      */
-    BallJoint(int32_t* base);
+    BallJoint(int32_t* base, int number_of_sensors=4);
 
-    void readMagneticData(vector<float> &mx,vector<float> &my,vector<float> &mz);
+    void readMagneticData(vector<uint8_t> &sensor_id, vector<float> &mx,vector<float> &my,vector<float> &mz);
 
 private:
+  float convertToMilliTesla(uint16_t data);
+
   int32_t *base;
+  int number_of_sensors = 4;
 };
 
 typedef boost::shared_ptr<BallJoint> BallJointPtr;

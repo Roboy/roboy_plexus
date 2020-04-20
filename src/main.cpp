@@ -72,10 +72,10 @@ void SigintHandler(int sig)
     cout << "shutting down" << endl;
     // turn of 5V and 12V power
     *h2p_lw_power_control_addr = 0x3;
-    system("sl -ae");
+    system("sl -ae&");
     ros::Rate rate(10);
     *h2p_lw_led_addr = 0;
-    for(int i=0;i<10;i++){
+    for(int i=0;i<40;i++){
       *h2p_lw_led_addr = ~(*h2p_lw_led_addr);
       rate.sleep();
     }
@@ -215,6 +215,12 @@ int main(int argc, char *argv[]) {
 #endif
 #ifdef FANCONTROL_3_BASE
     h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef FANCONTROL_4_BASE
+    h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef FANCONTROL_5_BASE
+    h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr));

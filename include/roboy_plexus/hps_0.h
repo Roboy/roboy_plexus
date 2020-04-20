@@ -20,6 +20,105 @@
  */
 
 /*
+ * Macros for device 'BallJoint_2', class 'BallJoint'
+ * The macros are prefixed with 'BALLJOINT_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define BALLJOINT_2_COMPONENT_TYPE BallJoint
+#define BALLJOINT_2_COMPONENT_NAME BallJoint_2
+#define BALLJOINT_2_BASE 0x100
+#define BALLJOINT_2_SPAN 64
+#define BALLJOINT_2_END 0x13f
+
+/*
+ * Macros for device 'BallJoint_1', class 'BallJoint'
+ * The macros are prefixed with 'BALLJOINT_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define BALLJOINT_1_COMPONENT_TYPE BallJoint
+#define BALLJOINT_1_COMPONENT_NAME BallJoint_1
+#define BALLJOINT_1_BASE 0x140
+#define BALLJOINT_1_SPAN 64
+#define BALLJOINT_1_END 0x17f
+
+/*
+ * Macros for device 'BallJoint_0', class 'BallJoint'
+ * The macros are prefixed with 'BALLJOINT_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define BALLJOINT_0_COMPONENT_TYPE BallJoint
+#define BALLJOINT_0_COMPONENT_NAME BallJoint_0
+#define BALLJOINT_0_BASE 0x180
+#define BALLJOINT_0_SPAN 64
+#define BALLJOINT_0_END 0x1bf
+
+/*
+ * Macros for device 'FanControl_5', class 'FanControl'
+ * The macros are prefixed with 'FANCONTROL_5_'.
+ * The prefix is the slave descriptor.
+ */
+#define FANCONTROL_5_COMPONENT_TYPE FanControl
+#define FANCONTROL_5_COMPONENT_NAME FanControl_5
+#define FANCONTROL_5_BASE 0x2c0
+#define FANCONTROL_5_SPAN 32
+#define FANCONTROL_5_END 0x2df
+
+/*
+ * Macros for device 'FanControl_4', class 'FanControl'
+ * The macros are prefixed with 'FANCONTROL_4_'.
+ * The prefix is the slave descriptor.
+ */
+#define FANCONTROL_4_COMPONENT_TYPE FanControl
+#define FANCONTROL_4_COMPONENT_NAME FanControl_4
+#define FANCONTROL_4_BASE 0x2e0
+#define FANCONTROL_4_SPAN 32
+#define FANCONTROL_4_END 0x2ff
+
+/*
+ * Macros for device 'FanControl_3', class 'FanControl'
+ * The macros are prefixed with 'FANCONTROL_3_'.
+ * The prefix is the slave descriptor.
+ */
+#define FANCONTROL_3_COMPONENT_TYPE FanControl
+#define FANCONTROL_3_COMPONENT_NAME FanControl_3
+#define FANCONTROL_3_BASE 0x300
+#define FANCONTROL_3_SPAN 32
+#define FANCONTROL_3_END 0x31f
+
+/*
+ * Macros for device 'FanControl_2', class 'FanControl'
+ * The macros are prefixed with 'FANCONTROL_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define FANCONTROL_2_COMPONENT_TYPE FanControl
+#define FANCONTROL_2_COMPONENT_NAME FanControl_2
+#define FANCONTROL_2_BASE 0x320
+#define FANCONTROL_2_SPAN 32
+#define FANCONTROL_2_END 0x33f
+
+/*
+ * Macros for device 'FanControl_1', class 'FanControl'
+ * The macros are prefixed with 'FANCONTROL_1_'.
+ * The prefix is the slave descriptor.
+ */
+#define FANCONTROL_1_COMPONENT_TYPE FanControl
+#define FANCONTROL_1_COMPONENT_NAME FanControl_1
+#define FANCONTROL_1_BASE 0x340
+#define FANCONTROL_1_SPAN 32
+#define FANCONTROL_1_END 0x35f
+
+/*
+ * Macros for device 'FanControl_0', class 'FanControl'
+ * The macros are prefixed with 'FANCONTROL_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define FANCONTROL_0_COMPONENT_TYPE FanControl
+#define FANCONTROL_0_COMPONENT_NAME FanControl_0
+#define FANCONTROL_0_BASE 0x360
+#define FANCONTROL_0_SPAN 32
+#define FANCONTROL_0_END 0x37f
+
+/*
  * Macros for device 'POWER_CONTROL', class 'altera_avalon_pio'
  * The macros are prefixed with 'POWER_CONTROL_'.
  * The prefix is the slave descriptor.
@@ -41,7 +140,7 @@
 #define POWER_CONTROL_HAS_OUT 1
 #define POWER_CONTROL_HAS_TRI 0
 #define POWER_CONTROL_IRQ_TYPE NONE
-#define POWER_CONTROL_RESET_VALUE 0
+#define POWER_CONTROL_RESET_VALUE 3
 
 /*
  * Macros for device 'POWER_SENSE', class 'altera_avalon_pio'
@@ -126,7 +225,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1586450838
+#define SYSID_QSYS_TIMESTAMP 1587395394
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
