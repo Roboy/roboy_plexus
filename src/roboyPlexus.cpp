@@ -1,7 +1,7 @@
 #include "roboyPlexus.hpp"
 
 RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
-        vector<BallJointPtr> balljoints,
+        vector<TLE493DPtr> balljoints,
         vector<FanControlPtr> fanControls,
         int32_t *led,
         int32_t *switches,
@@ -38,14 +38,14 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     }
     ROS_INFO("initializing elbow joints");
 
-    if(i2c_base.size()>4){
+    if(i2c_base.size()>=2){
       {
         vector <uint8_t> ids = {0xC};
-        a1335.push_back(A1335Ptr(new A1335(i2c_base[4],ids)));
+        a1335.push_back(A1335Ptr(new A1335(i2c_base[0],ids)));
       }
       {
         vector <uint8_t> ids = {0xD};
-        a1335.push_back(A1335Ptr(new A1335(i2c_base[5],ids)));
+        a1335.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
       }
       jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
       elbowJointAngleThread = boost::shared_ptr<std::thread>(

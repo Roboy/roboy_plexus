@@ -36,6 +36,7 @@
 #pragma once
 
 #include <iostream>
+#include <bitset>
 #include <ros/ros.h>
 
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
@@ -63,7 +64,7 @@ public:
     void readMagneticData(vector<uint8_t> &sensor_id, vector<float> &mx,vector<float> &my,vector<float> &mz);
 
 private:
-  float convertToMilliTesla(uint16_t data);
+  float convertToMilliTesla(uint32_t data);
 
   int32_t *base;
   int number_of_sensors = 4;

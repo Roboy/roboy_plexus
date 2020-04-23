@@ -7,19 +7,28 @@ BallJoint::BallJoint(int32_t* base, int number_of_sensors):base(base),number_of_
 }
 
 void BallJoint::readMagneticData(vector<uint8_t> &sensor_id, vector<float> &mx,vector<float> &my,vector<float> &mz){
+  printf("-------------------------\n");
   for(int i=0;i<number_of_sensors;i++){
     float fx,fy,fz;
-    fx = convertToMilliTesla(BALL_JOINT_READ_mag_x(base,i));
-    fy = convertToMilliTesla(BALL_JOINT_READ_mag_y(base,i));
-    fz = convertToMilliTesla(BALL_JOINT_READ_mag_z(base,i));
-    sensor_id.push_back(i);
+    uint32_t val_x = BALL_JOINT_READ_mag_x(base,i);
+    uint32_t val_y = BALL_JOINT_READ_mag_y(base,i);
+    uint32_t val_z = BALL_JOINT_READ_mag_z(base,i);
+    uint32_t temp = BALL_JOINT_READ_temperature(base,i);
+    // // uint16_t val_new = (val<<4|(val>>8)&0xf);
+    std::bitset<12> x(val_x),y(val_y),z(val_z);
+    ROS_INFO_STREAM(x << "\t" << y << "\t" << z);
+    ROS_INFO("%x %x %x",val_x,val_y,val_z);
+    fx = convertToMilliTesla(val_x);
+    fy = convertToMilliTesla(val_y);
+    fz = convertToMilliTesla(val_z);
+    // sensor_id.push_back(i);
     mx.push_back(fx);
     my.push_back(fy);
     mz.push_back(fz);
   }
 }
 
-float BallJoint::convertToMilliTesla(uint16_t data) {
+float BallJoint::convertToMilliTesla(uint32_t data) {
     int val = 0;
     for(int i=11;i>=0;i--){
         if(i==11){
@@ -30,5 +39,5 @@ float BallJoint::convertToMilliTesla(uint16_t data) {
                 val += (1<<i);
         }
     }
-    return val*0.098;
+    return val*0.13; //
 }

@@ -66,6 +66,7 @@
 #include <std_srvs/SetBool.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32.h>
+#include "sensors/tle493d_w2b6.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -79,7 +80,7 @@ static vector<int32_t *> DEFAULT_POINTER_VECTOR;
 class RoboyPlexus {
 public:
     RoboyPlexus(IcebusControlPtr icebusControl,
-                vector<BallJointPtr> balljoints,
+                vector<TLE493DPtr> balljoints,
                 vector<FanControlPtr> fanControls,
                 int32_t *led,
                 int32_t *switches,
@@ -212,7 +213,7 @@ private:
         motorInfoThread, motorStateThread, roboyStateThread;
     bool keep_publishing = true;
     vector<int32_t *> i2c_base;
-    vector<BallJointPtr> balljoints;
+    vector<TLE493DPtr> balljoints;
     bool emergency_stop = false;
     string ethaddr;
 

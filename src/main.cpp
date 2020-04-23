@@ -43,7 +43,6 @@
 #include "socal/hps.h"
 #include "hps_0.h"
 #include "roboyPlexus.hpp"
-#include "sensors/tle493d_w2b6.hpp"
 
 using namespace std;
 
@@ -64,6 +63,7 @@ vector<int32_t*> h2p_lw_icebus_addr;
 vector<int32_t*> h2p_lw_auxilliary_i2c_addr;
 vector<int32_t*> h2p_lw_ball_joint_addr;
 vector<int32_t*> h2p_lw_fan_control_addr;
+vector<int32_t*> i2c_base;
 
 IcebusControlPtr icebusControl;
 
@@ -224,9 +224,9 @@ int main(int argc, char *argv[]) {
 #endif
 
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr));
-    vector<BallJointPtr> balljoints;
+    vector<TLE493DPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)
-      balljoints.push_back(BallJointPtr(new BallJoint(addr)));
+      balljoints.push_back(TLE493DPtr(new TLE493D(addr)));
     vector<FanControlPtr> fanControls;
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
@@ -244,38 +244,29 @@ int main(int argc, char *argv[]) {
         ros::init(argc, argv, "magnetic_sensor_test", ros::init_options::NoSigintHandler);
     }
 
-    ros::NodeHandle nh;
-    ros::AsyncSpinner spinner = ros::AsyncSpinner(0);
-    spinner.start();
-
+    // ros::NodeHandle nh;
+    // ros::AsyncSpinner spinner = ros::AsyncSpinner(0);
+    // spinner.start();
+//
     // ros::Publisher magneticSensor = nh.advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
     //                                                                       1);
     //
     // vector<TLE493DPtr> sensor;
-    // for(auto base:h2p_lw_auxilliary_i2c_addr){
+    // for(auto base:i2c_base){
     //   sensor.push_back(TLE493DPtr(new TLE493D(base)));
     // }
     ros::Rate rate(10);
 
     while(ros::ok()){
-        rate.sleep();
 
-        // char str[200];
-        // stringstream stream;
-        // stream << endl;
         // roboy_middleware_msgs::MagneticSensor msg;
         // int i=0;
         // for(auto s:sensor){
-        //   float fx,fy,fz;
-        //   s->read(fx,fy,fz);
-        //   sprintf(str,"%.3f %.3f %.3f\n",fx,fy,fz);
-        //   stream << str;
-        //   msg.x.push_back(fx);
-        //   msg.y.push_back(fy);
-        //   msg.z.push_back(fz);
+        //   s->read(msg.x,msg.y,msg.z);
         // }
         // magneticSensor.publish(msg);
-        // ROS_INFO_STREAM_THROTTLE(1,stream.str());
+
+        rate.sleep();
     }
 
 

@@ -56,7 +56,7 @@ using namespace std;
 
 class TLE493D {
 public:
-    TLE493D(int32_t *i2c_base);
+    TLE493D(int32_t *i2c_base, int number_of_sensors=4);
 
     ~TLE493D();
 
@@ -64,11 +64,12 @@ public:
 
     float convertToMilliTesla(uint8_t MSB, uint8_t LSB);
 
-    bool read(float &fx, float &fy, float &fz);
-
+    bool readMagneticData(vector<uint8_t> &sensor_id, vector<float> &fx, vector<float> &fy, vector<float> &fz);
+    int number_of_sensors;
 public:
     boost::shared_ptr<I2C> i2c;
     int32_t *i2c_base;
+
 };
 
 typedef boost::shared_ptr<TLE493D> TLE493DPtr;
