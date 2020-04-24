@@ -46,7 +46,6 @@
 #include <string>
 #include <sstream>
 #include <common_utilities/CommonDefinitions.h>
-#include <common_utilities/MotorConfig.hpp>
 #include "interfaces/motorControl.hpp"
 #include <utility/timer.hpp>
 #include <ros/ros.h>
@@ -101,7 +100,7 @@ public:
      * Constructor
      * @param myo_base vector of myo base addresses (cf hps_0.h)
      */
-    IcebusControl(string motor_config_filepath, vector<int32_t *> &base);
+    IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &base);
 
     ~IcebusControl();
 
@@ -205,7 +204,7 @@ public:
      * @param muscle
      * @return displacement
      */
-    int16_t GetDisplacement(int muscle);
+    int32_t GetDisplacement(int muscle);
 
     /**
      * Gets the current position of a motor in encoder ticks
@@ -395,10 +394,8 @@ public:
             vector<int> &controlmode, string name) override;
 
     map<int, map<int, control_Parameters_t>> control_params;
-    uint numberOfMotors;
     const string trajectories_folder = "/home/root/trajectories/";
     const string behaviors_folder = "/home/root/behaviors/";
-    MotorConfigPtr motor_config;
 private:
     Timer timer;
     vector<int32_t *> base;

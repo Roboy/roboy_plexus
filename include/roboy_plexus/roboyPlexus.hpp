@@ -51,6 +51,7 @@
 #include <common_utilities/CommonDefinitions.h>
 #include "interfaces/iCEbusControl.hpp"
 #include "interfaces/fanControl.hpp"
+#include "interfaces/myoControl.hpp"
 #include "sensors/A1335.hpp"
 #include "sensors/BallJoint.hpp"
 #include <roboy_middleware_msgs/ControlMode.h>
@@ -86,7 +87,8 @@ public:
                 int32_t *switches,
                 int32_t *power_control,
                 int32_t *power_sense,
-                vector<int32_t *> &i2c_base);
+                vector<int32_t *> &i2c_base,
+                MyoControlPtr myoControl = nullptr);
 
     ~RoboyPlexus();
 
@@ -206,6 +208,7 @@ private:
     map<int, int> control_mode_backup,control_mode;
     vector<MotorControlPtr> motorControl;
     IcebusControlPtr icebusControl;
+    MyoControlPtr myoControl;
     vector<FanControlPtr> fanControls;
     int32_t *power_control, *power_sense, *switches, *led;
     vector<A1335Ptr> a1335;

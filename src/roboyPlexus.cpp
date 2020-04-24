@@ -7,10 +7,11 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         int32_t *switches,
         int32_t *power_control,
         int32_t *power_sense,
-        vector<int32_t *> &i2c_base) :
+        vector<int32_t *> &i2c_base,
+        MyoControlPtr myoControl) :
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
         power_control(power_control), power_sense(power_sense), switches(switches), led(led),
-        i2c_base(i2c_base){
+        i2c_base(i2c_base),myoControl(myoControl){
     ROS_INFO("roboy3 plexus initializing");
 
     ifstream ifile("/sys/class/net/eth0/address");
@@ -26,6 +27,10 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     }
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
+
+    motorControl.push_back(icebusControl);
+    if(myoControl!=nullptr)
+      motorControl.push_back(myoControl);
 
     if (!balljoints.empty()) {
         magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
@@ -68,22 +73,6 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 
     neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
     fan_control_sub = nh->subscribe("/roboy/middleware/FanControl", 1, &RoboyPlexus::FanControl, this);
-
-    ROS_INFO("initializing icebus");
-    for (auto &m:icebusControl->motor_config->motor) {
-        // icebusControl->SetMotorUpdateFrequency(m.second->motor_id_global,50);
-        // icebusControl->SetBaudrate(m.second->motor_id_global,19200);
-        icebusControl->SetNeopixelColor(m.second->motor_id_global, 0xF00000);
-        if (icebusControl->GetCommunicationQuality(m.second->motor_id_global) != 0)
-            icebusControl->SetPoint(m.second->motor_id_global, icebusControl->GetEncoderPosition(m.second->motor_id_global, ENCODER0));
-        else
-            icebusControl->SetPoint(m.second->motor_id_global, 0);
-        control_Parameters_t params;
-        icebusControl->GetDefaultControlParams(&params, 3);
-        icebusControl->SetControlMode(m.second->motor_id_global, 3, params);
-        icebusControl->SetCurrentLimit(m.second->motor_id_global, 2.0);
-    }
-    motorControl.push_back(icebusControl);
 
     fan_control_srv = nh->advertiseService("/roboy/middleware/FanControl",
                           &RoboyPlexus::FanControlService,
@@ -134,30 +123,35 @@ RoboyPlexus::~RoboyPlexus() {
 }
 
 void RoboyPlexus::MotorStatePublisher() {
-    ros::Rate rate(100);
-    roboy_middleware_msgs::MotorState msg;
-    for (auto &m:icebusControl->motor_config->motor) {
-      msg.global_id.push_back(m.second->motor_id_global);
-    }
-    msg.setpoint.resize(icebusControl->motor_config->motor.size());
-    msg.encoder0_pos.resize(icebusControl->motor_config->motor.size());
-    msg.encoder1_pos.resize(icebusControl->motor_config->motor.size());
-    msg.displacement.resize(icebusControl->motor_config->motor.size());
-    msg.current.resize(icebusControl->motor_config->motor.size());
-    while (keep_publishing && ros::ok()) {
-        int i = 0;
-        for (auto &m:icebusControl->motor_config->motor) {
-            msg.setpoint[i] = icebusControl->GetSetPoint(m.second->motor_id_global);
-            msg.encoder0_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER0_POSITION);
-            msg.encoder1_pos[i] = icebusControl->GetEncoderPosition(m.second->motor_id_global,ENCODER1_POSITION);
-            msg.displacement[i] = icebusControl->GetDisplacement(m.second->motor_id_global);
-            msg.current[i] = icebusControl->GetCurrent(m.second->motor_id_global); // running mean filter the current
+  ros::Rate rate(100);
+  roboy_middleware_msgs::MotorState msg;
+  for (auto &m:motorControl[0]->motor_config->motor) {
+    msg.global_id.push_back(m.first);
+  }
+  msg.setpoint.resize(motorControl[0]->motor_config->total_number_of_motors);
+  msg.encoder0_pos.resize(motorControl[0]->motor_config->total_number_of_motors);
+  msg.encoder1_pos.resize(motorControl[0]->motor_config->total_number_of_motors);
+  msg.displacement.resize(motorControl[0]->motor_config->total_number_of_motors);
+  msg.current.resize(motorControl[0]->motor_config->total_number_of_motors);
+
+  while (keep_publishing && ros::ok()) {
+      int i = 0;
+      for(auto &bus:motorControl){
+        for(auto m:bus->motor_config->motor){
+          if(bus->MyMotor(m.first)){
+            msg.setpoint[i] = bus->GetSetPoint(m.first);
+            msg.encoder0_pos[i] = bus->GetEncoderPosition(m.first,ENCODER0_POSITION);
+            msg.encoder1_pos[i] = bus->GetEncoderPosition(m.first,ENCODER1_POSITION);
+            msg.displacement[i] = bus->GetDisplacement(m.first);
+            msg.current[i] = bus->GetCurrent(m.first); // running mean filter the current
             // ROS_INFO_THROTTLE(1,"%x",msg.current[i]);
             i++;
+          }
         }
-        motorState.publish(msg);
-        rate.sleep();
-    }
+      }
+      motorState.publish(msg);
+      rate.sleep();
+  }
 }
 
 void RoboyPlexus::MotorInfoPublisher() {
@@ -166,44 +160,47 @@ void RoboyPlexus::MotorInfoPublisher() {
     bool dir = true;
     while (keep_publishing && ros::ok()) {
         roboy_middleware_msgs::MotorInfo msg;
-        int motor = 0;
-        for (auto &m:icebusControl->motor_config->motor) {
-            int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
-            icebusControl->GetControllerParameter(m.second->motor_id_global, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
-            msg.control_mode.push_back(icebusControl->GetControlMode(m.second->motor_id_global));
-            msg.Kp.push_back(Kp);
-            msg.Ki.push_back(Ki);
-            msg.Kd.push_back(Kd);
-            msg.deadband.push_back(deadband);
-            msg.IntegralLimit.push_back(IntegralLimit);
-            msg.PWMLimit.push_back(PWMLimit);
-            msg.current_limit.push_back(icebusControl->GetCurrentLimit(m.second->motor_id_global));
-            int32_t communication_quality = icebusControl->GetCommunicationQuality(m.second->motor_id_global);
-            string error_code = icebusControl->GetErrorCode(m.second->motor_id_global);
-            // if(communication_quality==0 && error_code!="timeout")
-            //   error_code = "---";
-            msg.communication_quality.push_back(communication_quality);
-            msg.error_code.push_back(error_code);
-            msg.neopixelColor.push_back(icebusControl->GetNeopixelColor(m.second->motor_id_global));
-            msg.setpoint.push_back(icebusControl->GetSetPoint(m.second->motor_id_global));
-            msg.pwm.push_back(icebusControl->GetPWM(m.second->motor_id_global));
-            if(!external_led_control){
-              if(light_up_motor==motor)
-                  icebusControl->SetNeopixelColor(m.second->motor_id_global,0x00000F);
-              else
-                  icebusControl->SetNeopixelColor(m.second->motor_id_global,0);
+        for(auto &bus:motorControl){
+          for(auto m:bus->motor_config->motor){
+            if(bus->MyMotor(m.first)){
+              int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
+              bus->GetControllerParameter(m.first, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
+              msg.control_mode.push_back(bus->GetControlMode(m.first));
+              msg.Kp.push_back(Kp);
+              msg.Ki.push_back(Ki);
+              msg.Kd.push_back(Kd);
+              msg.deadband.push_back(deadband);
+              msg.IntegralLimit.push_back(IntegralLimit);
+              msg.PWMLimit.push_back(PWMLimit);
+              msg.current_limit.push_back(bus->GetCurrentLimit(m.first));
+              int32_t communication_quality = bus->GetCommunicationQuality(m.first);
+              string error_code = bus->GetErrorCode(m.first);
+              // if(communication_quality==0 && error_code!="timeout")
+              //   error_code = "---";
+              msg.communication_quality.push_back(communication_quality);
+              msg.error_code.push_back(error_code);
+              msg.neopixelColor.push_back(bus->GetNeopixelColor(m.first));
+              msg.setpoint.push_back(bus->GetSetPoint(m.first));
+              msg.pwm.push_back(bus->GetPWM(m.first));
+              if(!external_led_control){
+                if(light_up_motor==m.first)
+                    bus->SetNeopixelColor(m.first,0x00000F);
+                else
+                    bus->SetNeopixelColor(m.first,0);
+              }
             }
-            motor++;
-        }
-        if(!external_led_control){
-          if(dir)
-              light_up_motor++;
-          else
-              light_up_motor--;
-          if(light_up_motor>=icebusControl->motor_config->total_number_of_motors && dir)
-              dir = false;
-          if(light_up_motor<0 && !dir)
-              dir = true;
+          }
+
+          if(!external_led_control){
+            if(dir)
+                light_up_motor++;
+            else
+                light_up_motor--;
+            if(light_up_motor>=bus->motor_config->total_number_of_motors && dir)
+                dir = false;
+            if(light_up_motor<0 && !dir)
+                dir = true;
+          }
         }
         motorInfo.publish(msg);
         rate.sleep();

@@ -40,7 +40,6 @@
 #include <sstream>
 //#include <common_utilities/CommonDefinitions.h>
 #include <ros/ros.h>
-#include <interfaces/NeoPixel.hpp>
 #include <utility/timer.hpp>
 #include <common_utilities/MotorConfig.hpp>
 #include "interfaces/motorControl.hpp"
@@ -115,12 +114,12 @@ class MyoControl: public MotorControl  {
 public:
     /**
      * Constructor
-     * @param motor_config_filepath
+     * @param motor_config
      * @param myo_base vector of myo base addresses (cf hps_0.h)
      * @param adc_base adc base address (cf hps_0.h) [OPTIONAL]
      * @param neopixel neopixel base address (cf hps_0.h) [OPTIONAL]
      */
-    MyoControl(string motor_config_filepath, vector<int32_t *> &myo_base, int32_t *adc_base = nullptr, NeoPixelPtr neopixel = nullptr);
+    MyoControl(MotorConfigPtr motor_config, vector<int32_t *> &myo_base);
 
     ~MyoControl();
 
@@ -184,8 +183,8 @@ public:
      * Get the parameters for the PID controller of a motor
      * @param motor for this motor
      */
-    void getPIDcontrollerParams(int &Pgain, int &Igain, int &Dgain, int &forwardGain, int &deadband,
-                                int &setPoint, int &outputDivider, int motor);
+    void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
+             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
 
     /**
      * Get the parameters for the PID controller of a motor
@@ -230,6 +229,9 @@ public:
      */
     int32_t GetDisplacement(int motor);
 
+    int32_t GetCommunicationQuality(int motor){ROS_WARN_ONCE("not implemented");return 100;};
+    int32_t GetNeopixelColor(int motor){ROS_WARN_ONCE("not implemented");return 0;};
+    string GetErrorCode(int motor){return "ok";};
     /**
      * Gets the current in Ampere
      * @param motor for this motor
@@ -241,6 +243,12 @@ public:
      * @param motor for this motor
      */
     float GetCurrentLimit(int motor);
+
+    /**
+     * Gets the current setpoint of a motor
+     * @param motor for this motor
+     */
+    int32_t GetSetPoint(int motor);
 
     /**
      * Configures motors to be handled as myoBricks
@@ -345,13 +353,11 @@ public:
 
     map<int, map<int, control_Parameters_legacy>> control_params;
     vector<int32_t> myo_bricks, myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
-    int32_t *adc_base;
     float weight_offset = 0;
     float adc_weight_parameters[2] = {-89.6187, 0.1133}; // b + a*x = y
     uint numberOfMotors;
     const string trajectories_folder = "/home/root/trajectories/";
     const string behaviors_folder = "/home/root/behaviors/";
-    MotorConfigPtr motor_config;
 private:
     Timer timer;
     vector<int32_t *> myo_base;
@@ -359,8 +365,6 @@ private:
     bool recording = false; // keeps track of recording status
     bool replay = true;
     int predisplacement = 100;
-    NeoPixelPtr neopixel;
-
 };
 
 typedef boost::shared_ptr<MyoControl> MyoControlPtr;

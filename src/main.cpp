@@ -60,22 +60,24 @@ int32_t *h2p_lw_led_addr;
 int32_t *h2p_lw_switches_addr;
 vector<int32_t*> h2p_lw_armbus_addr;
 vector<int32_t*> h2p_lw_icebus_addr;
+vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_auxilliary_i2c_addr;
 vector<int32_t*> h2p_lw_ball_joint_addr;
 vector<int32_t*> h2p_lw_fan_control_addr;
 vector<int32_t*> i2c_base;
 
 IcebusControlPtr icebusControl;
+MyoControlPtr myoControl;
 
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
     // turn of 5V and 12V power
     *h2p_lw_power_control_addr = 0x3;
-    system("sl -ae&");
+    // system("sl -ae&");
     ros::Rate rate(10);
     *h2p_lw_led_addr = 0;
-    for(int i=0;i<40;i++){
+    for(int i=0;i<10;i++){
       *h2p_lw_led_addr = ~(*h2p_lw_led_addr);
       rate.sleep();
     }
@@ -223,7 +225,21 @@ int main(int argc, char *argv[]) {
     h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_5_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
-    icebusControl = IcebusControlPtr(new IcebusControl(motor_config_file_path,h2p_lw_icebus_addr));
+#ifdef MYOCONTROL_0_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef MYOCONTROL_1_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef MYOCONTROL_2_BASE
+    h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+
+    MotorConfigPtr motor_config = MotorConfigPtr(new MotorConfig);
+    motor_config->readConfig(motor_config_file_path);
+
+    myoControl = MyoControlPtr(new MyoControl(motor_config,h2p_lw_myo_addr));
+    icebusControl = IcebusControlPtr(new IcebusControl(motor_config,h2p_lw_icebus_addr));
     vector<TLE493DPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)
       balljoints.push_back(TLE493DPtr(new TLE493D(addr)));
@@ -231,7 +247,7 @@ int main(int argc, char *argv[]) {
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
     RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,
-        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr);
+        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,myoControl);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////

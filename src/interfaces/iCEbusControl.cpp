@@ -1,34 +1,29 @@
 #include "interfaces/iCEbusControl.hpp"
 
-IcebusControl::IcebusControl(string motor_config_filepath, vector<int32_t *> &base):base(base){
-    ROS_INFO("initializing icebusControl for %d icebuses with motor config file %s", base.size(), motor_config_filepath.c_str());
-    motor_config = MotorConfigPtr(new MotorConfig);
-    motor_config->readConfig(motor_config_filepath);
-
+IcebusControl::IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &base):
+  base(base){
+    this->motor_config = motor_config;
     for(auto &bus:motor_config->icebus){
         int j = 0;
         for(auto &m:bus.second){
-            if(!SetID(m->motor_id,m->bus_id)){
-                ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
+            if(!SetID(m->motor_id_global,m->bus_id)){
+              ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
             }else{
-              SetMotorUpdateFrequency(m->motor_id,m->update_frequency);
-              SetBaudrate(m->motor_id,m->baudrate);
-              ROS_INFO("icebus motor has baudrate %d and update_frequency %d",GetBaudrate(m->motor_id), GetMotorUpdateFrequency(m->motor_id));
+              SetMotorUpdateFrequency(m->motor_id_global,m->update_frequency);
+              SetBaudrate(m->motor_id_global,m->baudrate);
+              ROS_INFO("icebus motor has baudrate %d and update_frequency %d",GetBaudrate(m->motor_id_global), GetMotorUpdateFrequency(m->motor_id_global));
+              SetNeopixelColor(m->motor_id_global, 0xF00000);
+              if (GetCommunicationQuality(m->motor_id_global) != 0)
+                SetPoint(m->motor_id_global, GetEncoderPosition(m->motor_id_global, ENCODER0));
+              else
+                SetPoint(m->motor_id_global, 0);
+              control_Parameters_t params;
+              GetDefaultControlParams(&params, 3);
+              SetControlMode(m->motor_id_global, 3, params);
+              SetCurrentLimit(m->motor_id_global, 2.0);
             }
         }
     }
-
-    // for(auto &bus:motor_config->armbus){
-    //     int j = 0;
-    //     for(auto &m:bus.second){
-    //         if(!SetID(m->motor_id,m->bus_id)){
-    //             ROS_FATAL("something went wrong writing the bus_ids, check your roboy3.yaml file");
-    //         }else{
-    //           SetBaudrate(m->motor_id,19200);
-    //           ROS_INFO("armbus motor has baudrate %d",GetBaudrate(m->motor_id));
-    //         }
-    //     }
-    // }
 }
 
 IcebusControl::~IcebusControl() {
@@ -45,13 +40,13 @@ bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &pa
 bool IcebusControl::SetID(int motor, int id){
     if(id==0) // must not be 0
         return false;
-    ICEBUS_CONTROL_WRITE_id(base[motor_config->motor[motor]->bus],motor,id);
-    if(ICEBUS_CONTROL_READ_id(base[motor_config->motor[motor]->bus],motor)==id){
+    ICEBUS_CONTROL_WRITE_id(base[motor_config->motor[motor]->bus],motor_config->motor[motor]->motor_id,id);
+    if(ICEBUS_CONTROL_READ_id(base[motor_config->motor[motor]->bus],motor_config->motor[motor]->motor_id)==id){
         ROS_INFO("motor %d now has bus_id %d", motor, id);
         motor_config->motor[motor]->bus_id = id;
     }else{
         ROS_ERROR("unable to change bus_id of motor %d from id %d -> %d",
-                motor,ICEBUS_CONTROL_READ_id(base[motor_config->motor[motor]->bus],motor),id );
+                motor,ICEBUS_CONTROL_READ_id(base[motor_config->motor[motor]->bus],motor_config->motor[motor]->motor_id),id );
         return false;
     }
     return true;
@@ -123,32 +118,32 @@ bool IcebusControl::SetControlMode(int motor, int mode) {
 
 bool IcebusControl::SetControlMode(int mode) {
     if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
-        for (uint motor = 0; motor < numberOfMotors; motor++) {
-            ICEBUS_CONTROL_WRITE_Kp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
-                                    control_params[motor][mode].Kp);
-            ICEBUS_CONTROL_WRITE_Kd(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
-                                    control_params[motor][mode].Kd);
-            ICEBUS_CONTROL_WRITE_Ki(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
-                                    control_params[motor][mode].Ki);
-            ICEBUS_CONTROL_WRITE_deadband(base[motor_config->motor[motor]->bus],
-                                          motor_config->motor[motor]->motor_id,
-                                          (control_params[motor][mode].deadband));
-            ICEBUS_CONTROL_WRITE_IntegralLimit(base[motor_config->motor[motor]->bus],
-                                               motor_config->motor[motor]->motor_id,
-                                               control_params[motor][mode].IntegralLimit);
-            ICEBUS_CONTROL_WRITE_PWMLimit(base[motor_config->motor[motor]->bus],
-                                          motor_config->motor[motor]->motor_id,
-                                          control_params[motor][mode].PWMLimit);
-            ICEBUS_CONTROL_WRITE_control_mode(base[motor_config->motor[motor]->bus],
-                                              motor_config->motor[motor]->motor_id, mode);
-            if ((mode == ENCODER0_POSITION || mode == ENCODER1_POSITION) && GetCommunicationQuality(motor)!=0) {
-                int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(base[motor_config->motor[motor]->bus],
-                                                                                 motor_config->motor[motor]->motor_id);
-                ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[motor]->bus],
-                                        motor_config->motor[motor]->motor_id, current_position);
+        for (auto m:motor_config->motor) {
+            ICEBUS_CONTROL_WRITE_Kp(base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                    control_params[m.first][mode].Kp);
+            ICEBUS_CONTROL_WRITE_Kd(base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                    control_params[m.first][mode].Kd);
+            ICEBUS_CONTROL_WRITE_Ki(base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                    control_params[m.first][mode].Ki);
+            ICEBUS_CONTROL_WRITE_deadband(base[motor_config->motor[m.first]->bus],
+                                          motor_config->motor[m.first]->motor_id,
+                                          (control_params[m.first][mode].deadband));
+            ICEBUS_CONTROL_WRITE_IntegralLimit(base[motor_config->motor[m.first]->bus],
+                                               motor_config->motor[m.first]->motor_id,
+                                               control_params[m.first][mode].IntegralLimit);
+            ICEBUS_CONTROL_WRITE_PWMLimit(base[motor_config->motor[m.first]->bus],
+                                          motor_config->motor[m.first]->motor_id,
+                                          control_params[m.first][mode].PWMLimit);
+            ICEBUS_CONTROL_WRITE_control_mode(base[motor_config->motor[m.first]->bus],
+                                              motor_config->motor[m.first]->motor_id, mode);
+            if ((mode == ENCODER0_POSITION || mode == ENCODER1_POSITION) && GetCommunicationQuality(m.first)!=0) {
+                int32_t current_position = ICEBUS_CONTROL_READ_encoder0_position(base[motor_config->motor[m.first]->bus],
+                                                                                 motor_config->motor[m.first]->motor_id);
+                ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[m.first]->bus],
+                                        motor_config->motor[m.first]->motor_id, current_position);
             } else {
-                ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[motor]->bus],
-                                        motor_config->motor[motor]->motor_id, 0);
+                ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[m.first]->bus],
+                                        motor_config->motor[m.first]->motor_id, 0);
             }
         }
         return true;
@@ -266,7 +261,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
 
 }
 
-int16_t IcebusControl::GetDisplacement(int motor) {
+int32_t IcebusControl::GetDisplacement(int motor) {
     return ICEBUS_CONTROL_READ_displacement(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
@@ -316,8 +311,8 @@ void IcebusControl::SetPoint(int motor, int32_t setPoint) {
 bool IcebusControl::AllToSetpoint(int control_mode, int32_t setpoint) {
     if(!SetControlMode(control_mode))
         return false;
-    for (uint motor = 0; motor < numberOfMotors; motor++) {
-        SetPoint(motor, setpoint);
+    for (auto m:motor_config->motor) {
+        SetPoint(m.first, setpoint);
     }
     return true;
 }
@@ -330,8 +325,15 @@ void IcebusControl::SetMotorUpdateFrequency(int motor, int32_t freq) {
     ICEBUS_CONTROL_WRITE_update_frequency_Hz(base[motor_config->motor[motor]->bus],freq);
 }
 
-bool IcebusControl::MyMotor(int m){
-  return motor_config->motor.find(m) != motor_config->motor.end();
+bool IcebusControl::MyMotor(int motor){
+  for(auto bus:motor_config->icebus){
+    for(auto m:bus.second){
+      if(m->motor_id_global==motor){
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 float IcebusControl::RecordTrajectories(

@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <interfaces/NeoPixel.hpp>
+#include <common_utilities/MotorConfig.hpp>
 
 class MotorControl {
 public:
@@ -20,6 +21,19 @@ public:
      * #return success
      */
     virtual bool AllToSetpoint(int control_mode, int32_t setpoint){};
+
+    /**
+     * Gets the communication Quality of a motor
+     * @param motor
+     * @return quality in percent
+     */
+    virtual int32_t GetCommunicationQuality(int motor){};
+
+    /**
+      * Gets the controller parameters of a motor
+      */
+    virtual void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
+            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){};
 
     /**
      * Gets the current control_mode of a motor
@@ -41,6 +55,12 @@ public:
     virtual float GetCurrentLimit(int motor){};
 
     /**
+     * Gets the current displacement of a motor
+     * @param motor for this motor
+     */
+    virtual int32_t GetDisplacement(int motor){};
+
+    /**
      * Gets the current position of a motor in radians
      * @param motor for this motor
      * @param encoder of this encoder
@@ -55,6 +75,20 @@ public:
     virtual int32_t GetEncoderVelocity(int motor, int encoder){};
 
     /**
+     * Gets the error code of a motor
+     * @param motor
+     * @return error code
+     */
+    virtual string GetErrorCode(int motor){};
+
+    /**
+     * Get the neopixel color of a motor
+     * @param motor
+     * @return color
+     */
+    virtual int32_t GetNeopixelColor(int motor){};
+
+    /**
      * Get the power sense
      * @return true (power on), false (power off)
      */
@@ -65,6 +99,12 @@ public:
      * @param motor for this motor
      */
     virtual int32_t GetPWM(int motor){};
+
+    /**
+     * Gets the current setpoint of a motor
+     * @param motor for this motor
+     */
+    virtual int32_t GetSetPoint(int motor){};
 
     /**
      * Returns if this motor is part of this bus
@@ -154,6 +194,7 @@ public:
     virtual void SetReplay(bool status){};
 
     string trajectories_folder = "/home/root/trajectories";
+    MotorConfigPtr motor_config;
 };
 
 typedef boost::shared_ptr<MotorControl> MotorControlPtr;
