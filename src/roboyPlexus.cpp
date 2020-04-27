@@ -28,6 +28,11 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
+    // turn on 5V and 12V lines
+    *power_control = 0x0;
+    power_5V_enabled = true;
+    power_12V_enabled = true;
+
     motorControl.push_back(icebusControl);
     if(myoControl!=nullptr)
       motorControl.push_back(myoControl);

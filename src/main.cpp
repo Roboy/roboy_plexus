@@ -72,7 +72,7 @@ MyoControlPtr myoControl;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
-    // turn of 5V and 12V power
+    // turn off 5V and 12V power
     *h2p_lw_power_control_addr = 0x3;
     // system("sl -ae&");
     ros::Rate rate(10);
