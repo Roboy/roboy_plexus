@@ -11,7 +11,7 @@ MyoControl::MyoControl(MotorConfigPtr motor_config, vector<int32_t *> &myo_base)
     }
     for(int mode = POSITION;mode<=DIRECT_PWM;mode++) {
         for (int i = 0; i < 8; i++) {
-            getDefaultControlParams(&control_params[i][mode],mode);
+            GetDefaultControlParams(&control_params[i][mode],mode);
         }
     }
 
@@ -31,129 +31,129 @@ MyoControl::~MyoControl() {
     ROS_INFO("shutting down myoControl");
 }
 
-bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &params, int32_t setPoint) {
-    if(!SetControlMode(motor, mode, params))
-        return false;
-    int32_t *bus = myo_base[motor_config->motor[motor]->bus];
-    int motor_id = motor_config->motor[motor]->motor_id;
-    motor_config->motor[motor]->control_mode = mode;
-    MYO_WRITE_sp(bus, motor_id, setPoint);
-    int32_t kp, ki,kd, db, il, pwml;
-    GetControllerParameter(motor, kp, ki, kd, db, il, pwml);
-    ROS_INFO("change control motor %d (Kp: %d, Kd %d, Ki %d, deadband %d, IntegralLimit %d, PWMLimit %d", motor, kp, ki, kd, db,il, pwml);
-    return true;
-}
+// bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &params, int32_t setPoint) {
+//     if(!SetControlMode(motor, mode, params))
+//         return false;
+//     int32_t *bus = myo_base[motor_config->motor[motor]->bus];
+//     int motor_id = motor_config->motor[motor]->motor_id;
+//     motor_config->motor[motor]->control_mode = mode;
+//     MYO_WRITE_sp(bus, motor_id, setPoint);
+//     int32_t kp, ki,kd, db, il, pwml;
+//     GetControllerParameter(motor, kp, ki, kd, db, il, pwml);
+//     ROS_INFO("change control motor %d (Kp: %d, Kd %d, Ki %d, deadband %d, IntegralLimit %d, PWMLimit %d", motor, kp, ki, kd, db,il, pwml);
+//     return true;
+// }
+//
+// bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &params) {
+//     if(mode>=POSITION && mode<=DIRECT_PWM) {
+//         int32_t *bus = myo_base[motor_config->motor[motor]->bus];
+//         int motor_id = motor_config->motor[motor]->motor_id;
+//         motor_config->motor[motor]->control_mode = mode;
+//         MYO_WRITE_control(bus, motor_id, mode);
+//         MYO_WRITE_reset_controller(bus, motor_id);
+//         MYO_WRITE_Kp(bus, motor_id, params.Kp);
+//         MYO_WRITE_Kd(bus, motor_id, params.Kd);
+//         MYO_WRITE_Ki(bus, motor_id, params.Ki);
+//         MYO_WRITE_forwardGain(bus, motor_id,
+//                               params.forwardGain);
+//         MYO_WRITE_deadBand(bus, motor_id,
+//                            params.deadBand);
+//         MYO_WRITE_IntegralPosMax(bus, motor_id,
+//                                  params.IntegralPosMax);
+//         MYO_WRITE_IntegralNegMax(bus, motor_id,
+//                                  params.IntegralNegMax);
+//         MYO_WRITE_outputPosMax(bus, motor_id,
+//                                params.outputPosMax);
+//         MYO_WRITE_outputNegMax(bus, motor_id,
+//                                params.outputNegMax);
+//         MYO_WRITE_outputDivider(bus, motor_id,
+//                                 params.outputDivider);
+//         if (mode == POSITION) {
+//             int32_t current_position = MYO_READ_position(bus, motor_id);
+//             MYO_WRITE_sp(bus, motor_id,
+//                          current_position);
+//         } else {
+//             MYO_WRITE_sp(bus, motor_id, 0);
+//         }
+//         return true;
+//     }else{
+//         return false;
+//     }
+// }
+//
+// bool MyoControl::SetControlMode(int motor, int mode) {
+//     if(mode>=POSITION && mode<=DIRECT_PWM) {
+//         int32_t *bus = myo_base[motor_config->motor[motor]->bus];
+//         int motor_id = motor_config->motor[motor]->motor_id;
+//         motor_config->motor[motor]->control_mode = mode;
+//         MYO_WRITE_reset_controller(bus, motor_id);
+//         MYO_WRITE_Kp(bus, motor_id,
+//                      control_params[motor][mode].Kp);
+//         MYO_WRITE_Kd(bus, motor_id,
+//                      control_params[motor][mode].Kd);
+//         MYO_WRITE_Ki(bus, motor_id,
+//                      control_params[motor][mode].Ki);
+//         MYO_WRITE_forwardGain(bus, motor_id,
+//                               control_params[motor][mode].forwardGain);
+//         MYO_WRITE_deadBand(bus, motor_id,
+//                            (control_params[motor][mode].deadBand));
+//         MYO_WRITE_IntegralPosMax(bus, motor_id,
+//                                  control_params[motor][mode].IntegralPosMax);
+//         MYO_WRITE_IntegralNegMax(bus, motor_id,
+//                                  control_params[motor][mode].IntegralNegMax);
+//         MYO_WRITE_outputPosMax(bus, motor_id,
+//                                control_params[motor][mode].outputPosMax);
+//         MYO_WRITE_outputNegMax(bus, motor_id,
+//                                control_params[motor][mode].outputNegMax);
+//         MYO_WRITE_control(bus, motor_id, mode);
+//         MYO_WRITE_outputDivider(bus, motor_id,
+//                                 control_params[motor][mode].outputDivider);
+//         if (mode == POSITION) {
+//             int32_t current_position = MYO_READ_position(bus, motor_id);
+//             MYO_WRITE_sp(bus, motor_id,
+//                          current_position);
+//         } else {
+//             MYO_WRITE_sp(bus, motor_id, 0);
+//         }
+//     }else{
+//         return false;
+//     }
+// }
 
-bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_legacy &params) {
-    if(mode>=POSITION && mode<=DIRECT_PWM) {
-        int32_t *bus = myo_base[motor_config->motor[motor]->bus];
-        int motor_id = motor_config->motor[motor]->motor_id;
-        motor_config->motor[motor]->control_mode = mode;
-        MYO_WRITE_control(bus, motor_id, mode);
-        MYO_WRITE_reset_controller(bus, motor_id);
-        MYO_WRITE_Kp(bus, motor_id, params.Kp);
-        MYO_WRITE_Kd(bus, motor_id, params.Kd);
-        MYO_WRITE_Ki(bus, motor_id, params.Ki);
-        MYO_WRITE_forwardGain(bus, motor_id,
-                              params.forwardGain);
-        MYO_WRITE_deadBand(bus, motor_id,
-                           params.deadBand);
-        MYO_WRITE_IntegralPosMax(bus, motor_id,
-                                 params.IntegralPosMax);
-        MYO_WRITE_IntegralNegMax(bus, motor_id,
-                                 params.IntegralNegMax);
-        MYO_WRITE_outputPosMax(bus, motor_id,
-                               params.outputPosMax);
-        MYO_WRITE_outputNegMax(bus, motor_id,
-                               params.outputNegMax);
-        MYO_WRITE_outputDivider(bus, motor_id,
-                                params.outputDivider);
-        if (mode == POSITION) {
-            int32_t current_position = MYO_READ_position(bus, motor_id);
-            MYO_WRITE_sp(bus, motor_id,
-                         current_position);
-        } else {
-            MYO_WRITE_sp(bus, motor_id, 0);
-        }
-        return true;
-    }else{
-        return false;
-    }
-}
-
-bool MyoControl::SetControlMode(int motor, int mode) {
-    if(mode>=POSITION && mode<=DIRECT_PWM) {
-        int32_t *bus = myo_base[motor_config->motor[motor]->bus];
-        int motor_id = motor_config->motor[motor]->motor_id;
-        motor_config->motor[motor]->control_mode = mode;
-        MYO_WRITE_reset_controller(bus, motor_id);
-        MYO_WRITE_Kp(bus, motor_id,
-                     control_params[motor][mode].Kp);
-        MYO_WRITE_Kd(bus, motor_id,
-                     control_params[motor][mode].Kd);
-        MYO_WRITE_Ki(bus, motor_id,
-                     control_params[motor][mode].Ki);
-        MYO_WRITE_forwardGain(bus, motor_id,
-                              control_params[motor][mode].forwardGain);
-        MYO_WRITE_deadBand(bus, motor_id,
-                           (control_params[motor][mode].deadBand));
-        MYO_WRITE_IntegralPosMax(bus, motor_id,
-                                 control_params[motor][mode].IntegralPosMax);
-        MYO_WRITE_IntegralNegMax(bus, motor_id,
-                                 control_params[motor][mode].IntegralNegMax);
-        MYO_WRITE_outputPosMax(bus, motor_id,
-                               control_params[motor][mode].outputPosMax);
-        MYO_WRITE_outputNegMax(bus, motor_id,
-                               control_params[motor][mode].outputNegMax);
-        MYO_WRITE_control(bus, motor_id, mode);
-        MYO_WRITE_outputDivider(bus, motor_id,
-                                control_params[motor][mode].outputDivider);
-        if (mode == POSITION) {
-            int32_t current_position = MYO_READ_position(bus, motor_id);
-            MYO_WRITE_sp(bus, motor_id,
-                         current_position);
-        } else {
-            MYO_WRITE_sp(bus, motor_id, 0);
-        }
-    }else{
-        return false;
-    }
-}
-
-bool MyoControl::SetControlMode(int mode) {
-    for(auto bus:motor_config->myobus){
-      for(auto m:bus.second){
-        int32_t *bus = myo_base[motor_config->motor[m->motor_id_global]->bus];
-        int motor_id = motor_config->motor[m->motor_id_global]->motor_id;
-        motor_config->motor[m->motor_id_global]->control_mode = mode;
-        MYO_WRITE_reset_controller(bus, motor_id);
-        MYO_WRITE_Kp(bus, motor_id, control_params[m->motor_id_global][mode].Kp);
-        MYO_WRITE_Kd(bus, motor_id, control_params[m->motor_id_global][mode].Kd);
-        MYO_WRITE_Ki(bus, motor_id, control_params[m->motor_id_global][mode].Ki);
-        MYO_WRITE_forwardGain(bus, motor_id,
-                              control_params[m->motor_id_global][mode].forwardGain);
-        MYO_WRITE_deadBand(bus, motor_id,
-                           (control_params[m->motor_id_global][mode].deadBand));
-        MYO_WRITE_IntegralPosMax(bus, motor_id,
-                                 control_params[m->motor_id_global][mode].IntegralPosMax);
-        MYO_WRITE_IntegralNegMax(bus, motor_id,
-                                 control_params[m->motor_id_global][mode].IntegralNegMax);
-        MYO_WRITE_outputPosMax(bus, motor_id,
-                               control_params[m->motor_id_global][mode].outputPosMax);
-        MYO_WRITE_outputNegMax(bus, motor_id,
-                               control_params[m->motor_id_global][mode].outputNegMax);
-        MYO_WRITE_control(bus, motor_id, mode);
-        MYO_WRITE_outputDivider(bus, motor_id,
-                                control_params[m->motor_id_global][mode].outputDivider);
-        if (mode == POSITION) {
-            int32_t current_position = MYO_READ_position(bus, motor_id);
-            MYO_WRITE_sp(bus, motor_id, current_position);
-        } else {
-            MYO_WRITE_sp(bus, motor_id, 0);
-        }
-      }
-    }
-}
+// bool MyoControl::SetControlMode(int mode) {
+//     for(auto bus:motor_config->myobus){
+//       for(auto m:bus.second){
+//         int32_t *bus = myo_base[motor_config->motor[m->motor_id_global]->bus];
+//         int motor_id = motor_config->motor[m->motor_id_global]->motor_id;
+//         motor_config->motor[m->motor_id_global]->control_mode = mode;
+//         MYO_WRITE_reset_controller(bus, motor_id);
+//         MYO_WRITE_Kp(bus, motor_id, control_params[m->motor_id_global][mode].Kp);
+//         MYO_WRITE_Kd(bus, motor_id, control_params[m->motor_id_global][mode].Kd);
+//         MYO_WRITE_Ki(bus, motor_id, control_params[m->motor_id_global][mode].Ki);
+//         MYO_WRITE_forwardGain(bus, motor_id,
+//                               control_params[m->motor_id_global][mode].forwardGain);
+//         MYO_WRITE_deadBand(bus, motor_id,
+//                            (control_params[m->motor_id_global][mode].deadBand));
+//         MYO_WRITE_IntegralPosMax(bus, motor_id,
+//                                  control_params[m->motor_id_global][mode].IntegralPosMax);
+//         MYO_WRITE_IntegralNegMax(bus, motor_id,
+//                                  control_params[m->motor_id_global][mode].IntegralNegMax);
+//         MYO_WRITE_outputPosMax(bus, motor_id,
+//                                control_params[m->motor_id_global][mode].outputPosMax);
+//         MYO_WRITE_outputNegMax(bus, motor_id,
+//                                control_params[m->motor_id_global][mode].outputNegMax);
+//         MYO_WRITE_control(bus, motor_id, mode);
+//         MYO_WRITE_outputDivider(bus, motor_id,
+//                                 control_params[m->motor_id_global][mode].outputDivider);
+//         if (mode == POSITION) {
+//             int32_t current_position = MYO_READ_position(bus, motor_id);
+//             MYO_WRITE_sp(bus, motor_id, current_position);
+//         } else {
+//             MYO_WRITE_sp(bus, motor_id, 0);
+//         }
+//       }
+//     }
+// }
 
 void MyoControl::reset() {
     for (uint i = 0; i < myo_base.size(); i++) {
@@ -186,12 +186,12 @@ void MyoControl::setPIDcontrollerParams(uint16_t Pgain, uint16_t Igain, uint16_t
     control_params[motor][mode].Kp = Pgain;
     control_params[motor][mode].Ki = Igain;
     control_params[motor][mode].Kd = Dgain;
-    control_params[motor][mode].forwardGain = forwardGain;
-    control_params[motor][mode].deadBand = deadband;
+    // control_params[motor][mode].forwardGain = forwardGain;
+    control_params[motor][mode].deadband = deadband;
 }
 
 uint8_t MyoControl::GetControlMode(int motor){
-    return MYO_READ_control(myo_base[0],motor);
+    return MYO_READ_control_mode(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
 bool MyoControl::GetPowerSense() {
@@ -233,8 +233,127 @@ void MyoControl::SetPoint(int motor, int32_t setPoint) {
     MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, (int32_t) setPoint);
 }
 
-void MyoControl::changeControlParameters(int motor, control_Parameters_legacy &params){
-    ROS_ERROR("not implemented");
+bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_t &params) {
+    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        MYO_WRITE_control_mode(myo_base[motor_config->motor[motor]->bus],
+                                          motor_config->motor[motor]->motor_id, mode);
+        MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                params.Kp);
+        MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                params.Kd);
+        MYO_WRITE_Ki(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                params.Ki);
+        MYO_WRITE_deadBand(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                      params.deadband);
+        MYO_WRITE_IntegralPosMax(myo_base[motor_config->motor[motor]->bus],
+                                           motor_config->motor[motor]->motor_id, params.IntegralLimit);
+        MYO_WRITE_IntegralNegMax(myo_base[motor_config->motor[motor]->bus],
+                                           motor_config->motor[motor]->motor_id, -params.IntegralLimit);
+        MYO_WRITE_outputPosMax(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                      params.PWMLimit);
+        MYO_WRITE_outputNegMax(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                          -params.PWMLimit);
+        if ((mode == ENCODER0_POSITION || mode == ENCODER1_POSITION) && GetCommunicationQuality(motor)!=0) {
+            MYO_WRITE_outputDivider(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,5);
+            int32_t current_position = MYO_READ_position(myo_base[motor_config->motor[motor]->bus],
+                                                                             motor_config->motor[motor]->motor_id);
+            MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                    current_position);
+        } else {
+            MYO_WRITE_outputDivider(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,0);
+            MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                    0);
+        }
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool MyoControl::SetControlMode(int motor, int mode) {
+    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        //        ROS_INFO("motor_id %d", motor_config->motor[motor]->motor_id);
+        MYO_WRITE_control_mode(myo_base[motor_config->motor[motor]->bus],
+                                          motor_config->motor[motor]->motor_id, mode);
+        MYO_WRITE_Kp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                control_params[motor][mode].Kp);
+        MYO_WRITE_Kd(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                control_params[motor][mode].Kd);
+        MYO_WRITE_Ki(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                control_params[motor][mode].Ki);
+        MYO_WRITE_deadBand(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                      control_params[motor][mode].deadband);
+        MYO_WRITE_IntegralPosMax(myo_base[motor_config->motor[motor]->bus],
+                                           motor_config->motor[motor]->motor_id, control_params[motor][mode].IntegralLimit);
+        MYO_WRITE_IntegralNegMax(myo_base[motor_config->motor[motor]->bus],
+                                           motor_config->motor[motor]->motor_id, -control_params[motor][mode].IntegralLimit);
+        MYO_WRITE_outputPosMax(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                      control_params[motor][mode].PWMLimit);
+        MYO_WRITE_outputNegMax(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                          -control_params[motor][mode].PWMLimit);
+        if ((mode == ENCODER0_POSITION || mode == ENCODER1_POSITION) && GetCommunicationQuality(motor)!=0) {
+          MYO_WRITE_outputDivider(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,5);
+            int32_t current_position = MYO_READ_position(myo_base[motor_config->motor[motor]->bus],
+                                                                             motor_config->motor[motor]->motor_id);
+            MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                    current_position);
+        } else {
+          MYO_WRITE_outputDivider(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,0);
+            MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
+                                    0);
+        }
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool MyoControl::SetControlMode(int mode) {
+    if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        for (auto m:motor_config->motor) {
+          MYO_WRITE_control_mode(myo_base[motor_config->motor[m.first]->bus],
+                                            motor_config->motor[m.first]->motor_id, mode);
+          MYO_WRITE_Kp(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                  control_params[m.first][mode].Kp);
+          MYO_WRITE_Kd(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                  control_params[m.first][mode].Kd);
+          MYO_WRITE_Ki(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                  control_params[m.first][mode].Ki);
+          MYO_WRITE_deadBand(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                        control_params[m.first][mode].deadband);
+          MYO_WRITE_IntegralPosMax(myo_base[motor_config->motor[m.first]->bus],
+                                             motor_config->motor[m.first]->motor_id, control_params[m.first][mode].IntegralLimit);
+          MYO_WRITE_IntegralNegMax(myo_base[motor_config->motor[m.first]->bus],
+                                             motor_config->motor[m.first]->motor_id, -control_params[m.first][mode].IntegralLimit);
+          MYO_WRITE_outputPosMax(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                        control_params[m.first][mode].PWMLimit);
+          MYO_WRITE_outputNegMax(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
+                                            -control_params[m.first][mode].PWMLimit);
+
+            if ((mode == ENCODER0_POSITION || mode == ENCODER1_POSITION) && GetCommunicationQuality(m.first)!=0) {
+              MYO_WRITE_outputDivider(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,5);
+                int32_t current_position = MYO_READ_position(myo_base[motor_config->motor[m.first]->bus],
+                                                                                 motor_config->motor[m.first]->motor_id);
+                MYO_WRITE_sp(myo_base[motor_config->motor[m.first]->bus],
+                                        motor_config->motor[m.first]->motor_id, current_position);
+            } else {
+              MYO_WRITE_outputDivider(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,0);
+                MYO_WRITE_sp(myo_base[motor_config->motor[m.first]->bus],
+                                        motor_config->motor[m.first]->motor_id, 0);
+            }
+        }
+        return true;
+    }else{
+        ROS_WARN("control_mode %d invalid, ignoring...");
+        return false;
+    }
+}
+
+bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
+    if(!SetControlMode(motor, mode, params))
+        return false;
+    MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, setPoint);
+    return true;
 }
 
 bool MyoControl::configureMyoBricks(vector<int32_t> &motorIDs,
@@ -287,69 +406,120 @@ void MyoControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int
            deadband = MYO_READ_deadBand(bus,motor_id);
          }
 
-void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int control_mode) {
-    params->outputPosMax = 500;
-    params->outputNegMax = -500;
-
-    params->radPerEncoderCount = 2 * 3.14159265359 / (2000.0 * 53.0);
-
-    switch (control_mode) {
-        case 0:
-//            params->outputPosMax = 4000;
-//            params->outputNegMax = -4000;
-            params->spPosMax = 10000000;
-            params->spNegMax = -10000000;
-            params->Kp = 1;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->forwardGain = 0;
-            params->deadBand = 0;
-            params->IntegralPosMax = 100;
-            params->IntegralNegMax = -100;
-            params->outputDivider = 5;
-            break;
-        case 1:
-            params->spPosMax = 100000;
-            params->spNegMax = -100000;
-            params->Kp = 30;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->forwardGain = 0;
-            params->deadBand = 0;
-            params->IntegralPosMax = 100;
-            params->IntegralNegMax = -100;
-            params->outputDivider = 0;
-            break;
-        case 2:
-            params->spPosMax = 100000;
-            params->spNegMax = 0;
-            params->Kp = 100;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->forwardGain = 0;
-            params->deadBand = 1;
-            params->IntegralPosMax = 100;
-            params->IntegralNegMax = 0;
-            params->outputDivider = 0;
-            break;
-        case 3:
-            params->spPosMax = 256;
-            params->spNegMax = -256;
-            params->Kp = 1;
-            params->Ki = 0;
-            params->Kd = 0;
-            params->forwardGain = 0;
-            params->deadBand = 0;
-            params->IntegralPosMax = 100;
-            params->IntegralNegMax = 0;
-            params->outputDivider = 0;
-            break;
-        default:
-            ROS_ERROR("unknown control mode %d", control_mode);
-            break;
-    }
+void MyoControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
+   switch (control_mode) {
+       case ENCODER0_POSITION:
+           params->IntegralLimit = 25;
+           params->Kp = 1;
+           params->Ki = 0;
+           params->Kd = 0;
+           params->deadband = 0;
+           params->PWMLimit = 500;
+           break;
+       case ENCODER1_POSITION:
+           params->IntegralLimit = 25;
+           params->Kp = 1;
+           params->Ki = 0;
+           params->Kd = 0;
+           params->deadband = 0;
+           params->PWMLimit = 500;
+           break;
+//        case ENCODER0_VELOCITY: //TODO: velocity control not implemented yet
+//            params->IntegralLimit = 0;
+//            params->Kp = 0;
+//            params->Ki = 0;
+//            params->Kd = 0;
+//            params->deadband = 0;
+//            params->PWMLimit = 0;
+//            ROS_WARN("velocity control not available yet, disabling controller");
+//            break;
+//        case ENCODER1_VELOCITY: //TODO: velocity control not implemented yet
+//            params->IntegralLimit = 0;
+//            params->Kp = 0;
+//            params->Ki = 0;
+//            params->Kd = 0;
+//            params->deadband = 0;
+//            params->PWMLimit = 0;
+//            ROS_WARN("velocity control not available yet, disabling controller");
+//            break;
+       case DIRECT_PWM:
+           params->IntegralLimit = 25;
+           params->Kp = 1;
+           params->Ki = 0;
+           params->Kd = 0;
+           params->deadband = 0;
+           params->PWMLimit = 500;
+           break;
+       default:
+           ROS_ERROR("unknown control mode %d", control_mode);
+           break;
+   }
 
 }
+//
+// void MyoControl::getDefaultControlParams(control_Parameters_legacy *params, int control_mode) {
+//     params->outputPosMax = 500;
+//     params->outputNegMax = -500;
+//
+//     params->radPerEncoderCount = 2 * 3.14159265359 / (2000.0 * 53.0);
+//
+//     switch (control_mode) {
+//         case 0:
+// //            params->outputPosMax = 4000;
+// //            params->outputNegMax = -4000;
+//             params->spPosMax = 10000000;
+//             params->spNegMax = -10000000;
+//             params->Kp = 1;
+//             params->Ki = 0;
+//             params->Kd = 0;
+//             params->forwardGain = 0;
+//             params->deadBand = 0;
+//             params->IntegralPosMax = 100;
+//             params->IntegralNegMax = -100;
+//             params->outputDivider = 5;
+//             break;
+//         case 1:
+//             params->spPosMax = 100000;
+//             params->spNegMax = -100000;
+//             params->Kp = 30;
+//             params->Ki = 0;
+//             params->Kd = 0;
+//             params->forwardGain = 0;
+//             params->deadBand = 0;
+//             params->IntegralPosMax = 100;
+//             params->IntegralNegMax = -100;
+//             params->outputDivider = 0;
+//             break;
+//         case 2:
+//             params->spPosMax = 100000;
+//             params->spNegMax = 0;
+//             params->Kp = 100;
+//             params->Ki = 0;
+//             params->Kd = 0;
+//             params->forwardGain = 0;
+//             params->deadBand = 1;
+//             params->IntegralPosMax = 100;
+//             params->IntegralNegMax = 0;
+//             params->outputDivider = 0;
+//             break;
+//         case 3:
+//             params->spPosMax = 256;
+//             params->spNegMax = -256;
+//             params->Kp = 1;
+//             params->Ki = 0;
+//             params->Kd = 0;
+//             params->forwardGain = 0;
+//             params->deadBand = 0;
+//             params->IntegralPosMax = 100;
+//             params->IntegralNegMax = 0;
+//             params->outputDivider = 0;
+//             break;
+//         default:
+//             ROS_ERROR("unknown control mode %d", control_mode);
+//             break;
+//     }
+//
+// }
 
 void MyoControl::polynomialRegression(int degree, vector<double> &x, vector<double> &y,
                                       vector<float> &coeffs) {

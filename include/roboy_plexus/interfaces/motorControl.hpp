@@ -107,6 +107,21 @@ public:
     virtual int32_t GetSetPoint(int motor){};
 
     /**
+     * Getting default parameters for a control mode
+     * @param params
+     * @param control_mode
+     */
+    virtual void GetDefaultControlParams(control_Parameters_t *params, int control_mode){};
+
+    /**
+     * Sets the motor update frequency, this is done per bus,
+     * so the motor id is only used to check which bus is controlling it
+     * @param motor
+     * @param freq
+     */
+    virtual void SetMotorUpdateFrequency(int motor, int32_t freq){};
+
+    /**
      * Returns if this motor is part of this bus
      * @param return true if the motor belongs to this bus
     */
@@ -131,6 +146,23 @@ public:
      * @param mode choose from Position, Velocity or Displacement
      */
     virtual bool SetControlMode(int motor, int mode){};
+
+    /**
+    * Changes the controller of a motor
+    * @param motor for this motor
+    * @param mode choose from Position, Velocity or Displacement
+    * @param params with these controller parameters
+    */
+    virtual bool SetControlMode(int motor, int mode, control_Parameters_t &params){};
+
+    /**
+	 * Changes the controller of a motor
+	 * @param motor for this motor
+	 * @param mode choose from Position, Velocity or Displacement
+	 * @param params with these controller parameters
+     * @param setPoint new setPoint
+	 */
+    virtual bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint){};
 
     /**
      * Changes the controller of ALL motors with the saved controller parameters

@@ -300,40 +300,46 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
     stringstream str;
     uint i = 0;
     for (int motor:req.config.motor) {
-        control_Parameters_t params;
-        icebusControl->GetDefaultControlParams(&params, req.config.control_mode[i]);
-        params.control_mode = req.config.control_mode[i];
-        if (req.config.control_mode[i] == 0)
-            str << "\t" << (int) motor << ": ENCODER0";
-        if (req.config.control_mode[i] == 1)
-            str << "\t" << (int) motor << ": ENCODER1";
-        if (req.config.control_mode[i] == 2)
-            str << "\t" << (int) motor << ": DISPLACEMENT";
-        if (req.config.control_mode[i] == 3)
-            str << "\t" << (int) motor << ": DIRECT_PWM";
-        if(i<req.config.PWMLimit.size())
-            params.PWMLimit = req.config.PWMLimit[i];
-        if(i<req.config.Kp.size())
-            params.Kp = req.config.Kp[i];
-        if(i<req.config.Ki.size())
-            params.Ki = req.config.Ki[i];
-        if(i<req.config.Kd.size())
-            params.Kd = req.config.Kd[i];
-        if(i<req.config.deadband.size())
-            params.deadband = req.config.deadband[i];
-        if(i<req.config.IntegralLimit.size())
-            params.IntegralLimit = req.config.IntegralLimit[i];
-        if(i<req.config.update_frequency.size())
-            icebusControl->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
-        params.control_mode = req.config.control_mode[i];
-        icebusControl->SetControlMode(motor, req.config.control_mode[i], params);
-        res.mode.push_back(params.control_mode);
-        icebusControl->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+      for(auto &bus:motorControl){
+        if(bus->MyMotor(motor)){
+          control_Parameters_t params;
+          bus->GetDefaultControlParams(&params, req.config.control_mode[i]);
+          params.control_mode = req.config.control_mode[i];
+          if (req.config.control_mode[i] == 0)
+              str << "\t" << (int) motor << ": ENCODER0";
+          if (req.config.control_mode[i] == 1)
+              str << "\t" << (int) motor << ": ENCODER1";
+          if (req.config.control_mode[i] == 2)
+              str << "\t" << (int) motor << ": DISPLACEMENT";
+          if (req.config.control_mode[i] == 3)
+              str << "\t" << (int) motor << ": DIRECT_PWM";
+          if(i<req.config.PWMLimit.size())
+              params.PWMLimit = req.config.PWMLimit[i];
+          if(i<req.config.Kp.size())
+              params.Kp = req.config.Kp[i];
+          if(i<req.config.Ki.size())
+              params.Ki = req.config.Ki[i];
+          if(i<req.config.Kd.size())
+              params.Kd = req.config.Kd[i];
+          if(i<req.config.deadband.size())
+              params.deadband = req.config.deadband[i];
+          if(i<req.config.IntegralLimit.size())
+              params.IntegralLimit = req.config.IntegralLimit[i];
+          if(i<req.config.update_frequency.size())
+              bus->SetMotorUpdateFrequency(motor, req.config.update_frequency[i]);
+          if(req.config.setpoint.size()==req.config.control_mode.size())
+            bus->SetControlMode(motor, req.config.control_mode[i], params, req.config.setpoint[i]);
+          else
+            bus->SetControlMode(motor, req.config.control_mode[i], params);
+          params.control_mode = req.config.control_mode[i];
+          res.mode.push_back(params.control_mode);
 
-        ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
-                 req.config.setpoint[i]);
-        control_mode[motor] = req.config.control_mode[i];
-        i++;
+          ROS_INFO("setting motor %d to control mode %d with setpoint %d", motor, req.config.control_mode[i],
+                   req.config.setpoint[i]);
+          control_mode[motor] = req.config.control_mode[i];
+          i++;
+        }
+      }
     }
 
     ROS_INFO("serving motor config service for %s control", str.str().c_str());

@@ -284,7 +284,7 @@ public:
     * @param mode choose from Position, Velocity or Displacement
     * @param params with these controller parameters
     */
-    bool SetControlMode(int motor, int mode, control_Parameters_t &params);
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params) override;
 
     /**
 	 * Changes the controller of a motor
@@ -293,7 +293,7 @@ public:
 	 * @param params with these controller parameters
      * @param setPoint new setPoint
 	 */
-    bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint);
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) override;
 
     /**
      * Gets the current limit of a motor
@@ -330,7 +330,7 @@ public:
      * @param motor
      * @param freq
      */
-    void SetMotorUpdateFrequency(int motor, int32_t freq);
+    void SetMotorUpdateFrequency(int motor, int32_t freq) override;
 
     void SetPredisplacement(int value) override;
 

@@ -58,7 +58,7 @@
 #define MYO_READ_IntegralPosMax(base, motor) IORD(base, (uint32_t)(0x07<<8|motor&0xff) )
 #define MYO_READ_IntegralNegMax(base, motor) IORD(base, (uint32_t)(0x08<<8|motor&0xff) )
 #define MYO_READ_deadBand(base, motor) IORD(base, (uint32_t)(0x09<<8|motor&0xff) )
-#define MYO_READ_control(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
+#define MYO_READ_control_mode(base, motor) IORD(base, (uint32_t)(0x0A<<8|motor&0xff) )
 #define MYO_READ_position(base, motor) IORD(base, (uint32_t)(0x0B<<8|motor&0xff) )
 #define MYO_READ_velocity(base, motor) IORD(base, (uint32_t)(0x0C<<8|motor&0xff) )
 #define MYO_READ_current(base, motor) IORD(base, (uint32_t)(0x0D<<8|motor&0xff) )
@@ -88,7 +88,7 @@
 #define MYO_WRITE_IntegralPosMax(base, motor, data) IOWR(base, (uint32_t)(0x07<<8|motor&0xff), data )
 #define MYO_WRITE_IntegralNegMax(base, motor, data) IOWR(base, (uint32_t)(0x08<<8|motor&0xff), data )
 #define MYO_WRITE_deadBand(base, motor, data) IOWR(base, (uint32_t)(0x09<<8|motor&0xff), data )
-#define MYO_WRITE_control(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
+#define MYO_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x0A<<8|motor&0xff), data )
 #define MYO_WRITE_reset_myo_control(base, data) IOWR(base, (uint32_t)(0x0B<<8|0), data )
 #define MYO_WRITE_spi_activated(base, data) IOWR(base, (uint32_t)(0x0C<<8|0), data )
 #define MYO_WRITE_reset_controller(base, motor) IOWR(base, (uint32_t)(0x0D<<8|motor&0xff), 1 )
@@ -124,34 +124,34 @@ public:
     ~MyoControl();
 
     /**
-	 * Changes the controller of a motor
-	 * @param motor for this motor
-	 * @param mode choose from Position, Velocity or Displacement
-	 * @param params with these controller parameters
-     * @param setPoint new setPoint
-	 */
-    bool SetControlMode(int motor, int mode, control_Parameters_legacy &params, int32_t setPoint);
-
-    /**
-     * Changes the controller of a motor
-     * @param motor for this motor
+     * Changes the controller of ALL motors with the saved controller parameters
      * @param mode choose from Position, Velocity or Displacement
-     * @param params with these controller parameters
      */
-    bool SetControlMode(int motor, int mode, control_Parameters_legacy &params);
+    bool SetControlMode(int mode) override;
 
     /**
      * Changes the controller of a motor with the saved controller parameters
      * @param motor for this motor
      * @param mode choose from Position, Velocity or Displacement
      */
-    bool SetControlMode(int motor, int mode);
+    bool SetControlMode(int motor, int mode) override;
 
     /**
-     * Changes the controller of ALL motors with the saved controller parameters
-     * @param mode choose from Position, Velocity or Displacement
-     */
-    bool SetControlMode(int mode);
+    * Changes the controller of a motor
+    * @param motor for this motor
+    * @param mode choose from Position, Velocity or Displacement
+    * @param params with these controller parameters
+    */
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params) override;
+
+    /**
+   * Changes the controller of a motor
+   * @param motor for this motor
+   * @param mode choose from Position, Velocity or Displacement
+   * @param params with these controller parameters
+     * @param setPoint new setPoint
+   */
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) override;
 
     void SetPoint(int motor, int32_t setpoint);
 
@@ -163,6 +163,8 @@ public:
     * @param params with these controller parameters
     */
     void changeControlParameters(int motor, control_Parameters_legacy &params);
+
+    string whoami()override { return "myobus";};
 
     /**
      * Resets all myo controllers
@@ -264,7 +266,9 @@ public:
      * @param params pointer to control struct
      * @param control_mode Position, Velocity, Force
      */
-    void getDefaultControlParams(control_Parameters_legacy *params, int control_mode);
+    void GetDefaultControlParams(control_Parameters_t *params, int control_mode) override;
+
+    void SetMotorUpdateFrequency(int motor, int32_t freq)override{ROS_WARN("not implemented");};
 
     /**
      * records positions of motors in Displacement mode
@@ -351,7 +355,7 @@ public:
     void polynomialRegression(int degree, vector<double> &x, vector<double> &y,
                               vector<float> &coeffs);
 
-    map<int, map<int, control_Parameters_legacy>> control_params;
+    map<int, map<int, control_Parameters_t>> control_params;
     vector<int32_t> myo_bricks, myo_bricks_gearbox_ratio, myo_bricks_encoder_multiplier;
     float weight_offset = 0;
     float adc_weight_parameters[2] = {-89.6187, 0.1133}; // b + a*x = y
