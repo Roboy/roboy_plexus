@@ -41,31 +41,31 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1587720257
+#define SYSID_QSYS_TIMESTAMP 1588188404
 
 /*
- * Macros for device 'POWER_CONTROL', class 'altera_avalon_pio'
- * The macros are prefixed with 'POWER_CONTROL_'.
+ * Macros for device 'LED', class 'altera_avalon_pio'
+ * The macros are prefixed with 'LED_'.
  * The prefix is the slave descriptor.
  */
-#define POWER_CONTROL_COMPONENT_TYPE altera_avalon_pio
-#define POWER_CONTROL_COMPONENT_NAME POWER_CONTROL
-#define POWER_CONTROL_BASE 0x1010
-#define POWER_CONTROL_SPAN 16
-#define POWER_CONTROL_END 0x101f
-#define POWER_CONTROL_BIT_CLEARING_EDGE_REGISTER 0
-#define POWER_CONTROL_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define POWER_CONTROL_CAPTURE 0
-#define POWER_CONTROL_DATA_WIDTH 2
-#define POWER_CONTROL_DO_TEST_BENCH_WIRING 0
-#define POWER_CONTROL_DRIVEN_SIM_VALUE 0
-#define POWER_CONTROL_EDGE_TYPE NONE
-#define POWER_CONTROL_FREQ 50000000
-#define POWER_CONTROL_HAS_IN 0
-#define POWER_CONTROL_HAS_OUT 1
-#define POWER_CONTROL_HAS_TRI 0
-#define POWER_CONTROL_IRQ_TYPE NONE
-#define POWER_CONTROL_RESET_VALUE 3
+#define LED_COMPONENT_TYPE altera_avalon_pio
+#define LED_COMPONENT_NAME LED
+#define LED_BASE 0x1010
+#define LED_SPAN 16
+#define LED_END 0x101f
+#define LED_BIT_CLEARING_EDGE_REGISTER 0
+#define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define LED_CAPTURE 0
+#define LED_DATA_WIDTH 8
+#define LED_DO_TEST_BENCH_WIRING 0
+#define LED_DRIVEN_SIM_VALUE 0
+#define LED_EDGE_TYPE NONE
+#define LED_FREQ 50000000
+#define LED_HAS_IN 0
+#define LED_HAS_OUT 1
+#define LED_HAS_TRI 0
+#define LED_IRQ_TYPE NONE
+#define LED_RESET_VALUE 0
 
 /*
  * Macros for device 'FanControl_0', class 'FanControl'
@@ -101,15 +101,26 @@
 #define BALLJOINT_1_END 0x10bf
 
 /*
+ * Macros for device 'BALLJOINT_0', class 'I2C'
+ * The macros are prefixed with 'BALLJOINT_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define BALLJOINT_0_COMPONENT_TYPE I2C
+#define BALLJOINT_0_COMPONENT_NAME BALLJOINT_0
+#define BALLJOINT_0_BASE 0x10c0
+#define BALLJOINT_0_SPAN 64
+#define BALLJOINT_0_END 0x10ff
+
+/*
  * Macros for device 'auxilliary_I2C_3', class 'I2C'
  * The macros are prefixed with 'AUXILLIARY_I2C_3_'.
  * The prefix is the slave descriptor.
  */
 #define AUXILLIARY_I2C_3_COMPONENT_TYPE I2C
 #define AUXILLIARY_I2C_3_COMPONENT_NAME auxilliary_I2C_3
-#define AUXILLIARY_I2C_3_BASE 0x10c0
+#define AUXILLIARY_I2C_3_BASE 0x1100
 #define AUXILLIARY_I2C_3_SPAN 64
-#define AUXILLIARY_I2C_3_END 0x10ff
+#define AUXILLIARY_I2C_3_END 0x113f
 
 /*
  * Macros for device 'auxilliary_I2C_2', class 'I2C'
@@ -118,9 +129,9 @@
  */
 #define AUXILLIARY_I2C_2_COMPONENT_TYPE I2C
 #define AUXILLIARY_I2C_2_COMPONENT_NAME auxilliary_I2C_2
-#define AUXILLIARY_I2C_2_BASE 0x1100
+#define AUXILLIARY_I2C_2_BASE 0x1140
 #define AUXILLIARY_I2C_2_SPAN 64
-#define AUXILLIARY_I2C_2_END 0x113f
+#define AUXILLIARY_I2C_2_END 0x117f
 
 /*
  * Macros for device 'auxilliary_I2C_1', class 'I2C'
@@ -129,9 +140,9 @@
  */
 #define AUXILLIARY_I2C_1_COMPONENT_TYPE I2C
 #define AUXILLIARY_I2C_1_COMPONENT_NAME auxilliary_I2C_1
-#define AUXILLIARY_I2C_1_BASE 0x1140
+#define AUXILLIARY_I2C_1_BASE 0x1180
 #define AUXILLIARY_I2C_1_SPAN 64
-#define AUXILLIARY_I2C_1_END 0x117f
+#define AUXILLIARY_I2C_1_END 0x11bf
 
 /*
  * Macros for device 'auxilliary_I2C_0', class 'I2C'
@@ -140,20 +151,9 @@
  */
 #define AUXILLIARY_I2C_0_COMPONENT_TYPE I2C
 #define AUXILLIARY_I2C_0_COMPONENT_NAME auxilliary_I2C_0
-#define AUXILLIARY_I2C_0_BASE 0x1180
+#define AUXILLIARY_I2C_0_BASE 0x11c0
 #define AUXILLIARY_I2C_0_SPAN 64
-#define AUXILLIARY_I2C_0_END 0x11bf
-
-/*
- * Macros for device 'BALLJOINT_0', class 'I2C'
- * The macros are prefixed with 'BALLJOINT_0_'.
- * The prefix is the slave descriptor.
- */
-#define BALLJOINT_0_COMPONENT_TYPE I2C
-#define BALLJOINT_0_COMPONENT_NAME BALLJOINT_0
-#define BALLJOINT_0_BASE 0x11c0
-#define BALLJOINT_0_SPAN 64
-#define BALLJOINT_0_END 0x11ff
+#define AUXILLIARY_I2C_0_END 0x11ff
 
 /*
  * Macros for device 'FanControl_1', class 'FanControl'
@@ -189,15 +189,63 @@
 #define FANCONTROL_3_END 0x125f
 
 /*
+ * Macros for device 'LED_0', class 'altera_avalon_pio'
+ * The macros are prefixed with 'LED_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define LED_0_COMPONENT_TYPE altera_avalon_pio
+#define LED_0_COMPONENT_NAME LED_0
+#define LED_0_BASE 0x1260
+#define LED_0_SPAN 16
+#define LED_0_END 0x126f
+#define LED_0_BIT_CLEARING_EDGE_REGISTER 0
+#define LED_0_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define LED_0_CAPTURE 0
+#define LED_0_DATA_WIDTH 8
+#define LED_0_DO_TEST_BENCH_WIRING 0
+#define LED_0_DRIVEN_SIM_VALUE 0
+#define LED_0_EDGE_TYPE NONE
+#define LED_0_FREQ 50000000
+#define LED_0_HAS_IN 0
+#define LED_0_HAS_OUT 1
+#define LED_0_HAS_TRI 0
+#define LED_0_IRQ_TYPE NONE
+#define LED_0_RESET_VALUE 255
+
+/*
+ * Macros for device 'POWER_CONTROL', class 'altera_avalon_pio'
+ * The macros are prefixed with 'POWER_CONTROL_'.
+ * The prefix is the slave descriptor.
+ */
+#define POWER_CONTROL_COMPONENT_TYPE altera_avalon_pio
+#define POWER_CONTROL_COMPONENT_NAME POWER_CONTROL
+#define POWER_CONTROL_BASE 0x1270
+#define POWER_CONTROL_SPAN 16
+#define POWER_CONTROL_END 0x127f
+#define POWER_CONTROL_BIT_CLEARING_EDGE_REGISTER 0
+#define POWER_CONTROL_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define POWER_CONTROL_CAPTURE 0
+#define POWER_CONTROL_DATA_WIDTH 2
+#define POWER_CONTROL_DO_TEST_BENCH_WIRING 0
+#define POWER_CONTROL_DRIVEN_SIM_VALUE 0
+#define POWER_CONTROL_EDGE_TYPE NONE
+#define POWER_CONTROL_FREQ 50000000
+#define POWER_CONTROL_HAS_IN 0
+#define POWER_CONTROL_HAS_OUT 1
+#define POWER_CONTROL_HAS_TRI 0
+#define POWER_CONTROL_IRQ_TYPE NONE
+#define POWER_CONTROL_RESET_VALUE 3
+
+/*
  * Macros for device 'POWER_SENSE', class 'altera_avalon_pio'
  * The macros are prefixed with 'POWER_SENSE_'.
  * The prefix is the slave descriptor.
  */
 #define POWER_SENSE_COMPONENT_TYPE altera_avalon_pio
 #define POWER_SENSE_COMPONENT_NAME POWER_SENSE
-#define POWER_SENSE_BASE 0x1260
+#define POWER_SENSE_BASE 0x1280
 #define POWER_SENSE_SPAN 16
-#define POWER_SENSE_END 0x126f
+#define POWER_SENSE_END 0x128f
 #define POWER_SENSE_BIT_CLEARING_EDGE_REGISTER 0
 #define POWER_SENSE_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define POWER_SENSE_CAPTURE 0
@@ -219,9 +267,9 @@
  */
 #define SWITCHES_COMPONENT_TYPE altera_avalon_pio
 #define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x1270
+#define SWITCHES_BASE 0x1290
 #define SWITCHES_SPAN 16
-#define SWITCHES_END 0x127f
+#define SWITCHES_END 0x129f
 #define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
 #define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define SWITCHES_CAPTURE 0
@@ -235,30 +283,6 @@
 #define SWITCHES_HAS_TRI 0
 #define SWITCHES_IRQ_TYPE NONE
 #define SWITCHES_RESET_VALUE 0
-
-/*
- * Macros for device 'LED', class 'altera_avalon_pio'
- * The macros are prefixed with 'LED_'.
- * The prefix is the slave descriptor.
- */
-#define LED_COMPONENT_TYPE altera_avalon_pio
-#define LED_COMPONENT_NAME LED
-#define LED_BASE 0x1280
-#define LED_SPAN 16
-#define LED_END 0x128f
-#define LED_BIT_CLEARING_EDGE_REGISTER 0
-#define LED_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define LED_CAPTURE 0
-#define LED_DATA_WIDTH 8
-#define LED_DO_TEST_BENCH_WIRING 0
-#define LED_DRIVEN_SIM_VALUE 0
-#define LED_EDGE_TYPE NONE
-#define LED_FREQ 50000000
-#define LED_HAS_IN 0
-#define LED_HAS_OUT 1
-#define LED_HAS_TRI 0
-#define LED_IRQ_TYPE NONE
-#define LED_RESET_VALUE 0
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

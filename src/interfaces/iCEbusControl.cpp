@@ -18,8 +18,8 @@ IcebusControl::IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &bas
               else
                 SetPoint(m->motor_id_global, 0);
               control_Parameters_t params;
-              GetDefaultControlParams(&params, 3);
-              SetControlMode(m->motor_id_global, 3, params);
+              GetDefaultControlParams(&params, 0);
+              SetControlMode(m->motor_id_global, 0, params);
               SetCurrentLimit(m->motor_id_global, 2.0);
             }
         }
