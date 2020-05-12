@@ -144,12 +144,15 @@ void RoboyPlexus::MotorStatePublisher() {
       for(auto &bus:motorControl){
         for(auto m:bus->motor_config->motor){
           if(bus->MyMotor(m.first)){
-            msg.setpoint[i] = bus->GetSetPoint(m.first);
-            msg.encoder0_pos[i] = bus->GetEncoderPosition(m.first,ENCODER0_POSITION);
-            msg.encoder1_pos[i] = bus->GetEncoderPosition(m.first,ENCODER1_POSITION);
+            switch(control_mode[m.first]){
+              case ENCODER0_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor; break;
+              case ENCODER1_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor; break;
+              default: msg.setpoint[i] = bus->GetSetPoint(m.first);
+            }
+            msg.encoder0_pos[i] = bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor;
+            msg.encoder1_pos[i] = bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor;
             msg.displacement[i] = bus->GetDisplacement(m.first);
-            msg.current[i] = bus->GetCurrent(m.first); // running mean filter the current
-            // ROS_INFO_THROTTLE(1,"%x",msg.current[i]);
+            msg.current[i] = bus->GetCurrent(m.first);
             i++;
           }
         }
@@ -163,36 +166,61 @@ void RoboyPlexus::MotorInfoPublisher() {
     ros::Rate rate(10);
     int32_t light_up_motor = 0;
     bool dir = true;
+
+    roboy_middleware_msgs::MotorInfo msg;
+    for (auto &m:motorControl[0]->motor_config->motor) {
+      msg.global_id.push_back(m.first);
+    }
+    msg.setpoint.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.control_mode.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.Kp.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.Ki.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.Kd.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.deadband.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.setpoint.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.IntegralLimit.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.PWMLimit.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.pwm.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.current_limit.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.communication_quality.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.error_code.resize(motorControl[0]->motor_config->total_number_of_motors);
+    msg.neopixelColor.resize(motorControl[0]->motor_config->total_number_of_motors);
+
     while (keep_publishing && ros::ok()) {
-        roboy_middleware_msgs::MotorInfo msg;
+        int i = 0;
         for(auto &bus:motorControl){
           for(auto m:bus->motor_config->motor){
             if(bus->MyMotor(m.first)){
               int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
               bus->GetControllerParameter(m.first, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
-              msg.control_mode.push_back(bus->GetControlMode(m.first));
-              msg.Kp.push_back(Kp);
-              msg.Ki.push_back(Ki);
-              msg.Kd.push_back(Kd);
-              msg.deadband.push_back(deadband);
-              msg.IntegralLimit.push_back(IntegralLimit);
-              msg.PWMLimit.push_back(PWMLimit);
-              msg.current_limit.push_back(bus->GetCurrentLimit(m.first));
+              msg.control_mode[i] = bus->GetControlMode(m.first);
+              msg.Kp[i] = Kp;
+              msg.Ki[i] = Ki;
+              msg.Kd[i] = Kd;
+              msg.deadband[i] = deadband;
+              msg.IntegralLimit[i] = IntegralLimit;
+              msg.PWMLimit[i] = PWMLimit;
+              msg.current_limit[i] = bus->GetCurrentLimit(m.first);
               int32_t communication_quality = bus->GetCommunicationQuality(m.first);
               string error_code = bus->GetErrorCode(m.first);
               // if(communication_quality==0 && error_code!="timeout")
               //   error_code = "---";
-              msg.communication_quality.push_back(communication_quality);
-              msg.error_code.push_back(error_code);
-              msg.neopixelColor.push_back(bus->GetNeopixelColor(m.first));
-              msg.setpoint.push_back(bus->GetSetPoint(m.first));
-              msg.pwm.push_back(bus->GetPWM(m.first));
+              msg.communication_quality[i] = communication_quality;
+              msg.error_code[i] = error_code;
+              msg.neopixelColor[i] = bus->GetNeopixelColor(m.first);
+              switch(control_mode[m.first]){
+                case ENCODER0_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor; break;
+                case ENCODER1_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor; break;
+                default: msg.setpoint[i] = bus->GetSetPoint(m.first);
+              }
+              msg.pwm[i] = bus->GetPWM(m.first);
               if(!external_led_control){
                 if(light_up_motor==m.first)
                     bus->SetNeopixelColor(m.first,0x00000F);
                 else
                     bus->SetNeopixelColor(m.first,0);
               }
+              i++;
             }
           }
 
@@ -258,6 +286,7 @@ uint8_t RoboyPlexus::reverseBits(uint8_t v){
 }
 
 void RoboyPlexus::MagneticJointPublisher() {
+    ROS_INFO("MagneticJointPublisher started");
     ros::Rate rate(100);
     while (ros::ok()) {
       int i=0;
@@ -277,16 +306,34 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
     for (auto motor:msg->motor) {
       for(auto &bus:motorControl){
         if(bus->MyMotor(motor)){
-          if(control_mode[motor]!=3){
-            bus->SetPoint(motor, msg->setpoint[i]);
-          }else{
-            bool direct_pwm_override;
-            nh->getParam("direct_pwm_override",direct_pwm_override);
-            if(fabsf(msg->setpoint[i])>128 && !direct_pwm_override) {
-                ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>128), "
-                                    "what the heck are you publishing?!");
-            }else {
-                bus->SetPoint(motor, msg->setpoint[i]);
+          switch(control_mode[motor]){
+            case ENCODER0_POSITION: {
+              int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor;
+              bus->SetPoint(motor, setpoint);
+              break;
+            }
+            case ENCODER1_POSITION: {
+              int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder1_conversion_factor;
+              bus->SetPoint(motor, setpoint);
+              break;
+            }
+            case DISPLACEMENT: {
+              bus->SetPoint(motor, msg->setpoint[i]);
+              break;
+            }
+            case DIRECT_PWM: {
+              bool direct_pwm_override;
+              nh->getParam("direct_pwm_override",direct_pwm_override);
+              if(fabsf(msg->setpoint[i])>200 && !direct_pwm_override) {
+                  ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>200), "
+                                      "what the heck are you publishing?!, "
+                                      "you can enable/disable this check by setting the ros parameter direct_pwm_override, "
+                                      "execute from the commandline:\n"
+                                      "rosparam set direct_pwm_override true");
+              }else {
+                  bus->SetPoint(motor, msg->setpoint[i]);
+              }
+              break;
             }
           }
         }
@@ -360,7 +407,36 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                     bus->SetControlMode(motor, req.control_mode);
                     control_mode[motor] = req.control_mode;
                     if(i<req.set_points.size()){
-                      bus->SetPoint(motor, req.set_points[i]);
+                      switch(control_mode[motor]){
+                        case ENCODER0_POSITION: {
+                          int setpoint = req.set_points[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor;
+                          bus->SetPoint(motor, setpoint);
+                          break;
+                        }
+                        case ENCODER1_POSITION: {
+                          int setpoint = req.set_points[i]/bus->motor_config->motor[motor]->encoder1_conversion_factor;
+                          bus->SetPoint(motor, setpoint);
+                          break;
+                        }
+                        case DISPLACEMENT: {
+                          bus->SetPoint(motor, req.set_points[i]);
+                          break;
+                        }
+                        case DIRECT_PWM: {
+                          bool direct_pwm_override;
+                          nh->getParam("direct_pwm_override",direct_pwm_override);
+                          if(fabsf(req.set_points[i])>200 && !direct_pwm_override) {
+                              ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>200), "
+                                                  "what the heck are you publishing?!, "
+                                                  "you can enable/disable this check by setting the ros parameter direct_pwm_override, "
+                                                  "execute from the commandline:\n"
+                                                  "rosparam set direct_pwm_override true");
+                          }else {
+                              bus->SetPoint(motor, req.set_points[i]);
+                          }
+                          break;
+                        }
+                      }
                     }
                     ROS_INFO("changing control mode of motor %d on %s to %d", motor, bus->whoami().c_str(), req.control_mode);
                   }

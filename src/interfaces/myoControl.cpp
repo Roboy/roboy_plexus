@@ -311,6 +311,8 @@ bool MyoControl::SetControlMode(int motor, int mode) {
 bool MyoControl::SetControlMode(int mode) {
     if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
         for (auto m:motor_config->motor) {
+          if(!MyMotor(m.first))
+            continue;
           MYO_WRITE_control_mode(myo_base[motor_config->motor[m.first]->bus],
                                             motor_config->motor[m.first]->motor_id, mode);
           MYO_WRITE_Kp(myo_base[motor_config->motor[m.first]->bus], motor_config->motor[m.first]->motor_id,
@@ -424,24 +426,14 @@ void MyoControl::GetDefaultControlParams(control_Parameters_t *params, int contr
            params->deadband = 0;
            params->PWMLimit = 500;
            break;
-//        case ENCODER0_VELOCITY: //TODO: velocity control not implemented yet
-//            params->IntegralLimit = 0;
-//            params->Kp = 0;
-//            params->Ki = 0;
-//            params->Kd = 0;
-//            params->deadband = 0;
-//            params->PWMLimit = 0;
-//            ROS_WARN("velocity control not available yet, disabling controller");
-//            break;
-//        case ENCODER1_VELOCITY: //TODO: velocity control not implemented yet
-//            params->IntegralLimit = 0;
-//            params->Kp = 0;
-//            params->Ki = 0;
-//            params->Kd = 0;
-//            params->deadband = 0;
-//            params->PWMLimit = 0;
-//            ROS_WARN("velocity control not available yet, disabling controller");
-//            break;
+       case DISPLACEMENT:
+           params->IntegralLimit = 25;
+           params->Kp = 1;
+           params->Ki = 0;
+           params->Kd = 0;
+           params->deadband = 0;
+           params->PWMLimit = 500;
+           break;
        case DIRECT_PWM:
            params->IntegralLimit = 25;
            params->Kp = 1;
