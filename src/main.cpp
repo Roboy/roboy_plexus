@@ -64,7 +64,7 @@ vector<int32_t*> h2p_lw_myo_addr;
 vector<int32_t*> h2p_lw_auxilliary_i2c_addr;
 vector<int32_t*> h2p_lw_ball_joint_addr;
 vector<int32_t*> h2p_lw_fan_control_addr;
-vector<int32_t*> i2c_base;
+int32_t* h2p_lw_tli4970_addr;
 
 IcebusControlPtr icebusControl;
 MyoControlPtr myoControl;
@@ -150,6 +150,12 @@ int main(int argc, char *argv[]) {
     h2p_lw_power_control_addr = (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + POWER_CONTROL_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
 #else
     h2p_lw_power_control_addr = nullptr;
+#endif
+
+#ifdef TLI4970_BASE
+    h2p_lw_tli4970_addr= (int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + TLI4970_BASE ) & ( unsigned long)( HW_REGS_MASK )) );
+#else
+    h2p_lw_tli4970_addr = nullptr;
 #endif
 
 #ifdef ICEBUSCONTROL_0_BASE
@@ -250,7 +256,7 @@ int main(int argc, char *argv[]) {
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
     RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,
-        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,myoControl);
+        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,h2p_lw_tli4970_addr,myoControl);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////

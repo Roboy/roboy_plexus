@@ -68,6 +68,7 @@
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32.h>
 #include "sensors/tle493d_w2b6.hpp"
+#include "sensors/tli4970.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -88,6 +89,7 @@ public:
                 int32_t *power_control,
                 int32_t *power_sense,
                 vector<int32_t *> &i2c_base,
+                int32_t * tli4970_base,
                 MyoControlPtr myoControl = nullptr);
 
     ~RoboyPlexus();
@@ -215,7 +217,6 @@ private:
     boost::shared_ptr<std::thread> elbowJointAngleThread, magneticsThread,
         motorInfoThread, motorStateThread, roboyStateThread;
     bool keep_publishing = true;
-    vector<int32_t *> i2c_base;
     vector<TLE493DPtr> balljoints;
     bool emergency_stop = false;
     string ethaddr;
@@ -224,6 +225,7 @@ private:
     bool power_5V_enabled = false, power_12V_enabled = false;
     string body_part;
     vector<string> body_parts;
+    TLI4970Ptr tli4970;
 };
 
 /** @} */ // end of group1

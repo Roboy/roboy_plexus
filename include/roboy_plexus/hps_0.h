@@ -41,7 +41,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1589291484
+#define SYSID_QSYS_TIMESTAMP 1589389528
 
 /*
  * Macros for device 'LED', class 'altera_avalon_pio'
@@ -250,6 +250,17 @@
 #define SWITCHES_HAS_TRI 0
 #define SWITCHES_IRQ_TYPE NONE
 #define SWITCHES_RESET_VALUE 0
+
+/*
+ * Macros for device 'TLI4970', class 'TLI4970'
+ * The macros are prefixed with 'TLI4970_'.
+ * The prefix is the slave descriptor.
+ */
+#define TLI4970_COMPONENT_TYPE TLI4970
+#define TLI4970_COMPONENT_NAME TLI4970
+#define TLI4970_BASE 0x11e0
+#define TLI4970_SPAN 8
+#define TLI4970_END 0x11e7
 
 /*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'

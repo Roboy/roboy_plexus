@@ -72,6 +72,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/utility/UDPSocket.cpp
             src/sensors/BallJoint.cpp
             src/sensors/tle493d_w2b6.cpp
+            src/sensors/tli4970.cpp
             ../common_utilities/src/MotorConfig.cpp
             include/roboy_plexus/interfaces/iCEbusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp
@@ -83,6 +84,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             ../common_utilities/include/common_utilities/MotorConfig.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/sensors/BallJoint.hpp
+            include/roboy_plexus/sensors/tli4970.hpp
             )
     add_dependencies(roboy_plexus roboy_middleware_msgs_gencpp roboy_control_msgs_gencpp roboy_simulation_msgs_gencpp)
     target_link_libraries( roboy_plexus -lpthread -lrt ${ros_LIBRARIES} )

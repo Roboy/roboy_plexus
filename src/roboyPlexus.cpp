@@ -8,10 +8,11 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         int32_t *power_control,
         int32_t *power_sense,
         vector<int32_t *> &i2c_base,
+        int32_t * tli4970_base,
         MyoControlPtr myoControl) :
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
         power_control(power_control), power_sense(power_sense), switches(switches), led(led),
-        i2c_base(i2c_base),myoControl(myoControl){
+        myoControl(myoControl){
     ROS_INFO("roboy3 plexus initializing");
 
     ifstream ifile("/sys/class/net/eth0/address");
@@ -117,6 +118,11 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
       //   }
       // }
     }
+
+    if(tli4970_base!=nullptr){
+      tli4970.reset(new TLI4970(tli4970_base));
+    }
+
     ROS_INFO("roboy plexus initialized");
 }
 
@@ -241,17 +247,19 @@ void RoboyPlexus::MotorInfoPublisher() {
 }
 
 void RoboyPlexus::RoboyStatePublisher(){
-  roboy_middleware_msgs::RoboyState msg;
-  msg.power_sense.resize(6);
   ros::Rate rate(2);
   while(ros::ok()){
     int32_t state = *power_sense;
+    roboy_middleware_msgs::RoboyState msg;
+    msg.power_sense.resize(6);
     int j = msg.power_sense.size()-1;
     for(int i=0;i<msg.power_sense.size();i++){
       msg.power_sense[j--] = !((state>>i)&0x1);
     }
     msg.power_5V_enabled = power_5V_enabled;
     msg.power_12V_enabled = power_12V_enabled;
+    if(tli4970!=nullptr)
+      tli4970->readCurrent(msg.current);
     roboyState.publish(msg);
     rate.sleep();
   }
