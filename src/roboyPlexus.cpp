@@ -135,31 +135,23 @@ RoboyPlexus::~RoboyPlexus() {
 
 void RoboyPlexus::MotorStatePublisher() {
   ros::Rate rate(100);
-  roboy_middleware_msgs::MotorState msg;
-  for (auto &m:motorControl[0]->motor_config->motor) {
-    msg.global_id.push_back(m.first);
-  }
-  msg.setpoint.resize(motorControl[0]->motor_config->total_number_of_motors);
-  msg.encoder0_pos.resize(motorControl[0]->motor_config->total_number_of_motors);
-  msg.encoder1_pos.resize(motorControl[0]->motor_config->total_number_of_motors);
-  msg.displacement.resize(motorControl[0]->motor_config->total_number_of_motors);
-  msg.current.resize(motorControl[0]->motor_config->total_number_of_motors);
 
   while (keep_publishing && ros::ok()) {
-      int i = 0;
+      roboy_middleware_msgs::MotorState msg;
       for(auto &bus:motorControl){
         for(auto m:bus->motor_config->motor){
           if(bus->MyMotor(m.first)){
+            msg.global_id.push_back(m.first);
             switch(control_mode[m.first]){
-              case ENCODER0_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor; break;
-              case ENCODER1_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor; break;
-              default: msg.setpoint[i] = bus->GetSetPoint(m.first);
+              case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor); break;
+              case ENCODER1_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor); break;
+              default: msg.setpoint.push_back(bus->GetSetPoint(m.first));
             }
-            msg.encoder0_pos[i] = bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor;
-            msg.encoder1_pos[i] = bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor;
-            msg.displacement[i] = bus->GetDisplacement(m.first);
-            msg.current[i] = bus->GetCurrent(m.first);
-            i++;
+            msg.encoder0_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor);
+            msg.encoder1_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor);
+            // msg.displacement.push_back(bus->GetDisplacement(m.first));
+            msg.displacement.push_back(msg.encoder0_pos.back()-msg.encoder1_pos.back());
+            msg.current.push_back(bus->GetCurrent(m.first));
           }
         }
       }
