@@ -165,53 +165,36 @@ void RoboyPlexus::MotorInfoPublisher() {
     int32_t light_up_motor = 0;
     bool dir = true;
 
-    roboy_middleware_msgs::MotorInfo msg;
-    for (auto &m:motorControl[0]->motor_config->motor) {
-      msg.global_id.push_back(m.first);
-    }
-    msg.setpoint.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.control_mode.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.Kp.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.Ki.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.Kd.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.deadband.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.setpoint.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.IntegralLimit.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.PWMLimit.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.pwm.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.current_limit.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.communication_quality.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.error_code.resize(motorControl[0]->motor_config->total_number_of_motors);
-    msg.neopixelColor.resize(motorControl[0]->motor_config->total_number_of_motors);
-
     while (keep_publishing && ros::ok()) {
         int i = 0;
+        roboy_middleware_msgs::MotorInfo msg;
         for(auto &bus:motorControl){
           for(auto m:bus->motor_config->motor){
             if(bus->MyMotor(m.first)){
+              msg.global_id.push_back(m.first);
               int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
               bus->GetControllerParameter(m.first, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
-              msg.control_mode[i] = bus->GetControlMode(m.first);
-              msg.Kp[i] = Kp;
-              msg.Ki[i] = Ki;
-              msg.Kd[i] = Kd;
-              msg.deadband[i] = deadband;
-              msg.IntegralLimit[i] = IntegralLimit;
-              msg.PWMLimit[i] = PWMLimit;
-              msg.current_limit[i] = bus->GetCurrentLimit(m.first);
+              msg.control_mode.push_back(bus->GetControlMode(m.first));
+              msg.Kp.push_back(Kp);
+              msg.Ki.push_back(Ki);
+              msg.Kd.push_back(Kd);
+              msg.deadband.push_back(deadband);
+              msg.IntegralLimit.push_back(IntegralLimit);
+              msg.PWMLimit.push_back(PWMLimit);
+              msg.current_limit.push_back(bus->GetCurrentLimit(m.first));
               int32_t communication_quality = bus->GetCommunicationQuality(m.first);
               string error_code = bus->GetErrorCode(m.first);
               // if(communication_quality==0 && error_code!="timeout")
               //   error_code = "---";
-              msg.communication_quality[i] = communication_quality;
-              msg.error_code[i] = error_code;
-              msg.neopixelColor[i] = bus->GetNeopixelColor(m.first);
+              msg.communication_quality.push_back(communication_quality);
+              msg.error_code.push_back(error_code);
+              msg.neopixelColor.push_back(bus->GetNeopixelColor(m.first));
               switch(control_mode[m.first]){
-                case ENCODER0_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor; break;
-                case ENCODER1_POSITION: msg.setpoint[i] = bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor; break;
-                default: msg.setpoint[i] = bus->GetSetPoint(m.first);
+                case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor); break;
+                case ENCODER1_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor); break;
+                default: msg.setpoint.push_back(bus->GetSetPoint(m.first));
               }
-              msg.pwm[i] = bus->GetPWM(m.first);
+              msg.pwm.push_back(bus->GetPWM(m.first));
               if(!external_led_control){
                 if(light_up_motor==m.first)
                     bus->SetNeopixelColor(m.first,0x00000F);
