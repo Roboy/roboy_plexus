@@ -56,7 +56,7 @@ using namespace std;
 
 class TLE493D {
 public:
-    TLE493D(int32_t *i2c_base, int number_of_sensors=4);
+    TLE493D(int32_t *i2c_base, uint8_t tca_addr, int number_of_sensors=4);
 
     ~TLE493D();
 
@@ -69,7 +69,7 @@ public:
 public:
     boost::shared_ptr<I2C> i2c;
     int32_t *i2c_base;
-
+    uint8_t tca_addr;
 };
 
 typedef boost::shared_ptr<TLE493D> TLE493DPtr;

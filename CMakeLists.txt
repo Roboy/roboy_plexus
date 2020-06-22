@@ -92,6 +92,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     add_executable( automaticRoboyPlexusLauncher src/utility/ROS_MASTER_URI_receiver.cpp src/utility/UDPSocket.cpp)
     target_link_libraries( automaticRoboyPlexusLauncher -lpthread -lrt ${ros_LIBRARIES} )
 
+    add_executable( magnetic_field_calibration src/magnetic_field_calibration.cpp src/sensors/tle493d_w2b6.cpp src/interfaces/i2c.cpp src/sensors/A1335.cpp)
+    target_link_libraries( magnetic_field_calibration -lpthread -lrt ${ros_LIBRARIES} )
     #==============================================================================
     # Installation
     #==============================================================================

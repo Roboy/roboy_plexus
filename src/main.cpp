@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config,h2p_lw_icebus_addr));
     vector<TLE493DPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)
-      balljoints.push_back(TLE493DPtr(new TLE493D(addr)));
+      balljoints.push_back(TLE493DPtr(new TLE493D(addr,0x70)));
     vector<FanControlPtr> fanControls;
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
