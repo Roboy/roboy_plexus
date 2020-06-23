@@ -25,7 +25,7 @@ int32_t* h2p_lw_a1335_addr;
 int32_t* h2p_lw_pwm_addr;
 
 float target = 100.0, Kp = 1, Ki = 0.1, integral = 0, integralLimit = 5,
-  PWMLimit = 20, error = 0.0, result = 0.0, zero_speed = 310, position_prev = 0, position = 0;
+  PWMLimit = 50, error = 0.0, result = 0.0, zero_speed = 310, position_prev = 0, position = 0;
 int overflow_counter = 0;
 
 void MotorCommand(const std_msgs::Float32::ConstPtr &msg){
@@ -81,7 +81,8 @@ int main(int argc, char *argv[]) {
     spinner.start();
 //
     ros::Publisher magneticSensor = nh.advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",1);
-    ros::Subscriber motorCommand_sub = nh.subscribe("/motor_position", 1, &MotorCommand);
+    ros::Publisher motor_position = nh.advertise<std_msgs::Float32>("/motor_position",1);
+    ros::Subscriber motor_target = nh.subscribe("/motor_target", 1, &MotorCommand);
 
     int tca_addr[] = {0x70,0x71,0x72,0x73,0x74,0x75,0x76};
     int number_of_sensors[] = {4,4,4,2,4,4,4};
@@ -114,6 +115,10 @@ int main(int argc, char *argv[]) {
         if(position_prev<20 && state[0].angle > 340)
           overflow_counter--;
         position = state[0].angle + overflow_counter*360;
+        std_msgs::Float32 msg2;
+        msg2.data = position;
+        motor_position.publish(msg2);  
+
         position_prev = state[0].angle;
 
         error = target - position;
