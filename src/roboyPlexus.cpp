@@ -104,10 +104,12 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
 
     if(!fanControls.empty()){
       for(auto fan:fanControls){
-        fan->SetAutoFan(true);
+        fan->SetPWMFrequency(20000);
+        fan->SetAutoFan(false);
         ROS_INFO("auto fan is %s", (fan->GetAutoFan()?"on":"off"));
         fan->SetSensitivity(1);
         ROS_INFO("fan pwm freq %d, duty %d",fan->GetPWMFrequency(), fan->GetDuty());
+        fan->SetDuty(100);
       }
       // ros::Rate rate(10);
       //

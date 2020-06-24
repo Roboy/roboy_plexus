@@ -82,7 +82,8 @@ void SigintHandler(int sig)
       *h2p_lw_led_addr = ~(*h2p_lw_led_addr);
       rate.sleep();
     }
-
+    for(auto base:h2p_lw_fan_control_addr)
+      IOWR(base,1,0);
 
     *h2p_lw_led_addr = 0x00;
 
