@@ -76,6 +76,7 @@ void SigintHandler(int sig)
     *h2p_lw_power_control_addr = 0x3;
     // All the default sigint handler does is call shutdown()
     ros::shutdown();
+    icebusControl->AllToSetpoint(DIRECT_PWM,0);
     ros::Rate rate(10);
     *h2p_lw_led_addr = 0;
     for(int i=0;i<10;i++){

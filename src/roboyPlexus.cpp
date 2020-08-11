@@ -309,8 +309,8 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
             case DIRECT_PWM: {
               bool direct_pwm_override;
               nh->getParam("direct_pwm_override",direct_pwm_override);
-              if(fabsf(msg->setpoint[i])>200 && !direct_pwm_override) {
-                  ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>200), "
+              if(fabsf(msg->setpoint[i])>1000 && !direct_pwm_override) {
+                  ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>1000), "
                                       "what the heck are you publishing?!, "
                                       "you can enable/disable this check by setting the ros parameter direct_pwm_override, "
                                       "execute from the commandline:\n"
@@ -475,19 +475,6 @@ bool RoboyPlexus::EmergencyStopService(std_srvs::SetBool::Request &req,
 
     if (req.data == 1) {
         ROS_INFO("emergency stop service called");
-        // switch to displacement
-        ros::Rate rate(100);
-        for (int decrements = 99; decrements >= 0; decrements -= 1) {
-            for (uint motor = 0; motor < icebusControl->motor_config->total_number_of_motors; motor++) {
-                int displacement = icebusControl->GetEncoderPosition(motor,ENCODER1);
-                if (displacement <= 0)
-                    continue;
-                else
-                    icebusControl->SetPoint(motor, displacement * (decrements / 100.0));
-            }
-            rate.sleep();
-        }
-
         control_mode_backup = control_mode;
         control_params_backup = icebusControl->control_params;
         control_Parameters_t params;

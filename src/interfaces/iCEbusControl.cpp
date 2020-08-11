@@ -214,7 +214,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
     switch (control_mode) {
         case ENCODER0_POSITION:
             params->IntegralLimit = 25;
-            params->Kp = 1;
+            params->Kp = 16;
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
@@ -222,7 +222,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             break;
         case ENCODER1_POSITION:
             params->IntegralLimit = 25;
-            params->Kp = 1;
+            params->Kp = 16;
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
