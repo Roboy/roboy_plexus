@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name roboy3)(type Legacy)(uri /home/letrend/workspace/roboy3/src/roboy_plexus/docs/connection_diagram/roboy3.lib)(options "")(descr ""))
+)
