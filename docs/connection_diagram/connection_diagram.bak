@@ -1723,7 +1723,7 @@ L roboy3:openbionics_hand U?
 U 1 1 5F90A7C0
 P 14625 20425
 F 0 "U?" H 14675 20375 50  0001 C CNN
-F 1 "openbionics_hand" H 15194 20430 50  0000 L CNN
+F 1 "openbionics_hand" H 14575 19975 50  0000 L CNN
 F 2 "" H 14675 20175 50  0001 C CNN
 F 3 "" H 14675 20175 50  0001 C CNN
 	1    14625 20425
@@ -1764,6 +1764,489 @@ Wire Wire Line
 NoConn ~ 14475 20375
 NoConn ~ 14475 20475
 NoConn ~ 14475 20175
+$Comp
+L roboy3:openbionics_hand U?
+U 1 1 5FA14420
+P 1575 20425
+F 0 "U?" H 1625 20375 50  0001 C CNN
+F 1 "openbionics_hand" H 1525 19975 50  0000 L CNN
+F 2 "" H 1625 20175 50  0001 C CNN
+F 3 "" H 1625 20175 50  0001 C CNN
+	1    1575 20425
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	1725 20075 2025 20075
+Wire Wire Line
+	2025 20075 2025 20200
+Wire Wire Line
+	2025 20200 2275 20200
+Wire Wire Line
+	2275 20100 2075 20100
+Wire Wire Line
+	2075 20100 2075 20775
+Wire Wire Line
+	2075 20775 1725 20775
+Wire Wire Line
+	2275 20500 1925 20500
+Wire Wire Line
+	1925 20500 1925 20175
+Wire Wire Line
+	1925 20175 1725 20175
+Wire Wire Line
+	1725 20275 2200 20275
+Wire Wire Line
+	2200 20275 2200 20300
+Wire Wire Line
+	2200 20300 2275 20300
+Wire Wire Line
+	2275 20400 2150 20400
+Wire Wire Line
+	2150 20400 2150 20575
+Wire Wire Line
+	2150 20575 1725 20575
+NoConn ~ 1725 20375
+NoConn ~ 1725 20475
+NoConn ~ 1725 20675
+$Comp
+L roboy3:ball_joint U?
+U 1 1 5FB3A7E1
+P 1925 8925
+F 0 "U?" H 1875 9625 50  0001 C CNN
+F 1 "ball_joint shoulder_left" V 1800 8925 50  0000 C CNN
+F 2 "" H 1925 8925 50  0001 C CNN
+F 3 "" H 1925 8925 50  0001 C CNN
+	1    1925 8925
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	2250 8475 2350 8575
+Entry Wire Line
+	2250 8575 2350 8675
+Entry Wire Line
+	2250 8675 2350 8775
+Entry Wire Line
+	2250 8775 2350 8875
+Entry Wire Line
+	2250 8875 2350 8975
+Entry Wire Line
+	2250 8975 2350 9075
+Wire Wire Line
+	2250 8475 2225 8475
+Wire Wire Line
+	2225 8575 2250 8575
+Wire Wire Line
+	2250 8675 2225 8675
+Wire Wire Line
+	2225 8775 2250 8775
+Wire Wire Line
+	2250 8875 2225 8875
+Wire Wire Line
+	2225 8975 2250 8975
+Entry Wire Line
+	2250 9075 2350 9175
+Entry Wire Line
+	2250 9175 2350 9275
+Entry Wire Line
+	2250 9275 2350 9375
+Entry Wire Line
+	2250 9375 2350 9475
+Wire Wire Line
+	2250 9075 2225 9075
+Wire Wire Line
+	2225 9175 2250 9175
+Wire Wire Line
+	2250 9275 2225 9275
+Wire Wire Line
+	2225 9375 2250 9375
+Entry Wire Line
+	4800 10675 4900 10575
+Entry Wire Line
+	4900 10675 5000 10575
+Entry Wire Line
+	5000 10675 5100 10575
+Entry Wire Line
+	5100 10675 5200 10575
+Entry Wire Line
+	5200 10675 5300 10575
+Entry Wire Line
+	5300 10675 5400 10575
+Wire Wire Line
+	4800 10675 4800 10700
+Wire Wire Line
+	4900 10700 4900 10675
+Wire Wire Line
+	5000 10675 5000 10700
+Wire Wire Line
+	5100 10700 5100 10675
+Wire Wire Line
+	5200 10675 5200 10700
+Wire Wire Line
+	5300 10700 5300 10675
+Entry Wire Line
+	5400 10675 5500 10575
+Entry Wire Line
+	5500 10675 5600 10575
+Entry Wire Line
+	5600 10675 5700 10575
+Entry Wire Line
+	5700 10675 5800 10575
+Wire Wire Line
+	5400 10675 5400 10700
+Wire Wire Line
+	5500 10700 5500 10675
+Wire Wire Line
+	5600 10675 5600 10700
+Wire Wire Line
+	5700 10700 5700 10675
+Entry Wire Line
+	4800 9925 4900 9825
+Entry Wire Line
+	4900 9925 5000 9825
+Entry Wire Line
+	5000 9925 5100 9825
+Entry Wire Line
+	5100 9925 5200 9825
+Entry Wire Line
+	5200 9925 5300 9825
+Entry Wire Line
+	5300 9925 5400 9825
+Wire Wire Line
+	4800 9925 4800 9950
+Wire Wire Line
+	4900 9950 4900 9925
+Wire Wire Line
+	5000 9925 5000 9950
+Wire Wire Line
+	5100 9950 5100 9925
+Wire Wire Line
+	5200 9925 5200 9950
+Wire Wire Line
+	5300 9950 5300 9925
+Entry Wire Line
+	5400 9925 5500 9825
+Entry Wire Line
+	5500 9925 5600 9825
+Entry Wire Line
+	5600 9925 5700 9825
+Entry Wire Line
+	5700 9925 5800 9825
+Wire Wire Line
+	5400 9925 5400 9950
+Wire Wire Line
+	5500 9950 5500 9925
+Wire Wire Line
+	5600 9925 5600 9950
+Wire Wire Line
+	5700 9950 5700 9925
+Entry Wire Line
+	5900 9925 6000 9825
+Entry Wire Line
+	6000 9925 6100 9825
+Entry Wire Line
+	6100 9925 6200 9825
+Entry Wire Line
+	6200 9925 6300 9825
+Entry Wire Line
+	6300 9925 6400 9825
+Entry Wire Line
+	6400 9925 6500 9825
+Wire Wire Line
+	5900 9925 5900 9950
+Wire Wire Line
+	6000 9950 6000 9925
+Wire Wire Line
+	6100 9925 6100 9950
+Wire Wire Line
+	6200 9950 6200 9925
+Wire Wire Line
+	6300 9925 6300 9950
+Wire Wire Line
+	6400 9950 6400 9925
+Entry Wire Line
+	6500 9925 6600 9825
+Entry Wire Line
+	6600 9925 6700 9825
+Entry Wire Line
+	6700 9925 6800 9825
+Entry Wire Line
+	6800 9925 6900 9825
+Wire Wire Line
+	6500 9925 6500 9950
+Wire Wire Line
+	6600 9950 6600 9925
+Wire Wire Line
+	6700 9925 6700 9950
+Wire Wire Line
+	6800 9950 6800 9925
+Entry Wire Line
+	5900 9175 6000 9075
+Entry Wire Line
+	6000 9175 6100 9075
+Entry Wire Line
+	6100 9175 6200 9075
+Entry Wire Line
+	6200 9175 6300 9075
+Entry Wire Line
+	6300 9175 6400 9075
+Entry Wire Line
+	6400 9175 6500 9075
+Wire Wire Line
+	5900 9175 5900 9200
+Wire Wire Line
+	6000 9200 6000 9175
+Wire Wire Line
+	6100 9175 6100 9200
+Wire Wire Line
+	6200 9200 6200 9175
+Wire Wire Line
+	6300 9175 6300 9200
+Wire Wire Line
+	6400 9200 6400 9175
+Entry Wire Line
+	6500 9175 6600 9075
+Entry Wire Line
+	6600 9175 6700 9075
+Entry Wire Line
+	6700 9175 6800 9075
+Entry Wire Line
+	6800 9175 6900 9075
+Wire Wire Line
+	6500 9175 6500 9200
+Wire Wire Line
+	6600 9200 6600 9175
+Wire Wire Line
+	6700 9175 6700 9200
+Wire Wire Line
+	6800 9200 6800 9175
+Entry Wire Line
+	4800 9175 4900 9075
+Entry Wire Line
+	4900 9175 5000 9075
+Entry Wire Line
+	5000 9175 5100 9075
+Entry Wire Line
+	5100 9175 5200 9075
+Entry Wire Line
+	5200 9175 5300 9075
+Entry Wire Line
+	5300 9175 5400 9075
+Wire Wire Line
+	4800 9175 4800 9200
+Wire Wire Line
+	4900 9200 4900 9175
+Wire Wire Line
+	5000 9175 5000 9200
+Wire Wire Line
+	5100 9200 5100 9175
+Wire Wire Line
+	5200 9175 5200 9200
+Wire Wire Line
+	5300 9200 5300 9175
+Entry Wire Line
+	5400 9175 5500 9075
+Entry Wire Line
+	5500 9175 5600 9075
+Entry Wire Line
+	5600 9175 5700 9075
+Entry Wire Line
+	5700 9175 5800 9075
+Wire Wire Line
+	5400 9175 5400 9200
+Wire Wire Line
+	5500 9200 5500 9175
+Wire Wire Line
+	5600 9175 5600 9200
+Wire Wire Line
+	5700 9200 5700 9175
+Entry Wire Line
+	5900 8425 6000 8325
+Entry Wire Line
+	6000 8425 6100 8325
+Entry Wire Line
+	6100 8425 6200 8325
+Entry Wire Line
+	6200 8425 6300 8325
+Entry Wire Line
+	6300 8425 6400 8325
+Entry Wire Line
+	6400 8425 6500 8325
+Wire Wire Line
+	5900 8425 5900 8450
+Wire Wire Line
+	6000 8450 6000 8425
+Wire Wire Line
+	6100 8425 6100 8450
+Wire Wire Line
+	6200 8450 6200 8425
+Wire Wire Line
+	6300 8425 6300 8450
+Wire Wire Line
+	6400 8450 6400 8425
+Entry Wire Line
+	6500 8425 6600 8325
+Entry Wire Line
+	6600 8425 6700 8325
+Entry Wire Line
+	6700 8425 6800 8325
+Entry Wire Line
+	6800 8425 6900 8325
+Wire Wire Line
+	6500 8425 6500 8450
+Wire Wire Line
+	6600 8450 6600 8425
+Wire Wire Line
+	6700 8425 6700 8450
+Wire Wire Line
+	6800 8450 6800 8425
+Entry Wire Line
+	4800 8425 4900 8325
+Entry Wire Line
+	4900 8425 5000 8325
+Entry Wire Line
+	5000 8425 5100 8325
+Entry Wire Line
+	5100 8425 5200 8325
+Entry Wire Line
+	5200 8425 5300 8325
+Entry Wire Line
+	5300 8425 5400 8325
+Wire Wire Line
+	4800 8425 4800 8450
+Wire Wire Line
+	4900 8450 4900 8425
+Wire Wire Line
+	5000 8425 5000 8450
+Wire Wire Line
+	5100 8450 5100 8425
+Wire Wire Line
+	5200 8425 5200 8450
+Wire Wire Line
+	5300 8450 5300 8425
+Entry Wire Line
+	5400 8425 5500 8325
+Entry Wire Line
+	5500 8425 5600 8325
+Entry Wire Line
+	5600 8425 5700 8325
+Entry Wire Line
+	5700 8425 5800 8325
+Wire Wire Line
+	5400 8425 5400 8450
+Wire Wire Line
+	5500 8450 5500 8425
+Wire Wire Line
+	5600 8425 5600 8450
+Wire Wire Line
+	5700 8450 5700 8425
+$Comp
+L roboy3:ball_joint U?
+U 1 1 5FE1DB16
+P 3650 19850
+F 0 "U?" H 3600 20550 50  0001 C CNN
+F 1 "ball_joint wrist_left" V 3525 19850 50  0000 C CNN
+F 2 "" H 3650 19850 50  0001 C CNN
+F 3 "" H 3650 19850 50  0001 C CNN
+	1    3650 19850
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	3975 19400 4075 19500
+Entry Wire Line
+	3975 19500 4075 19600
+Entry Wire Line
+	3975 19600 4075 19700
+Entry Wire Line
+	3975 19700 4075 19800
+Entry Wire Line
+	3975 19800 4075 19900
+Entry Wire Line
+	3975 19900 4075 20000
+Wire Wire Line
+	3975 19400 3950 19400
+Wire Wire Line
+	3950 19500 3975 19500
+Wire Wire Line
+	3975 19600 3950 19600
+Wire Wire Line
+	3950 19700 3975 19700
+Wire Wire Line
+	3975 19800 3950 19800
+Wire Wire Line
+	3950 19900 3975 19900
+Entry Wire Line
+	3975 20000 4075 20100
+Entry Wire Line
+	3975 20100 4075 20200
+Entry Wire Line
+	3975 20200 4075 20300
+Entry Wire Line
+	3975 20300 4075 20400
+Wire Wire Line
+	3975 20000 3950 20000
+Wire Wire Line
+	3950 20100 3975 20100
+Wire Wire Line
+	3975 20200 3950 20200
+Wire Wire Line
+	3950 20300 3975 20300
+Wire Bus Line
+	5950 9700 5950 9825
+Wire Bus Line
+	2350 9700 5950 9700
+$Comp
+L roboy3:ball_joint U?
+U 1 1 5FEFFC7B
+P 7700 6375
+F 0 "U?" H 7650 7075 50  0001 C CNN
+F 1 "ball_joint neck" V 7575 6375 50  0000 C CNN
+F 2 "" H 7700 6375 50  0001 C CNN
+F 3 "" H 7700 6375 50  0001 C CNN
+	1    7700 6375
+	0    -1   -1   0   
+$EndComp
+Entry Wire Line
+	7250 6050 7350 5950
+Entry Wire Line
+	7350 6050 7450 5950
+Entry Wire Line
+	7450 6050 7550 5950
+Entry Wire Line
+	7550 6050 7650 5950
+Entry Wire Line
+	7650 6050 7750 5950
+Entry Wire Line
+	7750 6050 7850 5950
+Wire Wire Line
+	7250 6050 7250 6075
+Wire Wire Line
+	7350 6075 7350 6050
+Wire Wire Line
+	7450 6050 7450 6075
+Wire Wire Line
+	7550 6075 7550 6050
+Wire Wire Line
+	7650 6050 7650 6075
+Wire Wire Line
+	7750 6075 7750 6050
+Entry Wire Line
+	7850 6050 7950 5950
+Entry Wire Line
+	7950 6050 8050 5950
+Entry Wire Line
+	8050 6050 8150 5950
+Entry Wire Line
+	8150 6050 8250 5950
+Wire Wire Line
+	7850 6050 7850 6075
+Wire Wire Line
+	7950 6075 7950 6050
+Wire Wire Line
+	8050 6050 8050 6075
+Wire Wire Line
+	8150 6075 8150 6050
+Wire Bus Line
+	4275 5950 4275 10575
 Wire Bus Line
 	8300 7950 8600 7950
 Wire Bus Line
@@ -1779,15 +2262,27 @@ Wire Bus Line
 Wire Bus Line
 	9600 7950 12975 7950
 Wire Bus Line
+	13675 7625 13675 18225
+Wire Bus Line
 	2600 7950 2600 18425
 Wire Bus Line
-	13675 7625 13675 18225
+	5950 9825 6900 9825
+Wire Bus Line
+	2350 8575 2350 9700
+Wire Bus Line
+	4075 9825 4075 20400
+Wire Bus Line
+	4075 9825 5800 9825
+Wire Bus Line
+	4275 10575 5800 10575
+Wire Bus Line
+	4275 5950 8250 5950
 Wire Bus Line
 	12975 7950 12975 20550
 Wire Bus Line
-	4425 6750 9950 6750
-Wire Bus Line
 	3350 7825 3350 20700
+Wire Bus Line
+	4425 6750 9950 6750
 Wire Bus Line
 	2475 10150 2475 17125
 Wire Bus Line
