@@ -185,28 +185,28 @@ int main(int argc, char *argv[]) {
     h2p_lw_icebus_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + ICEBUSCONTROL_7_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
-#ifdef AUXILLIARY_I2C_0_BASE
-    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef AUXILLIARY_I2C_1_BASE
-    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef AUXILLIARY_I2C_2_BASE
-    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef AUXILLIARY_I2C_3_BASE
-    h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-
-#ifdef BALLJOINT_0_BASE
-    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef BALLJOINT_1_BASE
-    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
-#ifdef BALLJOINT_2_BASE
-    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-#endif
+// #ifdef AUXILLIARY_I2C_0_BASE
+//     h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
+// #ifdef AUXILLIARY_I2C_1_BASE
+//     h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
+// #ifdef AUXILLIARY_I2C_2_BASE
+//     h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
+// #ifdef AUXILLIARY_I2C_3_BASE
+//     h2p_lw_auxilliary_i2c_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + AUXILLIARY_I2C_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
+//
+// #ifdef BALLJOINT_0_BASE
+//     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
+// #ifdef BALLJOINT_1_BASE
+//     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_1_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
+// #ifdef BALLJOINT_2_BASE
+//     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+// #endif
 // #ifdef BALLJOINT_3_BASE
 //     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 // #endif
