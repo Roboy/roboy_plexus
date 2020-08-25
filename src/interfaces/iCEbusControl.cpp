@@ -154,7 +154,7 @@ bool IcebusControl::SetControlMode(int mode) {
 }
 
 int32_t IcebusControl::GetBaudrate(int motor){
-    return ICEBUS_CONTROL_READ_baudrate(base[motor_config->motor[motor]->bus], motor);
+    return ICEBUS_CONTROL_READ_baudrate(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
 int32_t IcebusControl::GetCommunicationQuality(int motor){
@@ -318,7 +318,7 @@ bool IcebusControl::AllToSetpoint(int control_mode, int32_t setpoint) {
 }
 
 void IcebusControl::SetBaudrate(int motor, int baudrate){
-  ICEBUS_CONTROL_WRITE_baudrate(base[motor_config->motor[motor]->bus],motor,baudrate);
+  ICEBUS_CONTROL_WRITE_baudrate(base[motor_config->motor[motor]->bus],motor_config->motor[motor]->motor_id,baudrate);
 }
 
 void IcebusControl::SetMotorUpdateFrequency(int motor, int32_t freq) {

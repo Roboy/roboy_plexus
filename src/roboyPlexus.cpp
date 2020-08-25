@@ -151,8 +151,8 @@ void RoboyPlexus::MotorStatePublisher() {
             }
             msg.encoder0_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor);
             msg.encoder1_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor);
-            // msg.displacement.push_back(bus->GetDisplacement(m.first));
-            msg.displacement.push_back(msg.encoder0_pos.back()-msg.encoder1_pos.back());
+            msg.displacement.push_back(bus->GetDisplacement(m.first));
+            // msg.displacement.push_back(msg.encoder0_pos.back()-msg.encoder1_pos.back());
             msg.current.push_back(bus->GetCurrent(m.first));
           }
         }
