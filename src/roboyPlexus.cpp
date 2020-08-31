@@ -162,11 +162,12 @@ void RoboyPlexus::MotorStatePublisher() {
 
 void RoboyPlexus::MotorInfoPublisher() {
     ros::Rate rate(10);
-    int32_t light_up_motor = 0;
-    bool dir = true;
+
+    bool blink = true;
+    ros::Time t0 = ros::Time::now();
 
     while (keep_publishing && ros::ok()) {
-        int i = 0;
+        int bus_number = 0;
         roboy_middleware_msgs::MotorInfo msg;
         for(auto &bus:motorControl){
           for(auto m:bus->motor_config->motor){
@@ -196,25 +197,19 @@ void RoboyPlexus::MotorInfoPublisher() {
               }
               msg.pwm.push_back(bus->GetPWM(m.first));
               if(!external_led_control){
-                if(light_up_motor==m.first)
-                    bus->SetNeopixelColor(m.first,0x00000F);
+                if(blink)
+                    bus->SetNeopixelColor(m.first,int32_t(0<<16|0<<8|50));
                 else
                     bus->SetNeopixelColor(m.first,0);
+
+                if((ros::Time::now()-t0).toSec()>1){
+                  t0 = ros::Time::now();
+                  blink = !blink;
+                }
               }
-              i++;
             }
           }
-
-          if(!external_led_control){
-            if(dir)
-                light_up_motor++;
-            else
-                light_up_motor--;
-            if(light_up_motor>=bus->motor_config->total_number_of_motors && dir)
-                dir = false;
-            if(light_up_motor<0 && !dir)
-                dir = true;
-          }
+          bus_number++;
         }
         motorInfo.publish(msg);
         rate.sleep();
@@ -436,16 +431,16 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
 
 void RoboyPlexus::ElbowJointPublisher(){
     sensor_msgs::JointState msg;
-    msg.name = {"elbow_left_axis0","elbow_left_axis1","elbow_right_axis0","elbow_right_axis1"};
+    msg.name = {"elbow_right_axis0","elbow_right_axis1","elbow_left_axis0","elbow_left_axis1"};
     msg.position = {0,0,0,0};
     msg.velocity = {0,0,0,0};
     msg.effort = {0,0,0,0};
     ros::Rate rate(30);
-    vector<float> offsets = {94, -17.3,0,0};
+    vector<float> offsets = {43.2,82.5,215.9,218.8};
     vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
     vector<int> overflow_counter = {0,0,0,0};
-    vector<int> sign = {-1,1,1,1};
-    vector<int> order = {1,0,2,3};
+    vector<int> sign = {1,1,1,-1};
+    vector<int> order = {0,1,2,3};
 
     while(ros::ok()){
         int k = 0;
@@ -459,7 +454,7 @@ void RoboyPlexus::ElbowJointPublisher(){
                 overflow_counter[k]--;
               angles[k] = 0.2f*(state[i].angle + overflow_counter[k]*360 - offsets[k]) + 0.8f*angles[k];
               angles_prev[k] = state[i].angle;
-              msg.position[order[k]] = angles[k]*M_PI/180.0f*sign[k];
+              msg.position[order[k]] = angles[k]*sign[k]*M_PI/180.0f;
               k++;
           }
         }
