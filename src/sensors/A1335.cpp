@@ -35,6 +35,15 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             ROS_INFO("STA register %x", data[0]);
 //        }
     }
+
+    for(auto device:deviceIDs){
+        A1335State state;
+        if(readDeviceState(device, &state)){
+            ROS_INFO("A1335 %x is active",device);
+        }else{
+            ROS_WARN("A1335 %x is NOT active, check cables. This warning will be displayed only once.", device);
+        }
+    }
 }
 
 A1335::~A1335(){
@@ -49,7 +58,7 @@ bool A1335::readAngleData(vector<A1335State> &states){
             ROS_DEBUG_STREAM_THROTTLE(1,"motor sensor " << device << " is active");
             deviceActive = true; // at least one is active
         }else{
-            ROS_WARN_STREAM_ONCE("motor sensor " << device << " is NOT active, check cables (did you use a level shifter?!). This warning will be displayed only once.");
+            ROS_DEBUG_THROTTLE(1,"A1335 %x is NOT active, check cables. This warning will be displayed only once.", device);
         }
         states.push_back(state);
     }

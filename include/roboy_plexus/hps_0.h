@@ -20,15 +20,15 @@
  */
 
 /*
- * Macros for device 'iCEbusControl_7', class 'iCEbusControl'
- * The macros are prefixed with 'ICEBUSCONTROL_7_'.
+ * Macros for device 'iCEbusControl_3', class 'iCEbusControl'
+ * The macros are prefixed with 'ICEBUSCONTROL_3_'.
  * The prefix is the slave descriptor.
  */
-#define ICEBUSCONTROL_7_COMPONENT_TYPE iCEbusControl
-#define ICEBUSCONTROL_7_COMPONENT_NAME iCEbusControl_7
-#define ICEBUSCONTROL_7_BASE 0x0
-#define ICEBUSCONTROL_7_SPAN 4096
-#define ICEBUSCONTROL_7_END 0xfff
+#define ICEBUSCONTROL_3_COMPONENT_TYPE iCEbusControl
+#define ICEBUSCONTROL_3_COMPONENT_NAME iCEbusControl_3
+#define ICEBUSCONTROL_3_BASE 0x0
+#define ICEBUSCONTROL_3_SPAN 4096
+#define ICEBUSCONTROL_3_END 0xfff
 
 /*
  * Macros for device 'sysid_qsys', class 'altera_avalon_sysid_qsys'
@@ -41,7 +41,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1592303009
+#define SYSID_QSYS_TIMESTAMP 1598709174
 
 /*
  * Macros for device 'TLI4970', class 'TLI4970'
@@ -79,17 +79,6 @@
 #define LED_RESET_VALUE 0
 
 /*
- * Macros for device 'FanControl_0', class 'FanControl'
- * The macros are prefixed with 'FANCONTROL_0_'.
- * The prefix is the slave descriptor.
- */
-#define FANCONTROL_0_COMPONENT_TYPE FanControl
-#define FANCONTROL_0_COMPONENT_NAME FanControl_0
-#define FANCONTROL_0_BASE 0x1020
-#define FANCONTROL_0_SPAN 32
-#define FANCONTROL_0_END 0x103f
-
-/*
  * Macros for device 'BALLJOINT_4', class 'I2C'
  * The macros are prefixed with 'BALLJOINT_4_'.
  * The prefix is the slave descriptor.
@@ -110,28 +99,6 @@
 #define BALLJOINT_3_BASE 0x1080
 #define BALLJOINT_3_SPAN 64
 #define BALLJOINT_3_END 0x10bf
-
-/*
- * Macros for device 'auxilliary_i2c_3', class 'I2C'
- * The macros are prefixed with 'AUXILLIARY_I2C_3_'.
- * The prefix is the slave descriptor.
- */
-#define AUXILLIARY_I2C_3_COMPONENT_TYPE I2C
-#define AUXILLIARY_I2C_3_COMPONENT_NAME auxilliary_i2c_3
-#define AUXILLIARY_I2C_3_BASE 0x10c0
-#define AUXILLIARY_I2C_3_SPAN 64
-#define AUXILLIARY_I2C_3_END 0x10ff
-
-/*
- * Macros for device 'auxilliary_i2c_2', class 'I2C'
- * The macros are prefixed with 'AUXILLIARY_I2C_2_'.
- * The prefix is the slave descriptor.
- */
-#define AUXILLIARY_I2C_2_COMPONENT_TYPE I2C
-#define AUXILLIARY_I2C_2_COMPONENT_NAME auxilliary_i2c_2
-#define AUXILLIARY_I2C_2_BASE 0x1100
-#define AUXILLIARY_I2C_2_SPAN 64
-#define AUXILLIARY_I2C_2_END 0x113f
 
 /*
  * Macros for device 'auxilliary_i2c_1', class 'I2C'
@@ -187,39 +154,6 @@
 #define BALLJOINT_0_BASE 0x1240
 #define BALLJOINT_0_SPAN 64
 #define BALLJOINT_0_END 0x127f
-
-/*
- * Macros for device 'FanControl_1', class 'FanControl'
- * The macros are prefixed with 'FANCONTROL_1_'.
- * The prefix is the slave descriptor.
- */
-#define FANCONTROL_1_COMPONENT_TYPE FanControl
-#define FANCONTROL_1_COMPONENT_NAME FanControl_1
-#define FANCONTROL_1_BASE 0x1280
-#define FANCONTROL_1_SPAN 32
-#define FANCONTROL_1_END 0x129f
-
-/*
- * Macros for device 'FanControl_2', class 'FanControl'
- * The macros are prefixed with 'FANCONTROL_2_'.
- * The prefix is the slave descriptor.
- */
-#define FANCONTROL_2_COMPONENT_TYPE FanControl
-#define FANCONTROL_2_COMPONENT_NAME FanControl_2
-#define FANCONTROL_2_BASE 0x12a0
-#define FANCONTROL_2_SPAN 32
-#define FANCONTROL_2_END 0x12bf
-
-/*
- * Macros for device 'FanControl_3', class 'FanControl'
- * The macros are prefixed with 'FANCONTROL_3_'.
- * The prefix is the slave descriptor.
- */
-#define FANCONTROL_3_COMPONENT_TYPE FanControl
-#define FANCONTROL_3_COMPONENT_NAME FanControl_3
-#define FANCONTROL_3_BASE 0x12c0
-#define FANCONTROL_3_SPAN 32
-#define FANCONTROL_3_END 0x12df
 
 /*
  * Macros for device 'LED_0', class 'altera_avalon_pio'
@@ -294,30 +228,6 @@
 #define POWER_SENSE_RESET_VALUE 0
 
 /*
- * Macros for device 'SWITCHES', class 'altera_avalon_pio'
- * The macros are prefixed with 'SWITCHES_'.
- * The prefix is the slave descriptor.
- */
-#define SWITCHES_COMPONENT_TYPE altera_avalon_pio
-#define SWITCHES_COMPONENT_NAME SWITCHES
-#define SWITCHES_BASE 0x1310
-#define SWITCHES_SPAN 16
-#define SWITCHES_END 0x131f
-#define SWITCHES_BIT_CLEARING_EDGE_REGISTER 0
-#define SWITCHES_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define SWITCHES_CAPTURE 0
-#define SWITCHES_DATA_WIDTH 4
-#define SWITCHES_DO_TEST_BENCH_WIRING 0
-#define SWITCHES_DRIVEN_SIM_VALUE 0
-#define SWITCHES_EDGE_TYPE NONE
-#define SWITCHES_FREQ 50000000
-#define SWITCHES_HAS_IN 1
-#define SWITCHES_HAS_OUT 0
-#define SWITCHES_HAS_TRI 0
-#define SWITCHES_IRQ_TYPE NONE
-#define SWITCHES_RESET_VALUE 0
-
-/*
  * Macros for device 'jtag_uart', class 'altera_avalon_jtag_uart'
  * The macros are prefixed with 'JTAG_UART_'.
  * The prefix is the slave descriptor.
@@ -334,15 +244,26 @@
 #define JTAG_UART_WRITE_THRESHOLD 8
 
 /*
+ * Macros for device 'iCEbusControl_7', class 'iCEbusControl'
+ * The macros are prefixed with 'ICEBUSCONTROL_7_'.
+ * The prefix is the slave descriptor.
+ */
+#define ICEBUSCONTROL_7_COMPONENT_TYPE iCEbusControl
+#define ICEBUSCONTROL_7_COMPONENT_NAME iCEbusControl_7
+#define ICEBUSCONTROL_7_BASE 0x3000
+#define ICEBUSCONTROL_7_SPAN 4096
+#define ICEBUSCONTROL_7_END 0x3fff
+
+/*
  * Macros for device 'iCEbusControl_2', class 'iCEbusControl'
  * The macros are prefixed with 'ICEBUSCONTROL_2_'.
  * The prefix is the slave descriptor.
  */
 #define ICEBUSCONTROL_2_COMPONENT_TYPE iCEbusControl
 #define ICEBUSCONTROL_2_COMPONENT_NAME iCEbusControl_2
-#define ICEBUSCONTROL_2_BASE 0x3000
+#define ICEBUSCONTROL_2_BASE 0x4000
 #define ICEBUSCONTROL_2_SPAN 4096
-#define ICEBUSCONTROL_2_END 0x3fff
+#define ICEBUSCONTROL_2_END 0x4fff
 
 /*
  * Macros for device 'iCEbusControl_1', class 'iCEbusControl'
@@ -351,9 +272,9 @@
  */
 #define ICEBUSCONTROL_1_COMPONENT_TYPE iCEbusControl
 #define ICEBUSCONTROL_1_COMPONENT_NAME iCEbusControl_1
-#define ICEBUSCONTROL_1_BASE 0x4000
+#define ICEBUSCONTROL_1_BASE 0x5000
 #define ICEBUSCONTROL_1_SPAN 4096
-#define ICEBUSCONTROL_1_END 0x4fff
+#define ICEBUSCONTROL_1_END 0x5fff
 
 /*
  * Macros for device 'iCEbusControl_0', class 'iCEbusControl'
@@ -362,9 +283,9 @@
  */
 #define ICEBUSCONTROL_0_COMPONENT_TYPE iCEbusControl
 #define ICEBUSCONTROL_0_COMPONENT_NAME iCEbusControl_0
-#define ICEBUSCONTROL_0_BASE 0x5000
+#define ICEBUSCONTROL_0_BASE 0x6000
 #define ICEBUSCONTROL_0_SPAN 4096
-#define ICEBUSCONTROL_0_END 0x5fff
+#define ICEBUSCONTROL_0_END 0x6fff
 
 /*
  * Macros for device 'iCEbusControl_6', class 'iCEbusControl'
@@ -373,9 +294,9 @@
  */
 #define ICEBUSCONTROL_6_COMPONENT_TYPE iCEbusControl
 #define ICEBUSCONTROL_6_COMPONENT_NAME iCEbusControl_6
-#define ICEBUSCONTROL_6_BASE 0x6000
+#define ICEBUSCONTROL_6_BASE 0x7000
 #define ICEBUSCONTROL_6_SPAN 4096
-#define ICEBUSCONTROL_6_END 0x6fff
+#define ICEBUSCONTROL_6_END 0x7fff
 
 
 #endif /* _ALTERA_HPS_0_H_ */

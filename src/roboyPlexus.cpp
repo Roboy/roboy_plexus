@@ -47,12 +47,13 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     } else {
         ROS_WARN("no active ball joints");
     }
-    ROS_INFO("initializing elbow joints");
 
     if(i2c_base.size()>=2){
+      ROS_INFO("initializing elbow joints");
       {
         vector <uint8_t> ids = {0xC,0xD};
         a1335.push_back(A1335Ptr(new A1335(i2c_base[0],ids)));
+        a1335.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
       }
       // {
       //   vector <uint8_t> ids = {0xC,0xD};
@@ -438,16 +439,16 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
 
 void RoboyPlexus::ElbowJointPublisher(){
     sensor_msgs::JointState msg;
-    msg.name = {"elbow_left_axis0","elbow_left_axis1"};
-    msg.position = {0,0};
-    msg.velocity = {0,0};
-    msg.effort = {0,0};
+    msg.name = {"elbow_left_axis0","elbow_left_axis1","elbow_right_axis0","elbow_right_axis1"};
+    msg.position = {0,0,0,0};
+    msg.velocity = {0,0,0,0};
+    msg.effort = {0,0,0,0};
     ros::Rate rate(30);
-    vector<float> offsets = {94, -17.3};
-    vector<float> angles = {0,0}, angles_prev = {0,0};
-    vector<int> overflow_counter = {0,0};
-    vector<int> sign = {-1,1};
-    vector<int> order = {1,0};
+    vector<float> offsets = {94, -17.3,0,0};
+    vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
+    vector<int> overflow_counter = {0,0,0,0};
+    vector<int> sign = {-1,1,1,1};
+    vector<int> order = {1,0,0,1};
 
     while(ros::ok()){
         int k = 0;
