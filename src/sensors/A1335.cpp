@@ -14,7 +14,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             usleep(500); // takes a1335 up to 128us to transition to IDLE from RUN
             vector<uint8_t> data;
             i2c->read(device,0x23, 1, data);
-            ROS_INFO("STA register %x", data[0]);
+            // ROS_INFO("STA register %x", data[0]);
             // configure output rate
             i2c->write(device,(0x03<<24|0xff<<16),2);
             i2c->write(device,(0x02<<24|0xd0<<16),2);
@@ -24,7 +24,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             i2c->write(device,(0x08<<24|0x08<<16),2);
             usleep(500);
             i2c->read(device,0x09, 1, data);
-            ROS_INFO("EWCS register %x", data[0]);
+            // ROS_INFO("EWCS register %x", data[0]);
             // enter KEYCODE
             i2c->write(device,(0x1F<<24|0xB9<<16),2);
             // set to RUN
@@ -32,7 +32,7 @@ A1335::A1335(int32_t* i2c_base, vector<uint8_t> &deviceIDs):deviceIDs(deviceIDs)
             usleep(500); // takes a1335 up to 128us to transition to IDLE from RUN
             data.clear();
             i2c->read(device,0x23, 1, data);
-            ROS_INFO("STA register %x", data[0]);
+            // ROS_INFO("STA register %x", data[0]);
 //        }
     }
 

@@ -38,31 +38,28 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     if(myoControl!=nullptr)
       motorControl.push_back(myoControl);
 
-    if (!balljoints.empty()) {
-        magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
-                                                                              1);
-        magneticsThread = boost::shared_ptr<std::thread>(
-                new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
-        magneticsThread->detach();
-    } else {
-        ROS_WARN("no active ball joints");
-    }
-
     if(i2c_base.size()>=2){
       ROS_INFO("initializing elbow joints");
-      {
-        vector <uint8_t> ids = {0xC,0xD};
-        a1335.push_back(A1335Ptr(new A1335(i2c_base[0],ids)));
-        a1335.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
-      }
-      // {
-      //   vector <uint8_t> ids = {0xC,0xD};
-      //   a1335.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
-      // }
+      vector <uint8_t> ids = {0xC,0xD};
+      ROS_INFO("right elbow:");
+      a1335.push_back(A1335Ptr(new A1335(i2c_base[0],ids)));
+      ROS_INFO("left elbow:");
+      a1335.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
+
       jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
       elbowJointAngleThread = boost::shared_ptr<std::thread>(
               new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
       elbowJointAngleThread->detach();
+    }
+
+    if (!balljoints.empty()) {
+      magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
+                                                                            1);
+      magneticsThread = boost::shared_ptr<std::thread>(
+              new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
+      magneticsThread->detach();
+    } else {
+        ROS_WARN("no active ball joints");
     }
 
     motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
@@ -448,7 +445,7 @@ void RoboyPlexus::ElbowJointPublisher(){
     vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
     vector<int> overflow_counter = {0,0,0,0};
     vector<int> sign = {-1,1,1,1};
-    vector<int> order = {1,0,0,1};
+    vector<int> order = {1,0,2,3};
 
     while(ros::ok()){
         int k = 0;
