@@ -90,6 +90,9 @@ public:
                 int32_t *power_sense,
                 vector<int32_t *> &i2c_base,
                 int32_t * tli4970_base,
+                vector<int> elbow_sensor_order,
+                vector<int> elbow_sensor_sign,
+                vector<float> elbow_sensor_offset,
                 MyoControlPtr myoControl = nullptr);
 
     ~RoboyPlexus();
@@ -226,6 +229,8 @@ private:
     string body_part;
     vector<string> body_parts;
     TLI4970Ptr tli4970;
+    vector<int> elbow_sensor_order, elbow_sensor_sign;
+    vector<float> elbow_sensor_offset;
 };
 
 /** @} */ // end of group1

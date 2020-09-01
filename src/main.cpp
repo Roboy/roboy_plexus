@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
                "USAGE: ./roboy_plexus path/to/motor_config.yaml\n");
         return -1;
     }
-    string motor_config_file_path(argv[1]);
+    string config_file_path(argv[1]);
 
     void *virtual_base;
     int fd;
@@ -243,10 +243,19 @@ int main(int argc, char *argv[]) {
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
 
+    vector<int> elbow_sensor_order, elbow_sensor_sign;
+    vector<float> elbow_sensor_offset;
+
     MotorConfigPtr motor_config = MotorConfigPtr(new MotorConfig);
-    if(!motor_config->readConfig(motor_config_file_path)){
-      ROS_FATAL("failed to read motor_config file, check your roboy3.yaml");
+    if(!motor_config->readConfig(config_file_path)){
+      ROS_FATAL("failed to read config file, check your roboy3.yaml");
       return -1;
+    }else{
+      YAML::Node config;
+      config = YAML::LoadFile(config_file_path);
+      elbow_sensor_order = config["elbow"]["order"].as<vector<int>>();
+      elbow_sensor_sign = config["elbow"]["sign"].as<vector<int>>();
+      elbow_sensor_offset = config["elbow"]["offset"].as<vector<float>>();
     }
 
     myoControl = MyoControlPtr(new MyoControl(motor_config,h2p_lw_myo_addr));
@@ -258,7 +267,8 @@ int main(int argc, char *argv[]) {
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
     RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,
-        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,h2p_lw_tli4970_addr,myoControl);
+        h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,h2p_lw_tli4970_addr,
+        elbow_sensor_order,elbow_sensor_sign,elbow_sensor_offset,myoControl);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////

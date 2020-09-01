@@ -9,9 +9,13 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         int32_t *power_sense,
         vector<int32_t *> &i2c_base,
         int32_t * tli4970_base,
+        vector<int> elbow_sensor_order,
+        vector<int> elbow_sensor_sign,
+        vector<float> elbow_sensor_offset,
         MyoControlPtr myoControl) :
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
         power_control(power_control), power_sense(power_sense), switches(switches), led(led),
+        elbow_sensor_order(elbow_sensor_order),elbow_sensor_sign(elbow_sensor_sign),elbow_sensor_offset(elbow_sensor_offset),
         myoControl(myoControl){
     ROS_INFO("roboy3 plexus initializing");
 
@@ -109,14 +113,6 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         ROS_INFO("fan pwm freq %d, duty %d",fan->GetPWMFrequency(), fan->GetDuty());
         fan->SetDuty(100);
       }
-      // ros::Rate rate(10);
-      //
-      // while(ros::ok()){
-      //   for(auto fan:fanControls){
-      //     ROS_INFO("duty %d, average current %d",fan->GetDuty(), fan->GetCurrentAverage());
-      //     rate.sleep();
-      //   }
-      // }
     }
 
     if(tli4970_base!=nullptr){
@@ -436,11 +432,8 @@ void RoboyPlexus::ElbowJointPublisher(){
     msg.velocity = {0,0,0,0};
     msg.effort = {0,0,0,0};
     ros::Rate rate(30);
-    vector<float> offsets = {43.2,82.5,215.9,218.8};
     vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
     vector<int> overflow_counter = {0,0,0,0};
-    vector<int> sign = {1,1,1,-1};
-    vector<int> order = {0,1,2,3};
 
     while(ros::ok()){
         int k = 0;
@@ -452,9 +445,9 @@ void RoboyPlexus::ElbowJointPublisher(){
                 overflow_counter[k]++;
               if(angles_prev[k]<20 && state[i].angle > 340)
                 overflow_counter[k]--;
-              angles[k] = 0.2f*(state[i].angle + overflow_counter[k]*360 - offsets[k]) + 0.8f*angles[k];
+              angles[k] = 0.2f*((state[i].angle + overflow_counter[k]*360)*M_PI/180.0f-elbow_sensor_offset[k]) + 0.8f*angles[k];
               angles_prev[k] = state[i].angle;
-              msg.position[order[k]] = angles[k]*sign[k]*M_PI/180.0f;
+              msg.position[elbow_sensor_order[k]] = angles[k]*elbow_sensor_sign[k];
               k++;
           }
         }
