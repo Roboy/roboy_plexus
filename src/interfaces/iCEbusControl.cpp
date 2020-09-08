@@ -27,6 +27,7 @@ IcebusControl::IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &bas
             }
         }
     }
+    ROS_WARN("the current limit is hard coded to 2Amps, this is a bit higher than the recommended 1.4Amps from the maxon datasheet");
 }
 
 IcebusControl::~IcebusControl() {
@@ -224,7 +225,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 400; // 25% of max pwm
+            params->PWMLimit = 80; // 5% of max pwm
             break;
         case ENCODER1_POSITION:
             params->IntegralLimit = 25;
@@ -232,7 +233,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 400; // 25% of max pwm
+            params->PWMLimit = 80; // 5% of max pwm
             break;
        case DISPLACEMENT:
            params->IntegralLimit = 0;
@@ -240,7 +241,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
            params->Ki = 0;
            params->Kd = 0;
            params->deadband = 0;
-           params->PWMLimit = 400; // 25% of max pwm
+           params->PWMLimit = 80; // 5% of max pwm
            break;
         case DIRECT_PWM:
             params->IntegralLimit = 0;
@@ -248,7 +249,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 0;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 400; // 25% of max pwm
+            params->PWMLimit = 80; // 5% of max pwm
             break;
         default:
             ROS_ERROR("unknown control mode %d, available control modes:\n"
