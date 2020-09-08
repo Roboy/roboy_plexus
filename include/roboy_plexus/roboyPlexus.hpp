@@ -57,7 +57,6 @@
 #include <roboy_middleware_msgs/ControlMode.h>
 #include <roboy_middleware_msgs/MagneticSensor.h>
 #include <roboy_middleware_msgs/MotorCommand.h>
-#include <roboy_middleware_msgs/MotorControl.h>
 #include <roboy_middleware_msgs/MotorState.h>
 #include <roboy_middleware_msgs/MotorInfo.h>
 #include <roboy_middleware_msgs/MotorConfigService.h>
@@ -141,12 +140,6 @@ private:
      * @param msg motor command
      */
     void MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg);
-
-    /**
-     * Callback for motor control
-     * @param msg motor control
-     */
-    void MotorControl(const roboy_middleware_msgs::MotorControl::ConstPtr &msg);
 
     /**
      * Service for changing motor PID parameters

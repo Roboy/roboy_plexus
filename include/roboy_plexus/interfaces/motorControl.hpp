@@ -33,7 +33,7 @@ public:
       * Gets the controller parameters of a motor
       */
     virtual void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){};
+            int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){};
 
     /**
      * Gets the current control_mode of a motor
@@ -98,13 +98,13 @@ public:
      * Gets the current pwm of a motor
      * @param motor for this motor
      */
-    virtual int32_t GetPWM(int motor){};
+    virtual float GetPWM(int motor){};
 
     /**
      * Gets the current setpoint of a motor
      * @param motor for this motor
      */
-    virtual int32_t GetSetPoint(int motor){};
+    virtual float GetSetPoint(int motor){};
 
     /**
      * Getting default parameters for a control mode
@@ -181,7 +181,7 @@ public:
 	 * Sets the setpoint of a motor
 	 * @param motor for this motor
 	 */
-    virtual void SetPoint(int motor, int32_t setPoint){};
+    virtual void SetPoint(int motor, float setPoint){};
 
     /**
    * Sets the color of a motorboard

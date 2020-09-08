@@ -17,9 +17,12 @@ IcebusControl::IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &bas
                 SetPoint(m->motor_id_global, GetEncoderPosition(m->motor_id_global, ENCODER0));
               else
                 SetPoint(m->motor_id_global, 0);
-              control_Parameters_t params;
-              GetDefaultControlParams(&params, 0);
-              SetControlMode(m->motor_id_global, 0, params);
+              for(int mode=0;mode<=3;mode++){
+                control_Parameters_t params;
+                GetDefaultControlParams(&params, mode);
+                control_params[m->motor_id_global][mode] = params;
+              }
+              SetControlMode(m->motor_id_global, 3);
               SetCurrentLimit(m->motor_id_global, 2.0);
             }
         }
@@ -181,13 +184,13 @@ string IcebusControl::GetErrorCode(int motor){
 }
 
 void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-                            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){
+                            int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){
     Kp = ICEBUS_CONTROL_READ_Kp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     Ki = ICEBUS_CONTROL_READ_Ki(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     Kd = ICEBUS_CONTROL_READ_Kd(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     IntegralLimit = ICEBUS_CONTROL_READ_IntegralLimit(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     deadband = ICEBUS_CONTROL_READ_deadband(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
-    PWMLimit = ICEBUS_CONTROL_READ_PWMLimit(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+    PWMLimit = ICEBUS_CONTROL_READ_PWMLimit(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)/1600.0f*100.0f; // 1600 is the max pwm 32MHz/20kHz=1600
 }
 
 uint8_t IcebusControl::GetControlMode(int motor) {
@@ -218,7 +221,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 500;
+            params->PWMLimit = 400; // 25% of max pwm
             break;
         case ENCODER1_POSITION:
             params->IntegralLimit = 25;
@@ -226,36 +229,31 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 500;
+            params->PWMLimit = 400; // 25% of max pwm
             break;
-//        case ENCODER0_VELOCITY: //TODO: velocity control not implemented yet
-//            params->IntegralLimit = 0;
-//            params->Kp = 0;
-//            params->Ki = 0;
-//            params->Kd = 0;
-//            params->deadband = 0;
-//            params->PWMLimit = 0;
-//            ROS_WARN("velocity control not available yet, disabling controller");
-//            break;
-//        case ENCODER1_VELOCITY: //TODO: velocity control not implemented yet
-//            params->IntegralLimit = 0;
-//            params->Kp = 0;
-//            params->Ki = 0;
-//            params->Kd = 0;
-//            params->deadband = 0;
-//            params->PWMLimit = 0;
-//            ROS_WARN("velocity control not available yet, disabling controller");
-//            break;
+       case DISPLACEMENT:
+           params->IntegralLimit = 0;
+           params->Kp = 0;
+           params->Ki = 0;
+           params->Kd = 0;
+           params->deadband = 0;
+           params->PWMLimit = 400; // 25% of max pwm
+           break;
         case DIRECT_PWM:
-            params->IntegralLimit = 25;
-            params->Kp = 1;
-            params->Ki = 1;
+            params->IntegralLimit = 0;
+            params->Kp = 0;
+            params->Ki = 0;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 500;
+            params->PWMLimit = 400; // 25% of max pwm
             break;
         default:
-            ROS_ERROR("unknown control mode %d", control_mode);
+            ROS_ERROR("unknown control mode %d, available control modes:\n"
+                      "ENCODER0:     0\n"
+                      "ENCODER1:     1\n"
+                      "DISPLACEMENT: 2\n"
+                      "DIRECT_PWM:   3\n"
+                      ,control_mode);
             break;
     }
 
@@ -286,12 +284,17 @@ int32_t IcebusControl::GetNeopixelColor(int motor) {
     return ICEBUS_CONTROL_READ_neopxl_color(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
-int32_t IcebusControl::GetSetPoint(int motor){
-    return ICEBUS_CONTROL_READ_sp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+float IcebusControl::GetSetPoint(int motor){
+    int32_t setpoint = ICEBUS_CONTROL_READ_sp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+    if(ICEBUS_CONTROL_READ_control_mode(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)==3){
+      return (setpoint/1600.0f*100.0f);
+    }else{
+      return setpoint;
+    }
 }
 
-int32_t IcebusControl::GetPWM(int motor){
-    return ICEBUS_CONTROL_READ_pwm(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+float IcebusControl::GetPWM(int motor){
+    return ICEBUS_CONTROL_READ_pwm(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)/1600.0f*100.0f;
 }
 
 bool IcebusControl::SetCurrentLimit(int motor, float limit) {
@@ -304,7 +307,7 @@ void IcebusControl::SetNeopixelColor(int motor, int32_t color){
     ICEBUS_CONTROL_WRITE_neopxl_color(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, color);
 }
 
-void IcebusControl::SetPoint(int motor, int32_t setPoint) {
+void IcebusControl::SetPoint(int motor, float setPoint) {
     ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, (int32_t) setPoint);
 }
 

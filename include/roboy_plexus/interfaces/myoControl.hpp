@@ -153,7 +153,7 @@ public:
    */
     bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) override;
 
-    void SetPoint(int motor, int32_t setpoint);
+    void SetPoint(int motor, float setpoint);
 
     void SetNeopixelColor(int motor, int32_t color) override;
 
@@ -186,7 +186,7 @@ public:
      * @param motor for this motor
      */
     void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-             int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
+             int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit);
 
     /**
      * Get the parameters for the PID controller of a motor
@@ -211,7 +211,7 @@ public:
      * Gets the current pwm of a motor
      * @param motor for this motor
      */
-    int32_t GetPWM(int motor);
+    float GetPWM(int motor);
 
     /**
      * Gets the current position of a motor in radians
@@ -250,7 +250,7 @@ public:
      * Gets the current setpoint of a motor
      * @param motor for this motor
      */
-    int32_t GetSetPoint(int motor);
+    float GetSetPoint(int motor);
 
     /**
      * Configures motors to be handled as myoBricks

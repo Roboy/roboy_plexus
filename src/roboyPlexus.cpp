@@ -169,7 +169,8 @@ void RoboyPlexus::MotorInfoPublisher() {
           for(auto m:bus->motor_config->motor){
             if(bus->MyMotor(m.first)){
               msg.global_id.push_back(m.first);
-              int32_t Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit;
+              int32_t Kp, Ki, Kd, deadband, IntegralLimit;
+              float PWMLimit;
               bus->GetControllerParameter(m.first, Kp, Ki, Kd, deadband, IntegralLimit, PWMLimit);
               msg.control_mode.push_back(bus->GetControlMode(m.first));
               msg.Kp.push_back(Kp);
@@ -177,7 +178,7 @@ void RoboyPlexus::MotorInfoPublisher() {
               msg.Kd.push_back(Kd);
               msg.deadband.push_back(deadband);
               msg.IntegralLimit.push_back(IntegralLimit);
-              msg.PWMLimit.push_back(PWMLimit);
+              msg.PWMLimit.push_back(PWMLimit); // 1600 is the max 32MHz/20kHz=1600, shows in percent
               msg.current_limit.push_back(bus->GetCurrentLimit(m.first));
               int32_t communication_quality = bus->GetCommunicationQuality(m.first);
               string error_code = bus->GetErrorCode(m.first);
@@ -277,7 +278,7 @@ void RoboyPlexus::MagneticJointPublisher() {
 
 void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstPtr &msg) {
     uint i = 0;
-    for (auto motor:msg->motor) {
+    for (auto motor:msg->global_id) {
       for(auto &bus:motorControl){
         if(bus->MyMotor(motor)){
           switch(control_mode[motor]){
@@ -296,16 +297,10 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
               break;
             }
             case DIRECT_PWM: {
-              bool direct_pwm_override;
-              nh->getParam("direct_pwm_override",direct_pwm_override);
-              if(fabsf(msg->setpoint[i])>1000 && !direct_pwm_override) {
-                  ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>1000), "
-                                      "what the heck are you publishing?!, "
-                                      "you can enable/disable this check by setting the ros parameter direct_pwm_override, "
-                                      "execute from the commandline:\n"
-                                      "rosparam set direct_pwm_override true");
-              }else {
-                  bus->SetPoint(motor, msg->setpoint[i]);
+              if(msg->setpoint[i]>100.0f){
+                ROS_WARN("you are sending motor commands in direct_pwm mode bigger than 100%, that doesn't make sense");
+              }else{
+                bus->SetPoint(motor, msg->setpoint[i]/100.0f*1600); // 1600 is the max pwm 32Mhz/20kHz=1600
               }
               break;
             }
@@ -320,7 +315,7 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
                                      roboy_middleware_msgs::MotorConfigService::Response &res) {
     stringstream str;
     uint i = 0;
-    for (int motor:req.config.motor) {
+    for (int motor:req.config.global_id) {
       for(auto &bus:motorControl){
         if(bus->MyMotor(motor)){
           control_Parameters_t params;
@@ -370,12 +365,12 @@ bool RoboyPlexus::MotorConfigService(roboy_middleware_msgs::MotorConfigService::
 bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
                                      roboy_middleware_msgs::ControlMode::Response &res) {
     if (!emergency_stop) {
-        if (req.motor_id.empty()) {
+        if (req.global_id.empty()) {
             ROS_ERROR("no motor ids defined, cannot change control mode");
             return false;
         } else {
             int i=0;
-            for (int motor:req.motor_id) {
+            for (int motor:req.global_id) {
                 for(auto &bus:motorControl){
                   if(bus->MyMotor(motor)){
                     bus->SetControlMode(motor, req.control_mode);

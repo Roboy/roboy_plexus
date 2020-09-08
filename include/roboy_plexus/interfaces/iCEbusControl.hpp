@@ -166,7 +166,7 @@ public:
     string GetErrorCode(int motor);
 
     void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-            int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit);
+            int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit);
 
     /**
      * Gets the current control_mode of a motor
@@ -244,14 +244,14 @@ public:
      * Get PWM of motor
      * @param pwm
      */
-    int32_t GetPWM(int motor) override;
+    float GetPWM(int motor) override;
 
     /**
      * Gets the setpoint of a motor
      * @param motor
      * @return
      */
-    int32_t GetSetPoint(int motor);
+    float GetSetPoint(int motor);
 
     /**
      * Returns if this motor is part of this bus
@@ -322,7 +322,7 @@ public:
      * @param motor
      * @param setpoint
      */
-    void SetPoint(int motor, int32_t setpoint) override;
+    void SetPoint(int motor, float setpoint) override;
 
     /**
      * Sets the motor update frequency, this is done per bus,

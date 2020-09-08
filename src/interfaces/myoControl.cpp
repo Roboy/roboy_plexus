@@ -198,7 +198,7 @@ bool MyoControl::GetPowerSense() {
     return (bool) MYO_READ_power_sense(myo_base[0]);
 }
 
-int32_t MyoControl::GetPWM(int motor) {
+float MyoControl::GetPWM(int motor) {
     return MYO_READ_pwmRef(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
@@ -216,7 +216,7 @@ float MyoControl::GetCurrentLimit(int motor){
   return -1;
 }
 
-int32_t MyoControl::GetSetPoint(int motor) {
+float MyoControl::GetSetPoint(int motor) {
     return MYO_READ_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
@@ -229,7 +229,7 @@ int32_t MyoControl::GetDisplacement(int motor) {
     return (int32_t)MYO_READ_displacement(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
 }
 
-void MyoControl::SetPoint(int motor, int32_t setPoint) {
+void MyoControl::SetPoint(int motor, float setPoint) {
     MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, (int32_t) setPoint);
 }
 
@@ -397,7 +397,7 @@ float MyoControl::GetCurrent(int motor) {
 }
 
 void MyoControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-         int32_t &deadband, int32_t &IntegralLimit, int32_t &PWMLimit){
+         int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){
            int32_t *bus = myo_base[motor_config->motor[motor]->bus];
            int motor_id = motor_config->motor[motor]->motor_id;
            Kp = MYO_READ_Kp(bus,motor_id);
