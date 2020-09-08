@@ -351,7 +351,7 @@ bool MyoControl::SetControlMode(int mode) {
     }
 }
 
-bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
+bool MyoControl::SetControlMode(int motor, int mode, control_Parameters_t &params, float setPoint) {
     if(!SetControlMode(motor, mode, params))
         return false;
     MYO_WRITE_sp(myo_base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, setPoint);

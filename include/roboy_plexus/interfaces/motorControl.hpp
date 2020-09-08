@@ -162,7 +162,7 @@ public:
 	 * @param params with these controller parameters
      * @param setPoint new setPoint
 	 */
-    virtual bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint){};
+    virtual bool SetControlMode(int motor, int mode, control_Parameters_t &params, float setPoint){};
 
     /**
      * Changes the controller of ALL motors with the saved controller parameters

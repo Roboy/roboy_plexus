@@ -151,7 +151,7 @@ public:
    * @param params with these controller parameters
      * @param setPoint new setPoint
    */
-    bool SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) override;
+    bool SetControlMode(int motor, int mode, control_Parameters_t &params, float setPoint) override;
 
     void SetPoint(int motor, float setpoint);
 

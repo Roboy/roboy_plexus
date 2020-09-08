@@ -22,7 +22,7 @@ IcebusControl::IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &bas
                 GetDefaultControlParams(&params, mode);
                 control_params[m->motor_id_global][mode] = params;
               }
-              SetControlMode(m->motor_id_global, 3);
+              SetControlMode(m->motor_id_global, 0);
               SetCurrentLimit(m->motor_id_global, 2.0);
             }
         }
@@ -33,10 +33,13 @@ IcebusControl::~IcebusControl() {
     ROS_INFO("shutting down icebus control");
 }
 
-bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &params, int32_t setPoint) {
+bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &params, float setPoint) {
     if(!SetControlMode(motor, mode, params))
         return false;
-    ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, setPoint);
+    if(mode==DIRECT_PWM)
+      ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, setPoint/100.0f*1600);
+    else
+      ICEBUS_CONTROL_WRITE_sp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id, setPoint);
     return true;
 }
 

@@ -297,7 +297,7 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
               break;
             }
             case DIRECT_PWM: {
-              if(msg->setpoint[i]>100.0f){
+              if(fabsf(msg->setpoint[i])>100.0f){
                 ROS_WARN("you are sending motor commands in direct_pwm mode bigger than 100%, that doesn't make sense");
               }else{
                 bus->SetPoint(motor, msg->setpoint[i]/100.0f*1600); // 1600 is the max pwm 32Mhz/20kHz=1600
@@ -392,16 +392,10 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                           break;
                         }
                         case DIRECT_PWM: {
-                          bool direct_pwm_override;
-                          nh->getParam("direct_pwm_override",direct_pwm_override);
-                          if(fabsf(req.set_points[i])>200 && !direct_pwm_override) {
-                              ROS_WARN_THROTTLE(1,"setpoints exceeding sane direct pwm values (>200), "
-                                                  "what the heck are you publishing?!, "
-                                                  "you can enable/disable this check by setting the ros parameter direct_pwm_override, "
-                                                  "execute from the commandline:\n"
-                                                  "rosparam set direct_pwm_override true");
-                          }else {
-                              bus->SetPoint(motor, req.set_points[i]);
+                          if(fabsf(req.set_points[i])>100.0f){
+                            ROS_WARN("you are sending motor commands in direct_pwm mode bigger than 100%, that doesn't make sense");
+                          }else{
+                            bus->SetPoint(motor, req.set_points[i]/100.0f*1600.0f);
                           }
                           break;
                         }
