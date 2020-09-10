@@ -8,11 +8,11 @@ bool FanControl::GetAutoFan(){
   return IORD(base,2);
 }
 
-int FanControl::GetCurrentAverage() {
-    return IORD(base,4);
+float FanControl::GetCurrentAverage() {
+    return IORD(base,4)/80.0f;
 }
 
-int FanControl::GetDuty(){
+float FanControl::GetDuty(){
   float duty = IORD(base,1)/50e6/IORD(base,0)*100.0f;  // dutyticks/50 MHz clock/pwm_freq*100
   return duty;
 }

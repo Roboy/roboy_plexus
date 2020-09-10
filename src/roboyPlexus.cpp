@@ -80,11 +80,6 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     roboyStateThread->detach();
 
     neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
-    fan_control_sub = nh->subscribe("/roboy/middleware/FanControl", 1, &RoboyPlexus::FanControl, this);
-
-    fan_control_srv = nh->advertiseService("/roboy/middleware/FanControl",
-                          &RoboyPlexus::FanControlService,
-                          this);
 
     motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
                                            &RoboyPlexus::MotorConfigService, this);
@@ -113,6 +108,11 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         ROS_INFO("fan pwm freq %d, duty %d",fan->GetPWMFrequency(), fan->GetDuty());
         fan->SetDuty(100);
       }
+      fan_control_sub = nh->subscribe("/roboy/middleware/FanControl", 1, &RoboyPlexus::FanControl, this);
+
+      fan_control_srv = nh->advertiseService("/roboy/middleware/FanControl",
+                            &RoboyPlexus::FanControlService,
+                            this);
     }
 
     if(tli4970_base!=nullptr){
@@ -244,20 +244,6 @@ void RoboyPlexus::Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg)
       }
       i++;
   }
-}
-
-uint8_t RoboyPlexus::reverseBits(uint8_t v){
-  uint8_t r = v; // r will be reversed bits of v; first get LSB of v
-  int s = sizeof(v) * CHAR_BIT - 1; // extra shift needed at end
-
-  for (v >>= 1; v; v >>= 1)
-  {
-    r <<= 1;
-    r |= v & 1;
-    s--;
-  }
-  r <<= s; // shift when v's highest bits are zero
-  return r;
 }
 
 void RoboyPlexus::MagneticJointPublisher() {

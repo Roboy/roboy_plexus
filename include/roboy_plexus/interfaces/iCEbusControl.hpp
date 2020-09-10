@@ -53,7 +53,7 @@
 #define IORD(base, reg) (*(((volatile int32_t*)base)+reg))
 #define IOWR(base, reg, data) (*(((volatile int32_t*)base)+reg)=data)
 
-// the upper 8 bit define which register, the lower 8 bit define which motor
+// the upper 5 bit define which register, the lower 5 bit define which motor
 #define ICEBUS_CONTROL_READ_id(base, motor) IORD(base, (uint32_t)(0x00<<5|motor&0x1f) )
 #define ICEBUS_CONTROL_READ_Kp(base, motor) IORD(base, (uint32_t)(0x01<<5|motor&0x1f) )
 #define ICEBUS_CONTROL_READ_Ki(base, motor) IORD(base, (uint32_t)(0x02<<5|motor&0x1f) )
@@ -98,14 +98,24 @@ class IcebusControl: public MotorControl {
 public:
     /**
      * Constructor
-     * @param myo_base vector of myo base addresses (cf hps_0.h)
+     * @param motor_config as loaded from roboy3.yaml config file, the base addresses
+     * of the icebusses
      */
     IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &base);
 
     ~IcebusControl();
 
+    /**
+    * Sets all motors to a control_mode and applies the setpoint to all
+    * @param control_mode to change to
+    * @param setPoint the setpoint to apply
+    * @return success
+    */
     bool AllToSetpoint(int control_mode, int32_t setPoint) override;
 
+    /*
+    * hard-coded name of the motorcontrol
+    */
     string whoami() override{
         return "icebus";
     }
@@ -129,32 +139,14 @@ public:
                                   float displacement_max, vector<double> &load, vector<double> &displacement);
 
     /**
-	 * Estimates the linearisation parameters of a myobrick by turning the motor and measuring the positions
-     * from the motor angle sensor. The optical encoder data is then used to estimate linearisation parameters
-	 * @param motor for this motor
-	 * @param degree the degree for the polynomial regression
-	 * @param coeffs these are the result from the polynomial regression
-	 * @param timeout in milliseconds
-	 * @param numberOfDataPoints how many samples do you wanne collect
-	 * @param delta_revolution_negative value to turn the motor to into negative direction in degrees
-	 * @param delta_revolution_positive value to turn the motor to into negative direction in degrees
-	 * @param motor_angle will be filled with the a1339 motor_angle data (values between 0-4095)
-	 * @param motor_encoder will be filled with positions from the optical encoder (values between 0-4095)
-	 */
-    void EstimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
-                                                   uint numberOfDataPoints, float delta_revolution_negative,
-                                                   float delta_revolution_positive, vector<double> &motor_angle,
-                                                   vector<double> &motor_encoder);
-
-   /**
     * Gets the baudrate for a motor
-   */
-   int32_t GetBaudrate(int motor);
+    */
+    int32_t GetBaudrate(int motor);
 
     /**
-     * Gets the communication Quality of a motor
+     * Gets the communication Quality of a motor in Hz
      * @param motor
-     * @return quality in percent
+     * @return quality in Hz
      */
     int32_t GetCommunicationQuality(int motor);
 
@@ -165,17 +157,28 @@ public:
      */
     string GetErrorCode(int motor);
 
+    /**
+    * Gets the control parameter of a motor
+    * @param motor
+    * @param Kp P-gain of controller
+    * @param Ki I-gain of controller
+    * @param Kd D-gain of controller
+    * @param deadband deadband of controller
+    * @param IntegralLimit IntegralLimit of controller
+    * @param PWMLimit PWMLimit of controller
+    */
     void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
             int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit);
 
     /**
      * Gets the current control_mode of a motor
      * @param motor for this motor
+     * @return control_mode
      */
     uint8_t GetControlMode(int motor) override;
 
     /**
-     * Gets the current of a motor
+     * Gets the current of a motor in Ampere
      * @param motor for this motor
      */
     float GetCurrent(int motor) override;
@@ -188,7 +191,7 @@ public:
     /**
      * Gets the current limit of a motor
      * @param motor for this motor
-     * return the current_limit in ampere
+     * @return the current_limit in Ampere
      */
     float GetCurrentLimit(int motor) override;
 
@@ -214,7 +217,7 @@ public:
     int32_t GetEncoderPosition(int motor,int encoder) override;
 
     /**
-     * Gets the current position of a motor in encoder ticks
+     * Gets the current velocity of a motor in encoder ticks/s (not implemented yet)
      * @param motor for this motor
      * @param encoder of this encoder
      */
@@ -223,7 +226,7 @@ public:
     /**
      * Gets the bus_id of a motor
      * @param motor
-     * @return id
+     * @return bus_id
      */
     int32_t GetID(int motor);
 
@@ -234,15 +237,22 @@ public:
      */
     int32_t GetNeopixelColor(int motor);
 
+    /**
+    * Gets the target update frequency of a motor, ie the frequency at which a bus
+    * should talk to a motor.
+    */
     int32_t GetMotorUpdateFrequency(int motor);
 
+    /**
+    * not implemented, or rather obsoleted by optocouplers on myo_shield_rev0.6
+    */
     bool GetPowerSense() override{
         return false;
     }
 
     /**
      * Get PWM of motor
-     * @param pwm
+     * @param pwm in percent
      */
     float GetPWM(int motor) override;
 
@@ -261,12 +271,14 @@ public:
 
     /**
      * Sets the baudrate for a motor
+     * @param motor
+     * @param baudrate
     */
     void SetBaudrate(int motor, int baudrate);
 
     /**
      * Changes the controller of ALL motors with the saved controller parameters
-     * @param mode choose from Position, Velocity or Displacement
+     * @param mode choose from ENCODER0_POSITION, ENCODER1_POSITION, DISPLACEMENT, DIRECT_PWM
      * @return success
      */
     bool SetControlMode(int mode) override;
@@ -274,14 +286,14 @@ public:
     /**
      * Changes the controller of a motor with the saved controller parameters
      * @param motor for this motor
-     * @param mode choose from Position, Velocity or Displacement
+     * @param mode choose from ENCODER0_POSITION, ENCODER1_POSITION, DISPLACEMENT, DIRECT_PWM
      */
     bool SetControlMode(int motor, int mode) override;
 
     /**
     * Changes the controller of a motor
     * @param motor for this motor
-    * @param mode choose from Position, Velocity or Displacement
+    * @param mode choose from ENCODER0_POSITION, ENCODER1_POSITION, DISPLACEMENT, DIRECT_PWM
     * @param params with these controller parameters
     */
     bool SetControlMode(int motor, int mode, control_Parameters_t &params) override;
@@ -289,7 +301,7 @@ public:
     /**
 	 * Changes the controller of a motor
 	 * @param motor for this motor
-	 * @param mode choose from Position, Velocity or Displacement
+	 * @param mode choose from ENCODER0_POSITION, ENCODER1_POSITION, DISPLACEMENT, DIRECT_PWM
 	 * @param params with these controller parameters
      * @param setPoint new setPoint
 	 */
@@ -332,6 +344,10 @@ public:
      */
     void SetMotorUpdateFrequency(int motor, int32_t freq) override;
 
+    /**
+    * Displacement setpoint used when recording trajectories
+    * @param value
+    */
     void SetPredisplacement(int value) override;
 
     /**
@@ -362,12 +378,6 @@ public:
      * @return success
      */
     bool PlayTrajectory(const char *file) override;
-
-    /**
-     * Prints all information about a motor
-     * @param motor_id_global
-     */
-    void PrintStatus(int motor_id_global);
 
     /**
      * Performs polynomial regression (http://www.bragitoff.com/2015/09/c-program-for-polynomial-fit-least-squares/)

@@ -99,7 +99,7 @@ public:
 
 private:
     /**
-     * Service for changing the control mode of motors, perviously set PID parameters are restored
+     * Service for changing the control mode of motors, previously set PID parameters are restored
      * @param req control mode
      * @param res
      * @return success
@@ -107,7 +107,9 @@ private:
     bool ControlModeService(roboy_middleware_msgs::ControlMode::Request &req,
                             roboy_middleware_msgs::ControlMode::Response &res);
 
-
+    /**
+    * Publishes elbow joint angles to /external_joint_states
+    */
     void ElbowJointPublisher();
 
     /**
@@ -118,14 +120,21 @@ private:
      */
     bool EmergencyStopService(std_srvs::SetBool::Request &req,
                               std_srvs::SetBool::Response &res);
-
+    /**
+    * Subscriber to /roboy/middleware/FanControl
+    * controls the pwm percentage of the mosfets on the myo_shield_rev0.6
+    * if the fans are connected to these mosfets, the speed of the fans can be regulated
+    */
     void FanControl(std_msgs::Int32 duty);
 
     /**
-    * Service for controlling the auto fan mode
-    * @param req
-    * @param res
-    * @return
+    * Service for controlling the auto fan mode. The average current of the first
+    * four icebuses is used to scale the pwm output of the mosfets connected to the
+    * fans. The idea is that cooling via the fans is regulated automatically based
+    * on the current consumption. This feature has not been tested yet
+    * @param req enable/disable
+    * @param res enabled/disabled
+    * @return success
     */
     bool FanControlService(std_srvs::SetBool::Request &req,
                       std_srvs::SetBool::Response &res);
@@ -160,9 +169,11 @@ private:
      */
     void MotorStatePublisher();
 
+    /**
+    * Subscriber to /roboy/middleware/Neopixel
+    * The neopixel color of each iceboard can be controlled with this topic
+    */
     void Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg);
-
-    uint8_t reverseBits(uint8_t a);
 
     /**
      * Publishes state of roboy

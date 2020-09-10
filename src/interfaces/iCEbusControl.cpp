@@ -204,7 +204,7 @@ uint8_t IcebusControl::GetControlMode(int motor) {
 
 float IcebusControl::GetCurrent(int motor) {
     // ROS_INFO_THROTTLE(1,"%x",ICEBUS_CONTROL_READ_current(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id));
-    return ICEBUS_CONTROL_READ_current(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
+    return ICEBUS_CONTROL_READ_current(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id)/80.f;
 }
 
 int IcebusControl::GetCurrentAverage() {
@@ -225,7 +225,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 80; // 5% of max pwm
+            params->PWMLimit = 160; // 10% of max pwm
             break;
         case ENCODER1_POSITION:
             params->IntegralLimit = 25;
@@ -233,7 +233,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 80; // 5% of max pwm
+            params->PWMLimit = 160; // 5% of max pwm
             break;
        case DISPLACEMENT:
            params->IntegralLimit = 0;
@@ -241,7 +241,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
            params->Ki = 0;
            params->Kd = 0;
            params->deadband = 0;
-           params->PWMLimit = 80; // 5% of max pwm
+           params->PWMLimit = 160; // 5% of max pwm
            break;
         case DIRECT_PWM:
             params->IntegralLimit = 0;
@@ -249,7 +249,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 0;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 80; // 5% of max pwm
+            params->PWMLimit = 160; // 5% of max pwm
             break;
         default:
             ROS_ERROR("unknown control mode %d, available control modes:\n"
@@ -518,53 +518,6 @@ void IcebusControl::SetReplay(bool status) {
     }
 }
 
-void IcebusControl::PrintStatus(int motor_id_global){
-//        printf(
-//                "control_mode  %d\n"
-//                "sp            %d\n"
-//               "encoder0_pos  %d\n"
-//               "encoder1_pos  %d\n"
-//               "encoder0_vel  %d\n"
-//               "encoder1_vel  %d\n"
-//               "current_phase1 %d\n"
-//               "current_phase2 %d\n"
-//               "current_phase3 %d\n"
-//               "Kp            %d\n"
-//               "Ki            %d\n"
-//               "Kd            %d\n"
-//               "PWMLimit      %d\n"
-//               "IntegralLimit %d\n"
-//               "deadband      %d\n"
-//
-//               "suf           %d\n"
-//               "error_code    %x\n"
-//               "crc           %x\n"
-//               "com quality   %d\n"
-//               "-------------------------------------------------\n",
-//                ICEBUS_CONTROL_READ_control_mode(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_sp(h2p_lw_myo_addr[0],0),
-//
-//               ICEBUS_CONTROL_READ_encoder0_position(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_encoder1_position(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_encoder0_velocity(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_encoder1_velocity(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_current_phase1(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_current_phase2(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_current_phase3(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_Kp(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_Ki(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_Kd(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_PWMLimit(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_IntegralLimit(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_deadband(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_update_frequency_Hz(h2p_lw_myo_addr[0]),
-//               ICEBUS_CONTROL_READ_error_code(h2p_lw_myo_addr[0],0),
-//               ICEBUS_CONTROL_READ_crc_checksum(h2p_lw_myo_addr[0],0),
-//                ICEBUS_CONTROL_READ_communication_quality(h2p_lw_myo_addr[0],0)
-//               );
-//        usleep(100000);
-}
-
 bool IcebusControl::PlayTrajectory(const char *file) {
 
     TiXmlDocument doc(file);
@@ -683,93 +636,6 @@ void IcebusControl::EstimateSpringParameters(int motor, int degree, vector<float
     outfile << endl;
 //	polyPar[motor] = coeffs;
     outfile.close();
-}
-
-void IcebusControl::EstimateMotorAngleLinearisationParameters(int motor, int degree, vector<float> &coeffs, int timeout,
-                                                           uint numberOfDataPoints, float delta_revolution_negative,
-                                                           float delta_revolution_positive, vector<double> &motor_angle,
-                                                           vector<double> &motor_encoder) {
-//    auto it = find(myo_bricks.begin(), myo_bricks.end(), motor);
-//    if (it == myo_bricks.end()) {
-//        cerr << "motor " << motor << " is not configured as a myobrick, aborting..." << endl;
-//        return;
-//    }
-//
-//    ptrdiff_t id = distance(myo_bricks.begin(), it);
-//
-//    changeControl(motor, POSITION);
-//    setPoint(motor, 0);
-//    while (abs(getEncoderPosition(motor,ENCODER0)) > 1000) {
-//        cout << "waiting for motor " << motor << " to go to zero position" << endl;
-//        usleep(1000000);
-//    }
-//    changeControl(motor, VELOCITY);
-//    milliseconds ms_start = duration_cast<milliseconds>(system_clock::now().time_since_epoch()), ms_stop;
-//    ofstream outfile;
-//    char str[100];
-//    sprintf(str, "motorAngleLinearisation_calibration_motor%d.csv", motor);
-//    outfile.open(str);
-//    if (!outfile.is_open()) {
-//        cout << "could not open file " << str << " for writing, aborting!" << endl;
-//        return;
-//    }
-//    outfile << "motor_angle[ticks], motor_optical_encoder[ticks]" << endl;
-//
-//    int32_t initial_motor_pos = getEncoderPosition(motor,ENCODER0);
-//    int32_t initial_motor_angle = abs(getEncoderPosition(motor,ENCODER1)) % 4096;
-//    setPoint(motor, -30000);
-//    bool go_backward = true;
-//    int back_and_forth = 2;
-//
-//    int pos_min = initial_motor_pos + ((delta_revolution_negative / 360) * 1024 * myo_bricks_gearbox_ratio[id]);
-//    int pos_max = initial_motor_pos + ((delta_revolution_positive / 360) * 1024 * myo_bricks_gearbox_ratio[id]);
-//
-//    cout << "position min\t" << pos_min << endl;
-//    cout << "position max\t" << pos_max << endl;
-//
-//    int sample = 0;
-//
-//    do {
-//        if (go_backward) {
-//            if (getEncoderPosition(motor,ENCODER0) < pos_min) {
-//                setPoint(motor, 30000);
-//                go_backward = false;
-//                cout << "going forward" << endl;
-//            }
-//        } else {
-//            if (getEncoderPosition(motor,ENCODER0) > pos_max) {
-//                setPoint(motor, -30000);
-//                go_backward = true;
-//                cout << "going backward" << endl;
-//                back_and_forth--;
-//                if(back_and_forth<=0)
-//                    break;
-//            }
-//        }
-//
-//        // note the motor angle
-//        motor_angle.push_back(abs(getEncoderPosition(motor,ENCODER1)));
-//        // note the motor encoder
-//        motor_encoder.push_back(
-//                abs(getEncoderPosition(motor,ENCODER0)/ myo_bricks_gearbox_ratio[id] * myo_bricks_encoder_multiplier[id] -
-//                    initial_motor_angle) % 4096);
-//        outfile << motor_angle.back() << ", " << motor_encoder.back() << endl;
-//        if(sample%100==0)
-//            printf("sample %d motor angle %lf \t motor encoder %lf\n", sample, motor_angle.back(), motor_encoder.back());
-//        ms_stop = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-//        sample++;
-//        usleep(10000);
-//    } while ((ms_stop - ms_start).count() < timeout && motor_angle.size() < numberOfDataPoints);
-//    changeControl(motor, POSITION);
-//    setPoint(motor, initial_motor_pos);
-//    polynomialRegression(degree, motor_angle, motor_encoder, coeffs);
-//    outfile << "regression coefficients for polynomial of " << degree << " degree:" << endl;
-//    for (float coef:coeffs) {
-//        outfile << coef << "\t";
-//    }
-//    outfile << endl;
-////	polyPar[motor] = coeffs;
-//    outfile.close();
 }
 
 void IcebusControl::PolynomialRegression(int degree, vector<double> &x, vector<double> &y,
