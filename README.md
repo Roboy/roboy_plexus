@@ -17,7 +17,7 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
   ```
   ssh root@192.168.240.240
-  ~/.roboy_plexus
+  ~/.roboy_plexus roboy3.yaml
   ```
 * look for `Gandalf Data Limited` in the following command output in order to find out FPGA's IP, substitute `192.168.0.255` by your network broadcast address
   ```
@@ -41,9 +41,9 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   
   
 
-2. Status of the motors is published under the rostopic `roboy/middleware/MotorStatus`
+2. Status of the motors is published under the rostopic `roboy/middleware/MotorState`
   ``` 
-  rostopic echo /roboy/middleware/MotorStatus
+  rostopic echo /roboy/middleware/MotorState
   ```
 
 * check for available rostopic and services:
@@ -52,27 +52,22 @@ sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   rosservice list
   ```
 
-* type definitions for msgs and srvs are in `roboy_communication/middleware` or on https://github.com/Roboy/roboy_communication/tree/master/middleware
+* type definitions for msgs and srvs are in `roboy_communication/middleware` or on https://github.com/Roboy/roboy_communication/tree/roboy3/middleware
 
 3. The control commands are set by publishing ROS messages under `/roboy/middleware/MotorCommand`:
   ```  
-  rostopic pub /roboy/middleware/MotorCommand roboy_middleware_msgs/MotorCommand "id: 0 
-		motors: [0,1]
+  rostopic pub /roboy/middleware/MotorCommand roboy_middleware_msgs/MotorCommand "global_id: [0,1]
 		setPoints: [0,0]"
   ```
 
 4. (Optional) Configure motor mode by calling ROS service `/roboy/middleware/MotorConfig`
 * available control modes:
-	* 0: position (encoder ticks with `rad_per_encoder_count: 0.00005788606746738269`)
-	* 1: velocity (rad/s) - untested!
-	* 2: displacement (encoder ticks)
-	* force mode is available only from GUI and requires a YAML file with spring constants 
-	* [example transform from displacement to force](https://github.com/Roboy/roboy_rqt_plugins/blob/67975a98dddd83cdcb4ce4571191d6eeab046822/roboy_motor_command/src/roboy_motor_command.cpp#L125)
-	* myomuscle calibration file is required, specify the path in GUI (start by calling `rqt`)
-	* `Plugins->Roboy->roboy motor calibration`
-	* use myomuscle tab
+	* 0: ENCODER0_POSITION: position controller using encoder0
+	* 1: ENCODER1_POSITION: position controller using encoder1
+	* 2: DISPLACEMENT: position controller using displacement
+	* 3: DIRECT_PWM: directly controlling the pwm value of the motor
 
-5. Start GUI (the plots show all the motors together encoded in different colors) 
+5. Start the GUI and load the roboy_control_center plugin (select the roboy3.yaml file on first start):
   ```
   rqt
   ```
