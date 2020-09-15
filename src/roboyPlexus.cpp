@@ -12,10 +12,14 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         vector<int> elbow_sensor_order,
         vector<int> elbow_sensor_sign,
         vector<float> elbow_sensor_offset,
+        vector<int> knee_sensor_order,
+        vector<int> knee_sensor_sign,
+        vector<float> knee_sensor_offset,
         MyoControlPtr myoControl) :
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
         power_control(power_control), power_sense(power_sense), switches(switches), led(led),
         elbow_sensor_order(elbow_sensor_order),elbow_sensor_sign(elbow_sensor_sign),elbow_sensor_offset(elbow_sensor_offset),
+        knee_sensor_order(knee_sensor_order),knee_sensor_sign(knee_sensor_sign),knee_sensor_offset(knee_sensor_offset),
         myoControl(myoControl){
     ROS_INFO("roboy3 plexus initializing");
 
@@ -46,14 +50,26 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
       ROS_INFO("initializing elbow joints");
       vector <uint8_t> ids = {0xC,0xD};
       ROS_INFO("right elbow:");
-      a1335.push_back(A1335Ptr(new A1335(i2c_base[0],ids)));
+      a1335_elbow.push_back(A1335Ptr(new A1335(i2c_base[0],ids)));
       ROS_INFO("left elbow:");
-      a1335.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
+      a1335_elbow.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
 
       jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
       elbowJointAngleThread = boost::shared_ptr<std::thread>(
               new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
       elbowJointAngleThread->detach();
+    }
+    if(i2c_base.size()>=4){
+      ROS_INFO("initializing knee joints");
+      vector <uint8_t> ids = {0xC,0xD};
+      ROS_INFO("right knee:");
+      a1335_knee.push_back(A1335Ptr(new A1335(i2c_base[2],ids)));
+      ROS_INFO("left knee:");
+      a1335_knee.push_back(A1335Ptr(new A1335(i2c_base[3],ids)));
+
+      kneeJointAngleThread = boost::shared_ptr<std::thread>(
+              new std::thread(&RoboyPlexus::KneeJointPublisher, this));
+      kneeJointAngleThread->detach();
     }
 
     if (!balljoints.empty()) {
@@ -412,9 +428,9 @@ void RoboyPlexus::ElbowJointPublisher(){
 
     while(ros::ok()){
         int k = 0;
-        for(int j=0;j<a1335.size();j++){
+        for(int j=0;j<a1335_elbow.size();j++){
           vector<A1335State> state;
-          a1335[j]->readAngleData(state);
+          a1335_elbow[j]->readAngleData(state);
           for(int i=0;i<state.size();i++){
               if(angles_prev[k]>340 && state[i].angle < 20)
                 overflow_counter[k]++;
@@ -423,6 +439,37 @@ void RoboyPlexus::ElbowJointPublisher(){
               angles[k] = 0.2f*((state[i].angle + overflow_counter[k]*360)*M_PI/180.0f-elbow_sensor_offset[k]) + 0.8f*angles[k];
               angles_prev[k] = state[i].angle;
               msg.position[elbow_sensor_order[k]] = angles[k]*elbow_sensor_sign[k];
+              k++;
+          }
+        }
+        jointState.publish(msg);
+        rate.sleep();
+    }
+}
+
+void RoboyPlexus::KneeJointPublisher(){
+    sensor_msgs::JointState msg;
+    msg.name = {"knee_right_axis0","knee_right_axis1","knee_left_axis0","knee_left_axis1"};
+    msg.position = {0,0,0,0};
+    msg.velocity = {0,0,0,0};
+    msg.effort = {0,0,0,0};
+    ros::Rate rate(30);
+    vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
+    vector<int> overflow_counter = {0,0,0,0};
+
+    while(ros::ok()){
+        int k = 0;
+        for(int j=0;j<a1335_knee.size();j++){
+          vector<A1335State> state;
+          a1335_knee[j]->readAngleData(state);
+          for(int i=0;i<state.size();i++){
+              if(angles_prev[k]>340 && state[i].angle < 20)
+                overflow_counter[k]++;
+              if(angles_prev[k]<20 && state[i].angle > 340)
+                overflow_counter[k]--;
+              angles[k] = 0.2f*((state[i].angle + overflow_counter[k]*360)*M_PI/180.0f-knee_sensor_offset[k]) + 0.8f*angles[k];
+              angles_prev[k] = state[i].angle;
+              msg.position[knee_sensor_order[k]] = angles[k]*knee_sensor_sign[k];
               k++;
           }
         }

@@ -41,7 +41,7 @@
 #define SYSID_QSYS_SPAN 8
 #define SYSID_QSYS_END 0x1007
 #define SYSID_QSYS_ID 2976579765
-#define SYSID_QSYS_TIMESTAMP 1598709174
+#define SYSID_QSYS_TIMESTAMP 1600176096
 
 /*
  * Macros for device 'TLI4970', class 'TLI4970'
@@ -99,6 +99,28 @@
 #define BALLJOINT_3_BASE 0x1080
 #define BALLJOINT_3_SPAN 64
 #define BALLJOINT_3_END 0x10bf
+
+/*
+ * Macros for device 'auxilliary_i2c_3', class 'I2C'
+ * The macros are prefixed with 'AUXILLIARY_I2C_3_'.
+ * The prefix is the slave descriptor.
+ */
+#define AUXILLIARY_I2C_3_COMPONENT_TYPE I2C
+#define AUXILLIARY_I2C_3_COMPONENT_NAME auxilliary_i2c_3
+#define AUXILLIARY_I2C_3_BASE 0x10c0
+#define AUXILLIARY_I2C_3_SPAN 64
+#define AUXILLIARY_I2C_3_END 0x10ff
+
+/*
+ * Macros for device 'auxilliary_i2c_2', class 'I2C'
+ * The macros are prefixed with 'AUXILLIARY_I2C_2_'.
+ * The prefix is the slave descriptor.
+ */
+#define AUXILLIARY_I2C_2_COMPONENT_TYPE I2C
+#define AUXILLIARY_I2C_2_COMPONENT_NAME auxilliary_i2c_2
+#define AUXILLIARY_I2C_2_BASE 0x1100
+#define AUXILLIARY_I2C_2_SPAN 64
+#define AUXILLIARY_I2C_2_END 0x113f
 
 /*
  * Macros for device 'auxilliary_i2c_1', class 'I2C'

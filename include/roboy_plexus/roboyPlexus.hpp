@@ -92,6 +92,9 @@ public:
                 vector<int> elbow_sensor_order,
                 vector<int> elbow_sensor_sign,
                 vector<float> elbow_sensor_offset,
+                vector<int> knee_sensor_order,
+                vector<int> knee_sensor_sign,
+                vector<float> knee_sensor_offset,
                 MyoControlPtr myoControl = nullptr);
 
     ~RoboyPlexus();
@@ -111,6 +114,11 @@ private:
     * Publishes elbow joint angles to /external_joint_states
     */
     void ElbowJointPublisher();
+
+    /**
+    * Publishes knee joint angles to /external_joint_states
+    */
+    void KneeJointPublisher();
 
     /**
      * Emergency stop service, zeros all PID gains, causing all motors to stop, PID parameters and control mode are restored on release
@@ -220,9 +228,9 @@ private:
     MyoControlPtr myoControl;
     vector<FanControlPtr> fanControls;
     int32_t *power_control, *power_sense, *switches, *led;
-    vector<A1335Ptr> a1335;
-    boost::shared_ptr<std::thread> elbowJointAngleThread, magneticsThread,
-        motorInfoThread, motorStateThread, roboyStateThread;
+    vector<A1335Ptr> a1335_elbow, a1335_knee;
+    boost::shared_ptr<std::thread> elbowJointAngleThread, kneeJointAngleThread,
+        magneticsThread, motorInfoThread, motorStateThread, roboyStateThread;
     bool keep_publishing = true;
     vector<TLE493DPtr> balljoints;
     bool emergency_stop = false;
@@ -233,8 +241,8 @@ private:
     string body_part;
     vector<string> body_parts;
     TLI4970Ptr tli4970;
-    vector<int> elbow_sensor_order, elbow_sensor_sign;
-    vector<float> elbow_sensor_offset;
+    vector<int> elbow_sensor_order, elbow_sensor_sign, knee_sensor_order, knee_sensor_sign;
+    vector<float> elbow_sensor_offset, knee_sensor_offset;
 };
 
 /** @} */ // end of group1
