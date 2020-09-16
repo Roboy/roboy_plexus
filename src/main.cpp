@@ -72,6 +72,7 @@ MyoControlPtr myoControl;
 void SigintHandler(int sig)
 {
     cout << "shutting down" << endl;
+    ros::Time t0 = ros::Time::now();
     // turn off 5V and 12V power
     *h2p_lw_power_control_addr = 0x3;
     // All the default sigint handler does is call shutdown()
@@ -89,6 +90,7 @@ void SigintHandler(int sig)
     *h2p_lw_led_addr = 0x00;
 
     system("fortune | cowsay");
+    // printf("shutdown took: %fs\n",(ros::Time::now()-t0).toSec());
 }
 
 int main(int argc, char *argv[]) {

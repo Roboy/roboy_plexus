@@ -96,11 +96,6 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     roboyStateThread->detach();
 
     neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
-
-    motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
-                                           &RoboyPlexus::MotorConfigService, this);
-    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
-                                           &RoboyPlexus::ControlModeService, this);
     emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
@@ -110,6 +105,14 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     power12V_srv = nh->advertiseService("/roboy/middleware/PowerService12V",
                           &RoboyPlexus::PowerService12V,
                           this);
+    systemcheck_srv = nh->advertiseService("/roboy/middleware/SystemCheck",
+                          &RoboyPlexus::SystemCheckService,
+                          this);
+
+    motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
+                                           &RoboyPlexus::MotorConfigService, this);
+    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
+                                           &RoboyPlexus::ControlModeService, this);
     motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
@@ -530,70 +533,163 @@ bool RoboyPlexus::FanControlService(std_srvs::SetBool::Request &req,
 
 bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
                                      roboy_middleware_msgs::SystemCheck::Response &res) {
-//    vector<uint8_t> motorIDs;
-//    if (req.motorids.empty()) {
-//        motorIDs.resize(icebusControl->motor_config->total_number_of_motors);
-//        int i = 0;
-//        for (auto &m:motorIDs) {
-//            m = i;
-//            i++;
-//        }
-//    } else {
-//        motorIDs = req.motorids;
-//    }
-//    bool system_check_successful = true;
-//    for (auto &m:motorIDs) {
-//        if (icebusControl->GetCurrent(m,0) == 0) {
-//            system_check_successful = false;
-//            res.position.push_back(false);
-//            res.displacement.push_back(false);
-//        } else {
-//            // check position control
-//            bool position_control = true;
-//            int32_t current_pos = icebusControl->GetEncoderPosition(m,ENCODER0);
-//            // run positive direction
-//            icebusControl->SetPoint(m, current_pos + 5000);
-//            ros::Duration wait_for_position(0.01);
-//            wait_for_position.sleep();
-//            if (abs(icebusControl->GetEncoderPosition(m,ENCODER0) - (current_pos + 5000)) > 1000) {
-//                system_check_successful = false;
-//                position_control = false;
-//            }
-//            // run negative direction
-//            icebusControl->SetPoint(m, current_pos - 5000);
-//            wait_for_position.sleep();
-//            if (abs(icebusControl->GetEncoderPosition(m,ENCODER0) - (current_pos - 5000)) > 1000) {
-//                system_check_successful = false;
-//                position_control = false;
-//            }
-//            // reset to start position
-//            icebusControl->SetPoint(m, current_pos);
-//
-//            // check displacement control
-//            bool displacement_control = true;
-//            int32_t current_displacement = icebusControl->GetEncoderPosition(m,ENCODER1);
-//            // run positive direction
-//            icebusControl->SetPoint(m, current_displacement + 10);
-//            ros::Duration wait_for_displacement(1);
-//            wait_for_displacement.sleep();
-//            if (abs(icebusControl->GetEncoderPosition(m,ENCODER1) - (current_displacement + 10)) > 3) {
-//                system_check_successful = false;
-//                displacement_control = false;
-//            }
-//            // run negative direction
-//            icebusControl->SetPoint(m, current_displacement - 10);
-//            wait_for_displacement.sleep();
-//            if (abs(icebusControl->GetEncoderPosition(m,ENCODER1) - (current_displacement + 10)) > 3) {
-//                system_check_successful = false;
-//                displacement_control = false;
-//            }
-//            // reset to start displacement
-//            icebusControl->SetPoint(m, current_displacement);
-//            res.position.push_back(position_control);
-//            res.displacement.push_back(displacement_control);
-//        }
-//    }
-//    return system_check_successful;
+   vector<uint8_t> motorIDs;
+   if (req.motorIDs.empty()) {
+      motorIDs.resize((*motorControl.begin())->motor_config->total_number_of_motors);
+       ROS_INFO("performing overall system check of %ld motors",motorIDs.size());
+       int i = 0;
+       for (auto &m:motorIDs) {
+           m = i;
+           i++;
+       }
+   } else {
+       motorIDs = req.motorIDs;
+   }
+
+   res.encoder0_pos.resize(motorIDs.size());
+   res.encoder1_pos.resize(motorIDs.size());
+   res.communication_quality.resize(motorIDs.size());
+   res.motorIDs = motorIDs;
+
+   stringstream str;
+   // note the current encoder positions
+   map<int,float> encoder0_pos, encoder1_pos, displacement;
+   str << endl << "motor  |  encoder0_pos  |  encoder1_pos  | displacement" << endl;
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         encoder0_pos[motor] = bus->GetEncoderPosition(motor,0);
+         encoder1_pos[motor] = bus->GetEncoderPosition(motor,1);
+         displacement[motor] = bus->GetDisplacement(motor);
+         str << to_string(motor) << "\t" << encoder0_pos[motor] << "\t" << encoder1_pos[motor] << "\t" << displacement[motor] << endl;
+       }
+     }
+   }
+   ROS_INFO_STREAM(str.str());
+
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         encoder0_pos[motor] = bus->GetEncoderPosition(motor,0);
+         encoder1_pos[motor] = bus->GetEncoderPosition(motor,1);
+         displacement[motor] = bus->GetDisplacement(motor);
+         str << to_string(motor) << "\t" << encoder0_pos[motor] << "\t" << encoder1_pos[motor] << "\t" << displacement[motor] << endl;
+       }
+     }
+   }
+
+   ROS_INFO("disableing motorConfig and controlMode services and motorCommand subrscribers");
+   motorConfig_srv.shutdown();
+   controlMode_srv.shutdown();
+   motorCommand_sub.shutdown();
+
+   ROS_INFO("changing to DIRECT_PWM mode with setpoint -3");
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         bus->SetControlMode(motor,DIRECT_PWM);
+         bus->SetPoint(motor,-0.03*1600.0f);
+       }
+     }
+   }
+   ROS_INFO("waiting...");
+   ros::Duration wait_for_position(1);
+   wait_for_position.sleep();
+
+   // note the current encoder positions
+   map<int,float> encoder0_pos_t0, encoder1_pos_t0, displacement_t0;
+   str.clear();
+   str << endl << "motor  |  encoder0_pos  |  encoder1_pos  | displacement" << endl;
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         encoder0_pos_t0[motor] = bus->GetEncoderPosition(motor,0);
+         encoder1_pos_t0[motor] = bus->GetEncoderPosition(motor,1);
+         displacement_t0[motor] = bus->GetDisplacement(motor);
+         str << to_string(motor) << "\t" << encoder0_pos_t0[motor] << "\t" << encoder1_pos_t0[motor] << "\t" << displacement_t0[motor] << endl;
+       }
+     }
+   }
+   ROS_INFO_STREAM(str.str());
+
+   ROS_INFO("changing to DIRECT_PWM mode with setpoint 3");
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         bus->SetControlMode(motor,DIRECT_PWM);
+         bus->SetPoint(motor,0.03*1600.0f);
+       }
+     }
+   }
+   ROS_INFO("waiting...");
+   wait_for_position.sleep();
+
+   // note the current encoder positions
+   map<int,float> encoder0_pos_t1, encoder1_pos_t1, displacement_t1;
+   str.clear();
+   str << endl << "motor  |  encoder0_pos  |  encoder1_pos  | displacement" << endl;
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         encoder0_pos_t1[motor] = bus->GetEncoderPosition(motor,0);
+         encoder1_pos_t1[motor] = bus->GetEncoderPosition(motor,1);
+         displacement_t1[motor] = bus->GetDisplacement(motor);
+         str << to_string(motor) << "\t" << encoder0_pos_t1[motor] << "\t" << encoder1_pos_t1[motor] << "\t" << displacement_t1[motor] << endl;
+       }
+     }
+   }
+   ROS_INFO_STREAM(str.str());
+   ROS_INFO("disableing motors");
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         bus->SetControlMode(motor,DIRECT_PWM);
+         bus->SetPoint(motor,0);
+       }
+     }
+   }
+
+   str.clear();
+   str << "system check results" << endl;
+   str << "motor  |  encoder0  | encoder1  | communication_quality" << endl;
+   int i = 0;
+   for (auto &motor:motorIDs) {
+     for(auto &bus:motorControl){
+       if(bus->MyMotor(motor)){
+         // check if encoder0 was rotating in the correct direction
+         if(encoder0_pos_t0[motor]>=encoder0_pos[motor] || encoder0_pos_t1[motor]<=encoder0_pos_t0[motor])
+          res.encoder0_pos[i] = false;
+         else
+          res.encoder0_pos[i] = true;
+         // check if encoder1 was rotating in the correct direction
+         if(encoder1_pos_t0[motor]>=encoder1_pos[motor] || encoder1_pos_t1[motor]<=encoder1_pos_t0[motor])
+          res.encoder1_pos[i] = false;
+         else
+          res.encoder1_pos[i] = true;
+         // check if we are able to talk to the motor at all
+         if(bus->GetCommunicationQuality(motor)>0)
+          res.communication_quality[i] = true;
+         else
+          res.communication_quality[i] = false;
+         str << to_string(res.motorIDs[i])
+            << "\t" << (res.encoder0_pos[i]?"true":"false")
+            << "\t" << (res.encoder1_pos[i]?"true":"false")
+            << "\t" << (res.communication_quality[i]?"true":"false") << endl;
+       }
+     }
+     i++;
+   }
+
+   ROS_INFO("enableing motorConfig and controlMode services and motorCommand subrscriber");
+   motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
+                                          &RoboyPlexus::MotorConfigService, this);
+   controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
+                                          &RoboyPlexus::ControlModeService, this);
+   motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
+
+   ROS_INFO_STREAM(str.str());
+
+   return true;
 }
 
 bool RoboyPlexus::PowerService5V(std_srvs::SetBool::Request &req,

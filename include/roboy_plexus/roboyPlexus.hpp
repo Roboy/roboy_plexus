@@ -220,7 +220,8 @@ private:
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     ros::Subscriber motorCommand_sub, neopixel_sub, fan_control_sub;
     ros::Publisher jointState, magneticSensor, motorInfo, motorState, roboyState;
-    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv, power5V_srv, power12V_srv, fan_control_srv;
+    ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv,
+      power5V_srv, power12V_srv, fan_control_srv, systemcheck_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
     map<int, int> control_mode_backup,control_mode;
     vector<MotorControlPtr> motorControl;
