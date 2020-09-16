@@ -199,8 +199,9 @@ public:
      * Getting default parameters for a control mode
      * @param params
      * @param control_mode
+     * @param muscleType
      */
-    void GetDefaultControlParams(control_Parameters_t *params, int control_mode);
+    void GetDefaultControlParams(control_Parameters_t *params, int control_mode, string muscleType);
 
     /**
      * Get the displacement of a muscle
@@ -229,6 +230,13 @@ public:
      * @return bus_id
      */
     int32_t GetID(int motor);
+
+    /**
+     * Gets the muscleType of a motor
+     * @param motor
+     * @return muscleType
+     */
+    string GetMuscleType(int motor);
 
     /**
      * Get the neopixel color of a motor

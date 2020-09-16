@@ -19,7 +19,7 @@ IcebusControl::IcebusControl(MotorConfigPtr motor_config, vector<int32_t *> &bas
                 SetPoint(m->motor_id_global, 0);
               for(int mode=0;mode<=3;mode++){
                 control_Parameters_t params;
-                GetDefaultControlParams(&params, mode);
+                GetDefaultControlParams(&params, mode, motor_config->motor[m->motor_id_global]->muscleType);
                 control_params[m->motor_id_global][mode] = params;
               }
               SetControlMode(m->motor_id_global, 0);
@@ -217,39 +217,103 @@ float IcebusControl::GetCurrentLimit(int motor) {
     return current_limit/80.f;
 }
 
-void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
+void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode, string muscleType) {
     switch (control_mode) {
         case ENCODER0_POSITION:
+          if(muscleType=="myoBrick"){
             params->IntegralLimit = 25;
             params->Kp = 16;
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
             params->PWMLimit = 160; // 10% of max pwm
-            break;
-        case ENCODER1_POSITION:
-            params->IntegralLimit = 25;
-            params->Kp = 16;
+          }else if(muscleType=="m3"){
+            params->IntegralLimit = 100;
+            params->Kp = 10;
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 160; // 5% of max pwm
-            break;
-       case DISPLACEMENT:
-           params->IntegralLimit = 0;
-           params->Kp = 0;
-           params->Ki = 0;
-           params->Kd = 0;
-           params->deadband = 0;
-           params->PWMLimit = 160; // 5% of max pwm
-           break;
-        case DIRECT_PWM:
+            params->PWMLimit = 1600; // 100% of max pwm
+          }else{
             params->IntegralLimit = 0;
             params->Kp = 0;
             params->Ki = 0;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 160; // 5% of max pwm
+            params->PWMLimit = 0;
+          }
+          break;
+        case ENCODER1_POSITION:
+            if(muscleType=="myoBrick"){
+              params->IntegralLimit = 25;
+              params->Kp = 16;
+              params->Ki = 1;
+              params->Kd = 0;
+              params->deadband = 0;
+              params->PWMLimit = 160; // 10% of max pwm
+            }else if(muscleType=="m3"){
+              params->IntegralLimit = 100;
+              params->Kp = 10;
+              params->Ki = 1;
+              params->Kd = 0;
+              params->deadband = 0;
+              params->PWMLimit = 1600; // 100% of max pwm
+            }else{
+              params->IntegralLimit = 0;
+              params->Kp = 0;
+              params->Ki = 0;
+              params->Kd = 0;
+              params->deadband = 0;
+              params->PWMLimit = 0;
+            }
+            break;
+       case DISPLACEMENT:
+           if(muscleType=="myoBrick"){
+             params->IntegralLimit = 0;
+             params->Kp = 1;
+             params->Ki = 0;
+             params->Kd = 0;
+             params->deadband = 0;
+             params->PWMLimit = 160; // 10% of max pwm
+           }else if(muscleType=="m3"){
+             params->IntegralLimit = 200;
+             params->Kp = 150;
+             params->Ki = 10;
+             params->Kd = 0;
+             params->deadband = 0;
+             params->PWMLimit = 1600; // 100% of max pwm
+           }else{
+             params->IntegralLimit = 0;
+             params->Kp = 0;
+             params->Ki = 0;
+             params->Kd = 0;
+             params->deadband = 0;
+             params->PWMLimit = 0;
+           }
+           break;
+        case DIRECT_PWM:
+            if(muscleType=="myoBrick"){
+              params->IntegralLimit = 0;
+              params->Kp = 0;
+              params->Ki = 0;
+              params->Kd = 0;
+              params->deadband = 0;
+              params->PWMLimit = 160; // 10% of max pwm
+            }else if(muscleType=="m3"){
+              params->IntegralLimit = 0;
+              params->Kp = 0;
+              params->Ki = 0;
+              params->Kd = 0;
+              params->deadband = 0;
+              params->PWMLimit = 1600; // 100% of max pwm
+            }else{
+              params->IntegralLimit = 0;
+              params->Kp = 0;
+              params->Ki = 0;
+              params->Kd = 0;
+              params->deadband = 0;
+              params->PWMLimit = 0;
+            }
             break;
         default:
             ROS_ERROR("unknown control mode %d, available control modes:\n"
@@ -260,7 +324,6 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
                       ,control_mode);
             break;
     }
-
 }
 
 int32_t IcebusControl::GetDisplacement(int motor) {
@@ -274,6 +337,10 @@ int32_t IcebusControl::GetEncoderPosition(int motor, int encoder) {
         return ICEBUS_CONTROL_READ_encoder1_position(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     else
         return -1;
+}
+
+string IcebusControl::GetMuscleType(int motor){
+  return motor_config->motor[motor]->muscleType;
 }
 
 int32_t IcebusControl::GetEncoderVelocity(int motor, int encoder) {
