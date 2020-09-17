@@ -209,12 +209,12 @@ int main(int argc, char *argv[]) {
 #ifdef BALLJOINT_2_BASE
     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-// #ifdef BALLJOINT_3_BASE
-//     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-// #endif
-// #ifdef BALLJOINT_4_BASE
-//     h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
-// #endif
+#ifdef BALLJOINT_3_BASE
+    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_3_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
+#ifdef BALLJOINT_4_BASE
+    h2p_lw_ball_joint_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + BALLJOINT_4_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
+#endif
 
 #ifdef FANCONTROL_0_BASE
     h2p_lw_fan_control_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + FANCONTROL_0_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));

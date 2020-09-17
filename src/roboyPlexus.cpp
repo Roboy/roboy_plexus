@@ -587,13 +587,17 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
    for (auto &motor:motorIDs) {
      for(auto &bus:motorControl){
        if(bus->MyMotor(motor)){
-         bus->SetControlMode(motor,DIRECT_PWM);
-         bus->SetPoint(motor,-0.03*1600.0f);
+         if(bus->GetMuscleType(motor)=="openBionics"){
+           bus->SetPoint(motor,4000);
+         }else{
+           bus->SetControlMode(motor,DIRECT_PWM);
+           bus->SetPoint(motor,-0.03*1600.0f);
+         }
        }
      }
    }
    ROS_INFO("waiting...");
-   ros::Duration wait_for_position(1);
+   ros::Duration wait_for_position(2);
    wait_for_position.sleep();
 
    // note the current encoder positions
@@ -616,8 +620,12 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
    for (auto &motor:motorIDs) {
      for(auto &bus:motorControl){
        if(bus->MyMotor(motor)){
-         bus->SetControlMode(motor,DIRECT_PWM);
-         bus->SetPoint(motor,0.03*1600.0f);
+         if(bus->GetMuscleType(motor)=="openBionics"){
+           bus->SetPoint(motor,0);
+         }else{
+           bus->SetControlMode(motor,DIRECT_PWM);
+           bus->SetPoint(motor,0.03*1600.0f);
+         }
        }
      }
    }
@@ -656,25 +664,43 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
    for (auto &motor:motorIDs) {
      for(auto &bus:motorControl){
        if(bus->MyMotor(motor)){
-         // check if encoder0 was rotating in the correct direction
-         if(encoder0_pos_t0[motor]>=encoder0_pos[motor] || encoder0_pos_t1[motor]<=encoder0_pos_t0[motor])
-          res.encoder0_pos[i] = false;
-         else
-          res.encoder0_pos[i] = true;
-         // check if encoder1 was rotating in the correct direction
-         if(encoder1_pos_t0[motor]>=encoder1_pos[motor] || encoder1_pos_t1[motor]<=encoder1_pos_t0[motor])
-          res.encoder1_pos[i] = false;
-         else
-          res.encoder1_pos[i] = true;
-         // check if we are able to talk to the motor at all
-         if(bus->GetCommunicationQuality(motor)>0)
-          res.communication_quality[i] = true;
-         else
-          res.communication_quality[i] = false;
-         str << to_string(res.motorIDs[i])
-            << "\t" << (res.encoder0_pos[i]?"true":"false")
-            << "\t" << (res.encoder1_pos[i]?"true":"false")
-            << "\t" << (res.communication_quality[i]?"true":"false") << endl;
+         if(bus->GetMuscleType(motor)=="myoBrick"){
+           // check if encoder0 was rotating in the correct direction
+           if(encoder0_pos_t0[motor]>=encoder0_pos[motor] || encoder0_pos_t1[motor]<=encoder0_pos_t0[motor])
+            res.encoder0_pos[i] = false;
+           else
+            res.encoder0_pos[i] = true;
+           // check if encoder1 was rotating in the correct direction
+           if(encoder1_pos_t0[motor]>=encoder1_pos[motor] || encoder1_pos_t1[motor]<=encoder1_pos_t0[motor])
+            res.encoder1_pos[i] = false;
+           else
+            res.encoder1_pos[i] = true;
+           // check if we are able to talk to the motor at all
+           if(bus->GetCommunicationQuality(motor)>0)
+            res.communication_quality[i] = true;
+           else
+            res.communication_quality[i] = false;
+          }else if(bus->GetMuscleType(motor)=="m3"){
+            // check if encoder0 was rotating in the correct direction
+            if(encoder0_pos_t0[motor]<=encoder0_pos[motor] || encoder0_pos_t1[motor]>=encoder0_pos_t0[motor])
+             res.encoder0_pos[i] = false;
+            else
+             res.encoder0_pos[i] = true;
+            res.encoder1_pos[i] = true;
+            // check if we are able to talk to the motor at all
+            if(bus->GetCommunicationQuality(motor)>0)
+             res.communication_quality[i] = true;
+            else
+             res.communication_quality[i] = false;
+           }else{ // no feedback from openbionics hand
+             res.encoder0_pos[i] = true;
+             res.encoder1_pos[i] = true;
+             res.communication_quality[i] = true;
+           }
+           str << to_string(res.motorIDs[i])
+              << "\t" << (res.encoder0_pos[i]?"true":"false")
+              << "\t" << (res.encoder1_pos[i]?"true":"false")
+              << "\t" << (res.communication_quality[i]?"true":"false") << endl;
        }
      }
      i++;

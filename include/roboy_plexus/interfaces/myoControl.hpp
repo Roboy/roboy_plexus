@@ -252,6 +252,8 @@ public:
      */
     float GetSetPoint(int motor);
 
+    string GetMuscleType(int motor) override;
+
     /**
      * Configures motors to be handled as myoBricks
      * @param motorIDs these are the ids of the motors

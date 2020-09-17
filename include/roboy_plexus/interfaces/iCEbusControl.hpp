@@ -236,7 +236,7 @@ public:
      * @param motor
      * @return muscleType
      */
-    string GetMuscleType(int motor);
+    string GetMuscleType(int motor) override;
 
     /**
      * Get the neopixel color of a motor

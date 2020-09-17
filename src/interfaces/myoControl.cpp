@@ -408,6 +408,10 @@ void MyoControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int
            deadband = MYO_READ_deadBand(bus,motor_id);
          }
 
+string MyoControl::GetMuscleType(int motor){
+  return "myoMuscle";
+}
+
 void MyoControl::GetDefaultControlParams(control_Parameters_t *params, int control_mode) {
    switch (control_mode) {
        case ENCODER0_POSITION:

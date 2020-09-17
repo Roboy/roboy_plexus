@@ -120,6 +120,13 @@ public:
     /**
      * Get the neopixel color of a motor
      * @param motor
+     * @return muscleType
+     */
+    virtual string GetMuscleType(int motor){};
+
+    /**
+     * Get the neopixel color of a motor
+     * @param motor
      * @return color
      */
     virtual int32_t GetNeopixelColor(int motor){};
