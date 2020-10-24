@@ -80,7 +80,8 @@ static vector<int32_t *> DEFAULT_POINTER_VECTOR;
  */
 class RoboyPlexus {
 public:
-    RoboyPlexus(IcebusControlPtr icebusControl,
+    RoboyPlexus(string robot_name,
+                IcebusControlPtr icebusControl,
                 vector<TLE493DPtr> balljoints,
                 vector<FanControlPtr> fanControls,
                 int32_t *led,
@@ -244,6 +245,7 @@ private:
     TLI4970Ptr tli4970;
     vector<int> elbow_sensor_order, elbow_sensor_sign, knee_sensor_order, knee_sensor_sign;
     vector<float> elbow_sensor_offset, knee_sensor_offset;
+    string robot_name;
 };
 
 /** @} */ // end of group1

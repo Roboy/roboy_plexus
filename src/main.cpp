@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
 #ifdef MYOCONTROL_2_BASE
     h2p_lw_myo_addr.push_back((int32_t*)(virtual_base + ( ( unsigned long  )( ALT_LWFPGASLVS_OFST + MYOCONTROL_2_BASE ) & ( unsigned long)( HW_REGS_MASK )) ));
 #endif
-
+    string robot_name = "/roboy/";
     vector<int> elbow_sensor_order, elbow_sensor_sign, knee_sensor_order, knee_sensor_sign;
     vector<float> elbow_sensor_offset, knee_sensor_offset;
 
@@ -256,6 +256,7 @@ int main(int argc, char *argv[]) {
       try{
         YAML::Node config;
         config = YAML::LoadFile(config_file_path);
+        robot_name += config["robot"].as<string>() + "/";
         elbow_sensor_order = config["elbow"]["order"].as<vector<int>>();
         elbow_sensor_sign = config["elbow"]["sign"].as<vector<int>>();
         elbow_sensor_offset = config["elbow"]["offset"].as<vector<float>>();
@@ -276,7 +277,7 @@ int main(int argc, char *argv[]) {
     vector<FanControlPtr> fanControls;
     for(auto addr:h2p_lw_fan_control_addr)
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
-    RoboyPlexus roboyPlexus(icebusControl,balljoints,fanControls,
+    RoboyPlexus roboyPlexus(robot_name, icebusControl,balljoints,fanControls,
         h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,h2p_lw_tli4970_addr,
         elbow_sensor_order,elbow_sensor_sign,elbow_sensor_offset,knee_sensor_order,knee_sensor_sign,knee_sensor_offset,myoControl);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");

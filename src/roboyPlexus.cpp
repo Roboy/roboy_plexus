@@ -1,6 +1,6 @@
 #include "roboyPlexus.hpp"
 
-RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
+RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
         vector<TLE493DPtr> balljoints,
         vector<FanControlPtr> fanControls,
         int32_t *led,
@@ -16,6 +16,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         vector<int> knee_sensor_sign,
         vector<float> knee_sensor_offset,
         MyoControlPtr myoControl) :
+        robot_name(robot_name),
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
         power_control(power_control), power_sense(power_sense), switches(switches), led(led),
         elbow_sensor_order(elbow_sensor_order),elbow_sensor_sign(elbow_sensor_sign),elbow_sensor_offset(elbow_sensor_offset),
@@ -73,7 +74,7 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     }
 
     if (!balljoints.empty()) {
-      magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>("/roboy/middleware/MagneticSensor",
+      magneticSensor = nh->advertise<roboy_middleware_msgs::MagneticSensor>(robot_name + "middleware/MagneticSensor",
                                                                             1);
       magneticsThread = boost::shared_ptr<std::thread>(
               new std::thread(&RoboyPlexus::MagneticJointPublisher, this));
@@ -82,9 +83,9 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         ROS_WARN("no active ball joints");
     }
 
-    motorState = nh->advertise<roboy_middleware_msgs::MotorState>("/roboy/middleware/MotorState", 1);
-    motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>("/roboy/middleware/MotorInfo", 1);
-    roboyState = nh->advertise<roboy_middleware_msgs::RoboyState>("/roboy/middleware/RoboyState", 1);
+    motorState = nh->advertise<roboy_middleware_msgs::MotorState>(robot_name + "middleware/MotorState", 1);
+    motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>(robot_name + "middleware/MotorInfo", 1);
+    roboyState = nh->advertise<roboy_middleware_msgs::RoboyState>(robot_name + "middleware/RoboyState", 1);
 
     motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
     motorStateThread->detach();
@@ -95,25 +96,25 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
     roboyStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::RoboyStatePublisher, this));
     roboyStateThread->detach();
 
-    neopixel_sub = nh->subscribe("/roboy/middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
-    emergencyStop_srv = nh->advertiseService("/roboy/middleware/EmergencyStop",
+    neopixel_sub = nh->subscribe(robot_name + "middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
+    emergencyStop_srv = nh->advertiseService(robot_name + "middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
                                              this);
-    power5V_srv = nh->advertiseService("/roboy/middleware/PowerService5V",
+    power5V_srv = nh->advertiseService(robot_name + "middleware/PowerService5V",
                            &RoboyPlexus::PowerService5V,
                            this);
-    power12V_srv = nh->advertiseService("/roboy/middleware/PowerService12V",
+    power12V_srv = nh->advertiseService(robot_name + "middleware/PowerService12V",
                           &RoboyPlexus::PowerService12V,
                           this);
-    systemcheck_srv = nh->advertiseService("/roboy/middleware/SystemCheck",
+    systemcheck_srv = nh->advertiseService(robot_name + "middleware/SystemCheck",
                           &RoboyPlexus::SystemCheckService,
                           this);
 
-    motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
+    motorConfig_srv = nh->advertiseService(robot_name + "middleware/MotorConfig",
                                            &RoboyPlexus::MotorConfigService, this);
-    controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
+    controlMode_srv = nh->advertiseService(robot_name + "middleware/ControlMode",
                                            &RoboyPlexus::ControlModeService, this);
-    motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
+    motorCommand_sub = nh->subscribe(robot_name + "middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
@@ -127,9 +128,9 @@ RoboyPlexus::RoboyPlexus(IcebusControlPtr icebusControl,
         ROS_INFO("fan pwm freq %d, duty %d",fan->GetPWMFrequency(), fan->GetDuty());
         fan->SetDuty(100);
       }
-      fan_control_sub = nh->subscribe("/roboy/middleware/FanControl", 1, &RoboyPlexus::FanControl, this);
+      fan_control_sub = nh->subscribe(robot_name + "middleware/FanControl", 1, &RoboyPlexus::FanControl, this);
 
-      fan_control_srv = nh->advertiseService("/roboy/middleware/FanControl",
+      fan_control_srv = nh->advertiseService(robot_name + "middleware/FanControl",
                             &RoboyPlexus::FanControlService,
                             this);
     }
@@ -706,12 +707,12 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
      i++;
    }
 
-   ROS_INFO("enableing motorConfig and controlMode services and motorCommand subrscriber");
-   motorConfig_srv = nh->advertiseService("/roboy/middleware/MotorConfig",
+   ROS_INFO("enabling motorConfig and controlMode services and motorCommand subrscriber");
+   motorConfig_srv = nh->advertiseService(robot_name + "middleware/MotorConfig",
                                           &RoboyPlexus::MotorConfigService, this);
-   controlMode_srv = nh->advertiseService("/roboy/middleware/ControlMode",
+   controlMode_srv = nh->advertiseService(robot_name + "middleware/ControlMode",
                                           &RoboyPlexus::ControlModeService, this);
-   motorCommand_sub = nh->subscribe("/roboy/middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
+   motorCommand_sub = nh->subscribe(robot_name + "middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
 
    ROS_INFO_STREAM(str.str());
 
