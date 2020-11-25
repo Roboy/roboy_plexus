@@ -224,11 +224,11 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
         case ENCODER0_POSITION:
           if(muscleType=="myoBrick"){
             params->IntegralLimit = 25;
-            params->Kp = 16;
+            params->Kp = 3;
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 10; // 10% of max pwm
+            params->PWMLimit = 50; // 10% of max pwm
           }else if(muscleType=="m3"){
             params->IntegralLimit = 100;
             params->Kp = 10;
