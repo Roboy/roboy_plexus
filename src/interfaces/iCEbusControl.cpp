@@ -61,6 +61,8 @@ bool IcebusControl::SetID(int motor, int id){
 
 bool IcebusControl::SetControlMode(int motor, int mode, control_Parameters_t &params) {
     if(mode>=ENCODER0_POSITION && mode<=DIRECT_PWM) {
+        control_params[motor][mode] = params;
+
         ICEBUS_CONTROL_WRITE_control_mode(base[motor_config->motor[motor]->bus],
                                           motor_config->motor[motor]->motor_id, mode);
         ICEBUS_CONTROL_WRITE_Kp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id,
@@ -188,7 +190,7 @@ string IcebusControl::GetErrorCode(int motor){
 }
 
 void IcebusControl::GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-                            int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){
+                                           int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){
     Kp = ICEBUS_CONTROL_READ_Kp(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     Ki = ICEBUS_CONTROL_READ_Ki(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
     Kd = ICEBUS_CONTROL_READ_Kd(base[motor_config->motor[motor]->bus], motor_config->motor[motor]->motor_id);
@@ -226,14 +228,14 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 160; // 10% of max pwm
+            params->PWMLimit = 10; // 10% of max pwm
           }else if(muscleType=="m3"){
             params->IntegralLimit = 100;
             params->Kp = 10;
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 1600; // 100% of max pwm
+            params->PWMLimit = 100; // 100% of max pwm
           }else{
             params->IntegralLimit = 0;
             params->Kp = 0;
@@ -250,14 +252,14 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
               params->Ki = 1;
               params->Kd = 0;
               params->deadband = 0;
-              params->PWMLimit = 160; // 10% of max pwm
+              params->PWMLimit = 10; // 10% of max pwm
             }else if(muscleType=="m3"){
               params->IntegralLimit = 100;
               params->Kp = 10;
               params->Ki = 1;
               params->Kd = 0;
               params->deadband = 0;
-              params->PWMLimit = 1600; // 100% of max pwm
+              params->PWMLimit = 100; // 100% of max pwm
             }else{
               params->IntegralLimit = 0;
               params->Kp = 0;
@@ -274,14 +276,14 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
              params->Ki = 0;
              params->Kd = 0;
              params->deadband = 0;
-             params->PWMLimit = 160; // 10% of max pwm
+             params->PWMLimit = 10; // 10% of max pwm
            }else if(muscleType=="m3"){
              params->IntegralLimit = 200;
              params->Kp = 150;
              params->Ki = 10;
              params->Kd = 0;
              params->deadband = 0;
-             params->PWMLimit = 1600; // 100% of max pwm
+             params->PWMLimit = 100; // 100% of max pwm
            }else{
              params->IntegralLimit = 0;
              params->Kp = 0;
@@ -298,14 +300,14 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
               params->Ki = 0;
               params->Kd = 0;
               params->deadband = 0;
-              params->PWMLimit = 160; // 10% of max pwm
+              params->PWMLimit = 10; // 10% of max pwm
             }else if(muscleType=="m3"){
               params->IntegralLimit = 0;
               params->Kp = 0;
               params->Ki = 0;
               params->Kd = 0;
               params->deadband = 0;
-              params->PWMLimit = 1600; // 100% of max pwm
+              params->PWMLimit = 100; // 100% of max pwm
             }else{
               params->IntegralLimit = 0;
               params->Kp = 0;

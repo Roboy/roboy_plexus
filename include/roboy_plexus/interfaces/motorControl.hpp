@@ -69,7 +69,7 @@ public:
       * Gets the controller parameters of a motor
       */
     virtual void GetControllerParameter(int motor, int32_t &Kp, int32_t &Ki, int32_t &Kd,
-            int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){};
+                                        int32_t &deadband, int32_t &IntegralLimit, float &PWMLimit){};
 
     /**
      * Gets the current control_mode of a motor

@@ -81,7 +81,7 @@
 #define ICEBUS_CONTROL_WRITE_Kp(base, motor, data) IOWR(base, (uint32_t)(0x01<<5|motor&0x1f), data )
 #define ICEBUS_CONTROL_WRITE_Ki(base, motor, data) IOWR(base, (uint32_t)(0x02<<5|motor&0x1f), data )
 #define ICEBUS_CONTROL_WRITE_Kd(base, motor, data) IOWR(base, (uint32_t)(0x03<<5|motor&0x1f), data )
-#define ICEBUS_CONTROL_WRITE_PWMLimit(base, motor, data) IOWR(base, (uint32_t)(0x04<<5|motor&0x1f), data )
+#define ICEBUS_CONTROL_WRITE_PWMLimit(base, motor, data) IOWR(base, (uint32_t)(0x04<<5|motor&0x1f), 1600*data/100.0f ) // data is in % of PWM, 1600 = max PWM
 #define ICEBUS_CONTROL_WRITE_IntegralLimit(base, motor, data) IOWR(base, (uint32_t)(0x05<<5|motor&0x1f), data )
 #define ICEBUS_CONTROL_WRITE_deadband(base, motor, data) IOWR(base, (uint32_t)(0x06<<5|motor&0x1f), data )
 #define ICEBUS_CONTROL_WRITE_control_mode(base, motor, data) IOWR(base, (uint32_t)(0x07<<5|motor&0x1f), data )
