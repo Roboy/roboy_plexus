@@ -190,6 +190,10 @@ private:
     void RoboyStatePublisher();
 
     /**
+     * Checks if any of the motors were turned off and resets its setpoint to 0 if yes.
+     */
+    void MotorPowerTracker();
+    /**
      * Service for system check
      * @param req
      * @param res
@@ -232,7 +236,7 @@ private:
     int32_t *power_control, *power_sense, *switches, *led;
     vector<A1335Ptr> a1335_elbow, a1335_knee;
     boost::shared_ptr<std::thread> elbowJointAngleThread, kneeJointAngleThread,
-        magneticsThread, motorInfoThread, motorStateThread, roboyStateThread;
+        magneticsThread, motorInfoThread, motorStateThread, roboyStateThread, powerTrackerThread;
     bool keep_publishing = true;
     vector<TLE493DPtr> balljoints;
     bool emergency_stop = false;

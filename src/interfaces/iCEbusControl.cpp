@@ -228,7 +228,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 50; // 10% of max pwm
+            params->PWMLimit = 30; // 30% of max pwm
           }else if(muscleType=="m3"){
             params->IntegralLimit = 100;
             params->Kp = 10;

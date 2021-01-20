@@ -96,6 +96,7 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     roboyStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::RoboyStatePublisher, this));
     roboyStateThread->detach();
 
+
     neopixel_sub = nh->subscribe(robot_name + "middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
     emergencyStop_srv = nh->advertiseService(robot_name + "middleware/EmergencyStop",
                                              &RoboyPlexus::EmergencyStopService,
@@ -139,6 +140,9 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
       tli4970.reset(new TLI4970(tli4970_base));
     }
 
+    powerTrackerThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorPowerTracker, this));
+    powerTrackerThread->detach();
+
     ROS_INFO("roboy plexus initialized");
 }
 
@@ -147,6 +151,8 @@ RoboyPlexus::~RoboyPlexus() {
         motorStateThread->join();
     if (motorInfoThread->joinable())
         motorInfoThread->join();
+    if (powerTrackerThread->joinable())
+        powerTrackerThread->join();
 }
 
 void RoboyPlexus::MotorStatePublisher() {
@@ -167,7 +173,9 @@ void RoboyPlexus::MotorStatePublisher() {
             msg.encoder1_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor);
             msg.displacement.push_back(bus->GetDisplacement(m.first));
             // msg.displacement.push_back(msg.encoder0_pos.back()-msg.encoder1_pos.back());
-            msg.current.push_back(bus->GetCurrent(m.first));
+            auto current = bus->GetCurrent(m.first);
+            msg.current.push_back(current);
+
           }
         }
       }
@@ -250,6 +258,28 @@ void RoboyPlexus::RoboyStatePublisher(){
     roboyState.publish(msg);
     rate.sleep();
   }
+}
+
+void RoboyPlexus::MotorPowerTracker(){
+    ros::Rate rate(200);
+    while(ros::ok()) {
+
+        for(auto &bus:motorControl){
+            for(auto motor:bus->motor_config->motor) {
+                if(bus->MyMotor(motor.first)) {
+                    if (bus->GetCommunicationQuality(motor.first) > 0) {
+                        motor.second->is_on = true;
+                    }
+                    if (motor.second->is_on && bus->GetCommunicationQuality(motor.first) <= 0) {
+                        bus->SetPoint(motor.first, 0);
+                        motor.second->is_on = false;
+                        ROS_INFO("motor %d on %s is off - resetting setpoint to 0.", motor.second->motor_id_global, bus->whoami().c_str());
+                    }
+                }
+            }
+        }
+        rate.sleep();
+    }
 }
 
 void RoboyPlexus::Neopixel(const roboy_middleware_msgs::Neopixel::ConstPtr &msg){
