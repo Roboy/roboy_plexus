@@ -270,10 +270,10 @@ void RoboyPlexus::MotorPowerTracker(){
                     if (bus->GetCommunicationQuality(motor.first) > 0) {
                         motor.second->is_on = true;
                     }
-                    if (motor.second->is_on && bus->GetCommunicationQuality(motor.first) <= 0) {
+                    else  { // as long as no communication - setpoint 0
                         bus->SetPoint(motor.first, 0);
                         motor.second->is_on = false;
-                        ROS_INFO("motor %d on %s is off - resetting setpoint to 0.", motor.second->motor_id_global, bus->whoami().c_str());
+                        ROS_INFO_THROTTLE(3,"motor %d on %s is off. Will ignore setpoints arriving.", motor.second->motor_id_global, bus->whoami().c_str());
                     }
                 }
             }
