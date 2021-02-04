@@ -167,9 +167,10 @@ void RoboyPlexus::MotorStatePublisher() {
             switch(control_mode[m.first]){
               case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor); break;
               case ENCODER1_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor); break;
+              case DIRECT_PWM: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->direction);
               default: msg.setpoint.push_back(bus->GetSetPoint(m.first));
             }
-            msg.encoder0_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor);
+            msg.encoder0_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor*m.second->direction);
             msg.encoder1_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor);
             msg.displacement.push_back(bus->GetDisplacement(m.first));
             // msg.displacement.push_back(msg.encoder0_pos.back()-msg.encoder1_pos.back());
@@ -262,18 +263,29 @@ void RoboyPlexus::RoboyStatePublisher(){
 
 void RoboyPlexus::MotorPowerTracker(){
     ros::Rate rate(200);
+    // TODO read values from the config
+    vector<int> hand_motors = {38,39,40,41,42,43,44,45};
     while(ros::ok()) {
 
         for(auto &bus:motorControl){
             for(auto motor:bus->motor_config->motor) {
                 if(bus->MyMotor(motor.first)) {
-                    if (bus->GetCommunicationQuality(motor.first) > 0) {
-                        motor.second->is_on = true;
-                    }
-                    else  { // as long as no communication - setpoint 0
-                        bus->SetPoint(motor.first, 0);
-                        motor.second->is_on = false;
-                        ROS_INFO_THROTTLE(3,"motor %d on %s is off. Will ignore setpoints arriving.", motor.second->motor_id_global, bus->whoami().c_str());
+                    if (motor.second->muscleType != "openBionics" ) {
+
+
+                        //                    // ignore hand motors
+                        //                    //TODO proper implementation
+                        //                    if(std::find(hand_motors.begin(), hand_motors.end(), motor.first) != hand_motors.end()) {
+                        //                        continue;
+                        //                    }
+                        if (bus->GetCommunicationQuality(motor.first) > 0) {
+                            motor.second->is_on = true;
+                        } else { // as long as no communication - setpoint 0
+                            bus->SetPoint(motor.first, 0);
+                            motor.second->is_on = false;
+                            ROS_INFO_THROTTLE(3, "motor %d on %s is off. Will ignore setpoints arriving.",
+                                              motor.second->motor_id_global, bus->whoami().c_str());
+                        }
                     }
                 }
             }
@@ -319,7 +331,7 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
         if(bus->MyMotor(motor)){
           switch(control_mode[motor]){
             case ENCODER0_POSITION: {
-              int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor;
+              int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor*bus->motor_config->motor[motor]->direction;
               bus->SetPoint(motor, setpoint);
               break;
             }
@@ -336,7 +348,10 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
               if(fabsf(msg->setpoint[i])>100.0f){
                 ROS_WARN("you are sending motor commands in direct_pwm mode bigger than 100%, that doesn't make sense");
               }else{
-                bus->SetPoint(motor, msg->setpoint[i]/100.0f*1600); // 1600 is the max pwm 32Mhz/20kHz=1600
+                // TODO remove magic numbers
+                auto sp = msg->setpoint[i]/100.0f*1600; // 1600 is the max pwm 32Mhz/20kHz=1600
+                sp *= bus->motor_config->motor[motor]->direction;
+                bus->SetPoint(motor, sp); // 1600 is the max pwm 32Mhz/20kHz=1600
               }
               break;
             }
@@ -414,7 +429,7 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                     if(i<req.set_points.size()){
                       switch(control_mode[motor]){
                         case ENCODER0_POSITION: {
-                          int setpoint = req.set_points[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor;
+                          int setpoint = req.set_points[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor*bus->motor_config->motor[motor]->direction;
                           bus->SetPoint(motor, setpoint);
                           break;
                         }
@@ -431,7 +446,7 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                           if(fabsf(req.set_points[i])>100.0f){
                             ROS_WARN("you are sending motor commands in direct_pwm mode bigger than 100%, that doesn't make sense");
                           }else{
-                            bus->SetPoint(motor, req.set_points[i]/100.0f*1600.0f);
+                            bus->SetPoint(motor, req.set_points[i]/100.0f*1600.0f*bus->motor_config->motor[motor]->direction);
                           }
                           break;
                         }
