@@ -230,12 +230,12 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->deadband = 0;
             params->PWMLimit = 30; // 30% of max pwm
           }else if(muscleType=="m3"){
-            params->IntegralLimit = 100;
-            params->Kp = 10;
+            params->IntegralLimit = 200;
+            params->Kp = 2;
             params->Ki = 1;
-            params->Kd = 0;
+            params->Kd = 6;
             params->deadband = 0;
-            params->PWMLimit = 100; // 100% of max pwm
+            params->PWMLimit = 200; // 100% of max pwm
           }else{
             params->IntegralLimit = 0;
             params->Kp = 0;
@@ -254,12 +254,12 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
               params->deadband = 0;
               params->PWMLimit = 10; // 10% of max pwm
             }else if(muscleType=="m3"){
-              params->IntegralLimit = 100;
-              params->Kp = 10;
+              params->IntegralLimit = 200;
+              params->Kp = 2;
               params->Ki = 1;
-              params->Kd = 0;
+              params->Kd = 4;
               params->deadband = 0;
-              params->PWMLimit = 100; // 100% of max pwm
+              params->PWMLimit = 200; // 100% of max pwm
             }else{
               params->IntegralLimit = 0;
               params->Kp = 0;
@@ -279,11 +279,11 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
              params->PWMLimit = 10; // 10% of max pwm
            }else if(muscleType=="m3"){
              params->IntegralLimit = 200;
-             params->Kp = 150;
-             params->Ki = 10;
-             params->Kd = 0;
+             params->Kp = 4;
+             params->Ki = 1;
+             params->Kd = 6;
              params->deadband = 0;
-             params->PWMLimit = 100; // 100% of max pwm
+             params->PWMLimit = 200; // 100% of max pwm
            }else{
              params->IntegralLimit = 0;
              params->Kp = 0;
@@ -307,7 +307,7 @@ void IcebusControl::GetDefaultControlParams(control_Parameters_t *params, int co
               params->Ki = 0;
               params->Kd = 0;
               params->deadband = 0;
-              params->PWMLimit = 100; // 100% of max pwm
+              params->PWMLimit = 200; // 100% of max pwm
             }else{
               params->IntegralLimit = 0;
               params->Kp = 0;
