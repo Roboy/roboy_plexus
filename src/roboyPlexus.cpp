@@ -336,11 +336,19 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
               break;
             }
             case ENCODER1_POSITION: {
+              // TODO:  if (bus->motor_type == 'M3')
+              //          int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder1_conversion_factor*bus->motor_config->motor[motor]->direction;
+              //        else
+              //          ....
               int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder1_conversion_factor;
               bus->SetPoint(motor, setpoint);
               break;
             }
             case DISPLACEMENT: {
+              // TODO:  if (bus->motor_type == 'M3')
+              //          bus->SetPoint(motor, msg->setpoint[i]*bus->motor_config->motor[motor]->direction;);
+              //        else
+              //          ....
               bus->SetPoint(motor, msg->setpoint[i]);
               break;
             }
@@ -434,11 +442,19 @@ bool RoboyPlexus::ControlModeService(roboy_middleware_msgs::ControlMode::Request
                           break;
                         }
                         case ENCODER1_POSITION: {
+                          // TODO:  if (bus->motor_type == 'M3')
+                          //          int setpoint = req.set_points[i]/bus->motor_config->motor[motor]->encoder1_conversion_factor*bus->motor_config->motor[motor]->direction;
+                          //        else
+                          //          ....
                           int setpoint = req.set_points[i]/bus->motor_config->motor[motor]->encoder1_conversion_factor;
                           bus->SetPoint(motor, setpoint);
                           break;
                         }
                         case DISPLACEMENT: {
+                          // TODO:  if (bus->motor_type == 'M3')
+                          //          bus->SetPoint(motor, msg->setpoint[i]*bus->motor_config->motor[motor]->direction;);
+                          //        else
+                          //          ....
                           bus->SetPoint(motor, req.set_points[i]);
                           break;
                         }
@@ -624,7 +640,7 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
      }
    }
 
-   ROS_INFO("disableing motorConfig and controlMode services and motorCommand subrscribers");
+   ROS_INFO("disabling motorConfig and controlMode services and motorCommand subrscribers");
    motorConfig_srv.shutdown();
    controlMode_srv.shutdown();
    motorCommand_sub.shutdown();
@@ -635,6 +651,8 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
        if(bus->MyMotor(motor)){
          if(bus->GetMuscleType(motor)=="openBionics"){
            bus->SetPoint(motor,4000);
+         }else if(bus->GetMuscleType(motor)=="m3"){
+           bus->SetPoint(motor,-30);
          }else{
            bus->SetControlMode(motor,DIRECT_PWM);
            bus->SetPoint(motor,-0.03*1600.0f);
@@ -668,6 +686,8 @@ bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request
        if(bus->MyMotor(motor)){
          if(bus->GetMuscleType(motor)=="openBionics"){
            bus->SetPoint(motor,0);
+         }else if(bus->GetMuscleType(motor)=="m3"){
+           bus->SetPoint(motor,30);
          }else{
            bus->SetControlMode(motor,DIRECT_PWM);
            bus->SetPoint(motor,0.03*1600.0f);
