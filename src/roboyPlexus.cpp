@@ -163,6 +163,7 @@ void RoboyPlexus::MotorStatePublisher() {
       for(auto &bus:motorControl){
         for(auto m:bus->motor_config->motor){
           if(bus->MyMotor(m.first)){
+            msg.header.stamp = ros::Time::now();
             msg.global_id.push_back(m.first);
             switch(control_mode[m.first]){
               case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor); break;
@@ -315,6 +316,7 @@ void RoboyPlexus::MagneticJointPublisher() {
       int i=0;
       for(auto ball:balljoints){
         roboy_middleware_msgs::MagneticSensor msg;
+        msg.header.stamp = ros::Time::now();
         msg.id = i;
         ball->readMagneticData(msg.sensor_id,msg.x,msg.y,msg.z);
         magneticSensor.publish(msg);
