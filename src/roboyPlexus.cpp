@@ -171,7 +171,7 @@ void RoboyPlexus::MotorStatePublisher() {
               case DIRECT_PWM: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->direction);
               default: msg.setpoint.push_back(bus->GetSetPoint(m.first));
             }
-            msg.encoder0_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor*m.second->direction);
+            msg.encoder0_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER0_POSITION)*m.second->encoder0_conversion_factor);//*m.second->direction);
             msg.encoder1_pos.push_back(bus->GetEncoderPosition(m.first,ENCODER1_POSITION)*m.second->encoder1_conversion_factor);
             msg.displacement.push_back(bus->GetDisplacement(m.first));
             // msg.displacement.push_back(msg.encoder0_pos.back()-msg.encoder1_pos.back());
