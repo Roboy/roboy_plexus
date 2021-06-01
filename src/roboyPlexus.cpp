@@ -55,7 +55,7 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
       ROS_INFO("left elbow:");
       a1335_elbow.push_back(A1335Ptr(new A1335(i2c_base[1],ids)));
 
-      jointState = nh->advertise<sensor_msgs::JointState>("external_joint_states",1);
+      jointState = nh->advertise<sensor_msgs::JointState>(robot_name + "/sensing/external_joint_states",1);
       elbowJointAngleThread = boost::shared_ptr<std::thread>(
               new std::thread(&RoboyPlexus::ElbowJointPublisher, this));
       elbowJointAngleThread->detach();
@@ -166,7 +166,7 @@ void RoboyPlexus::MotorStatePublisher() {
             msg.header.stamp = ros::Time::now();
             msg.global_id.push_back(m.first);
             switch(control_mode[m.first]){
-              case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor); break;
+              case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor*m.second->direction); break;
               case ENCODER1_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor); break;
               case DIRECT_PWM: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->direction);
               default: msg.setpoint.push_back(bus->GetSetPoint(m.first));
@@ -218,7 +218,7 @@ void RoboyPlexus::MotorInfoPublisher() {
               msg.error_code.push_back(error_code);
               msg.neopixelColor.push_back(bus->GetNeopixelColor(m.first));
               switch(control_mode[m.first]){
-                case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor); break;
+                case ENCODER0_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder0_conversion_factor*m.second->direction); break;
                 case ENCODER1_POSITION: msg.setpoint.push_back(bus->GetSetPoint(m.first)*m.second->encoder1_conversion_factor); break;
                 default: msg.setpoint.push_back(bus->GetSetPoint(m.first));
               }
@@ -490,6 +490,7 @@ void RoboyPlexus::ElbowJointPublisher(){
     msg.position = {0,0,0,0};
     msg.velocity = {0,0,0,0};
     msg.effort = {0,0,0,0};
+    msg.header.stamp = ros::Time::now();
     ros::Rate rate(30);
     vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
     vector<int> overflow_counter = {0,0,0,0};
@@ -521,6 +522,7 @@ void RoboyPlexus::KneeJointPublisher(){
     msg.position = {0,0,0,0};
     msg.velocity = {0,0,0,0};
     msg.effort = {0,0,0,0};
+    msg.header.stamp = ros::Time::now();
     ros::Rate rate(30);
     vector<float> angles = {0,0,0,0}, angles_prev = {0,0,0,0};
     vector<int> overflow_counter = {0,0,0,0};
