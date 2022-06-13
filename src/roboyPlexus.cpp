@@ -37,7 +37,6 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     }
 
     // init Can socket
-    CanSocket canSocket;
     canSocket.initInterface("can0");
    
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
@@ -837,3 +836,72 @@ bool RoboyPlexus::PowerService12V(std_srvs::SetBool::Request &req,
                         res.message = "12V disabled";
                       return true;
                     }
+
+
+void RoboyPlexus::CanRecieve(){
+  //TODO set as definition
+  // set status code
+  uint8_t statusCode = 0x9C;
+  // init the standard message frame and the status frame
+  roboy_middleware_msgs::CanFrame canFrame;
+  roboy_middleware_msgs::CanMotorStatus canStatus;
+  // set ros rate
+  ros::Rate rate(10);
+  // run while ros is running
+  while(ros::ok()){
+    // check read fail
+    if(canSocket.canRensieve(&canFrame) != 0){
+      ROS_INFO("Failed reading message");
+      continue;
+    }
+    // decied between status and response
+    if(canFrame.data[0] == statusCode){
+      // convert to right values
+      uint16_t torque = ((uint16_t)canFrame.data[3] << 8) | canFrame.data[2];
+      uint16_t speed = ((uint16_t)canFrame.data[5] << 8) | canFrame.data[4];
+      uint16_t position = ((uint16_t)canFrame.data[7] << 8) | canFrame.data[6];
+      // check if can_id is allready part of the message
+      //TODO set fixed positions for the can id so faster access
+      int idx = -1;//find(canStatus.can_id, canFrame.can_id);
+      // append or update values
+      if (idx == -1){
+          canStatus.can_id.push_back(canFrame.can_id);
+          canStatus.temperature.push_back(canFrame.data[1]);
+          canStatus.position.push_back(position);
+          canStatus.torque.push_back(torque);
+          canStatus.speed.push_back(speed);
+      }else{
+          canStatus.temperature[idx] = canFrame.data[1];
+          canStatus.position[idx] = position;
+          canStatus.torque[idx] = torque;
+          canStatus.speed[idx] = speed;      
+      }
+      canMotorStatus.publish(canStatus);
+    }else{
+      // just publish it as a response
+      canResponse.publish(canFrame);
+    }
+    // wait for next iteration
+    rate.sleep();
+  }
+}
+
+void RoboyPlexus::AskStatus(){
+  roboy_middleware_msgs::CanFrame canFrame;
+  // TODO iterate over all can ids;
+  canFrame.can_id = 0x141;
+  // set status frame
+  canFrame.data_length = 8;
+  canFrame.data = {0x9C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  // set ros rate
+  ros::Rate rate(10);
+  while(ros::ok()){
+    // send status frame
+    canSocket.canTransmit(canFrame);
+    rate.sleep();
+  }
+}
+
+void RoboyPlexus::CanCommand(const roboy_middleware_msgs::CanFrame::ConstPtr &msg){
+  canSocket.canTransmit(msg);
+}

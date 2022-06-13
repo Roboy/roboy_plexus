@@ -28,7 +28,9 @@ class CanSocket{
         CanSocket();
         int initInterface(std::string interface);
         void canTransmit(const roboy_middleware_msgs::CanFrame::ConstPtr &msg);
+        void canTransmit(roboy_middleware_msgs::CanFrame msg);
         int canRensieve(roboy_middleware_msgs::CanFrame* msg);
+        ~CanSocket();
     private:
         int s;
 };

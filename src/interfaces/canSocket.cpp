@@ -35,7 +35,7 @@ int CanSocket::initInterface(std::string interface)
     return 0;
 }
 
-void CanSocket::canTransmit(const roboy_middleware_msgs::CanFrame::ConstPtr &)
+void CanSocket::canTransmit(const roboy_middleware_msgs::CanFrame::ConstPtr &msg)
 {
     struct can_frame tx;
     tx.can_dlc = msg->data_length;
@@ -45,6 +45,15 @@ void CanSocket::canTransmit(const roboy_middleware_msgs::CanFrame::ConstPtr &)
     int nbytes = write(s, &tx, sizeof(struct can_frame));
     ROS_INFO("Send return %d", nbytes);
     ROS_INFO("Errno %d", errno);
+}
+
+void CanSocket::canTransmit(roboy_middleware_msgs::CanFrame msg)
+{
+    struct can_frame tx;
+    tx.can_dlc = msg.data_length;
+    tx.can_id = msg.can_id;
+    memcpy(tx.data, &msg.data[0], msg.data_length);
+    int nbytes = write(s, &tx, sizeof(struct can_frame));
 }
 
 int CanSocket::canRensieve(roboy_middleware_msgs::CanFrame* msg)
@@ -75,5 +84,5 @@ int CanSocket::canRensieve(roboy_middleware_msgs::CanFrame* msg)
 
 CanSocket::~CanSocket() {
     // close the socket
-    close();
+    close(s);
 }

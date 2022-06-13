@@ -224,7 +224,7 @@ private:
                         std_srvs::SetBool::Response &res);
 
     /**
-     * Publishes all revieved Can frames on the right topic
+     * Publishes all recieved Can frames on the right topic
      */
     void CanRecieve();
 
@@ -270,6 +270,7 @@ private:
     vector<int> elbow_sensor_order, elbow_sensor_sign, knee_sensor_order, knee_sensor_sign;
     vector<float> elbow_sensor_offset, knee_sensor_offset;
     string robot_name;
+    CanSocket canSocket;
 };
 
 /** @} */ // end of group1
