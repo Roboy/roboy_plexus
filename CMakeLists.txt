@@ -12,8 +12,8 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
     set(CMAKE_SYSTEM_PROCESSOR armv7l)
 
     set(compiler_path /usr/bin)
-    set(CMAKE_C_COMPILER ${compiler_path}/arm-linux-gnueabihf-gcc-5)
-    set(CMAKE_CXX_COMPILER ${compiler_path}/arm-linux-gnueabihf-g++-5)
+    set(CMAKE_C_COMPILER ${compiler_path}/arm-linux-gnueabihf-gcc-10)
+    set(CMAKE_CXX_COMPILER ${compiler_path}/arm-linux-gnueabihf-g++-10)
     #==============================================================================
     # Dependencies
     #==============================================================================
@@ -67,6 +67,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/interfaces/motorControl.cpp
             src/interfaces/fanControl.cpp
             src/interfaces/i2c.cpp
+            src/interfaces/canSocket.cpp
             src/roboyPlexus.cpp
             src/sensors/A1335.cpp
             src/utility/UDPSocket.cpp
@@ -78,6 +79,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/interfaces/myoControl.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
             include/roboy_plexus/interfaces/i2c.hpp
+            include/roboy_plexus/interfaces/canSocket.hpp
             include/roboy_plexus/roboyPlexus.hpp
             include/roboy_plexus/sensors/A1335.hpp
             include/roboy_plexus/interfaces/fanControl.hpp

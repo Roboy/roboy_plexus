@@ -1,4 +1,4 @@
-set(ROS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/arm/opt/ros/kinetic)
+set(ROS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/arm/opt/ros/noetic)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/include/arm-linux-gnueabihf
         )
@@ -21,7 +21,7 @@ set(ros_LIBRARIES
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/lib/arm-linux-gnueabihf/libuuid.so.1.3.0
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicuio.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicudata.so
-        ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicule.so
+        ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicu-le-hb.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicutu.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicuuc.so
         ${CMAKE_CURRENT_SOURCE_DIR}/arm/usr/lib/arm-linux-gnueabihf/libicui18n.so

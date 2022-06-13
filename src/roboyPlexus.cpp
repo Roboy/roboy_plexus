@@ -36,6 +36,10 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
         ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
     }
 
+    // init Can socket
+    CanSocket canSocket;
+    canSocket.initInterface("can0");
+   
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
     // turn on 5V and 12V lines
@@ -87,6 +91,11 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>(robot_name + "middleware/MotorInfo", 1);
     roboyState = nh->advertise<roboy_middleware_msgs::RoboyState>(robot_name + "middleware/RoboyState", 1);
 
+    // advertise the Can topics
+    canMotorStatus = nh->advertise<roboy_middleware_msgs::CanMotorStatus>(robot_name + "middleware/CanMotorStatus", 1);
+    // this is for all motor responses except the Status
+    canResponse = nh->advertise<roboy_middleware_msgs::CanFrame>(robot_name + "middleware/CanResponse", 1);
+
     motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
     motorStateThread->detach();
 
@@ -96,6 +105,13 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     roboyStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::RoboyStatePublisher, this));
     roboyStateThread->detach();
 
+    // thread for asking motor for status
+    canAskStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::AskStatus, this));
+    canAskStatusThread->detach();
+    
+    // thread for recieving can signals
+    canRecieveThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::CanRecieve, this));
+    canRecieveThread->detach();
 
     neopixel_sub = nh->subscribe(robot_name + "middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
     emergencyStop_srv = nh->advertiseService(robot_name + "middleware/EmergencyStop",
@@ -116,6 +132,9 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     controlMode_srv = nh->advertiseService(robot_name + "middleware/ControlMode",
                                            &RoboyPlexus::ControlModeService, this);
     motorCommand_sub = nh->subscribe(robot_name + "middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
+
+    // Can command subscriber
+    canCommand_sub = nh->subscribe(robot_name + "middleware/CanCommand", 1, &RoboyPlexus::CanCommand, this);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
@@ -153,6 +172,11 @@ RoboyPlexus::~RoboyPlexus() {
         motorInfoThread->join();
     if (powerTrackerThread->joinable())
         powerTrackerThread->join();
+    // join CAN threads
+    if (canAskStatusThread->joinable())
+        canAskStatusThread->join();
+    if (canRecieveThread->joinable())
+        canRecieveThread->join();
 }
 
 void RoboyPlexus::MotorStatePublisher() {
@@ -600,6 +624,7 @@ bool RoboyPlexus::FanControlService(std_srvs::SetBool::Request &req,
 
 bool RoboyPlexus::SystemCheckService(roboy_middleware_msgs::SystemCheck::Request &req,
                                      roboy_middleware_msgs::SystemCheck::Response &res) {
+                                      //TODO add can controll here
    vector<uint8_t> motorIDs;
    if (req.motorIDs.empty()) {
       motorIDs.resize((*motorControl.begin())->motor_config->total_number_of_motors);
