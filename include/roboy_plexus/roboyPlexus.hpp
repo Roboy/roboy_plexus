@@ -50,6 +50,7 @@
 #include <sys/stat.h>
 #include <common_utilities/CommonDefinitions.h>
 #include "interfaces/iCEbusControl.hpp"
+#include "interfaces/canBusControl.hpp"
 #include "interfaces/fanControl.hpp"
 #include "interfaces/myoControl.hpp"
 #include "sensors/A1335.hpp"
@@ -63,14 +64,11 @@
 #include <roboy_middleware_msgs/Neopixel.h>
 #include <roboy_middleware_msgs/RoboyState.h>
 #include <roboy_middleware_msgs/SystemCheck.h>
-#include <roboy_middleware_msgs/CanMotorStatus.h>
-#include <roboy_middleware_msgs/CanFrame.h>
 #include <std_srvs/SetBool.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Int32.h>
 #include "sensors/tle493d_w2b6.hpp"
 #include "sensors/tli4970.hpp"
-#include "interfaces/canSocket.hpp"
 
 using namespace std;
 using namespace chrono;
@@ -99,7 +97,8 @@ public:
                 vector<int> knee_sensor_order,
                 vector<int> knee_sensor_sign,
                 vector<float> knee_sensor_offset,
-                MyoControlPtr myoControl = nullptr);
+                MyoControlPtr myoControl = nullptr,
+                CanBusControlPtr canBusControl = nullptr);
 
     ~RoboyPlexus();
 
@@ -223,28 +222,12 @@ private:
     bool PowerService12V(std_srvs::SetBool::Request &req,
                         std_srvs::SetBool::Response &res);
 
-    /**
-     * Publishes all recieved Can frames on the right topic
-     */
-    void CanRecieve();
-
-    /**
-     * Asks the motor in a certain interval.
-     */
-    void AskStatus();
-
-    /**
-     * Subscriber to middleware/CanCommand
-     * @param msg motor command
-     */
-    void CanCommand(const roboy_middleware_msgs::CanFrame::ConstPtr &msg);
-
 
 private:
     ros::NodeHandlePtr nh;
     boost::shared_ptr<ros::AsyncSpinner> spinner;
-    ros::Subscriber motorCommand_sub, neopixel_sub, fan_control_sub, canCommand_sub;
-    ros::Publisher jointState, magneticSensor, motorInfo, motorState, roboyState, canMotorStatus, canResponse;
+    ros::Subscriber motorCommand_sub, neopixel_sub, fan_control_sub;
+    ros::Publisher jointState, magneticSensor, motorInfo, motorState, roboyState;
     ros::ServiceServer motorConfig_srv, controlMode_srv, emergencyStop_srv,
       power5V_srv, power12V_srv, fan_control_srv, systemcheck_srv;
     map<int, map<int, control_Parameters_t>> control_params_backup;
@@ -252,11 +235,12 @@ private:
     vector<MotorControlPtr> motorControl;
     IcebusControlPtr icebusControl;
     MyoControlPtr myoControl;
+    CanBusControlPtr canBusControl;
     vector<FanControlPtr> fanControls;
     int32_t *power_control, *power_sense, *switches, *led;
     vector<A1335Ptr> a1335_elbow, a1335_knee;
     boost::shared_ptr<std::thread> elbowJointAngleThread, kneeJointAngleThread,
-        magneticsThread, motorInfoThread, motorStateThread, roboyStateThread, powerTrackerThread, canAskStatusThread, canRecieveThread;
+        magneticsThread, motorInfoThread, motorStateThread, roboyStateThread, powerTrackerThread;
     bool keep_publishing = true;
     vector<TLE493DPtr> balljoints;
     bool emergency_stop = false;
@@ -270,7 +254,6 @@ private:
     vector<int> elbow_sensor_order, elbow_sensor_sign, knee_sensor_order, knee_sensor_sign;
     vector<float> elbow_sensor_offset, knee_sensor_offset;
     string robot_name;
-    CanSocket canSocket;
 };
 
 /** @} */ // end of group1

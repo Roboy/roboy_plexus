@@ -15,13 +15,14 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
         vector<int> knee_sensor_order,
         vector<int> knee_sensor_sign,
         vector<float> knee_sensor_offset,
-        MyoControlPtr myoControl) :
-        robot_name(robot_name),
+        MyoControlPtr myoControl,
+        CanBusControlPtr canBusControl) :
+        robot_name(robot_name), 
         icebusControl(icebusControl), fanControls(fanControls), balljoints(balljoints),
         power_control(power_control), power_sense(power_sense), switches(switches), led(led),
         elbow_sensor_order(elbow_sensor_order),elbow_sensor_sign(elbow_sensor_sign),elbow_sensor_offset(elbow_sensor_offset),
         knee_sensor_order(knee_sensor_order),knee_sensor_sign(knee_sensor_sign),knee_sensor_offset(knee_sensor_offset),
-        myoControl(myoControl){
+        myoControl(myoControl), canBusControl(canBusControl){
     ROS_INFO("roboy3 plexus initializing");
 
     ifstream ifile("/sys/class/net/eth0/address");
@@ -35,9 +36,6 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
         char **argv = NULL;
         ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
     }
-
-    // init Can socket
-    canSocket.initInterface("can0");
    
     nh = ros::NodeHandlePtr(new ros::NodeHandle);
 
@@ -90,11 +88,6 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     motorInfo = nh->advertise<roboy_middleware_msgs::MotorInfo>(robot_name + "middleware/MotorInfo", 1);
     roboyState = nh->advertise<roboy_middleware_msgs::RoboyState>(robot_name + "middleware/RoboyState", 1);
 
-    // advertise the Can topics
-    canMotorStatus = nh->advertise<roboy_middleware_msgs::CanMotorStatus>(robot_name + "middleware/CanMotorStatus", 1);
-    // this is for all motor responses except the Status
-    canResponse = nh->advertise<roboy_middleware_msgs::CanFrame>(robot_name + "middleware/CanResponse", 1);
-
     motorStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::MotorStatePublisher, this));
     motorStateThread->detach();
 
@@ -103,14 +96,6 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
 
     roboyStateThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::RoboyStatePublisher, this));
     roboyStateThread->detach();
-
-    // thread for asking motor for status
-    canAskStatusThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::AskStatus, this));
-    canAskStatusThread->detach();
-    
-    // thread for recieving can signals
-    canRecieveThread = boost::shared_ptr<std::thread>(new std::thread(&RoboyPlexus::CanRecieve, this));
-    canRecieveThread->detach();
 
     neopixel_sub = nh->subscribe(robot_name + "middleware/Neopixel", 1, &RoboyPlexus::Neopixel, this);
     emergencyStop_srv = nh->advertiseService(robot_name + "middleware/EmergencyStop",
@@ -131,9 +116,6 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     controlMode_srv = nh->advertiseService(robot_name + "middleware/ControlMode",
                                            &RoboyPlexus::ControlModeService, this);
     motorCommand_sub = nh->subscribe(robot_name + "middleware/MotorCommand", 1, &RoboyPlexus::MotorCommand, this);
-
-    // Can command subscriber
-    canCommand_sub = nh->subscribe(robot_name + "middleware/CanCommand", 1, &RoboyPlexus::CanCommand, this);
 
     spinner = boost::shared_ptr<ros::AsyncSpinner>(new ros::AsyncSpinner(0));
     spinner->start();
@@ -171,11 +153,6 @@ RoboyPlexus::~RoboyPlexus() {
         motorInfoThread->join();
     if (powerTrackerThread->joinable())
         powerTrackerThread->join();
-    // join CAN threads
-    if (canAskStatusThread->joinable())
-        canAskStatusThread->join();
-    if (canRecieveThread->joinable())
-        canRecieveThread->join();
 }
 
 void RoboyPlexus::MotorStatePublisher() {
@@ -836,72 +813,3 @@ bool RoboyPlexus::PowerService12V(std_srvs::SetBool::Request &req,
                         res.message = "12V disabled";
                       return true;
                     }
-
-
-void RoboyPlexus::CanRecieve(){
-  //TODO set as definition
-  // set status code
-  uint8_t statusCode = 0x9C;
-  // init the standard message frame and the status frame
-  roboy_middleware_msgs::CanFrame canFrame;
-  roboy_middleware_msgs::CanMotorStatus canStatus;
-  // set ros rate
-  ros::Rate rate(10);
-  // run while ros is running
-  while(ros::ok()){
-    // check read fail
-    if(canSocket.canRensieve(&canFrame) != 0){
-      ROS_INFO("Failed reading message");
-      continue;
-    }
-    // decied between status and response
-    if(canFrame.data[0] == statusCode){
-      // convert to right values
-      uint16_t torque = ((uint16_t)canFrame.data[3] << 8) | canFrame.data[2];
-      uint16_t speed = ((uint16_t)canFrame.data[5] << 8) | canFrame.data[4];
-      uint16_t position = ((uint16_t)canFrame.data[7] << 8) | canFrame.data[6];
-      // check if can_id is allready part of the message
-      //TODO set fixed positions for the can id so faster access
-      int idx = -1;//find(canStatus.can_id, canFrame.can_id);
-      // append or update values
-      if (idx == -1){
-          canStatus.can_id.push_back(canFrame.can_id);
-          canStatus.temperature.push_back(canFrame.data[1]);
-          canStatus.position.push_back(position);
-          canStatus.torque.push_back(torque);
-          canStatus.speed.push_back(speed);
-      }else{
-          canStatus.temperature[idx] = canFrame.data[1];
-          canStatus.position[idx] = position;
-          canStatus.torque[idx] = torque;
-          canStatus.speed[idx] = speed;      
-      }
-      canMotorStatus.publish(canStatus);
-    }else{
-      // just publish it as a response
-      canResponse.publish(canFrame);
-    }
-    // wait for next iteration
-    rate.sleep();
-  }
-}
-
-void RoboyPlexus::AskStatus(){
-  roboy_middleware_msgs::CanFrame canFrame;
-  // TODO iterate over all can ids;
-  canFrame.can_id = 0x141;
-  // set status frame
-  canFrame.data_length = 8;
-  canFrame.data = {0x9C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  // set ros rate
-  ros::Rate rate(10);
-  while(ros::ok()){
-    // send status frame
-    canSocket.canTransmit(canFrame);
-    rate.sleep();
-  }
-}
-
-void RoboyPlexus::CanCommand(const roboy_middleware_msgs::CanFrame::ConstPtr &msg){
-  canSocket.canTransmit(msg);
-}

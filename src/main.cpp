@@ -68,6 +68,7 @@ int32_t* h2p_lw_tli4970_addr;
 
 IcebusControlPtr icebusControl;
 MyoControlPtr myoControl;
+CanBusControlPtr canBusControl;
 
 void SigintHandler(int sig)
 {
@@ -271,6 +272,7 @@ int main(int argc, char *argv[]) {
 
     myoControl = MyoControlPtr(new MyoControl(motor_config,h2p_lw_myo_addr));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config,h2p_lw_icebus_addr));
+    canBusControl = CanBusControlPtr(new CanBusControl(motor_config));
     vector<TLE493DPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)
       balljoints.push_back(TLE493DPtr(new TLE493D(addr)));
@@ -279,7 +281,7 @@ int main(int argc, char *argv[]) {
       fanControls.push_back(FanControlPtr(new FanControl(addr)));
     RoboyPlexus roboyPlexus(robot_name, icebusControl,balljoints,fanControls,
         h2p_lw_led_addr,h2p_lw_switches_addr,h2p_lw_power_control_addr,h2p_lw_power_sense_addr,h2p_lw_auxilliary_i2c_addr,h2p_lw_tli4970_addr,
-        elbow_sensor_order,elbow_sensor_sign,elbow_sensor_offset,knee_sensor_order,knee_sensor_sign,knee_sensor_offset,myoControl);
+        elbow_sensor_order,elbow_sensor_sign,elbow_sensor_offset,knee_sensor_order,knee_sensor_sign,knee_sensor_offset,myoControl, canBusControl);
 ////    PerformMovementAction performMovementAction(myoControl, roboyPlexus.getBodyPart() + "_movement_server");
 ////    PerformMovementsAction performMovementsAction(myoControl, roboyPlexus.getBodyPart() + "_movements_server");
 ////

@@ -115,3 +115,19 @@ knee:
   sign: [1,1,1,1]
   offset: [0,0,0,0]
 
+canbus:
+  number_of_motors: [1]
+  update_frequency: [100]
+  bus_socket_name: ["can0"]
+  motor_ids:
+    - [0]
+  motor_ids_global:
+    - [70]
+  bus_ids:
+    - [321]
+  encoder_conversion_factor:
+    - [0.0]
+  spin_direction:
+    - [1]
+  muscle_type:
+    - ["rmdX6"]

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(roboy_plexus)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -lstdc++")
 
 SET(CMAKE_BUILD_TYPE Debug)
 if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
@@ -65,6 +65,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             src/interfaces/iCEbusControl.cpp
             src/interfaces/myoControl.cpp
             src/interfaces/motorControl.cpp
+            src/interfaces/canBusControl.cpp
             src/interfaces/fanControl.cpp
             src/interfaces/i2c.cpp
             src/interfaces/canSocket.cpp
@@ -78,6 +79,7 @@ if (DEFINED "ENV{SOCEDS_DEST_ROOT}")
             include/roboy_plexus/interfaces/iCEbusControl.hpp
             include/roboy_plexus/interfaces/myoControl.hpp
             include/roboy_plexus/interfaces/motorControl.hpp
+            include/roboy_plexus/interfaces/canBusControl.hpp
             include/roboy_plexus/interfaces/i2c.hpp
             include/roboy_plexus/interfaces/canSocket.hpp
             include/roboy_plexus/roboyPlexus.hpp

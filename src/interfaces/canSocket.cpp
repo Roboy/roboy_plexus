@@ -1,8 +1,6 @@
 #include "interfaces/canSocket.hpp"
 
-CanSocket::CanSocket() {}
-
-int CanSocket::initInterface(std::string interface)
+int CanSocket::initInterface(string interface)
 {
     struct sockaddr_can addr;
     struct ifreq ifr;
@@ -10,7 +8,7 @@ int CanSocket::initInterface(std::string interface)
     /* open socket and check if it worked*/
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
     {
-        ROS_ERROR("Cannot create CAN socket err: %d", s);
+        ROS_FATAL("Cannot create CAN socket err: %d", s);
         return -1;
     }
 
@@ -19,7 +17,7 @@ int CanSocket::initInterface(std::string interface)
     ioctl(s, SIOCGIFINDEX, &ifr);
     // verify that the socket exists
     if(!ifr.ifr_ifindex){
-        ROS_ERROR("Cannot find index with socket name %s", interface);
+        ROS_FATAL("Cannot find index with socket name %s", interface);
         return -1;
     }
     addr.can_family = AF_CAN;
@@ -27,7 +25,7 @@ int CanSocket::initInterface(std::string interface)
 
     // bind the socket index to the socket s and verify if it worked
     if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0){
-        ROS_ERROR("Cannot bind socket!");
+        ROS_FATAL("Cannot bind socket!");
         return -1;
     }
 
@@ -35,28 +33,15 @@ int CanSocket::initInterface(std::string interface)
     return 0;
 }
 
-void CanSocket::canTransmit(const roboy_middleware_msgs::CanFrame::ConstPtr &msg)
-{
+void CanSocket::canTransmit(int can_id, uint8_t *data){
     struct can_frame tx;
-    tx.can_dlc = msg->data_length;
-    tx.can_id = msg->can_id;
-    memcpy(tx.data, &msg->data[0], msg->data_length);
-    ROS_INFO("tx: %d, %d, %d, %d, %d, %d, %d, %d;", tx.data[0], tx.data[1], tx.data[2], tx.data[3], tx.data[4], tx.data[5], tx.data[6], tx.data[7]);
-    int nbytes = write(s, &tx, sizeof(struct can_frame));
-    ROS_INFO("Send return %d", nbytes);
-    ROS_INFO("Errno %d", errno);
-}
-
-void CanSocket::canTransmit(roboy_middleware_msgs::CanFrame msg)
-{
-    struct can_frame tx;
-    tx.can_dlc = msg.data_length;
-    tx.can_id = msg.can_id;
-    memcpy(tx.data, &msg.data[0], msg.data_length);
+    tx.can_dlc = 8;
+    tx.can_id = can_id;
+    memcpy(tx.data, data, 8);
     int nbytes = write(s, &tx, sizeof(struct can_frame));
 }
 
-int CanSocket::canRensieve(roboy_middleware_msgs::CanFrame* msg)
+int CanSocket::canRensieve(uint8_t *data)
 {
     struct can_frame frame;
 
@@ -75,9 +60,7 @@ int CanSocket::canRensieve(roboy_middleware_msgs::CanFrame* msg)
         return -1;
     }
 
-    msg->can_id = frame.can_id;
-    msg->data_length = frame.can_dlc;
-    memcpy(&msg->data[0], frame.data, frame.can_dlc);
+    memcpy(data, frame.data, frame.can_dlc);
 
     return 0;
 }
