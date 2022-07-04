@@ -45,22 +45,28 @@ CanBusControl::CanBusControl(MotorConfigPtr motor_config)
             GetDefaultControlParams(&params, mode, motor.second->muscleType, motor.second->motor_global_id);
             control_params[motor.second->motor_global_id][mode] = params;
         }
+        SetControlMode(motor.second->motor_global_id, 0);
+        SetPoint(motor.second->motor_global_id, 0);
     }
-    StartStatusRequestThreads();
 }
 
 CanBusControl::~CanBusControl()
 {
+    // join all the request threads and stop all motors on deletion of the object
     ROS_INFO("shutting down can bus control");
     for (auto &tread : statusRequestThreads)
     {
         if (tread->joinable())
             tread->join();
     }
+    for(auto &motor : canMotor){
+        OffMotor(motor.second->motor_global_id);
+    }
 }
 
 void CanBusControl::CreateSockets()
 {
+    // iterate over each canbus name to create the socket verify over ROS stream
     for (auto &socket_name : can_bus_names)
     {
         ROS_INFO("Create socket with the name %s", get<0>(socket_name));
@@ -72,6 +78,7 @@ void CanBusControl::CreateSockets()
 
 void CanBusControl::SetSocketsForMotor()
 {
+    // iterater over each motor and add thier socket to their parameter
     for (auto &motor : canMotor)
     {
         string socketName = motor.second->bus_socket_name;
@@ -79,6 +86,7 @@ void CanBusControl::SetSocketsForMotor()
         {
             if (socket->name == socketName)
             {
+                // virfy over ROs stream that it has each motor has been added successfuly
                 ROS_INFO("Motor with id: %d has the socket with the name %s", motor.second->motor_global_id, socketName);
                 motor.second->socket_ = socket;
                 break;
@@ -90,6 +98,7 @@ void CanBusControl::SetSocketsForMotor()
 
 void CanBusControl::StartStatusRequestThreads()
 {
+    // create a thread for each socket so each socket is always fully used
     boost::shared_ptr<std::thread> inter_thread_pointer;
     for (int i = 0; i < canMotorOnSocket.size(); i++)
     {
@@ -97,6 +106,7 @@ void CanBusControl::StartStatusRequestThreads()
         inter_thread_pointer->detach();
         statusRequestThreads.push_back(inter_thread_pointer);
     }
+    // set that each thread has been created so the threads can now find out their id from the vector as well as their corresponding socket
     finished_init_threads = true;
     ROS_INFO("all threads have been started");
 }
@@ -118,7 +128,9 @@ void CanBusControl::StatusRequestLoop()
             break;
         }
     }
+    // get the motors that have to be iterated over
     std::map<int, CanMotorPtr> busMotors = canMotorOnSocket[id];
+    // get the socket
     CanSocketPtr socket = canSockets[id];
     int update_frequen = socket->update_frequency;
     ROS_INFO("The thread with id: %d is started.", id);
@@ -128,27 +140,41 @@ void CanBusControl::StatusRequestLoop()
     {
         for (std::pair<int, CanMotorPtr> m : busMotors)
         {
+            // by applying the peterson algorithm it is always safe that the socket is only used by one resource
             while (socket->in_use_by != -1)
             {
-                this_thread::sleep_for(std::chrono::milliseconds(10));
+                this_thread::sleep_for(std::chrono::milliseconds(5));
             }
             socket->in_use_by = CAN_CONTROLLER_USED_STATUS;
-            this_thread::sleep_for(std::chrono::milliseconds(20));
+            this_thread::sleep_for(std::chrono::milliseconds(8));
             if (socket->in_use_by == CAN_CONTROLLER_USED_STATUS)
             {
                 // TODO add different motors
-                uint8_t data[8] = RMD_X6_STATUS_REQUEST_FRAME;
-                socket->canTransmit(m.second->bus_id, data);
-                socket->canRensieve(data);
-                if (data[0] == RMD_X6_STATUS_RESPONSE_ID)
+                //get the motor status
+                uint8_t status[8] = RMD_X6_STATUS_REQUEST_FRAME;
+                socket->canTransmit(m.second->bus_id, status);
+                socket->canRensieve(status);
+                if (status[0] == RMD_X6_STATUS_RESPONSE_ID)
                 {
-                    m.second->speed = data[5] << 8 | data[4];
-                    m.second->torque = data[3] << 8 | data[2];
-                    m.second->encoderPosition = data[7] << 8 | data[6];
-                    m.second->temperature = data[1];
-                    ROS_INFO_STREAM("Reasding successful.");
+                    // write to motor parameters
+                    m.second->speed = status[5] << 8 | status[4];
+                    m.second->torque = status[3] << 8 | status[2];
+                    m.second->temperature = status[1];
                 }
-                ROS_INFO_STREAM("Read data");
+                // get the exact position
+                uint8_t pos[8] = RMD_X6_READ_MULTITURN_ANGLE;
+                socket->canTransmit(m.second->bus_id, pos);
+                socket->canRensieve(pos);
+                if (pos[0] == RMD_X6_READ_MULTITURN_ANGLE_ID)
+                {
+                    // write to motor parameter
+                    m.second->encoderPosition = pos[6] << 40 | pos[5] << 32 | pos[4] << 24 | pos[3] << 16 | pos[2] << 8 | pos[1];
+                    // also keep the direction in mind
+                    if(pos[7]==1){
+                        m.second->encoderPosition = m.second->encoderPosition * -1;
+                    }
+                }
+                // free the socket for diffrent use
                 socket->in_use_by = -1;
             };
         }
@@ -158,12 +184,13 @@ void CanBusControl::StatusRequestLoop()
 
 void CanBusControl::UseSocket(int can_id, uint8_t *data, CanSocketPtr socket)
 {
+    // apply the pertson algorithm for on socket and send and recieve the data on a socket
     while (socket->in_use_by != -1)
     {
-        sleep(5);
+        sleep(0.005);
     }
     socket->in_use_by = OUTSIDE_CAN_COMMAND;
-    sleep(5);
+    sleep(0.005);
     if (socket->in_use_by == OUTSIDE_CAN_COMMAND)
     {
         socket->canTransmit(can_id, data);
@@ -406,7 +433,7 @@ bool CanBusControl::SetID(int motor, int id)
 {
     int respondedCanId = -1;
     // check if can id does not exists on the socket
-    uint8_t data[8] = {RMD_X6_SET_CAN_ID, 0x00, 0x00, 0x00,
+    uint8_t data[8] = {RMD_X6_SET_CAN_ID, 0x00, 0x01, 0x00,
                        0x00, 0x00, 0x00, 0x00};
     UseSocket(canMotor[motor]->bus_id, data, canMotor[motor]->socket_);
     if (data[0] == RMD_X6_SET_CAN_ID)
@@ -421,9 +448,10 @@ bool CanBusControl::SetID(int motor, int id)
         return false;
     }
     // set can id 
+    // data[2] is read write flag 0x00 is write
     data[0] = RMD_X6_SET_CAN_ID;
     data[1] = 0x00;
-    data[2] = 0x01;
+    data[2] = 0x00;
     data[3] = 0x00;
     data[4] = (id & 0xFF);
     data[5] = ((id >> 8) & 0xFF);
@@ -433,6 +461,8 @@ bool CanBusControl::SetID(int motor, int id)
     if (data[0] == RMD_X6_SET_CAN_ID)
     {
         respondedCanId = data[7] << 24 | data[6] << 16 | data[5] << 8 | data[4];
+        // add the canId offset
+        respondedCanId += 0x140;
         if(id == respondedCanId){
             return true;
         }
@@ -463,9 +493,7 @@ bool CanBusControl::SetControlMode(int motor, int mode, control_Parameters_t &pa
             {
                 ROS_WARN("It is not safe to switch between Speed control and something else.");
             }
-            StopMotor(motor);
         }
-        StartMotor(motor);
         canMotor[motor]->control_mode = mode;
         return true;
     }
@@ -485,9 +513,7 @@ bool CanBusControl::SetControlMode(int motor, int mode)
             {
                 ROS_WARN("It is not safe to switch between Speed control and something else.");
             }
-            StopMotor(motor);
         }
-        StartMotor(motor);
         canMotor[motor]->control_mode = mode;
         return true;
     }
@@ -509,9 +535,7 @@ bool CanBusControl::SetControlMode(int mode)
                 {
                     ROS_WARN("It is not safe to switch between Speed control and something else.");
                 }
-                StopMotor(motor.first);
             }
-            StartMotor(motor.first);
             motor.second->control_mode = mode;
         }
         return true;
@@ -587,7 +611,8 @@ void CanBusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->IntegralLimit = 25;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 30; // 30% of max pwm
+            params->PWMLimit = 360; // 30% of max pwm
+            // ask the motor for its default paramerter because those can be changed
             GetKpPositionControl(params, motor_id);
             GetKiPositionControl(params, motor_id);
         }
@@ -610,7 +635,7 @@ void CanBusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Ki = 1;
             params->Kd = 0;
             params->deadband = 0;
-            params->PWMLimit = 10; // 10% of max pwm
+            params->PWMLimit = 360; // 10% of max pwm
         }
         else
         {
@@ -629,6 +654,7 @@ void CanBusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Kd = 0;
             params->deadband = 0;
             params->PWMLimit = 10; // 10% of max pwm
+            // ask the motor for its default paramerter because those can be changed
             GetKpTorqueControl(params, motor_id);
             GetKiTorqueControl(params, motor_id);
         }
@@ -650,6 +676,7 @@ void CanBusControl::GetDefaultControlParams(control_Parameters_t *params, int co
             params->Kd = 0;
             params->deadband = 0;
             params->PWMLimit = 10; // 10% of max pwm
+            // ask the motor for its default paramerter because those can be changed
             GetKpSpeedControl(params, motor_id);
             GetKiSpeedControl(params, motor_id);
         }
@@ -687,7 +714,8 @@ int32_t CanBusControl::GetEncoderPosition(int motor, int encoder)
     }
     else
     {
-        ROS_WARN("The can motors do not have multiple motors.");
+        //BUG i removed the waring because otherwise it would always show up in the current system
+        // ROS_WARN("The can motors do not have multiple encoders.");
         return -1;
     }
 }
@@ -746,6 +774,7 @@ void CanBusControl::SetPoint(int motor, float setPoint)
     case ENCODER0_POSITION:
         if (canMotor[motor]->muscleType == "rmdX6")
         {
+            // create the right communication frame
             uint8_t data[8] = {RMD_X6_POSITION_CONTROL_2_ID, 0x00, ((int32_t)control_params[motor][ENCODER0_POSITION].PWMLimit & 0xFF), (((int32_t)control_params[motor][ENCODER0_POSITION].PWMLimit >> 8) & 0xFF),
                                (setpoint & 0xFF), ((setpoint >> 8) & 0xFF), ((setpoint >> 16) & 0xFF), ((setpoint >> 24) & 0xFF)};
             if (!canMotor[motor]->is_on)
@@ -755,8 +784,10 @@ void CanBusControl::SetPoint(int motor, float setPoint)
             UseSocket(canMotor[motor]->bus_id, data, canMotor[motor]->socket_);
             if (data[0] == RMD_X6_POSITION_CONTROL_2_ID)
             {
+                // update the motor values so no useless communication
                 canMotor[motor]->speed = data[5] << 8 | data[4];
                 canMotor[motor]->torque = data[3] << 8 | data[2];
+                //TODO remove encoder Pos because the precision does not match
                 canMotor[motor]->encoderPosition = data[7] << 8 | data[6];
                 canMotor[motor]->temperature = data[1];
             }
@@ -789,6 +820,7 @@ void CanBusControl::SetPoint(int motor, float setPoint)
                 }
                 canMotor[motor]->speed = data[5] << 8 | data[4];
                 canMotor[motor]->torque = data[3] << 8 | data[2];
+                 //TODO remove encoder Pos because the precision does not match
                 canMotor[motor]->encoderPosition = data[7] << 8 | data[6];
                 canMotor[motor]->temperature = data[1];
             }
@@ -813,6 +845,7 @@ void CanBusControl::SetPoint(int motor, float setPoint)
             {
                 canMotor[motor]->speed = data[5] << 8 | data[4];
                 canMotor[motor]->torque = data[3] << 8 | data[2];
+                 //TODO remove encoder Pos because the precision does not match
                 canMotor[motor]->encoderPosition = data[7] << 8 | data[6];
                 canMotor[motor]->temperature = data[1];
             }

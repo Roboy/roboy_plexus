@@ -95,6 +95,8 @@ using namespace std::chrono;
 #define RMD_X6_READ_KI_TORQUE_ID 0x35
 #define RMD_X6_POWER_AQUISITION_FRAME {0x71, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 #define RMD_X6_POWER_AQUISITION_ID 0x71
+#define RMD_X6_READ_MULTITURN_ANGLE {0x92, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#define RMD_X6_READ_MULTITURN_ANGLE_ID 0x92
 
 class CanMotor{
     public:
@@ -538,6 +540,10 @@ public:
      */
     void SetKiParamRam(control_Parameters_t *params, int motor, int mode);
 
+    /**
+     * init all sockets
+     */
+    void StartStatusRequestThreads();
 
     vector<map<int, CanMotorPtr>> canMotorOnSocket;
     map<int, CanMotorPtr> canMotor;
@@ -552,11 +558,6 @@ private:
      * init all sockets
      */
     void CreateSockets();
-
-    /**
-     * init all sockets
-     */
-    void StartStatusRequestThreads();
 
     /**
      * init all sockets

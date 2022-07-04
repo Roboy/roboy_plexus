@@ -47,7 +47,11 @@ RoboyPlexus::RoboyPlexus(string robot_name, IcebusControlPtr icebusControl,
     motorControl.push_back(icebusControl);
     if(myoControl!=nullptr)
       motorControl.push_back(myoControl);
-
+    // add the canbus controler to the motor control and start the motor info  request thread
+    if(canBusControl!=nullptr){
+      motorControl.push_back(canBusControl);
+      canBusControl->StartStatusRequestThreads();
+    }
     if(i2c_base.size()>=2){
       ROS_INFO("initializing elbow joints");
       vector <uint8_t> ids = {0xC,0xD};

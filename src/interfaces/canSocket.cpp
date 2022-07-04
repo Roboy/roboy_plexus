@@ -34,32 +34,35 @@ int CanSocket::initInterface(string interface)
 }
 
 void CanSocket::canTransmit(int can_id, uint8_t *data){
+    //create the can_frame with the right length and can id
     struct can_frame tx;
     tx.can_dlc = 8;
     tx.can_id = can_id;
+    // copy the data to the frame
     memcpy(tx.data, data, 8);
+    // write the frame on to the bus
     int nbytes = write(s, &tx, sizeof(struct can_frame));
 }
 
 int CanSocket::canRensieve(uint8_t *data)
 {
     struct can_frame frame;
-
+    // try to read from the socket this will wait until something is read
     int nbytes = read(s, &frame, sizeof(struct can_frame));
-
+    //check it was realy read
     if (nbytes < 0)
     {
         perror("can raw socket read");
         return -1;
     }
 
-    /* paranoid check ... */
+    
     if (nbytes < sizeof(struct can_frame))
     {
         fprintf(stderr, "read: incomplete CAN frame\n");
         return -1;
     }
-
+    // copy the read data to the data pointer
     memcpy(data, frame.data, frame.can_dlc);
 
     return 0;

@@ -270,8 +270,9 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    myoControl = MyoControlPtr(new MyoControl(motor_config,h2p_lw_myo_addr));
+    myoControl = nullptr; //MyoControlPtr(new MyoControl(motor_config,h2p_lw_myo_addr));
     icebusControl = IcebusControlPtr(new IcebusControl(motor_config,h2p_lw_icebus_addr));
+    // create the canbus Controler
     canBusControl = CanBusControlPtr(new CanBusControl(motor_config));
     vector<TLE493DPtr> balljoints;
     for(auto addr:h2p_lw_ball_joint_addr)

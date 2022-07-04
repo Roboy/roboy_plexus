@@ -126,7 +126,7 @@ canbus:
   bus_ids:
     - [321]
   encoder_conversion_factor:
-    - [0.0]
+    - [1.0]
   spin_direction:
     - [1]
   muscle_type:
