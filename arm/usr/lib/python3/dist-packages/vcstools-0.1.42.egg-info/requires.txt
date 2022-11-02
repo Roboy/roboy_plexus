@@ -1,0 +1,15 @@
+
+[test]
+coverage
+coveralls
+mock
+nose
+pep8
+tox
+tox-pyenv
+
+[test:python_version > "3"]
+coala
+coala-bears
+mypy
+radon~=1.4.0

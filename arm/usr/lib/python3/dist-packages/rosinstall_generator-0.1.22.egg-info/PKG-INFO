@@ -1,0 +1,16 @@
+Metadata-Version: 1.2
+Name: rosinstall-generator
+Version: 0.1.22
+Summary: A tool for generating rosinstall files
+Home-page: http://wiki.ros.org/rosinstall_generator
+Author: Dirk Thomas
+Author-email: dthomas@osrfoundation.org
+Maintainer: Dirk Thomas
+Maintainer-email: dthomas@osrfoundation.org
+License: BSD
+Description: A tool for generating rosinstall files
+Keywords: ROS
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: License :: OSI Approved :: BSD License
+Classifier: License :: OSI Approved :: MIT License

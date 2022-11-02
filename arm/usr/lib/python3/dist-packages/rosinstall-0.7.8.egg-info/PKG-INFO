@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: rosinstall
+Version: 0.7.8
+Summary: The installer for ROS
+Home-page: http://wiki.ros.org/rosinstall
+Author: Tully Foote
+Author-email: tfoote@osrfoundation.org
+License: BSD
+Download-URL: http://download.ros.org/downloads/rosinstall/
+Description: The installer for ROS
+        
+Keywords: ROS
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: BSD License

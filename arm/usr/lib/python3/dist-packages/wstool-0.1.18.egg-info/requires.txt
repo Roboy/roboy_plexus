@@ -1,0 +1,9 @@
+
+[test]
+coverage~=4.5
+coveralls
+mock
+nose
+pep8
+tox
+tox-pyenv

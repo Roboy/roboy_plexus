@@ -1,0 +1,11 @@
+
+[:python_version < "3.6"]
+mock
+
+[coverage_plugin]
+coverage>=4.4.1
+
+[doc]
+Sphinx>=1.6.5
+mock
+sphinx_rtd_theme
