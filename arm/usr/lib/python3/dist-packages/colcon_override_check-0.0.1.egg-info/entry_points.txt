@@ -1,0 +1,3 @@
+[colcon_core.package_selection]
+override_check = colcon_override_check.package_selection.override_check:OverrideCheckPackageSelection
+

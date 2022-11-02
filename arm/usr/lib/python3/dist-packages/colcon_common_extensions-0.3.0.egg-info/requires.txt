@@ -1,0 +1,9 @@
+
+[:sys_platform != "win32"]
+colcon-argcomplete
+colcon-bash
+colcon-cd
+colcon-zsh
+
+[recommended]
+colcon-override-check

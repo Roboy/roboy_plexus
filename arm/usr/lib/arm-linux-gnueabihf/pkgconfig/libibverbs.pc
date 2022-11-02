@@ -1,0 +1,13 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}/lib/arm-linux-gnueabihf
+includedir=${prefix}/include
+
+Name: libibverbs
+Description: RDMA Core Userspace Library
+URL: https://github.com/linux-rdma/rdma-core
+Version: 1.8.28.0
+Libs: -L${libdir} -libverbs 
+Libs.private:  -lhfi1verbs-rdmav25 -lipathverbs-rdmav25 -lrxe-rdmav25 -lsiw-rdmav25 -libverbs -lpthread
+Requires.private: libnl-3.0, libnl-route-3.0
+Cflags: -I${includedir}

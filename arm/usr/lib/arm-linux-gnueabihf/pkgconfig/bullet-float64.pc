@@ -1,0 +1,6 @@
+Name: bullet
+Description: Bullet Continuous Collision Detection and Physics Library
+Requires:
+Version: 2.88
+Libs: -L/usr/lib/arm-linux-gnueabihf -lBulletSoftBody-float64 -lBulletDynamics-float64 -lBulletCollision-float64 -lLinearMath-float64
+Cflags: -DBT_USE_DOUBLE_PRECISION -I/usr/include/bullet -I/usr/include

@@ -1,0 +1,13 @@
+
+[dev]
+bumpversion<1
+sphinx<2
+tox
+
+[dev:python_version < "3"]
+PyTest-Cov<2.6
+PyTest<5
+
+[dev:python_version >= "3.6"]
+PyTest
+PyTest-Cov

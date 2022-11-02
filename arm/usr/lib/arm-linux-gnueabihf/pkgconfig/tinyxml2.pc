@@ -1,0 +1,10 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=/usr/lib/arm-linux-gnueabihf
+includedir=/usr/include
+
+Name: TinyXML2
+Description: simple, small, C++ XML parser
+Version: 6.2.0
+Libs: -L${libdir} -ltinyxml2
+Cflags: -I${includedir}

@@ -1,0 +1,7 @@
+
+[fastimport]
+
+[git]
+
+[launchpad]
+launchpadlib>=1.6.3
