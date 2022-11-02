@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rosmsg
+Description: Description of rosmsg
+Version: 1.15.14
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

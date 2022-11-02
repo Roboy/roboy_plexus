@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: roscreate
+Description: Description of roscreate
+Version: 1.15.8
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

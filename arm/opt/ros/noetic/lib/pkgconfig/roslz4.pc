@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: roslz4
+Description: Description of roslz4
+Version: 1.15.14
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib -lroslz4 /usr/lib/arm-linux-gnueabihf/liblz4.so
+Requires: 

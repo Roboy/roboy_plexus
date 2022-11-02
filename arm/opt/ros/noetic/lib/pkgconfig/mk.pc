@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: mk
+Description: Description of mk
+Version: 1.15.8
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

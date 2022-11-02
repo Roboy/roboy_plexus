@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rosmake
+Description: Description of rosmake
+Version: 1.15.8
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

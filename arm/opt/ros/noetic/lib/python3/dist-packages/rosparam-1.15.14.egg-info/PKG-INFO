@@ -1,0 +1,18 @@
+Metadata-Version: 1.2
+Name: rosparam
+Version: 1.15.14
+Summary: rosparam contains the rosparam command-line tool for getting and
+    setting ROS Parameters on the <a href="http://wiki.ros.org/Parameter%20Server">Parameter
+    Server</a> using YAML-encoded files...
+Home-page: http://wiki.ros.org/rosparam
+Author: Ken Conley, Dirk Thomas <dthomas@osrfoundation.org>
+Maintainer: Jacob Perron <jacob@openrobotics.org>, Michael Carroll <michael@openrobotics.org>, Shane Loretz <sloretz@openrobotics.org>
+License: BSD
+Description: rosparam contains the rosparam command-line tool for getting and
+            setting ROS Parameters on the <a href="http://wiki.ros.org/Parameter%20Server">Parameter
+            Server</a> using YAML-encoded files. It also contains an
+            experimental library for using YAML with the Parameter
+            Server. This library is intended for internal use only.
+        
+            rosparam can be invoked within a <a href="http://wiki.ros.org/roslaunch">roslaunch</a> file.
+Platform: UNKNOWN

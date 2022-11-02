@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: gencpp
+Description: Description of gencpp
+Version: 0.6.5
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: genmsg

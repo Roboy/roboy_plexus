@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: bondpy
+Description: Description of bondpy
+Version: 1.8.6
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

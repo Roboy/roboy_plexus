@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rosconsole_bridge
+Description: Description of rosconsole_bridge
+Version: 0.5.4
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib -lrosconsole_bridge /usr/lib/arm-linux-gnueabihf/libconsole_bridge.so.0.4
+Requires: rosconsole

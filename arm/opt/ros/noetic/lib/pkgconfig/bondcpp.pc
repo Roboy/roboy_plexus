@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: bondcpp
+Description: Description of bondcpp
+Version: 1.8.6
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib -lbondcpp /usr/lib/arm-linux-gnueabihf/libboost_date_time.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libboost_thread.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libuuid.so
+Requires: bond roscpp smclib

@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: cpp_common
+Description: Description of cpp_common
+Version: 0.7.2
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib -lcpp_common /usr/lib/arm-linux-gnueabihf/libboost_system.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libboost_thread.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libconsole_bridge.so.0.4
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rosbag_migration_rule
+Description: Description of rosbag_migration_rule
+Version: 1.0.1
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

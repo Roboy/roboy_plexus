@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rostime
+Description: Description of rostime
+Version: 0.7.2
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib -lrostime /usr/lib/arm-linux-gnueabihf/libboost_date_time.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libboost_system.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libboost_thread.so.1.71.0
+Requires: cpp_common

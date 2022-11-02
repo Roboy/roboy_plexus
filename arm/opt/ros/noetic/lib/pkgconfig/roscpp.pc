@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: roscpp
+Description: Description of roscpp
+Version: 1.15.14
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib -lroscpp -lpthread /usr/lib/arm-linux-gnueabihf/libboost_chrono.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libboost_filesystem.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libboost_system.so.1.71.0
+Requires: cpp_common message_runtime rosconsole roscpp_serialization roscpp_traits rosgraph_msgs rostime std_msgs xmlrpcpp

@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: catkin
+Description: Description of catkin
+Version: 0.8.10
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

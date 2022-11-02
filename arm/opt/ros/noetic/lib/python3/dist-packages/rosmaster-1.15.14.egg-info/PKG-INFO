@@ -1,0 +1,12 @@
+Metadata-Version: 1.2
+Name: rosmaster
+Version: 1.15.14
+Summary: ROS <a href="http://ros.org/wiki/Master">Master</a> implementation.
+Home-page: http://wiki.ros.org/rosmaster
+Author: Ken Conley, Dirk Thomas <dthomas@osrfoundation.org>
+Maintainer: Jacob Perron <jacob@openrobotics.org>, Michael Carroll <michael@openrobotics.org>, Shane Loretz <sloretz@openrobotics.org>
+License: BSD
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires: roslib
+Requires: rospkg

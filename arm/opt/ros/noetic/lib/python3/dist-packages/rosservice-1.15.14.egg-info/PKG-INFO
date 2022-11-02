@@ -1,0 +1,21 @@
+Metadata-Version: 1.2
+Name: rosservice
+Version: 1.15.14
+Summary: rosservice contains the rosservice command-line tool for listing
+    and querying ROS <a href="http://wiki.ros.org/Services">Services</a>. It also
+    contains a Python library for retrieving infor...
+Home-page: http://ros.org/wiki/rosservice
+Author: Ken Conley, Dirk Thomas <dthomas@osrfoundation.org>
+Maintainer: Jacob Perron <jacob@openrobotics.org>, Michael Carroll <michael@openrobotics.org>, Shane Loretz <sloretz@openrobotics.org>
+License: BSD
+Description: rosservice contains the rosservice command-line tool for listing
+            and querying ROS <a href="http://wiki.ros.org/Services">Services</a>. It also
+            contains a Python library for retrieving information about
+            Services and dynamically invoking them. The Python library is
+            experimental and is for internal-use only.
+Platform: UNKNOWN
+Requires: genpy
+Requires: rosgraph
+Requires: roslib
+Requires: rospy
+Requires: rosmsg

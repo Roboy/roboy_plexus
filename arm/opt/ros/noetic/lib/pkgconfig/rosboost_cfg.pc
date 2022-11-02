@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rosboost_cfg
+Description: Description of rosboost_cfg
+Version: 1.15.8
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,15 @@
+Metadata-Version: 1.2
+Name: rostest
+Version: 1.15.14
+Summary: Integration test suite based on roslaunch that is compatible with xUnit frameworks.
+Home-page: http://ros.org/wiki/rostest
+Author: Ken Conley, Dirk Thomas <dthomas@osrfoundation.org>
+Maintainer: Jacob Perron <jacob@openrobotics.org>, Michael Carroll <michael@openrobotics.org>, Shane Loretz <sloretz@openrobotics.org>
+License: BSD
+Description: UNKNOWN
+Platform: UNKNOWN
+Requires: rospkg
+Requires: genmsg
+Requires: genpy
+Requires: roslib
+Requires: rospy

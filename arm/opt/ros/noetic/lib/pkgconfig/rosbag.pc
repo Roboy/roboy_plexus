@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: rosbag
+Description: Description of rosbag
+Version: 1.15.14
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lrosbag
+Requires: rosbag_storage rosconsole roscpp std_srvs topic_tools xmlrpcpp

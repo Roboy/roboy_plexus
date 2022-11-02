@@ -1,0 +1,8 @@
+prefix=/opt/ros/noetic
+
+Name: pluginlib
+Description: Description of pluginlib
+Version: 1.13.0
+Cflags: -I${prefix}/include -I/usr/include
+Libs: -L${prefix}/lib /usr/lib/arm-linux-gnueabihf/libboost_filesystem.so.1.71.0 /usr/lib/arm-linux-gnueabihf/libtinyxml2.so
+Requires: class_loader rosconsole roslib
