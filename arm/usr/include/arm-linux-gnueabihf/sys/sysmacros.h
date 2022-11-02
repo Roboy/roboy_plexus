@@ -1,5 +1,5 @@
 /* Definitions of macros to access `dev_t' values.
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,50 +14,49 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _SYS_SYSMACROS_H
-#define _SYS_SYSMACROS_H	1
+#define _SYS_SYSMACROS_H 1
 
 #include <features.h>
+#include <bits/types.h>
+#include <bits/sysmacros.h>
+
+#define __SYSMACROS_DECL_TEMPL(rtype, name, proto)			     \
+  extern rtype gnu_dev_##name proto __THROW __attribute_const__;
+
+#define __SYSMACROS_IMPL_TEMPL(rtype, name, proto)			     \
+  __extension__ __extern_inline __attribute_const__ rtype		     \
+  __NTH (gnu_dev_##name proto)
 
 __BEGIN_DECLS
 
-__extension__
-extern unsigned int gnu_dev_major (unsigned long long int __dev)
-     __THROW __attribute_const__;
-__extension__
-extern unsigned int gnu_dev_minor (unsigned long long int __dev)
-     __THROW __attribute_const__;
-__extension__
-extern unsigned long long int gnu_dev_makedev (unsigned int __major,
-					       unsigned int __minor)
-     __THROW __attribute_const__;
+__SYSMACROS_DECLARE_MAJOR (__SYSMACROS_DECL_TEMPL)
+__SYSMACROS_DECLARE_MINOR (__SYSMACROS_DECL_TEMPL)
+__SYSMACROS_DECLARE_MAKEDEV (__SYSMACROS_DECL_TEMPL)
 
 #ifdef __USE_EXTERN_INLINES
-__extension__ __extern_inline __attribute_const__ unsigned int
-__NTH (gnu_dev_major (unsigned long long int __dev))
-{
-  return ((__dev >> 8) & 0xfff) | ((unsigned int) (__dev >> 32) & ~0xfff);
-}
 
-__extension__ __extern_inline __attribute_const__ unsigned int
-__NTH (gnu_dev_minor (unsigned long long int __dev))
-{
-  return (__dev & 0xff) | ((unsigned int) (__dev >> 12) & ~0xff);
-}
+__SYSMACROS_DEFINE_MAJOR (__SYSMACROS_IMPL_TEMPL)
+__SYSMACROS_DEFINE_MINOR (__SYSMACROS_IMPL_TEMPL)
+__SYSMACROS_DEFINE_MAKEDEV (__SYSMACROS_IMPL_TEMPL)
 
-__extension__ __extern_inline __attribute_const__ unsigned long long int
-__NTH (gnu_dev_makedev (unsigned int __major, unsigned int __minor))
-{
-  return ((__minor & 0xff) | ((__major & 0xfff) << 8)
-	  | (((unsigned long long int) (__minor & ~0xff)) << 12)
-	  | (((unsigned long long int) (__major & ~0xfff)) << 32));
-}
 #endif
+
 __END_DECLS
 
-/* Access the functions with their traditional names.  */
+#ifndef __SYSMACROS_NEED_IMPLEMENTATION
+# undef __SYSMACROS_DECL_TEMPL
+# undef __SYSMACROS_IMPL_TEMPL
+# undef __SYSMACROS_DECLARE_MAJOR
+# undef __SYSMACROS_DECLARE_MINOR
+# undef __SYSMACROS_DECLARE_MAKEDEV
+# undef __SYSMACROS_DEFINE_MAJOR
+# undef __SYSMACROS_DEFINE_MINOR
+# undef __SYSMACROS_DEFINE_MAKEDEV
+#endif
+
 #define major(dev) gnu_dev_major (dev)
 #define minor(dev) gnu_dev_minor (dev)
 #define makedev(maj, min) gnu_dev_makedev (maj, min)

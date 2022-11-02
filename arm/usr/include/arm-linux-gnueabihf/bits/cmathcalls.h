@@ -1,6 +1,6 @@
 /* Prototype declarations for complex math functions;
    helper file for <complex.h>.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /* NOTE: Because of the special way this file is used by <complex.h>, this
    file must NOT be protected from multiple inclusion as header files
@@ -44,7 +44,9 @@
 #error "Never use <bits/cmathcalls.h> directly; include <complex.h> instead."
 #endif
 
-#define _Mdouble_complex_ _Mdouble_ _Complex
+#ifndef _Mdouble_complex_
+# define _Mdouble_complex_ _Mdouble_ _Complex
+#endif
 
 
 /* Trigonometric functions.  */
@@ -126,33 +128,3 @@ __MATHDECL (_Mdouble_,cimag, (_Mdouble_complex_ __z));
 
 /* Real part of Z.  */
 __MATHDECL (_Mdouble_,creal, (_Mdouble_complex_ __z));
-
-
-/* Now some optimized versions.  GCC has handy notations for these
-   functions.  Recent GCC handles these as builtin functions so does
-   not need inlines.  */
-#if defined __GNUC__ && !__GNUC_PREREQ (2, 97) && defined __OPTIMIZE__ \
-    && defined __extern_inline
-
-/* Imaginary part of Z.  */
-__extern_inline _Mdouble_
-__MATH_PRECNAME(cimag) (_Mdouble_complex_ __z) __THROW
-{
-  return __imag__ __z;
-}
-
-/* Real part of Z.  */
-__extern_inline _Mdouble_
-__MATH_PRECNAME(creal) (_Mdouble_complex_ __z) __THROW
-{
-  return __real__ __z;
-}
-
-/* Complex conjugate of Z.  */
-__extern_inline _Mdouble_complex_
-__MATH_PRECNAME(conj) (_Mdouble_complex_ __z) __THROW
-{
-  return __extension__ ~__z;
-}
-
-#endif

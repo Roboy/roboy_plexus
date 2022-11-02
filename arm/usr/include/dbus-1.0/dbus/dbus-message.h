@@ -42,7 +42,17 @@ DBUS_BEGIN_DECLS
  */
 
 typedef struct DBusMessage DBusMessage;
-/** Opaque type representing a message iterator. Can be copied by value, and contains no allocated memory so never needs to be freed and can be allocated on the stack. */
+/**
+ * Opaque type representing a message iterator. Can be copied by value and
+ * allocated on the stack.
+ *
+ * A DBusMessageIter usually contains no allocated memory. However, there
+ * is one special case: after a successful call to
+ * dbus_message_iter_open_container(), the caller is responsible for calling
+ * either dbus_message_iter_close_container() or
+ * dbus_message_iter_abandon_container() exactly once, with the same pair
+ * of iterators.
+ */
 typedef struct DBusMessageIter DBusMessageIter;
 
 /**
@@ -62,9 +72,31 @@ struct DBusMessageIter
   int dummy10;          /**< Don't use this */
   int dummy11;          /**< Don't use this */
   int pad1;             /**< Don't use this */
-  int pad2;             /**< Don't use this */
+  void *pad2;           /**< Don't use this */
   void *pad3;           /**< Don't use this */
 };
+
+/**
+ * A message iterator for which dbus_message_iter_abandon_container_if_open()
+ * is the only valid operation.
+ */
+#define DBUS_MESSAGE_ITER_INIT_CLOSED \
+{ \
+  NULL, /* dummy1 */ \
+  NULL, /* dummy2 */ \
+  0, /* dummy3 */ \
+  0, /* dummy4 */ \
+  0, /* dummy5 */ \
+  0, /* dummy6 */ \
+  0, /* dummy7 */ \
+  0, /* dummy8 */ \
+  0, /* dummy9 */ \
+  0, /* dummy10 */ \
+  0, /* dummy11 */ \
+  0, /* pad1 */ \
+  NULL, /* pad2 */ \
+  NULL /* pad3 */ \
+}
 
 DBUS_EXPORT
 DBusMessage* dbus_message_new               (int          message_type);
@@ -87,7 +119,7 @@ DBUS_EXPORT
 DBusMessage* dbus_message_new_error_printf  (DBusMessage *reply_to,
                                              const char  *error_name,
                                              const char  *error_format,
-					     ...);
+                                             ...) _DBUS_GNUC_PRINTF (3, 4);
 
 DBUS_EXPORT
 DBusMessage* dbus_message_copy              (const DBusMessage *message);
@@ -208,6 +240,8 @@ DBUS_EXPORT
 dbus_bool_t dbus_message_contains_unix_fds    (DBusMessage *message);
 
 DBUS_EXPORT
+void        dbus_message_iter_init_closed        (DBusMessageIter *iter);
+DBUS_EXPORT
 dbus_bool_t dbus_message_iter_init             (DBusMessage     *message,
                                                 DBusMessageIter *iter);
 DBUS_EXPORT
@@ -267,6 +301,10 @@ void        dbus_message_iter_abandon_container  (DBusMessageIter *iter,
                                                   DBusMessageIter *sub);
 
 DBUS_EXPORT
+void        dbus_message_iter_abandon_container_if_open (DBusMessageIter *iter,
+                                                         DBusMessageIter *sub);
+
+DBUS_EXPORT
 void dbus_message_lock    (DBusMessage  *message);
 
 DBUS_EXPORT
@@ -312,6 +350,25 @@ void dbus_message_set_allow_interactive_authorization (DBusMessage *message,
 DBUS_EXPORT
 dbus_bool_t dbus_message_get_allow_interactive_authorization (
     DBusMessage *message);
+
+/**
+ * Clear a variable or struct member that contains a #DBusMessage.
+ * If it does not contain #NULL, the message that was previously
+ * there is unreferenced with dbus_message_unref().
+ *
+ * This is very similar to dbus_clear_connection(): see that function
+ * for more details.
+ *
+ * @param pointer_to_message A pointer to a variable or struct member.
+ * pointer_to_message must not be #NULL, but *pointer_to_message
+ * may be #NULL.
+ */
+static inline void
+dbus_clear_message (DBusMessage **pointer_to_message)
+{
+  _dbus_clear_pointer_impl (DBusMessage, pointer_to_message,
+                            dbus_message_unref);
+}
 
 /** @} */
 

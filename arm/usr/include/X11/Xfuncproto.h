@@ -1,4 +1,3 @@
-/* Xfuncproto.h.  Generated from Xfuncproto.h.in by configure.  */
 /*
  *
 Copyright 1989, 1991, 1998  The Open Group
@@ -49,8 +48,9 @@ in this Software without prior written authorization from The Open Group.
 #endif /* _Xconst */
 
 /* Function prototype configuration (see configure for more info) */
-#ifndef NARROWPROTO
-#define NARROWPROTO /**/
+#if !defined(NARROWPROTO) && \
+    (defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__))
+#define NARROWPROTO
 #endif
 #ifndef FUNCPROTO
 #define FUNCPROTO 15
@@ -79,6 +79,12 @@ in this Software without prior written authorization from The Open Group.
 /* http://clang.llvm.org/docs/LanguageExtensions.html#has-attribute */
 #ifndef __has_attribute
 # define __has_attribute(x) 0  /* Compatibility with non-clang compilers. */
+#endif
+#ifndef __has_feature
+# define __has_feature(x) 0    /* Compatibility with non-clang compilers. */
+#endif
+#ifndef __has_extension
+# define __has_extension(x) 0  /* Compatibility with non-clang compilers. */
 #endif
 
 /* Added in X11R6.9, so available in any version of modular xproto */
@@ -130,6 +136,14 @@ in this Software without prior written authorization from The Open Group.
 # define _X_DEPRECATED  __attribute__((deprecated))
 #else /* not gcc >= 3.1 */
 # define _X_DEPRECATED
+#endif
+
+/* requires xproto >= 7.0.30 */
+#if __has_extension(attribute_deprecated_with_message) || \
+                (defined(__GNUC__) && ((__GNUC__ >= 5) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 5))))
+# define _X_DEPRECATED_MSG(_msg) __attribute__((deprecated(_msg)))
+#else
+# define _X_DEPRECATED_MSG(_msg) _X_DEPRECATED
 #endif
 
 /* requires xproto >= 7.0.17 */
@@ -195,6 +209,13 @@ in this Software without prior written authorization from The Open Group.
 # else
 #  define _X_RESTRICT_KYWD
 # endif
+#endif
+
+/* requires xproto >= 7.0.30 */
+#if __has_attribute(no_sanitize_thread)
+# define _X_NOTSAN __attribute__((no_sanitize_thread))
+#else
+# define _X_NOTSAN
 #endif
 
 #endif /* _XFUNCPROTO_H_ */

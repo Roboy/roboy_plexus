@@ -1,5 +1,5 @@
 /* System-specific socket constants and types.  Linux version.
-   Copyright (C) 1991-2016 Free Software Foundation, Inc.
+   Copyright (C) 1991-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef __BITS_SOCKET_H
 #define __BITS_SOCKET_H
@@ -82,7 +82,11 @@ typedef __socklen_t socklen_t;
 #define PF_ALG		38	/* Algorithm sockets.  */
 #define PF_NFC		39	/* NFC sockets.  */
 #define PF_VSOCK	40	/* vSockets.  */
-#define PF_MAX		41	/* For now..  */
+#define PF_KCM		41	/* Kernel Connection Multiplexor.  */
+#define PF_QIPCRTR	42	/* Qualcomm IPC Router.  */
+#define PF_SMC		43	/* SMC sockets.  */
+#define PF_XDP		44	/* XDP sockets.  */
+#define PF_MAX		45	/* For now..  */
 
 /* Address families.  */
 #define AF_UNSPEC	PF_UNSPEC
@@ -129,6 +133,10 @@ typedef __socklen_t socklen_t;
 #define AF_ALG		PF_ALG
 #define AF_NFC		PF_NFC
 #define AF_VSOCK	PF_VSOCK
+#define AF_KCM		PF_KCM
+#define AF_QIPCRTR	PF_QIPCRTR
+#define AF_SMC		PF_SMC
+#define AF_XDP		PF_XDP
 #define AF_MAX		PF_MAX
 
 /* Socket level values.  Others are defined in the appropriate headers.
@@ -142,9 +150,26 @@ typedef __socklen_t socklen_t;
 #define SOL_ATM		264	/* ATM layer (cell level).  */
 #define SOL_AAL		265	/* ATM Adaption Layer (packet level).  */
 #define SOL_IRDA	266
+#define SOL_NETBEUI	267
+#define SOL_LLC		268
+#define SOL_DCCP	269
+#define SOL_NETLINK	270
+#define SOL_TIPC	271
+#define SOL_RXRPC	272
+#define SOL_PPPOL2TP	273
+#define SOL_BLUETOOTH	274
+#define SOL_PNPIPE	275
+#define SOL_RDS		276
+#define SOL_IUCV	277
+#define SOL_CAIF	278
+#define SOL_ALG		279
+#define SOL_NFC		280
+#define SOL_KCM		281
+#define SOL_TLS		282
+#define SOL_XDP		283
 
 /* Maximum queue length specifiable by listen.  */
-#define SOMAXCONN	128
+#define SOMAXCONN	4096
 
 /* Get the definition of the macro to define the common sockaddr members.  */
 #include <bits/sockaddr.h>
@@ -213,6 +238,10 @@ enum
 #define MSG_MORE	MSG_MORE
     MSG_WAITFORONE	= 0x10000, /* Wait for at least one packet to return.*/
 #define MSG_WAITFORONE	MSG_WAITFORONE
+    MSG_BATCH		= 0x40000, /* sendmmsg: more messages coming.  */
+#define MSG_BATCH	MSG_BATCH
+    MSG_ZEROCOPY	= 0x4000000, /* Use user data in kernel path.  */
+#define MSG_ZEROCOPY	MSG_ZEROCOPY
     MSG_FASTOPEN	= 0x20000000, /* Send data in TCP SYN.  */
 #define MSG_FASTOPEN	MSG_FASTOPEN
 
@@ -252,13 +281,13 @@ struct cmsghdr
 				   with this.  */
     int cmsg_level;		/* Originating protocol.  */
     int cmsg_type;		/* Protocol specific type.  */
-#if (!defined __STRICT_ANSI__ && __GNUC__ >= 2) || __STDC_VERSION__ >= 199901L
+#if __glibc_c99_flexarr_available
     __extension__ unsigned char __cmsg_data __flexarr; /* Ancillary data.  */
 #endif
   };
 
 /* Ancillary data object manipulation macros.  */
-#if (!defined __STRICT_ANSI__ && __GNUC__ >= 2) || __STDC_VERSION__ >= 199901L
+#if __glibc_c99_flexarr_available
 # define CMSG_DATA(cmsg) ((cmsg)->__cmsg_data)
 #else
 # define CMSG_DATA(cmsg) ((unsigned char *) ((struct cmsghdr *) (cmsg) + 1))
@@ -320,63 +349,12 @@ struct ucred
 };
 #endif
 
-/* Ugly workaround for unclean kernel headers.  */
-#ifndef __USE_MISC
-# ifndef FIOGETOWN
-#  define __SYS_SOCKET_H_undef_FIOGETOWN
-# endif
-# ifndef FIOSETOWN
-#  define __SYS_SOCKET_H_undef_FIOSETOWN
-# endif
-# ifndef SIOCATMARK
-#  define __SYS_SOCKET_H_undef_SIOCATMARK
-# endif
-# ifndef SIOCGPGRP
-#  define __SYS_SOCKET_H_undef_SIOCGPGRP
-# endif
-# ifndef SIOCGSTAMP
-#  define __SYS_SOCKET_H_undef_SIOCGSTAMP
-# endif
-# ifndef SIOCGSTAMPNS
-#  define __SYS_SOCKET_H_undef_SIOCGSTAMPNS
-# endif
-# ifndef SIOCSPGRP
-#  define __SYS_SOCKET_H_undef_SIOCSPGRP
-# endif
-#endif
-
-/* Get socket manipulation related informations from kernel headers.  */
-#include <asm/socket.h>
-
-#ifndef __USE_MISC
-# ifdef __SYS_SOCKET_H_undef_FIOGETOWN
-#  undef __SYS_SOCKET_H_undef_FIOGETOWN
-#  undef FIOGETOWN
-# endif
-# ifdef __SYS_SOCKET_H_undef_FIOSETOWN
-#  undef __SYS_SOCKET_H_undef_FIOSETOWN
-#  undef FIOSETOWN
-# endif
-# ifdef __SYS_SOCKET_H_undef_SIOCATMARK
-#  undef __SYS_SOCKET_H_undef_SIOCATMARK
-#  undef SIOCATMARK
-# endif
-# ifdef __SYS_SOCKET_H_undef_SIOCGPGRP
-#  undef __SYS_SOCKET_H_undef_SIOCGPGRP
-#  undef SIOCGPGRP
-# endif
-# ifdef __SYS_SOCKET_H_undef_SIOCGSTAMP
-#  undef __SYS_SOCKET_H_undef_SIOCGSTAMP
-#  undef SIOCGSTAMP
-# endif
-# ifdef __SYS_SOCKET_H_undef_SIOCGSTAMPNS
-#  undef __SYS_SOCKET_H_undef_SIOCGSTAMPNS
-#  undef SIOCGSTAMPNS
-# endif
-# ifdef __SYS_SOCKET_H_undef_SIOCSPGRP
-#  undef __SYS_SOCKET_H_undef_SIOCSPGRP
-#  undef SIOCSPGRP
-# endif
+#ifdef __USE_MISC
+# include <bits/types/time_t.h>
+# include <asm/socket.h>
+#else
+# define SO_DEBUG 1
+# include <bits/socket-constants.h>
 #endif
 
 /* Structure used to manipulate the SO_LINGER option.  */

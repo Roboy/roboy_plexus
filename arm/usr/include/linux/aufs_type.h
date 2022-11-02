@@ -1,5 +1,6 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /*
- * Copyright (C) 2005-2015 Junjiro R. Okajima
+ * Copyright (C) 2005-2020 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,29 +23,14 @@
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <limits.h>
 
-#include <linux/limits.h>
-
-#define AUFS_VERSION	"4.x-rcN-20160111"
+#define AUFS_VERSION	"5.4.3-20200302"
 
 /* todo? move this to linux-2.6.19/include/magic.h */
 #define AUFS_SUPER_MAGIC	('a' << 24 | 'u' << 16 | 'f' << 8 | 's')
 
 /* ---------------------------------------------------------------------- */
-
-#ifdef CONFIG_AUFS_BRANCH_MAX_127
-typedef int8_t aufs_bindex_t;
-#define AUFS_BRANCH_MAX 127
-#else
-typedef int16_t aufs_bindex_t;
-#ifdef CONFIG_AUFS_BRANCH_MAX_511
-#define AUFS_BRANCH_MAX 511
-#elif defined(CONFIG_AUFS_BRANCH_MAX_1023)
-#define AUFS_BRANCH_MAX 1023
-#elif defined(CONFIG_AUFS_BRANCH_MAX_32767)
-#define AUFS_BRANCH_MAX 32767
-#endif
-#endif
 
 
 /* ---------------------------------------------------------------------- */
@@ -81,6 +67,13 @@ typedef int16_t aufs_bindex_t;
 #define AUFS_PLINK_MAINT_NAME	"plink_maint"
 #define AUFS_PLINK_MAINT_DIR	"fs/" AUFS_NAME
 #define AUFS_PLINK_MAINT_PATH	AUFS_PLINK_MAINT_DIR "/" AUFS_PLINK_MAINT_NAME
+
+/* dirren, renamed dir */
+#define AUFS_DR_INFO_PFX	AUFS_WH_PFX ".dr."
+#define AUFS_DR_BRHINO_NAME	AUFS_WH_PFX "hino"
+/* whiteouted doubly */
+#define AUFS_WH_DR_INFO_PFX	AUFS_WH_PFX AUFS_DR_INFO_PFX
+#define AUFS_WH_DR_BRHINO	AUFS_WH_PFX AUFS_DR_BRHINO_NAME
 
 #define AUFS_DIROPQ_NAME	AUFS_WH_PFX ".opq" /* whiteouted doubly */
 #define AUFS_WH_DIROPQ		AUFS_WH_PFX AUFS_DIROPQ_NAME
@@ -207,7 +200,11 @@ enum {
 
 /* borrowed from linux/include/linux/kernel.h */
 #ifndef ALIGN
+#ifdef _GNU_SOURCE
 #define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a)-1)
+#else
+#define ALIGN(x, a)		(((x) + (a) - 1) & ~((a) - 1))
+#endif
 #define __ALIGN_MASK(x, mask)	(((x)+(mask))&~(mask))
 #endif
 
@@ -272,6 +269,27 @@ struct aufs_rdu {
 
 	struct au_rdu_cookie	cookie;
 } __aligned(8);
+
+/* ---------------------------------------------------------------------- */
+
+/* dirren. the branch is identified by the filename who contains this */
+struct au_drinfo {
+	uint64_t ino;
+	union {
+		uint8_t oldnamelen;
+		uint64_t _padding;
+	};
+	uint8_t oldname[0];
+} __aligned(8);
+
+struct au_drinfo_fdata {
+	uint32_t magic;
+	struct au_drinfo drinfo;
+} __aligned(8);
+
+#define AUFS_DRINFO_MAGIC_V1	('a' << 24 | 'd' << 16 | 'r' << 8 | 0x01)
+/* future */
+#define AUFS_DRINFO_MAGIC_V2	('a' << 24 | 'd' << 16 | 'r' << 8 | 0x02)
 
 /* ---------------------------------------------------------------------- */
 

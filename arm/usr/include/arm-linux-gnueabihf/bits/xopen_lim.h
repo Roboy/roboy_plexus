@@ -1,4 +1,4 @@
-/* Copyright (C) 1996-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /*
  * Never include this file directly; use <limits.h> instead.
@@ -28,9 +28,6 @@
 
 #ifndef _XOPEN_LIM_H
 #define _XOPEN_LIM_H	1
-
-#define __need_IOV_MAX
-#include <bits/stdio_lim.h>
 
 /* We do not provide fixed values for
 
@@ -60,10 +57,16 @@
 */
 
 
-/* Maximum number of `iovec' structures that one process has available
-   for use with `readv' or writev'.  */
+/* Maximum number of `iovec' structures that may be used in a single call
+   to `readv', `writev', etc.  */
 #define	_XOPEN_IOV_MAX	_POSIX_UIO_MAXIOV
 
+#include <bits/uio_lim.h>
+#ifdef __IOV_MAX
+# define IOV_MAX __IOV_MAX
+#else
+# undef IOV_MAX
+#endif
 
 /* Maximum value of `digit' in calls to the `printf' and `scanf'
    functions.  We have no limit, so return a reasonable value.  */
@@ -77,7 +80,9 @@
 
 /* Maximum number of bytes in N-to-1 collation mapping.  We have no
    limit.  */
-#define NL_NMAX		INT_MAX
+#if defined __USE_GNU || !defined __USE_XOPEN2K8
+# define NL_NMAX	INT_MAX
+#endif
 
 /* Maximum set number.  We have no limit.  */
 #define NL_SETMAX	INT_MAX

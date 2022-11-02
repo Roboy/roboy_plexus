@@ -1,4 +1,4 @@
-/* Copyright (C) 1995-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _SYS_SEM_H
 #define _SYS_SEM_H	1
@@ -30,8 +30,7 @@
 #include <bits/sem.h>
 
 #ifdef __USE_GNU
-# define __need_timespec
-# include <time.h>
+# include <bits/types/struct_timespec.h>
 #endif
 
 /* The following System V style IPC functions implement a semaphore

@@ -1,5 +1,5 @@
 /* `fd_set' type and related macros, and `select'/`pselect' declarations.
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /*	POSIX 1003.1g: 6.2 Select from File Descriptor Sets <sys/select.h>  */
 
@@ -29,20 +29,15 @@
 /* Get __FD_* definitions.  */
 #include <bits/select.h>
 
-/* Get __sigset_t.  */
-#include <bits/sigset.h>
-
-#ifndef __sigset_t_defined
-# define __sigset_t_defined
-typedef __sigset_t sigset_t;
-#endif
+/* Get sigset_t.  */
+#include <bits/types/sigset_t.h>
 
 /* Get definition of timer specification structures.  */
-#define __need_time_t
-#define __need_timespec
-#include <time.h>
-#define __need_timeval
-#include <bits/time.h>
+#include <bits/types/time_t.h>
+#include <bits/types/struct_timeval.h>
+#ifdef __USE_XOPEN2K
+# include <bits/types/struct_timespec.h>
+#endif
 
 #ifndef __suseconds_t_defined
 typedef __suseconds_t suseconds_t;

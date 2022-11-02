@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef	_FEATURES_H
 #define	_FEATURES_H	1
@@ -24,6 +24,16 @@
    __STRICT_ANSI__	ISO Standard C.
    _ISOC99_SOURCE	Extensions to ISO C89 from ISO C99.
    _ISOC11_SOURCE	Extensions to ISO C99 from ISO C11.
+   _ISOC2X_SOURCE	Extensions to ISO C99 from ISO C2X.
+   __STDC_WANT_LIB_EXT2__
+			Extensions to ISO C99 from TR 27431-2:2010.
+   __STDC_WANT_IEC_60559_BFP_EXT__
+			Extensions to ISO C11 from TS 18661-1:2014.
+   __STDC_WANT_IEC_60559_FUNCS_EXT__
+			Extensions to ISO C11 from TS 18661-4:2015.
+   __STDC_WANT_IEC_60559_TYPES_EXT__
+			Extensions to ISO C11 from TS 18661-3:2015.
+
    _POSIX_SOURCE	IEEE Std 1003.1.
    _POSIX_C_SOURCE	If ==1, like _POSIX_SOURCE; if >=2 add IEEE Std 1003.2;
 			if >=199309L, add IEEE Std 1003.1b-1993;
@@ -41,10 +51,12 @@
    _GNU_SOURCE		All of the above, plus GNU extensions.
    _DEFAULT_SOURCE	The default set of features (taking precedence over
 			__STRICT_ANSI__).
-   _REENTRANT		Select additionally reentrant object.
-   _THREAD_SAFE		Same as _REENTRANT, often used by other systems.
-   _FORTIFY_SOURCE	If set to numeric value > 0 additional security
-			measures are defined, according to level.
+
+   _FORTIFY_SOURCE	Add security hardening to many library functions.
+			Set to 1 or 2; 2 performs stricter checks than 1.
+
+   _REENTRANT, _THREAD_SAFE
+			Obsolete; equivalent to _POSIX_C_SOURCE=199506L.
 
    The `-ansi' switch to the GNU C compiler, and standards conformance
    options such as `-std=c99', define __STRICT_ANSI__.  If none of
@@ -58,9 +70,14 @@
    These are defined by this file and are used by the
    header files to decide what to declare or define:
 
+   __GLIBC_USE (F)	Define things from feature set F.  This is defined
+			to 1 or 0; the subsequent macros are either defined
+			or undefined, and those tests should be moved to
+			__GLIBC_USE.
    __USE_ISOC11		Define ISO C11 things.
    __USE_ISOC99		Define ISO C99 things.
    __USE_ISOC95		Define ISO C90 AMD1 (C95) things.
+   __USE_ISOCXX11	Define ISO C++11 things.
    __USE_POSIX		Define IEEE Std 1003.1 things.
    __USE_POSIX2		Define IEEE Std 1003.2 things.
    __USE_POSIX199309	Define IEEE Std 1003.1, and .1b things.
@@ -78,7 +95,6 @@
    __USE_MISC		Define things from 4.3BSD or System V Unix.
    __USE_ATFILE		Define *at interfaces and AT_* constants for them.
    __USE_GNU		Define GNU extensions.
-   __USE_REENTRANT	Define reentrant/thread-safe *_r functions.
    __USE_FORTIFY_LEVEL	Additional security measures used, according to level.
 
    The macros `__GNU_LIBRARY__', `__GLIBC__', and `__GLIBC_MINOR__' are
@@ -90,7 +106,14 @@
    explicitly undefined if they are not explicitly defined.
    Feature-test macros that are not defined by the user or compiler
    but are implied by the other feature-test macros defined (or by the
-   lack of any definitions) are defined by the file.  */
+   lack of any definitions) are defined by the file.
+
+   ISO C feature test macros depend on the definition of the macro
+   when an affected header is included, not when the first system
+   header is included, and so they are handled in
+   <bits/libc-header-start.h>, which does not have a multiple include
+   guard.  Feature test macros that can be handled from the first
+   system header included are handled here.  */
 
 
 /* Undefine everything, so we get a clean slate.  */
@@ -115,9 +138,11 @@
 #undef	__USE_MISC
 #undef	__USE_ATFILE
 #undef	__USE_GNU
-#undef	__USE_REENTRANT
 #undef	__USE_FORTIFY_LEVEL
 #undef	__KERNEL_STRICT_NAMES
+#undef	__GLIBC_USE_ISOC2X
+#undef	__GLIBC_USE_DEPRECATED_GETS
+#undef	__GLIBC_USE_DEPRECATED_SCANF
 
 /* Suppress kernel-name space pollution unless user expressedly asks
    for it.  */
@@ -125,13 +150,13 @@
 # define __KERNEL_STRICT_NAMES
 #endif
 
-/* Convenience macros to test the versions of glibc and gcc.
-   Use them like this:
+/* Convenience macro to test the version of gcc.
+   Use like this:
    #if __GNUC_PREREQ (2,8)
    ... code requiring gcc 2.8 or later ...
    #endif
-   Note - they won't work for gcc1 or glibc1, since the _MINOR macros
-   were not defined then.  */
+   Note: only works for GCC 2.0 and later, because __GNUC_MINOR__ was
+   added in 2.0.  */
 #if defined __GNUC__ && defined __GNUC_MINOR__
 # define __GNUC_PREREQ(maj, min) \
 	((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
@@ -139,16 +164,27 @@
 # define __GNUC_PREREQ(maj, min) 0
 #endif
 
+/* Similarly for clang.  Features added to GCC after version 4.2 may
+   or may not also be available in clang, and clang's definitions of
+   __GNUC(_MINOR)__ are fixed at 4 and 2 respectively.  Not all such
+   features can be queried via __has_extension/__has_feature.  */
+#if defined __clang_major__ && defined __clang_minor__
+# define __glibc_clang_prereq(maj, min) \
+  ((__clang_major__ << 16) + __clang_minor__ >= ((maj) << 16) + (min))
+#else
+# define __glibc_clang_prereq(maj, min) 0
+#endif
+
+/* Whether to use feature set F.  */
+#define __GLIBC_USE(F)	__GLIBC_USE_ ## F
+
 /* _BSD_SOURCE and _SVID_SOURCE are deprecated aliases for
    _DEFAULT_SOURCE.  If _DEFAULT_SOURCE is present we do not
    issue a warning; the expectation is that the source is being
    transitioned to use the new macro.  */
 #if (defined _BSD_SOURCE || defined _SVID_SOURCE) \
     && !defined _DEFAULT_SOURCE
-/* Don't #warn about _BSD_SOURCE || _SVID_SOURCE, as it breaks -Werror
-   and we don't have time to check/fix everything before vivid release
 # warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
-*/
 # undef  _DEFAULT_SOURCE
 # define _DEFAULT_SOURCE	1
 #endif
@@ -161,6 +197,8 @@
 # define _ISOC99_SOURCE	1
 # undef  _ISOC11_SOURCE
 # define _ISOC11_SOURCE	1
+# undef  _ISOC2X_SOURCE
+# define _ISOC2X_SOURCE	1
 # undef  _POSIX_SOURCE
 # define _POSIX_SOURCE	1
 # undef  _POSIX_C_SOURCE
@@ -181,38 +219,53 @@
    define _DEFAULT_SOURCE.  */
 #if (defined _DEFAULT_SOURCE					\
      || (!defined __STRICT_ANSI__				\
-	 && !defined _ISOC99_SOURCE				\
+	 && !defined _ISOC99_SOURCE && !defined _ISOC11_SOURCE	\
+	 && !defined _ISOC2X_SOURCE				\
 	 && !defined _POSIX_SOURCE && !defined _POSIX_C_SOURCE	\
 	 && !defined _XOPEN_SOURCE))
 # undef  _DEFAULT_SOURCE
 # define _DEFAULT_SOURCE	1
 #endif
 
+/* This is to enable the ISO C2X extension.  */
+#if (defined _ISOC2X_SOURCE \
+     || (defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L))
+# define __GLIBC_USE_ISOC2X	1
+#else
+# define __GLIBC_USE_ISOC2X	0
+#endif
+
 /* This is to enable the ISO C11 extension.  */
-#if (defined _ISOC11_SOURCE \
+#if (defined _ISOC11_SOURCE || defined _ISOC2X_SOURCE \
      || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 201112L))
 # define __USE_ISOC11	1
 #endif
 
 /* This is to enable the ISO C99 extension.  */
-#if (defined _ISOC99_SOURCE || defined _ISOC11_SOURCE \
+#if (defined _ISOC99_SOURCE || defined _ISOC11_SOURCE			\
+     || defined _ISOC2X_SOURCE						\
      || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L))
 # define __USE_ISOC99	1
 #endif
 
 /* This is to enable the ISO C90 Amendment 1:1995 extension.  */
-#if (defined _ISOC99_SOURCE || defined _ISOC11_SOURCE \
+#if (defined _ISOC99_SOURCE || defined _ISOC11_SOURCE			\
+     || defined _ISOC2X_SOURCE						\
      || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199409L))
 # define __USE_ISOC95	1
 #endif
 
+#ifdef __cplusplus
+/* This is to enable compatibility for ISO C++17.  */
+# if __cplusplus >= 201703L
+#  define __USE_ISOC11	1
+# endif
 /* This is to enable compatibility for ISO C++11.
-
-   So far g++ does not provide a macro.  Check the temporary macro for
-   now, too.  */
-#if ((defined __cplusplus && __cplusplus >= 201103L)			      \
-     || defined __GXX_EXPERIMENTAL_CXX0X__)
-# define __USE_ISOCXX11	1
+   Check the temporary macro for now, too.  */
+# if __cplusplus >= 201103L || defined __GXX_EXPERIMENTAL_CXX0X__
+#  define __USE_ISOCXX11	1
+#  define __USE_ISOC99	1
+# endif
 #endif
 
 /* If none of the ANSI/POSIX macros are defined, or if _DEFAULT_SOURCE
@@ -227,6 +280,7 @@
 # undef  _POSIX_C_SOURCE
 # define _POSIX_C_SOURCE	200809L
 #endif
+
 #if ((!defined __STRICT_ANSI__					\
       || (defined _XOPEN_SOURCE && (_XOPEN_SOURCE - 0) >= 500))	\
      && !defined _POSIX_SOURCE && !defined _POSIX_C_SOURCE)
@@ -241,6 +295,19 @@
 #  define _POSIX_C_SOURCE	200809L
 # endif
 # define __USE_POSIX_IMPLICITLY	1
+#endif
+
+/* Some C libraries once required _REENTRANT and/or _THREAD_SAFE to be
+   defined in all multithreaded code.  GNU libc has not required this
+   for many years.  We now treat them as compatibility synonyms for
+   _POSIX_C_SOURCE=199506L, which is the earliest level of POSIX with
+   comprehensive support for multithreaded code.  Using them never
+   lowers the selected level of POSIX conformance, only raises it.  */
+#if ((!defined _POSIX_C_SOURCE || (_POSIX_C_SOURCE - 0) < 199506L) \
+     && (defined _REENTRANT || defined _THREAD_SAFE))
+# define _POSIX_SOURCE   1
+# undef  _POSIX_C_SOURCE
+# define _POSIX_C_SOURCE 199506L
 #endif
 
 #if (defined _POSIX_SOURCE					\
@@ -325,10 +392,6 @@
 # define __USE_GNU	1
 #endif
 
-#if defined _REENTRANT || defined _THREAD_SAFE
-# define __USE_REENTRANT	1
-#endif
-
 #if defined _FORTIFY_SOURCE && _FORTIFY_SOURCE > 0 \
     && __GNUC_PREREQ (4, 1) && defined __OPTIMIZE__ && __OPTIMIZE__ > 0
 # if _FORTIFY_SOURCE > 1
@@ -338,6 +401,37 @@
 # endif
 #else
 # define __USE_FORTIFY_LEVEL 0
+#endif
+
+/* The function 'gets' existed in C89, but is impossible to use
+   safely.  It has been removed from ISO C11 and ISO C++14.  Note: for
+   compatibility with various implementations of <cstdio>, this test
+   must consider only the value of __cplusplus when compiling C++.  */
+#if defined __cplusplus ? __cplusplus >= 201402L : defined __USE_ISOC11
+# define __GLIBC_USE_DEPRECATED_GETS 0
+#else
+# define __GLIBC_USE_DEPRECATED_GETS 1
+#endif
+
+/* GNU formerly extended the scanf functions with modified format
+   specifiers %as, %aS, and %a[...] that allocate a buffer for the
+   input using malloc.  This extension conflicts with ISO C99, which
+   defines %a as a standalone format specifier that reads a floating-
+   point number; moreover, POSIX.1-2008 provides the same feature
+   using the modifier letter 'm' instead (%ms, %mS, %m[...]).
+
+   We now follow C99 unless GNU extensions are active and the compiler
+   is specifically in C89 or C++98 mode (strict or not).  For
+   instance, with GCC, -std=gnu11 will have C99-compliant scanf with
+   or without -D_GNU_SOURCE, but -std=c89 -D_GNU_SOURCE will have the
+   old extension.  */
+#if (defined __USE_GNU							\
+     && (defined __cplusplus						\
+	 ? (__cplusplus < 201103L && !defined __GXX_EXPERIMENTAL_CXX0X__) \
+	 : (!defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L)))
+# define __GLIBC_USE_DEPRECATED_SCANF 1
+#else
+# define __GLIBC_USE_DEPRECATED_SCANF 0
 #endif
 
 /* Get definitions of __STDC_* predefined macros, if the compiler has
@@ -356,7 +450,7 @@
 /* Major and minor version number of the GNU C library package.  Use
    these macros to test for features in specific releases.  */
 #define	__GLIBC__	2
-#define	__GLIBC_MINOR__	23
+#define	__GLIBC_MINOR__	31
 
 #define __GLIBC_PREREQ(maj, min) \
 	((__GLIBC__ << 16) + __GLIBC_MINOR__ >= ((maj) << 16) + (min))

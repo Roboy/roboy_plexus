@@ -64,7 +64,8 @@
 #  define _DBUS_GNUC_EXTENSION
 #endif
 
-#if     __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
+#if     (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)) || \
+         defined(__clang__)
 #define _DBUS_GNUC_PRINTF( format_idx, arg_idx )    \
   __attribute__((__format__ (__printf__, format_idx, arg_idx)))
 #define _DBUS_GNUC_NORETURN                         \
@@ -213,6 +214,26 @@
 #else
 #  define DBUS_PRIVATE_EXPORT /* no decoration */
 #endif
+
+/* Implementation for dbus_clear_message() etc. This is not API,
+ * do not use it directly.
+ *
+ * We're using a specific type (T ** and T *) instead of void ** and
+ * void * partly for type-safety, partly to be strict-aliasing-compliant,
+ * and partly to keep C++ compilers happy. This code is inlined into
+ * users of libdbus, so we can't rely on it having dbus' own compiler
+ * settings. */
+#define _dbus_clear_pointer_impl(T, pointer_to_pointer, destroy) \
+  do { \
+    T **_pp = (pointer_to_pointer); \
+    T *_value = *_pp; \
+    \
+    *_pp = NULL; \
+    \
+    if (_value != NULL) \
+      destroy (_value); \
+  } while (0)
+/* Not (destroy) (_value) in case destroy() is a function-like macro */
 
 /** @} */
 

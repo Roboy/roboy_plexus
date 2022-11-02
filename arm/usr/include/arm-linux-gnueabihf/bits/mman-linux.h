@@ -1,5 +1,5 @@
 /* Definitions for POSIX memory map interface.  Linux generic version.
-   Copyright (C) 2001-2016 Free Software Foundation, Inc.
+   Copyright (C) 2001-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,17 +14,14 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _SYS_MMAN_H
 # error "Never use <bits/mman-linux.h> directly; include <sys/mman.h> instead."
 #endif
 
 /* The following definitions basically come from the kernel headers.
-   But the kernel header is not namespace clean.
-
-   This file is also used by some non-Linux configurations of the
-   GNU C Library, for other systems that use these same bit values.  */
+   But the kernel header is not namespace clean.  */
 
 
 /* Protections are chosen from these bits, OR'd together.  The
@@ -45,6 +42,8 @@
 #define MAP_SHARED	0x01		/* Share changes.  */
 #define MAP_PRIVATE	0x02		/* Changes are private.  */
 #ifdef __USE_MISC
+# define MAP_SHARED_VALIDATE	0x03	/* Share changes and validate
+					   extension flags.  */
 # define MAP_TYPE	0x0f		/* Mask for type of mapping.  */
 #endif
 
@@ -68,12 +67,6 @@
 #define MS_SYNC		4		/* Synchronous memory sync.  */
 #define MS_INVALIDATE	2		/* Invalidate the caches.  */
 
-/* Flags for `mremap'.  */
-#ifdef __USE_GNU
-# define MREMAP_MAYMOVE	1
-# define MREMAP_FIXED	2
-#endif
-
 /* Advice to `madvise'.  */
 #ifdef __USE_MISC
 # define MADV_NORMAL	  0	/* No further special treatment.  */
@@ -81,6 +74,7 @@
 # define MADV_SEQUENTIAL  2	/* Expect sequential page references.  */
 # define MADV_WILLNEED	  3	/* Will need these pages.  */
 # define MADV_DONTNEED	  4	/* Don't need these pages.  */
+# define MADV_FREE	  8	/* Free pages only if memory pressure.  */
 # define MADV_REMOVE	  9	/* Remove these pages and resources.  */
 # define MADV_DONTFORK	  10	/* Do not inherit across fork.  */
 # define MADV_DOFORK	  11	/* Do inherit across fork.  */
@@ -91,6 +85,10 @@
 # define MADV_DONTDUMP	  16    /* Explicity exclude from the core dump,
                                    overrides the coredump filter bits.  */
 # define MADV_DODUMP	  17	/* Clear the MADV_DONTDUMP flag.  */
+# define MADV_WIPEONFORK  18	/* Zero memory on fork, child only.  */
+# define MADV_KEEPONFORK  19	/* Undo MADV_WIPEONFORK.  */
+# define MADV_COLD        20	/* Deactivate these pages.  */
+# define MADV_PAGEOUT     21	/* Reclaim these pages.  */
 # define MADV_HWPOISON	  100	/* Poison a page for testing.  */
 #endif
 
@@ -111,3 +109,5 @@
 # define MCL_ONFAULT	4		/* Lock all pages that are
 					   faulted in.  */
 #endif
+
+#include <bits/mman-shared.h>

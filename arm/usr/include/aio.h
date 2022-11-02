@@ -1,4 +1,4 @@
-/* Copyright (C) 1996-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /*
  * ISO/IEC 9945-1:1996 6.7: Asynchronous Input and Output
@@ -24,10 +24,9 @@
 
 #include <features.h>
 #include <sys/types.h>
-#define __need_sigevent_t
-#include <bits/siginfo.h>
-#define __need_timespec
-#include <time.h>
+#include <bits/types/sigevent_t.h>
+#include <bits/sigevent-consts.h>
+#include <bits/types/struct_timespec.h>
 
 __BEGIN_DECLS
 

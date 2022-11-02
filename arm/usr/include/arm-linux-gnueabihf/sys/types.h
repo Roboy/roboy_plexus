@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /*
  *	POSIX Standard: 2.6 Primitive System Data Types	<sys/types.h>
@@ -39,9 +39,8 @@ typedef __u_quad_t u_quad_t;
 typedef __fsid_t fsid_t;
 #  define __u_char_defined
 # endif
-#endif
-
 typedef __loff_t loff_t;
+#endif
 
 #ifndef __ino_t_defined
 # ifndef __USE_FILE_OFFSET64
@@ -124,12 +123,11 @@ typedef __key_t key_t;
 #endif
 
 #if defined __USE_XOPEN || defined __USE_XOPEN2K8
-# define __need_clock_t
+# include <bits/types/clock_t.h>
 #endif
-#define	__need_time_t
-#define __need_timer_t
-#define __need_clockid_t
-#include <time.h>
+#include <bits/types/clockid_t.h>
+#include <bits/types/time_t.h>
+#include <bits/types/timer_t.h>
 
 #ifdef __USE_XOPEN
 # ifndef __useconds_t_defined
@@ -154,60 +152,22 @@ typedef unsigned int uint;
 
 /* These size-specific names are used by some of the inet code.  */
 
-#if !__GNUC_PREREQ (2, 7)
+#include <bits/stdint-intn.h>
 
-/* These types are defined by the ISO C99 header <inttypes.h>. */
-# ifndef __int8_t_defined
-#  define __int8_t_defined
-typedef	char int8_t;
-typedef	short int int16_t;
-typedef	int int32_t;
-#  if __WORDSIZE == 64
-typedef long int int64_t;
-#  else
-__extension__ typedef long long int int64_t;
-#  endif
-# endif
+/* These were defined by ISO C without the first `_'.  */
+typedef __uint8_t u_int8_t;
+typedef __uint16_t u_int16_t;
+typedef __uint32_t u_int32_t;
+typedef __uint64_t u_int64_t;
 
-/* But these were defined by ISO C without the first `_'.  */
-typedef	unsigned char u_int8_t;
-typedef	unsigned short int u_int16_t;
-typedef	unsigned int u_int32_t;
-# if __WORDSIZE == 64
-typedef unsigned long int u_int64_t;
-# else
-__extension__ typedef unsigned long long int u_int64_t;
-# endif
-
-typedef int register_t;
-
-#else
-
-/* For GCC 2.7 and later, we can use specific type-size attributes.  */
-# define __intN_t(N, MODE) \
-  typedef int int##N##_t __attribute__ ((__mode__ (MODE)))
-# define __u_intN_t(N, MODE) \
-  typedef unsigned int u_int##N##_t __attribute__ ((__mode__ (MODE)))
-
-# ifndef __int8_t_defined
-#  define __int8_t_defined
-__intN_t (8, __QI__);
-__intN_t (16, __HI__);
-__intN_t (32, __SI__);
-__intN_t (64, __DI__);
-# endif
-
-__u_intN_t (8, __QI__);
-__u_intN_t (16, __HI__);
-__u_intN_t (32, __SI__);
-__u_intN_t (64, __DI__);
-
+#if __GNUC_PREREQ (2, 7)
 typedef int register_t __attribute__ ((__mode__ (__word__)));
-
+#else
+typedef int register_t;
+#endif
 
 /* Some code from BIND tests this macro to see if the types above are
    defined.  */
-#endif
 #define __BIT_TYPES_DEFINED__	1
 
 
@@ -217,9 +177,6 @@ typedef int register_t __attribute__ ((__mode__ (__word__)));
 
 /* It also defines `fd_set' and the FD_* macros for `select'.  */
 # include <sys/select.h>
-
-/* BSD defines these symbols, so we follow.  */
-# include <sys/sysmacros.h>
 #endif /* Use misc.  */
 
 

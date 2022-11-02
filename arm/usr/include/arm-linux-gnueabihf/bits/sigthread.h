@@ -1,5 +1,5 @@
 /* Signal handling function for threaded programs.
-   Copyright (C) 1998-2016 Free Software Foundation, Inc.
+   Copyright (C) 1998-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,16 +14,17 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; see the file COPYING.LIB.  If
-   not, see <http://www.gnu.org/licenses/>.  */
+   not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _BITS_SIGTHREAD_H
 #define _BITS_SIGTHREAD_H	1
 
 #if !defined _SIGNAL_H && !defined _PTHREAD_H
-# error "Never include this file directly.  Use <pthread.h> instead"
+# error "Never include this file directly.  Use <signal.h> instead"
 #endif
 
 /* Functions for handling signals. */
+#include <bits/types/__sigset_t.h>
 
 /* Modify the signal mask for the calling thread.  The arguments have
    the same meaning as for sigprocmask(2). */

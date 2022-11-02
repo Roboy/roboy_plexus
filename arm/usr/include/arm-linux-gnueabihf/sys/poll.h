@@ -1,5 +1,5 @@
 /* Compatibility definitions for System V `poll' interface.
-   Copyright (C) 1994-2016 Free Software Foundation, Inc.
+   Copyright (C) 1994-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef	_SYS_POLL_H
 #define	_SYS_POLL_H	1
@@ -24,11 +24,8 @@
 /* Get the platform dependent bits of `poll'.  */
 #include <bits/poll.h>
 #ifdef __USE_GNU
-/* Get the __sigset_t definition.  */
-# include <bits/sigset.h>
-/* Get the timespec definition.  */
-# define __need_timespec
-# include <time.h>
+# include <bits/types/__sigset_t.h>
+# include <bits/types/struct_timespec.h>
 #endif
 
 

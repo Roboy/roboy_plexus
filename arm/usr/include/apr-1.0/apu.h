@@ -100,7 +100,7 @@
  * we always have SDBM (it's in our codebase)
  */
 #define APU_HAVE_SDBM   1
-#define APU_HAVE_GDBM   0
+#define APU_HAVE_GDBM   1
 #define APU_HAVE_NDBM   0
 #define APU_HAVE_DB     1
 
@@ -113,12 +113,12 @@
 #define APU_HAVE_SQLITE3       1
 #define APU_HAVE_SQLITE2       0
 #define APU_HAVE_ORACLE        0
-#define APU_HAVE_FREETDS       0
 #define APU_HAVE_ODBC          1
 
 #define APU_HAVE_CRYPTO        1
 #define APU_HAVE_OPENSSL       1
 #define APU_HAVE_NSS           0
+#define APU_HAVE_COMMONCRYPTO  0
 
 #define APU_HAVE_APR_ICONV     0
 #define APU_HAVE_ICONV         1

@@ -1,7 +1,7 @@
 /* $OpenLDAP$ */
 /* This work is part of OpenLDAP Software <http://www.openldap.org/>.
  * 
- * Copyright 1998-2015 The OpenLDAP Foundation.
+ * Copyright 1998-2020 The OpenLDAP Foundation.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -158,6 +158,7 @@ LDAP_BEGIN_DECL
 #define LDAP_OPT_X_TLS_NEWCTX		0x600f
 #define LDAP_OPT_X_TLS_CRLFILE		0x6010	/* GNUtls only */
 #define LDAP_OPT_X_TLS_PACKAGE		0x6011
+#define LDAP_OPT_X_TLS_ECNAME		0x6012
 
 #define LDAP_OPT_X_TLS_NEVER	0
 #define LDAP_OPT_X_TLS_HARD		1
@@ -1239,16 +1240,6 @@ ldap_parse_sasl_bind_result LDAP_P((
 	struct berval	**servercredp,
 	int				freeit ));
 
-/*
- * in gssapi.c:
- */
-LDAP_F( int )
-ldap_gssapi_bind_s LDAP_P((
-	LDAP  *ld,
-	LDAP_CONST char *dn,
-	LDAP_CONST char *creds));
-
-
 #if LDAP_DEPRECATED
 /*
  * in bind.c:
@@ -2050,6 +2041,12 @@ ldap_is_ldaps_url LDAP_P((
 LDAP_F( int )
 ldap_is_ldapi_url LDAP_P((
 	LDAP_CONST char *url ));
+
+#ifdef LDAP_CONNECTIONLESS
+LDAP_F( int )
+ldap_is_ldapc_url LDAP_P((
+	LDAP_CONST char *url ));
+#endif
 
 LDAP_F( int )
 ldap_url_parse LDAP_P((

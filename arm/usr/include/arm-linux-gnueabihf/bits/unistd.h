@@ -1,5 +1,5 @@
 /* Checking macros for unistd functions.
-   Copyright (C) 2005-2016 Free Software Foundation, Inc.
+   Copyright (C) 2005-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _UNISTD_H
 # error "Never include <bits/unistd.h> directly; use <unistd.h> instead."
@@ -302,7 +302,7 @@ __NTH (ttyname_r (int __fd, char *__buf, size_t __buflen))
 }
 
 
-#if defined __USE_REENTRANT || defined __USE_POSIX199506
+#ifdef __USE_POSIX199506
 extern int __getlogin_r_chk (char *__buf, size_t __buflen, size_t __nreal)
      __nonnull ((1));
 extern int __REDIRECT (__getlogin_r_alias, (char *__buf, size_t __buflen),

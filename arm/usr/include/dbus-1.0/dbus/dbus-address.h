@@ -42,7 +42,7 @@ typedef struct DBusAddressEntry DBusAddressEntry;
 
 DBUS_EXPORT
 dbus_bool_t dbus_parse_address            (const char         *address,
-					   DBusAddressEntry ***entry,
+					   DBusAddressEntry ***entry_result,
 					   int                *array_len,
 					   DBusError          *error);
 DBUS_EXPORT
@@ -58,6 +58,25 @@ char* dbus_address_escape_value   (const char *value);
 DBUS_EXPORT
 char* dbus_address_unescape_value (const char *value,
                                    DBusError  *error);
+
+/**
+ * Clear a variable or struct member that contains an array of #DBusAddressEntry.
+ * If it does not contain #NULL, the entries that were previously
+ * there are freed with dbus_address_entries_free().
+ *
+ * This is similar to dbus_clear_connection(): see that function
+ * for more details.
+ *
+ * @param pointer_to_entries A pointer to a variable or struct member.
+ * pointer_to_entries must not be #NULL, but *pointer_to_entries
+ * may be #NULL.
+ */
+static inline void
+dbus_clear_address_entries (DBusAddressEntry ***pointer_to_entries)
+{
+  _dbus_clear_pointer_impl (DBusAddressEntry *, pointer_to_entries,
+                            dbus_address_entries_free);
+}
 
 /** @} */
 
