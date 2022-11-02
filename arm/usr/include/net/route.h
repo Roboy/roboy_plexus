@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /* Based on the 4.4BSD and Linux version of this file.  */
 
@@ -59,12 +59,12 @@ struct in6_rtmsg
     struct in6_addr rtmsg_dst;
     struct in6_addr rtmsg_src;
     struct in6_addr rtmsg_gateway;
-    u_int32_t rtmsg_type;
-    u_int16_t rtmsg_dst_len;
-    u_int16_t rtmsg_src_len;
-    u_int32_t rtmsg_metric;
+    uint32_t rtmsg_type;
+    uint16_t rtmsg_dst_len;
+    uint16_t rtmsg_src_len;
+    uint32_t rtmsg_metric;
     unsigned long int rtmsg_info;
-    u_int32_t rtmsg_flags;
+    uint32_t rtmsg_flags;
     int rtmsg_ifindex;
   };
 
@@ -113,7 +113,7 @@ struct in6_rtmsg
 #define RTF_NAT		0x08000000
 
 #define RTF_ADDRCLASSMASK	0xF8000000
-#define RT_ADDRCLASS(flags)	((__u_int32_t) flags >> 23)
+#define RT_ADDRCLASS(flags)	((uint32_t) flags >> 23)
 
 #define RT_TOS(tos)		((tos) & IPTOS_TOS_MASK)
 

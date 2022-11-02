@@ -340,6 +340,7 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
             case ENCODER0_POSITION: {
               int setpoint = msg->setpoint[i]/bus->motor_config->motor[motor]->encoder0_conversion_factor*bus->motor_config->motor[motor]->direction;
               bus->SetPoint(motor, setpoint);
+              ROS_WARN("setpoint: %i", setpoint);
               break;
             }
             case ENCODER1_POSITION: {
@@ -356,7 +357,8 @@ void RoboyPlexus::MotorCommand(const roboy_middleware_msgs::MotorCommand::ConstP
               //          bus->SetPoint(motor, msg->setpoint[i]*bus->motor_config->motor[motor]->direction;);
               //        else
               //          ....
-              bus->SetPoint(motor, msg->setpoint[i]);
+              int setpoint = msg->setpoint[i]*bus->motor_config->motor[motor]->direction;
+              bus->SetPoint(motor, setpoint);
               break;
             }
             case DIRECT_PWM: {

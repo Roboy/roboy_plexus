@@ -1,16 +1,15 @@
 package Cwd;
 use strict;
 use Exporter;
-use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
 
-$VERSION = '3.56';
+our $VERSION = '3.78';
 my $xs_version = $VERSION;
-$VERSION =~ tr/_//;
+$VERSION =~ tr/_//d;
 
-@ISA = qw/ Exporter /;
-@EXPORT = qw(cwd getcwd fastcwd fastgetcwd);
+our @ISA = qw/ Exporter /;
+our @EXPORT = qw(cwd getcwd fastcwd fastgetcwd);
 push @EXPORT, qw(getdcwd) if $^O eq 'MSWin32';
-@EXPORT_OK = qw(chdir abs_path fast_abs_path realpath fast_realpath);
+our @EXPORT_OK = qw(chdir abs_path fast_abs_path realpath fast_realpath);
 
 # sys_cwd may keep the builtin command
 
@@ -40,7 +39,10 @@ if ($^O eq 'os2') {
 my $use_vms_feature;
 BEGIN {
     if ($^O eq 'VMS') {
-        if (eval { local $SIG{__DIE__}; require VMS::Feature; }) {
+        if (eval { local $SIG{__DIE__};
+                   local @INC = @INC;
+                   pop @INC if $INC[-1] eq '.';
+                   require VMS::Feature; }) {
             $use_vms_feature = 1;
         }
     }
@@ -73,19 +75,9 @@ sub _vms_efs {
 }
 
 # If loading the XS stuff doesn't work, we can fall back to pure perl
-if(! defined &getcwd && defined &DynaLoader::boot_DynaLoader) {
-  eval {#eval is questionable since we are handling potential errors like
-        #"Cwd object version 3.48 does not match bootstrap parameter 3.50
-        #at lib/DynaLoader.pm line 216." by having this eval
-    if ( $] >= 5.006 ) {
-      require XSLoader;
-      XSLoader::load( __PACKAGE__, $xs_version);
-    } else {
-      require DynaLoader;
-      push @ISA, 'DynaLoader';
-      __PACKAGE__->bootstrap( $xs_version );
-    }
-  };
+if(! defined &getcwd && defined &DynaLoader::boot_DynaLoader) { # skipped on miniperl
+    require XSLoader;
+    XSLoader::load( __PACKAGE__, $xs_version);
 }
 
 # Big nasty table of function aliases
@@ -141,22 +133,13 @@ my %METHOD_MAP =
     realpath		=> 'fast_abs_path',
    },
 
-   epoc =>
+   amigaos =>
    {
-    cwd			=> '_epoc_cwd',
-    getcwd	        => '_epoc_cwd',
-    fastgetcwd		=> '_epoc_cwd',
-    fastcwd		=> '_epoc_cwd',
-    abs_path		=> 'fast_abs_path',
-   },
-
-   MacOS =>
-   {
-    getcwd		=> 'cwd',
-    fastgetcwd		=> 'cwd',
-    fastcwd		=> 'cwd',
-    abs_path		=> 'fast_abs_path',
-   },
+    getcwd              => '_backtick_pwd',
+    fastgetcwd          => '_backtick_pwd',
+    fastcwd             => '_backtick_pwd',
+    abs_path            => 'fast_abs_path',
+   }
   );
 
 $METHOD_MAP{NT} = $METHOD_MAP{MSWin32};
@@ -185,7 +168,7 @@ if($^O ne 'MSWin32') {
 if ($^O =~ /android/) {
     # If targetsh is executable, then we're either a full
     # perl, or a miniperl for a native build.
-    if (-x $Config::Config{targetsh}) {
+    if ( exists($Config::Config{targetsh}) && -x $Config::Config{targetsh}) {
         $pwd_cmd = "$Config::Config{targetsh} -c pwd"
     }
     else {
@@ -208,9 +191,12 @@ sub _croak { require Carp; Carp::croak(@_) }
 
 # The 'natural and safe form' for UNIX (pwd may be setuid root)
 sub _backtick_pwd {
-    # Localize %ENV entries in a way that won't create new hash keys
-    my @localize = grep exists $ENV{$_}, qw(PATH IFS CDPATH ENV BASH_ENV);
-    local @ENV{@localize};
+
+    # Localize %ENV entries in a way that won't create new hash keys.
+    # Under AmigaOS we don't want to localize as it stops perl from
+    # finding 'sh' in the PATH.
+    my @localize = grep exists $ENV{$_}, qw(PATH IFS CDPATH ENV BASH_ENV) if $^O ne "amigaos";
+    local @ENV{@localize} if @localize;
     
     my $cwd = `$pwd_cmd`;
     # Belt-and-suspenders in case someone said "undef $/".
@@ -237,8 +223,7 @@ unless ($METHOD_MAP{$^O}{cwd} or defined &cwd) {
 	}
     }
 
-    # MacOS has some special magic to make `pwd` work.
-    if( $os eq 'MacOS' || $found_pwd_cmd )
+    if( $found_pwd_cmd )
     {
 	*cwd = \&_backtick_pwd;
     }
@@ -365,9 +350,6 @@ sub chdir {
     if ($^O eq 'VMS') {
 	return $ENV{'PWD'} = $ENV{'DEFAULT'}
     }
-    elsif ($^O eq 'MacOS') {
-	return $ENV{'PWD'} = cwd();
-    }
     elsif ($^O eq 'MSWin32') {
 	$ENV{'PWD'} = $newpwd;
 	return 1;
@@ -398,8 +380,7 @@ sub _perl_abs_path
 
     unless (@cst = stat( $start ))
     {
-	_carp("stat($start): $!");
-	return '';
+	return undef;
     }
 
     unless (-d _) {
@@ -433,15 +414,14 @@ sub _perl_abs_path
 	local *PARENT;
 	unless (opendir(PARENT, $dotdots))
 	{
-	    # probably a permissions issue.  Try the native command.
-	    require File::Spec;
-	    return File::Spec->rel2abs( $start, _backtick_pwd() );
+	    return undef;
 	}
 	unless (@cst = stat($dotdots))
 	{
-	    _carp("stat($dotdots): $!");
+	    my $e = $!;
 	    closedir(PARENT);
-	    return '';
+	    $! = $e;
+	    return undef;
 	}
 	if ($pst[0] == $cst[0] && $pst[1] == $cst[1])
 	{
@@ -453,9 +433,10 @@ sub _perl_abs_path
 	    {
 		unless (defined ($dir = readdir(PARENT)))
 	        {
-		    _carp("readdir($dotdots): $!");
 		    closedir(PARENT);
-		    return '';
+		    require Errno;
+		    $! = Errno::ENOENT();
+		    return undef;
 		}
 		$tst[0] = $pst[0]+1 unless (@tst = lstat("$dotdots/$dir"))
 	    }
@@ -473,6 +454,7 @@ my $Curdir;
 sub fast_abs_path {
     local $ENV{PWD} = $ENV{PWD} || ''; # Guard against clobberage
     my $cwd = getcwd();
+    defined $cwd or return undef;
     require File::Spec;
     my $path = @_ ? shift : ($Curdir ||= File::Spec->curdir);
 
@@ -482,7 +464,9 @@ sub fast_abs_path {
     ($cwd)  = $cwd  =~ /(.*)/s;
 
     unless (-e $path) {
- 	_croak("$path: No such file or directory");
+	require Errno;
+	$! = Errno::ENOENT();
+	return undef;
     }
 
     unless (-d _) {
@@ -493,7 +477,7 @@ sub fast_abs_path {
 
 	if (-l $path) {
 	    my $link_target = readlink($path);
-	    die "Can't resolve link $path: $!" unless defined $link_target;
+	    defined $link_target or return undef;
 	    
 	    $link_target = File::Spec->catpath($vol, $dir, $link_target)
                 unless File::Spec->file_name_is_absolute($link_target);
@@ -507,7 +491,7 @@ sub fast_abs_path {
     }
 
     if (!CORE::chdir($path)) {
- 	_croak("Cannot chdir to $path: $!");
+	return undef;
     }
     my $realpath = getcwd();
     if (! ((-d $cwd) && (CORE::chdir($cwd)))) {
@@ -592,57 +576,51 @@ sub _vms_abs_path {
 }
 
 sub _os2_cwd {
-    $ENV{'PWD'} = `cmd /c cd`;
-    chomp $ENV{'PWD'};
-    $ENV{'PWD'} =~ s:\\:/:g ;
-    return $ENV{'PWD'};
+    my $pwd = `cmd /c cd`;
+    chomp $pwd;
+    $pwd =~ s:\\:/:g ;
+    $ENV{'PWD'} = $pwd;
+    return $pwd;
 }
 
 sub _win32_cwd_simple {
-    $ENV{'PWD'} = `cd`;
-    chomp $ENV{'PWD'};
-    $ENV{'PWD'} =~ s:\\:/:g ;
-    return $ENV{'PWD'};
+    my $pwd = `cd`;
+    chomp $pwd;
+    $pwd =~ s:\\:/:g ;
+    $ENV{'PWD'} = $pwd;
+    return $pwd;
 }
 
 sub _win32_cwd {
-    # Need to avoid taking any sort of reference to the typeglob or the code in
-    # the optree, so that this tests the runtime state of things, as the
-    # ExtUtils::MakeMaker tests for "miniperl" need to be able to fake things at
-    # runtime by deleting the subroutine. *foo{THING} syntax on a symbol table
-    # lookup avoids needing a string eval, which has been reported to cause
-    # problems (for reasons that we haven't been able to get to the bottom of -
-    # rt.cpan.org #56225)
-    if (*{$DynaLoader::{boot_DynaLoader}}{CODE}) {
-	$ENV{'PWD'} = Win32::GetCwd();
-    }
-    else { # miniperl
-	chomp($ENV{'PWD'} = `cd`);
-    }
-    $ENV{'PWD'} =~ s:\\:/:g ;
-    return $ENV{'PWD'};
+    my $pwd;
+    $pwd = Win32::GetCwd();
+    $pwd =~ s:\\:/:g ;
+    $ENV{'PWD'} = $pwd;
+    return $pwd;
 }
 
 *_NT_cwd = defined &Win32::GetCwd ? \&_win32_cwd : \&_win32_cwd_simple;
 
 sub _dos_cwd {
+    my $pwd;
     if (!defined &Dos::GetCwd) {
-        $ENV{'PWD'} = `command /c cd`;
-        chomp $ENV{'PWD'};
-        $ENV{'PWD'} =~ s:\\:/:g ;
+        chomp($pwd = `command /c cd`);
+        $pwd =~ s:\\:/:g ;
     } else {
-        $ENV{'PWD'} = Dos::GetCwd();
+        $pwd = Dos::GetCwd();
     }
-    return $ENV{'PWD'};
+    $ENV{'PWD'} = $pwd;
+    return $pwd;
 }
 
 sub _qnx_cwd {
 	local $ENV{PATH} = '';
 	local $ENV{CDPATH} = '';
 	local $ENV{ENV} = '';
-    $ENV{'PWD'} = `/usr/bin/fullpath -t`;
-    chomp $ENV{'PWD'};
-    return $ENV{'PWD'};
+    my $pwd = `/usr/bin/fullpath -t`;
+    chomp $pwd;
+    $ENV{'PWD'} = $pwd;
+    return $pwd;
 }
 
 sub _qnx_abs_path {
@@ -660,11 +638,6 @@ sub _qnx_abs_path {
     return $realpath;
 }
 
-sub _epoc_cwd {
-    $ENV{'PWD'} = EPOC::getcwd();
-    return $ENV{'PWD'};
-}
-
 # Now that all the base-level functions are set up, alias the
 # user-level functions to the right places
 
@@ -676,6 +649,10 @@ if (exists $METHOD_MAP{$^O}) {
     *{$name} = \&{$map->{$name}};
   }
 }
+
+# built-in from 5.30
+*getcwd = \&Internals::getcwd
+  if !defined &getcwd && defined &Internals::getcwd;
 
 # In case the XS version doesn't load.
 *abs_path = \&_perl_abs_path unless defined &abs_path;

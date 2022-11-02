@@ -1,5 +1,5 @@
 /* Definitions for Address Resolution Protocol.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -15,17 +15,16 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /* Based on the 4.4BSD and Linux version of this file.  */
 
 #ifndef _NET_IF_ARP_H
-
 #define _NET_IF_ARP_H 1
-#include <sys/cdefs.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stdint.h>
 
 __BEGIN_DECLS
 
@@ -102,6 +101,7 @@ struct arphdr
 #define ARPHRD_LAPB	516		/* LAPB.  */
 #define ARPHRD_DDCMP	517		/* Digital's DDCMP.  */
 #define	ARPHRD_RAWHDLC	518		/* Raw HDLC.  */
+#define ARPHRD_RAWIP	519		/* Raw IP.  */
 
 #define ARPHRD_TUNNEL	768		/* IPIP tunnel.  */
 #define ARPHRD_TUNNEL6	769		/* IPIP6 tunnel.  */
@@ -171,7 +171,7 @@ struct arpreq_old
 struct arpd_request
   {
     unsigned short int req;		/* Request type.  */
-    u_int32_t ip;			/* IP address of entry.  */
+    uint32_t ip;			/* IP address of entry.  */
     unsigned long int dev;		/* Device entry is tied to.  */
     unsigned long int stamp;
     unsigned long int updated;

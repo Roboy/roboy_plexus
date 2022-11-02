@@ -1,10 +1,9 @@
 prefix=/usr
-exec_prefix=${prefix}
 libdir=${prefix}/lib/arm-linux-gnueabihf
 includedir=${prefix}/include
 
 Name: xkbcommon
 Description: XKB API common to servers and clients
-Version: 0.5.0
-Cflags: -I${includedir}
+Version: 0.10.0
 Libs: -L${libdir} -lxkbcommon
+Cflags: -I${includedir}

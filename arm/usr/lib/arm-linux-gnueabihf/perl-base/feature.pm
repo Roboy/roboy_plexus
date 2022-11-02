@@ -5,7 +5,7 @@
 
 package feature;
 
-our $VERSION = '1.40';
+our $VERSION = '1.54';
 
 our %feature = (
     fc              => 'feature_fc',
@@ -14,23 +14,23 @@ our %feature = (
     switch          => 'feature_switch',
     bitwise         => 'feature_bitwise',
     evalbytes       => 'feature_evalbytes',
-    postderef       => 'feature_postderef',
-    array_base      => 'feature_arybase',
     signatures      => 'feature_signatures',
     current_sub     => 'feature___SUB__',
     refaliasing     => 'feature_refaliasing',
-    lexical_subs    => 'feature_lexsubs',
     postderef_qq    => 'feature_postderef_qq',
     unicode_eval    => 'feature_unieval',
+    declared_refs   => 'feature_myref',
     unicode_strings => 'feature_unicode',
 );
 
 our %feature_bundle = (
-    "5.10"    => [qw(array_base say state switch)],
-    "5.11"    => [qw(array_base say state switch unicode_strings)],
+    "5.10"    => [qw(say state switch)],
+    "5.11"    => [qw(say state switch unicode_strings)],
     "5.15"    => [qw(current_sub evalbytes fc say state switch unicode_eval unicode_strings)],
-    "all"     => [qw(array_base bitwise current_sub evalbytes fc lexical_subs postderef postderef_qq refaliasing say signatures state switch unicode_eval unicode_strings)],
-    "default" => [qw(array_base)],
+    "5.23"    => [qw(current_sub evalbytes fc postderef_qq say state switch unicode_eval unicode_strings)],
+    "5.27"    => [qw(bitwise current_sub evalbytes fc postderef_qq say state switch unicode_eval unicode_strings)],
+    "all"     => [qw(bitwise current_sub declared_refs evalbytes fc postderef_qq refaliasing say signatures state switch unicode_eval unicode_strings)],
+    "default" => [qw()],
 );
 
 $feature_bundle{"5.12"} = $feature_bundle{"5.11"};
@@ -43,11 +43,24 @@ $feature_bundle{"5.19"} = $feature_bundle{"5.15"};
 $feature_bundle{"5.20"} = $feature_bundle{"5.15"};
 $feature_bundle{"5.21"} = $feature_bundle{"5.15"};
 $feature_bundle{"5.22"} = $feature_bundle{"5.15"};
+$feature_bundle{"5.24"} = $feature_bundle{"5.23"};
+$feature_bundle{"5.25"} = $feature_bundle{"5.23"};
+$feature_bundle{"5.26"} = $feature_bundle{"5.23"};
+$feature_bundle{"5.28"} = $feature_bundle{"5.27"};
+$feature_bundle{"5.29"} = $feature_bundle{"5.27"};
+$feature_bundle{"5.30"} = $feature_bundle{"5.27"};
 $feature_bundle{"5.9.5"} = $feature_bundle{"5.10"};
+my %noops = (
+    postderef => 1,
+    lexical_subs => 1,
+);
+my %removed = (
+    array_base => 1,
+);
 
 our $hint_shift   = 26;
 our $hint_mask    = 0x1c000000;
-our @hint_bundles = qw( default 5.10 5.11 5.15 );
+our @hint_bundles = qw( default 5.10 5.11 5.15 5.23 5.27 );
 
 # This gets set (for now) in $^H as well as in %^H,
 # for runtime speed of the uc/lc/ucfirst/lcfirst functions.
@@ -58,7 +71,7 @@ our $hint_uni8bit = 0x00000800;
 # - think about versioned features (use feature switch => 2)
 
 sub import {
-    my $class = shift;
+    shift;
 
     if (!@_) {
         croak("No features specified");
@@ -68,7 +81,7 @@ sub import {
 }
 
 sub unimport {
-    my $class = shift;
+    shift;
 
     # A bare C<no feature> should reset to the default bundle
     if (!@_) {
@@ -108,6 +121,12 @@ sub __common {
             next;
         }
         if (!exists $feature{$name}) {
+            if (exists $noops{$name}) {
+                next;
+            }
+            if (!$import && exists $removed{$name}) {
+                next;
+            }
             unknown_feature($name);
         }
 	if ($import) {

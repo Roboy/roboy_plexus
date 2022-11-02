@@ -12,7 +12,7 @@ my $version          = $Config{version};
 my @inc_version_list = reverse split / /, $Config{inc_version_list};
 
 our @ORIG_INC = @INC;	# take a handy copy of 'original' value
-our $VERSION = '0.63';
+our $VERSION = '0.65';
 
 sub import {
     shift;

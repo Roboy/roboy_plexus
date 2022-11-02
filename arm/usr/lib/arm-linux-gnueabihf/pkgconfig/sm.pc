@@ -5,7 +5,7 @@ includedir=${prefix}/include
 
 Name: SM
 Description: X Session Management Library
-Version: 1.2.2
+Version: 1.2.3
 Requires:
 Requires.private: ice xproto
 Cflags: -I${includedir}

@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Thorsten Kukuk <kukuk@suse.de>, 1997.
 
@@ -14,12 +14,12 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef	__RPCSVC_NISLIB_H__
 #define	__RPCSVC_NISLIB_H__
 
-#include <features.h>
+#include <rpcsvc/nis.h>
 
 __BEGIN_DECLS
 
@@ -244,7 +244,6 @@ extern uint32_t __nis_default_ttl (char *) __THROW;
 extern unsigned int __nis_default_access (char *, unsigned int) __THROW;
 extern fd_result *__nis_finddirectory (directory_obj *, const_nis_name) __THROW;
 extern void __free_fdresult (fd_result *) __THROW;
-extern uint32_t __nis_hash (const void *__keyarg, size_t __len) __THROW;
 
 /* NIS+ cache locking */
 extern int __nis_lock_cache (void) __THROW;

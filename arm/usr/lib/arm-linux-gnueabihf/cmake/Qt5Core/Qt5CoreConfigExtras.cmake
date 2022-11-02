@@ -13,7 +13,7 @@ endif()
 if (NOT TARGET Qt5::moc)
     add_executable(Qt5::moc IMPORTED)
 
-    set(imported_location "${_qt5Core_install_prefix}/lib/arm-linux-gnueabihf/qt5/bin/moc")
+    set(imported_location "${_qt5Core_install_prefix}/lib/qt5/bin/moc")
     _qt5_Core_check_file_exists(${imported_location})
 
     set_target_properties(Qt5::moc PROPERTIES
@@ -26,7 +26,7 @@ endif()
 if (NOT TARGET Qt5::rcc)
     add_executable(Qt5::rcc IMPORTED)
 
-    set(imported_location "${_qt5Core_install_prefix}/lib/arm-linux-gnueabihf/qt5/bin/rcc")
+    set(imported_location "${_qt5Core_install_prefix}/lib/qt5/bin/rcc")
     _qt5_Core_check_file_exists(${imported_location})
 
     set_target_properties(Qt5::rcc PROPERTIES
@@ -58,21 +58,24 @@ set(_qt5_corelib_extra_includes)
 # Qt5_POSITION_INDEPENDENT_CODE variable is used in the # qt5_use_module
 # macro to add it.
 set(Qt5_POSITION_INDEPENDENT_CODE True)
-set(Qt5Core_EXECUTABLE_COMPILE_FLAGS "-fPIC")
-if (CMAKE_VERSION VERSION_LESS 2.8.12
-        AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
-        OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
-    set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_POSITION_INDEPENDENT_CODE "ON")
-else()
-    set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -fPIC)
-endif()
+
+# On x86 and x86-64 systems with ELF binaries (especially Linux), due to
+# a new optimization in GCC 5.x in combination with a recent version of
+# GNU binutils, compiling Qt applications with -fPIE is no longer
+# enough.
+# Applications now need to be compiled with the -fPIC option if the Qt option
+# "reduce relocations" is active. For backward compatibility only, Qt accepts
+# the use of -fPIE for GCC 4.x versions.
+set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_OPTIONS -fPIC)
+
+# TODO Qt6: Remove
+set(Qt5Core_EXECUTABLE_COMPILE_FLAGS "")
 
 
-set(Qt5_DISABLED_FEATURES
-    imageformat-jpeg
-)
 
 set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
+
+set_property(TARGET Qt5::Core PROPERTY INTERFACE_COMPILE_FEATURES cxx_decltype)
 
 set(QT_VISIBILITY_AVAILABLE "True")
 

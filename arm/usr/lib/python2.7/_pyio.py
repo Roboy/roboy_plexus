@@ -274,7 +274,7 @@ class IOBase:
     Even though IOBase does not declare read, readinto, or write because
     their signatures will vary, implementations and clients should
     consider those methods part of the interface. Also, implementations
-    may raise a IOError when operations they do not support are called.
+    may raise an IOError when operations they do not support are called.
 
     The basic type used for binary data read from or written to a file is
     the bytes type. Method arguments may also be bytearray or memoryview of
@@ -1619,6 +1619,7 @@ class TextIOWrapper(TextIOBase):
         self.buffer.write(b)
         if self._line_buffering and (haslf or "\r" in s):
             self.flush()
+        self._set_decoded_chars('')
         self._snapshot = None
         if self._decoder:
             self._decoder.reset()

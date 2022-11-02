@@ -14,11 +14,15 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
 #include <ros/ros.h>
+
+#define TIME_OUT_IN_MILI_SEC 100
+
 using namespace std;
 class CanSocket{
     public:
@@ -37,6 +41,7 @@ class CanSocket{
     private:
         int s;
         int initInterface(string interface);
+        timeval tv;
     
 };
 

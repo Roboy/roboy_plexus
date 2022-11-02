@@ -1,4 +1,4 @@
-/* Copyright (C) 1997-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,23 +13,21 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _NETINET_IF_FDDI_H
 #define	_NETINET_IF_FDDI_H 1
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
-#include <asm/types.h>
-
+#include <stdint.h>
 #include <linux/if_fddi.h>
 
 #ifdef __USE_MISC
 
 struct fddi_header {
-  u_int8_t fddi_fc;                    /* Frame Control (FC) value */
-  u_int8_t fddi_dhost[FDDI_K_ALEN];    /* Destination host */
-  u_int8_t fddi_shost[FDDI_K_ALEN];    /* Source host */
+  uint8_t fddi_fc;                    /* Frame Control (FC) value */
+  uint8_t fddi_dhost[FDDI_K_ALEN];    /* Destination host */
+  uint8_t fddi_shost[FDDI_K_ALEN];    /* Source host */
 };
 #endif
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /*
  *	POSIX Standard: 5.6.6 Set File Access and Modification Times  <utime.h>
@@ -29,8 +29,7 @@ __BEGIN_DECLS
 #include <bits/types.h>
 
 #if defined __USE_XOPEN || defined __USE_XOPEN2K
-# define __need_time_t
-# include <time.h>
+# include <bits/types/time_t.h>
 #endif
 
 /* Structure describing file times.  */

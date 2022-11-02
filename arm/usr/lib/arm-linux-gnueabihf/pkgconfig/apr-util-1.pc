@@ -6,7 +6,7 @@ includedir=/usr/include/apr-1.0
 
 Name: APR Utils
 Description: Companion library for APR
-Version: 1.5.4
+Version: 1.6.1
 # assume that apr-util requires libapr of same major version
 Requires.private: apr-1
 Libs: -L${libdir} -laprutil-${APRUTIL_MAJOR_VERSION} -lldap -llber

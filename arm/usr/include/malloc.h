@@ -1,5 +1,5 @@
 /* Prototypes and definition for malloc implementation.
-   Copyright (C) 1996-2016 Free Software Foundation, Inc.
+   Copyright (C) 1996-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _MALLOC_H
 #define _MALLOC_H 1
@@ -35,11 +35,12 @@
 __BEGIN_DECLS
 
 /* Allocate SIZE bytes of memory.  */
-extern void *malloc (size_t __size) __THROW __attribute_malloc__ __wur;
+extern void *malloc (size_t __size) __THROW __attribute_malloc__
+     __attribute_alloc_size__ ((1)) __wur;
 
 /* Allocate NMEMB elements of SIZE bytes each, all initialized to 0.  */
 extern void *calloc (size_t __nmemb, size_t __size)
-__THROW __attribute_malloc__ __wur;
+__THROW __attribute_malloc__ __attribute_alloc_size__ ((1, 2)) __wur;
 
 /* Re-allocate the previously allocated block in __ptr, making the new
    block SIZE bytes long.  */
@@ -47,20 +48,26 @@ __THROW __attribute_malloc__ __wur;
    the same pointer that was passed to it, aliasing needs to be allowed
    between objects pointed by the old and new pointers.  */
 extern void *realloc (void *__ptr, size_t __size)
-__THROW __attribute_warn_unused_result__;
+__THROW __attribute_warn_unused_result__ __attribute_alloc_size__ ((2));
+
+/* Re-allocate the previously allocated block in PTR, making the new
+   block large enough for NMEMB elements of SIZE bytes each.  */
+/* __attribute_malloc__ is not used, because if reallocarray returns
+   the same pointer that was passed to it, aliasing needs to be allowed
+   between objects pointed by the old and new pointers.  */
+extern void *reallocarray (void *__ptr, size_t __nmemb, size_t __size)
+__THROW __attribute_warn_unused_result__ __attribute_alloc_size__ ((2, 3));
 
 /* Free a block allocated by `malloc', `realloc' or `calloc'.  */
 extern void free (void *__ptr) __THROW;
 
-/* Free a block allocated by `calloc'. */
-extern void cfree (void *__ptr) __THROW;
-
 /* Allocate SIZE bytes allocated to ALIGNMENT bytes.  */
 extern void *memalign (size_t __alignment, size_t __size)
-__THROW __attribute_malloc__ __wur;
+__THROW __attribute_malloc__ __attribute_alloc_size__ ((2)) __wur;
 
 /* Allocate SIZE bytes on a page boundary.  */
-extern void *valloc (size_t __size) __THROW __attribute_malloc__ __wur;
+extern void *valloc (size_t __size) __THROW __attribute_malloc__
+     __attribute_alloc_size__ ((1)) __wur;
 
 /* Equivalent to valloc(minimum-page-that-holds(n)), that is, round up
    __size to nearest pagesize. */
@@ -83,7 +90,7 @@ struct mallinfo
   int smblks;   /* number of fastbin blocks */
   int hblks;    /* number of mmapped regions */
   int hblkhd;   /* space in mmapped regions */
-  int usmblks;  /* maximum total allocated space */
+  int usmblks;  /* always 0, preserved for backwards compatibility */
   int fsmblks;  /* space available in freed fastbin blocks */
   int uordblks; /* total allocated space */
   int fordblks; /* total free space */
@@ -134,18 +141,6 @@ extern void malloc_stats (void) __THROW;
 /* Output information about state of allocator to stream FP.  */
 extern int malloc_info (int __options, FILE *__fp) __THROW;
 
-/* Record the state of all malloc variables in an opaque data structure. */
-extern void *malloc_get_state (void) __THROW;
-
-/* Restore the state of all malloc variables from data obtained with
-   malloc_get_state(). */
-extern int malloc_set_state (void *__ptr) __THROW;
-
-/* Called once when malloc is initialized; redefining this variable in
-   the application provides the preferred way to set up the hook
-   pointers. */
-extern void (*__MALLOC_HOOK_VOLATILE __malloc_initialize_hook) (void)
-__MALLOC_DEPRECATED;
 /* Hooks for debugging and user-defined versions. */
 extern void (*__MALLOC_HOOK_VOLATILE __free_hook) (void *__ptr,
                                                    const void *)
@@ -162,9 +157,6 @@ extern void *(*__MALLOC_HOOK_VOLATILE __memalign_hook)(size_t __alignment,
                                                        const void *)
 __MALLOC_DEPRECATED;
 extern void (*__MALLOC_HOOK_VOLATILE __after_morecore_hook) (void);
-
-/* Activate a standard set of debugging hooks. */
-extern void __malloc_check_init (void) __THROW __MALLOC_DEPRECATED;
 
 
 __END_DECLS

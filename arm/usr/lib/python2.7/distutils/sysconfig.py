@@ -26,7 +26,12 @@ EXEC_PREFIX = os.path.normpath(sys.exec_prefix)
 # Path to the base directory of the project. On Windows the binary may
 # live in project/PCBuild9.  If we're dealing with an x64 Windows build,
 # it'll live in project/PCbuild/amd64.
-project_base = os.path.dirname(os.path.abspath(sys.executable))
+if sys.executable:
+    project_base = os.path.dirname(os.path.abspath(sys.executable))
+else:
+    # sys.executable can be empty if argv[0] has been changed and Python is
+    # unable to retrieve the real program name
+    project_base = os.getcwd()
 if os.name == "nt" and "pcbuild" in project_base[-8:].lower():
     project_base = os.path.abspath(os.path.join(project_base, os.path.pardir))
 # PC/VS7.1
@@ -78,7 +83,12 @@ def get_python_inc(plat_specific=0, prefix=None):
 
     if os.name == "posix":
         if python_build:
-            buildir = os.path.dirname(sys.executable)
+            if sys.executable:
+                buildir = os.path.dirname(sys.executable)
+            else:
+                # sys.executable can be empty if argv[0] has been changed
+                # and Python is unable to retrieve the real program name
+                buildir = os.getcwd()
             if plat_specific:
                 # python.h is located in the buildir
                 inc_dir = buildir
@@ -180,10 +190,10 @@ def customize_compiler(compiler):
                 _osx_support.customize_compiler(_config_vars)
                 _config_vars['CUSTOMIZED_OSX_COMPILER'] = 'True'
 
-        (cc, cxx, opt, cflags, extra_cflags, basecflags,
+        (cc, cxx, cflags, extra_cflags, basecflags,
          ccshared, ldshared, so_ext, ar, ar_flags,
          configure_cppflags, configure_cflags, configure_ldflags) = \
-            get_config_vars('CC', 'CXX', 'OPT', 'CFLAGS', 'EXTRA_CFLAGS', 'BASECFLAGS',
+            get_config_vars('CC', 'CXX', 'CFLAGS', 'EXTRA_CFLAGS', 'BASECFLAGS',
                             'CCSHARED', 'LDSHARED', 'SO', 'AR', 'ARFLAGS',
                             'CONFIGURE_CPPFLAGS', 'CONFIGURE_CFLAGS', 'CONFIGURE_LDFLAGS')
 
@@ -214,14 +224,11 @@ def customize_compiler(compiler):
             ldshared = ldshared + ' ' + configure_ldflags
         if 'BASECFLAGS' in os.environ:
             basecflags = os.environ['BASECFLAGS']
-        if 'OPT' in os.environ:
-            opt = os.environ['OPT']
-        cflags = ' '.join(str(x) for x in (basecflags, opt, extra_cflags) if x)
         if 'CFLAGS' in os.environ:
-            cflags = ' '.join(str(x) for x in (opt, basecflags, os.environ['CFLAGS'], extra_cflags) if x)
+            cflags = ' '.join(str(x) for x in (basecflags, os.environ['CFLAGS'], extra_cflags) if x)
             ldshared = ldshared + ' ' + os.environ['CFLAGS']
         elif configure_cflags:
-            cflags = ' '.join(str(x) for x in (opt, basecflags, configure_cflags, extra_cflags) if x)
+            cflags = ' '.join(str(x) for x in (basecflags, configure_cflags, extra_cflags) if x)
             ldshared = ldshared + ' ' + configure_cflags
         if 'CPPFLAGS' in os.environ:
             cpp = cpp + ' ' + os.environ['CPPFLAGS']
@@ -244,7 +251,7 @@ def customize_compiler(compiler):
             compiler=cc_cmd,
             compiler_so=cc_cmd + ' ' + ccshared,
             compiler_cxx=cxx,
-            linker_so=ldshared,
+            linker_so=ldshared + ' ' + ccshared,
             linker_exe=cc,
             archiver=archiver)
 

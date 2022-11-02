@@ -100,7 +100,7 @@ using namespace std::chrono;
 #define RMD_X6_READ_PID_VALUE_ID 0x30
 #define RMD_X6_READ_PID_VALUE {0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 #define RMD_X6_WRITE_PID_VALUE_ID 0x31
-
+#define SAFTY_TEMP_OFF 79
 
 class CanMotor{
     public:

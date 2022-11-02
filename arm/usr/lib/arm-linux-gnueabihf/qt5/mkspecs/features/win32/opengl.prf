@@ -1,32 +1,39 @@
-# WinCE does not have a platform directory for .prf files, and the
-# win32 directory is searched for .prfs by qmake on WinCE. Ideally
-# there should be a features/wince/opengl.prf which contains the wince
-# block below.
+QT_FOR_CONFIG += gui
 
-wince* {
-    include(../unix/opengl.prf)
-} else {
-    contains(QT_CONFIG, opengles2) {
-#       For Desktop, use the ANGLE library location passed on from configure.
-        INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES2
-        CONFIG(debug, debug|release) {
-            QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_DEBUG
-            contains(QT_CONFIG, angle) {
-                LIBS += $$QMAKE_LIBS_OPENGL_ES2_DEBUG
-            } else {
-                LIBS += $$QMAKE_LIBS_OPENGL_ES2
-            }
+defineTest(prependOpenGlLib) {
+    path = $$QT.core.libs/$$QMAKE_PREFIX_STATICLIB$$1
+    ext = .$$QMAKE_EXTENSION_STATICLIB
+    QMAKE_LIBS_OPENGL_ES2 = $${path}$${ext} $$QMAKE_LIBS_OPENGL_ES2
+    QMAKE_LIBS_OPENGL_ES2_DEBUG = $${path}d$${ext} $$QMAKE_LIBS_OPENGL_ES2_DEBUG
+    export(QMAKE_LIBS_OPENGL_ES2)
+    export(QMAKE_LIBS_OPENGL_ES2_DEBUG)
+}
+
+qtConfig(opengles2) {
+    # Depending on the configuration we use libQtANGLE or libEGL and libGLESv2
+    qtConfig(combined-angle-lib) {
+        prependOpenGlLib($$LIBQTANGLE_NAME)
+    } else {
+        prependOpenGlLib($$LIBGLESV2_NAME)
+        prependOpenGlLib($$LIBEGL_NAME)
+    }
+#   For Desktop, use the ANGLE library location passed on from configure.
+    INCLUDEPATH += $$QMAKE_INCDIR_OPENGL_ES2
+    CONFIG(debug, debug|release) {
+        QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_DEBUG
+        qtConfig(angle) {
+            LIBS += $$QMAKE_LIBS_OPENGL_ES2_DEBUG
         } else {
             LIBS += $$QMAKE_LIBS_OPENGL_ES2
-            QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_RELEASE
         }
-        DEFINES += QT_OPENGL_ES_2 QT_OPENGL_ES_2_ANGLE
-        contains(QT_CONFIG, static): DEFINES += QT_OPENGL_ES_2_ANGLE_STATIC GL_APICALL= EGLAPI=
-        QT_CONFIG -= opengl
     } else {
-        !contains(QT_CONFIG, dynamicgl) {
-            QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
-            QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
-        }
+        LIBS += $$QMAKE_LIBS_OPENGL_ES2
+        QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL_ES2_RELEASE
+    }
+    qtConfig(static): DEFINES += GL_APICALL= EGLAPI=
+} else {
+    !qtConfig(dynamicgl) {
+        QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
+        QMAKE_LFLAGS += $$QMAKE_LFLAGS_OPENGL
     }
 }

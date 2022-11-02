@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 /*
  *	POSIX Standard: 2.10 Symbolic Constants		<unistd.h>
@@ -106,9 +106,6 @@ __BEGIN_DECLS
 
 /* The X/Open Unix extensions are available.  */
 #define _XOPEN_UNIX	1
-
-/* Encryption is present.  */
-#define	_XOPEN_CRYPT	1
 
 /* The enhanced internationalization capabilities according to XPG4.2
    are present.  */
@@ -781,8 +778,7 @@ extern int ttyname_r (int __fd, char *__buf, size_t __buflen)
    with a terminal, zero if not.  */
 extern int isatty (int __fd) __THROW;
 
-#if defined __USE_MISC \
-    || (defined __USE_XOPEN_EXTENDED && !defined __USE_UNIX98)
+#ifdef __USE_MISC
 /* Return the index into the active-logins file (utmp) for
    the controlling terminal.  */
 extern int ttyslot (void) __THROW;
@@ -850,7 +846,7 @@ extern int tcsetpgrp (int __fd, __pid_t __pgrp_id) __THROW;
    This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern char *getlogin (void);
-#if defined __USE_REENTRANT || defined __USE_POSIX199506
+#ifdef __USE_POSIX199506
 /* Return at most NAME_LEN characters of the login name of the user in NAME.
    If it cannot be determined or some other error occurred, return the error
    code.  Otherwise return 0.
@@ -870,12 +866,11 @@ extern int setlogin (const char *__name) __THROW __nonnull ((1));
 /* Get definitions and prototypes for functions to process the
    arguments in ARGV (ARGC of them, minus the program name) for
    options given in OPTS.  */
-# define __need_getopt
-# include <getopt.h>
+# include <bits/getopt_posix.h>
 #endif
 
 
-#if defined __USE_UNIX98 || defined __USE_XOPEN2K
+#if defined __USE_XOPEN_EXTENDED || defined __USE_XOPEN2K
 /* Put the name of the current host in no more than LEN bytes of NAME.
    The result is null-terminated if LEN is large enough for the full
    name and the terminator.  */
@@ -1107,7 +1102,12 @@ extern int lockf64 (int __fd, int __cmd, __off64_t __len) __wur;
        do __result = (long int) (expression);				      \
        while (__result == -1L && errno == EINTR);			      \
        __result; }))
-#endif
+
+/* Copy LENGTH bytes from INFD to OUTFD.  */
+ssize_t copy_file_range (int __infd, __off64_t *__pinoff,
+			 int __outfd, __off64_t *__poutoff,
+			 size_t __length, unsigned int __flags);
+#endif /* __USE_GNU */
 
 #if defined __USE_POSIX199309 || defined __USE_UNIX98
 /* Synchronize at least the data part of a file with the underlying
@@ -1115,20 +1115,17 @@ extern int lockf64 (int __fd, int __cmd, __off64_t __len) __wur;
 extern int fdatasync (int __fildes);
 #endif /* Use POSIX199309 */
 
-
-/* XPG4.2 specifies that prototypes for the encryption functions must
-   be defined here.  */
-#ifdef	__USE_XOPEN
-/* Encrypt at most 8 characters from KEY using salt to perturb DES.  */
+#ifdef __USE_MISC
+/* One-way hash PHRASE, returning a string suitable for storage in the
+   user database.  SALT selects the one-way function to use, and
+   ensures that no two users' hashes are the same, even if they use
+   the same passphrase.  The return value points to static storage
+   which will be overwritten by the next call to crypt.  */
 extern char *crypt (const char *__key, const char *__salt)
      __THROW __nonnull ((1, 2));
+#endif
 
-/* Encrypt data in BLOCK in place if EDFLAG is zero; otherwise decrypt
-   block in place.  */
-extern void encrypt (char *__glibc_block, int __edflag)
-     __THROW __nonnull ((1));
-
-
+#ifdef	__USE_XOPEN
 /* Swab pairs bytes in the first N bytes of the area pointed to by
    FROM and copy the result to TO.  The value of TO must not be in the
    range [FROM - N + 1, FROM - 1].  If N is odd the first byte in FROM
@@ -1138,18 +1135,39 @@ extern void swab (const void *__restrict __from, void *__restrict __to,
 #endif
 
 
-/* The Single Unix specification demands this prototype to be here.
-   It is also found in <stdio.h>.  */
+/* Prior to Issue 6, the Single Unix Specification required these
+   prototypes to appear in this header.  They are also found in
+   <stdio.h>.  */
 #if defined __USE_XOPEN && !defined __USE_XOPEN2K
 /* Return the name of the controlling terminal.  */
 extern char *ctermid (char *__s) __THROW;
+
+/* Return the name of the current user.  */
+extern char *cuserid (char *__s);
 #endif
 
+
+/* Unix98 requires this function to be declared here.  In other
+   standards it is in <pthread.h>.  */
+#if defined __USE_UNIX98 && !defined __USE_XOPEN2K
+extern int pthread_atfork (void (*__prepare) (void),
+			   void (*__parent) (void),
+			   void (*__child) (void)) __THROW;
+#endif
+
+#ifdef __USE_MISC
+/* Write LENGTH bytes of randomness starting at BUFFER.  Return 0 on
+   success or -1 on error.  */
+int getentropy (void *__buffer, size_t __length) __wur;
+#endif
 
 /* Define some macros helping to catch buffer overflows.  */
 #if __USE_FORTIFY_LEVEL > 0 && defined __fortify_function
 # include <bits/unistd.h>
 #endif
+
+/* System-specific extensions.  */
+#include <bits/unistd_ext.h>
 
 __END_DECLS
 

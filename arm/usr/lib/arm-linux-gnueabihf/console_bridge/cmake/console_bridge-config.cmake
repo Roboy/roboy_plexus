@@ -3,24 +3,26 @@ if (console_bridge_CONFIG_INCLUDED)
 endif()
 set(console_bridge_CONFIG_INCLUDED TRUE)
 
-set(console_bridge_INCLUDE_DIRS "/usr/include")
 
-foreach(lib console_bridge)
-  set(onelib "${lib}-NOTFOUND")
-  find_library(onelib ${lib}
-    PATHS "/usr/lib/arm-linux-gnueabihf"
-    NO_DEFAULT_PATH
-    )
-  if(NOT onelib)
-    message(FATAL_ERROR "Library '${lib}' in package console_bridge is not installed properly")
-  endif()
-  list(APPEND console_bridge_LIBRARIES ${onelib})
-endforeach()
+####### Expanded from @PACKAGE_INIT@ by configure_package_config_file() #######
+####### Any changes to this file will be overwritten by the next CMake run ####
+####### The input file was console_bridge-config.cmake.in                            ########
 
-foreach(dep )
-  if(NOT ${dep}_FOUND)
-    find_package(${dep})
-  endif()
-  list(APPEND console_bridge_INCLUDE_DIRS ${${dep}_INCLUDE_DIRS})
-  list(APPEND console_bridge_LIBRARIES ${${dep}_LIBRARIES})
-endforeach()
+get_filename_component(PACKAGE_PREFIX_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../../" ABSOLUTE)
+
+# Use original install prefix when loaded through a "/usr move"
+# cross-prefix symbolic link such as /lib -> /usr/lib.
+get_filename_component(_realCurr "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
+get_filename_component(_realOrig "/usr/lib/arm-linux-gnueabihf/console_bridge/cmake/" REALPATH)
+if(_realCurr STREQUAL _realOrig)
+  set(PACKAGE_PREFIX_DIR "/usr")
+endif()
+unset(_realOrig)
+unset(_realCurr)
+
+####################################################################################
+
+set(console_bridge_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/include")
+
+include("${CMAKE_CURRENT_LIST_DIR}/console_bridge-targets.cmake")
+set(console_bridge_LIBRARIES console_bridge::console_bridge)

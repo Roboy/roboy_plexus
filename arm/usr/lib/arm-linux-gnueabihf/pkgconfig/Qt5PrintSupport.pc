@@ -6,9 +6,8 @@ includedir=${prefix}/include/arm-linux-gnueabihf/qt5
 
 Name: Qt5 PrintSupport
 Description: Qt PrintSupport module
-Version: 5.5.1
+Version: 5.12.8
 Libs: -lQt5PrintSupport 
-Libs.private:  -lQt5Widgets -lQt5Gui -lQt5Core -lpthread -lGLESv2  
-Cflags: -I${includedir}/QtPrintSupport -I${includedir}
+Cflags: -DQT_PRINTSUPPORT_LIB -I${includedir}/QtPrintSupport -I${includedir}
 Requires: Qt5Core Qt5Gui Qt5Widgets
 

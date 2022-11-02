@@ -1,4 +1,5 @@
-prefix=/usr
+original_prefix=/usr
+prefix=${original_prefix}
 exec_prefix=${prefix}
 bindir=${exec_prefix}/bin
 libdir=/usr/lib/arm-linux-gnueabihf
@@ -10,11 +11,11 @@ sysconfdir=/etc
 session_bus_services_dir=${datadir}/dbus-1/services
 system_bus_services_dir=${datadir}/dbus-1/system-services
 interfaces_dir=${datadir}/dbus-1/interfaces
-daemondir=$bindir
+daemondir=${bindir}
 
 Name: dbus
 Description: Free desktop message bus
-Version: 1.10.6
+Version: 1.12.16
 Libs: -L${libdir} -ldbus-1
 Libs.private: -lpthread    -lsystemd
 Cflags: -I${includedir}/dbus-1.0 -I${libdir}/dbus-1.0/include 

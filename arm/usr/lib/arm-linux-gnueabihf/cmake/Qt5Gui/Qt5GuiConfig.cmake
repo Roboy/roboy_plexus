@@ -1,6 +1,6 @@
 
-if (CMAKE_VERSION VERSION_LESS 2.8.3)
-    message(FATAL_ERROR "Qt 5 requires at least CMake version 2.8.3")
+if (CMAKE_VERSION VERSION_LESS 3.1.0)
+    message(FATAL_ERROR "Qt 5 Gui module requires at least CMake version 3.1.0")
 endif()
 
 get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
@@ -18,7 +18,7 @@ unset(_realCurr)
 unset(_IMPORT_PREFIX)
 
 # For backwards compatibility only. Use Qt5Gui_VERSION instead.
-set(Qt5Gui_VERSION_STRING 5.5.1)
+set(Qt5Gui_VERSION_STRING 5.12.8)
 
 set(Qt5Gui_LIBRARIES Qt5::Gui)
 
@@ -55,8 +55,8 @@ if (NOT TARGET Qt5::Gui)
 
     set(_Qt5Gui_OWN_INCLUDE_DIRS "${_qt5Gui_install_prefix}/include/arm-linux-gnueabihf/qt5/" "${_qt5Gui_install_prefix}/include/arm-linux-gnueabihf/qt5/QtGui")
     set(Qt5Gui_PRIVATE_INCLUDE_DIRS
-        "${_qt5Gui_install_prefix}/include/arm-linux-gnueabihf/qt5/QtGui/5.5.1"
-        "${_qt5Gui_install_prefix}/include/arm-linux-gnueabihf/qt5/QtGui/5.5.1/QtGui"
+        "${_qt5Gui_install_prefix}/include/arm-linux-gnueabihf/qt5/QtGui/5.12.8"
+        "${_qt5Gui_install_prefix}/include/arm-linux-gnueabihf/qt5/QtGui/5.12.8/QtGui"
     )
 
     foreach(_dir ${_Qt5Gui_OWN_INCLUDE_DIRS})
@@ -79,6 +79,8 @@ if (NOT TARGET Qt5::Gui)
     set(_Qt5Gui_MODULE_DEPENDENCIES "Core")
 
 
+    set(Qt5Gui_OWN_PRIVATE_INCLUDE_DIRS ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
+
     set(_Qt5Gui_FIND_DEPENDENCIES_REQUIRED)
     if (Qt5Gui_FIND_REQUIRED)
         set(_Qt5Gui_FIND_DEPENDENCIES_REQUIRED REQUIRED)
@@ -97,7 +99,7 @@ if (NOT TARGET Qt5::Gui)
     foreach(_module_dep ${_Qt5Gui_MODULE_DEPENDENCIES})
         if (NOT Qt5${_module_dep}_FOUND)
             find_package(Qt5${_module_dep}
-                5.5.1 ${_Qt5Gui_FIND_VERSION_EXACT}
+                5.12.8 ${_Qt5Gui_FIND_VERSION_EXACT}
                 ${_Qt5Gui_DEPENDENCIES_FIND_QUIET}
                 ${_Qt5Gui_FIND_DEPENDENCIES_REQUIRED}
                 PATHS "${CMAKE_CURRENT_LIST_DIR}/.." NO_DEFAULT_PATH
@@ -131,7 +133,33 @@ if (NOT TARGET Qt5::Gui)
     set_property(TARGET Qt5::Gui PROPERTY
       INTERFACE_COMPILE_DEFINITIONS QT_GUI_LIB)
 
-    _populate_Gui_target_properties(RELEASE "libQt5Gui.so.5.5.1" "" )
+    set_property(TARGET Qt5::Gui PROPERTY INTERFACE_QT_ENABLED_FEATURES accessibility;action;opengles2;clipboard;colornames;cssparser;cursor;desktopservices;imageformat_xpm;draganddrop;opengl;imageformatplugin;highdpiscaling;im;image_heuristic_mask;image_text;imageformat_bmp;imageformat_jpeg;imageformat_png;imageformat_ppm;imageformat_xbm;movie;opengles3;opengles31;opengles32;pdf;picture;sessionmanager;shortcut;standarditemmodel;systemtrayicon;tabletevent;texthtmlparser;textodfwriter;validator;vulkan;whatsthis;wheelevent)
+    set_property(TARGET Qt5::Gui PROPERTY INTERFACE_QT_DISABLED_FEATURES angle;combined-angle-lib;dynamicgl;openvg)
+
+    set(_Qt5Gui_PRIVATE_DIRS_EXIST TRUE)
+    foreach (_Qt5Gui_PRIVATE_DIR ${Qt5Gui_OWN_PRIVATE_INCLUDE_DIRS})
+        if (NOT EXISTS ${_Qt5Gui_PRIVATE_DIR})
+            set(_Qt5Gui_PRIVATE_DIRS_EXIST FALSE)
+        endif()
+    endforeach()
+
+    if (_Qt5Gui_PRIVATE_DIRS_EXIST)
+        add_library(Qt5::GuiPrivate INTERFACE IMPORTED)
+        set_property(TARGET Qt5::GuiPrivate PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Qt5Gui_OWN_PRIVATE_INCLUDE_DIRS}
+        )
+        set(_Qt5Gui_PRIVATEDEPS)
+        foreach(dep ${_Qt5Gui_LIB_DEPENDENCIES})
+            if (TARGET ${dep}Private)
+                list(APPEND _Qt5Gui_PRIVATEDEPS ${dep}Private)
+            endif()
+        endforeach()
+        set_property(TARGET Qt5::GuiPrivate PROPERTY
+            INTERFACE_LINK_LIBRARIES Qt5::Gui ${_Qt5Gui_PRIVATEDEPS}
+        )
+    endif()
+
+    _populate_Gui_target_properties(RELEASE "libQt5Gui.so.5.12.8" "" )
 
 
 

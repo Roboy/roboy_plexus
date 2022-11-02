@@ -5,10 +5,23 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
     set(Qt5Gui_${Name}_LIBRARIES)
     set(Qt5Gui_${Name}_INCLUDE_DIRS ${IncDirs})
     foreach(_lib ${Libs})
-        string(REGEX REPLACE [^_A-Za-z0-9] _ _cmake_lib_name ${_lib})
+        if (IS_ABSOLUTE ${_lib})
+            get_filename_component(_libFile ${_lib} NAME_WE)
+            if (_libFile MATCHES "^${CMAKE_SHARED_LIBRARY_PREFIX}(.*)")
+                set(_libFile ${CMAKE_MATCH_1})
+            endif()
+        else()
+            set(_libFile ${_lib})
+        endif()
+
+        string(REGEX REPLACE [^_A-Za-z0-9] _ _cmake_lib_name ${_libFile})
         if (NOT TARGET Qt5::Gui_${_cmake_lib_name} AND NOT _Qt5Gui_${_cmake_lib_name}_LIBRARY_DONE)
-            find_library(Qt5Gui_${_cmake_lib_name}_LIBRARY ${_lib}
-            )
+            if (IS_ABSOLUTE ${_lib})
+                set(Qt5Gui_${_cmake_lib_name}_LIBRARY ${_lib})
+            else()
+                find_library(Qt5Gui_${_cmake_lib_name}_LIBRARY ${_lib}
+                )
+            endif()
             if (NOT Qt5Gui_${_cmake_lib_name}_LIBRARY)
                 # The above find_library call doesn't work for finding
                 # libraries in Windows SDK paths outside of the proper
@@ -51,9 +64,9 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
 endmacro()
 
 
-_qt5gui_find_extra_libs(EGL "EGL" "" "/usr/include/libdrm")
+_qt5gui_find_extra_libs(EGL "/usr/lib/arm-linux-gnueabihf/libEGL.so" "" "")
 
-_qt5gui_find_extra_libs(OPENGL "GLESv2" "" "")
+_qt5gui_find_extra_libs(OPENGL "/usr/lib/arm-linux-gnueabihf/libGLESv2.so" "" "")
 
 
 

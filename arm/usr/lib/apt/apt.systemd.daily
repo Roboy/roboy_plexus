@@ -78,13 +78,19 @@ check_stamp()
     stamp="$1"
     interval="$2"
 
-    if [ $interval -eq 0 ]; then
+    if [ "$interval" = always ]; then
+	debug_echo "check_stamp: ignoring time stamp file, interval set to always"
+	# treat as enough time has passed
+        return 0
+    fi
+
+    if [ "$interval" = 0 ]; then
 	debug_echo "check_stamp: interval=0"
 	# treat as no time has passed
         return 1
     fi
 
-    if [ ! -f $stamp ]; then
+    if [ ! -f "$stamp" ]; then
 	debug_echo "check_stamp: missing time stamp file: $stamp."
 	# treat as enough time has passed
         return 0
@@ -92,7 +98,7 @@ check_stamp()
 
     # compare midnight today to midnight the day the stamp was updated
     stamp_file="$stamp"
-    stamp=$(date --date=$(date -r $stamp_file --iso-8601) +%s 2>/dev/null)
+    stamp=$(date --date="$(date -r "$stamp_file" --iso-8601)" +%s 2>/dev/null)
     if [ "$?" != "0" ]; then
         # Due to some timezones returning 'invalid date' for midnight on
         # certain dates (e.g. America/Sao_Paulo), if date returns with error
@@ -102,7 +108,7 @@ check_stamp()
         return 0
     fi
 
-    now=$(date --date=$(date --iso-8601) +%s 2>/dev/null)
+    now=$(date --date="$(date --iso-8601)" +%s 2>/dev/null)
     if [ "$?" != "0" ]; then
         # As above, due to some timezones returning 'invalid date' for midnight
         # on certain dates (e.g. America/Sao_Paulo), if date returns with error
@@ -110,14 +116,26 @@ check_stamp()
         return 0
     fi
 
-    delta=$(($now-$stamp))
+    delta=$((now-stamp))
 
-    # interval is in days, convert to sec.
-    interval=$(($interval*60*60*24))
+    # Calculate the interval in seconds depending on the unit specified
+    if [ "${interval%s}" != "$interval" ] ; then
+        interval="${interval%s}"
+    elif [ "${interval%m}" != "$interval" ] ; then
+        interval="${interval%m}"
+        interval=$((interval*60))
+    elif [ "${interval%h}" != "$interval" ] ; then
+        interval="${interval%h}"
+        interval=$((interval*60*60))
+    else
+        interval="${interval%d}"
+        interval=$((interval*60*60*24))
+    fi
+
     debug_echo "check_stamp: interval=$interval, now=$now, stamp=$stamp, delta=$delta (sec)"
 
     # remove timestamps a day (or more) in the future and force re-check
-    if [ $stamp -gt $(($now+86400)) ]; then
+    if [ "$stamp" -gt $((now+86400)) ]; then
          echo "WARNING: file $stamp_file has a timestamp in the future: $stamp"
          rm -f "$stamp_file"
          return 0
@@ -133,7 +151,7 @@ check_stamp()
 update_stamp()
 {
     stamp="$1"
-    touch $stamp
+    touch "$stamp"
 }
 
 # we check here if autoclean was enough sizewise
@@ -174,11 +192,11 @@ check_size_constraints()
     # check size
     if [ ! $MaxSize -eq 0 ]; then
 	# maxSize is in MB
-	MaxSize=$(($MaxSize*1024))
+	MaxSize=$((MaxSize*1024))
 
 	#get current time
-	now=$(date --date=$(date --iso-8601) +%s)
-	MinAge=$(($MinAge*24*60*60))
+	now=$(date --date="$(date --iso-8601)" +%s)
+	MinAge=$((MinAge*24*60*60))
 
 	# reverse-sort by mtime
 	for file in $(ls -rt $Cache/*.deb 2>/dev/null); do 
@@ -193,12 +211,12 @@ check_size_constraints()
 	    # check for MinAge of the file
 	    if [ $MinAge -ne 0 ]; then 
 		# check both ctime and mtime 
-		mtime=$(stat -c %Y $file)
-		ctime=$(stat -c %Z $file)
-		if [ $mtime -gt $ctime ]; then
-		    delta=$(($now-$mtime))
+		mtime=$(stat -c %Y "$file")
+		ctime=$(stat -c %Z "$file")
+		if [ "$mtime" -gt "$ctime" ]; then
+		    delta=$((now-mtime))
 		else
-		    delta=$(($now-$ctime))
+		    delta=$((now-ctime))
 		fi
 		if [ $delta -le $MinAge ]; then
 		    debug_echo "skip remove by archive size:  $file, delta=$delta < $MinAge"
@@ -206,7 +224,7 @@ check_size_constraints()
 		else
 		    # delete oldest file
 		    debug_echo "remove by archive size: $file, delta=$delta >= $MinAge (sec), size=$size >= $MaxSize"
-		    rm -f $file
+		    rm -f "$file"
 		fi
 	    fi
 	done
@@ -217,8 +235,10 @@ check_size_constraints()
 do_cache_backup()
 {
     BackupArchiveInterval="$1"
-    if [ $BackupArchiveInterval -eq 0 ]; then
-	return
+    if [ "$BackupArchiveInterval" = always ]; then
+        :
+    elif [ "$BackupArchiveInterval" = 0 ]; then
+        return
     fi
 
     # Set default values and normalize
@@ -253,20 +273,20 @@ do_cache_backup()
     CacheArchive="$(basename "${Cache}")"
     test -n "${CacheArchive}" || CacheArchive="archives"
     BackX="${Back}${CacheArchive}/"
-    for x in $(seq 0 1 $((${BackupLevel}-1))); do 
+    for x in $(seq 0 1 $((BackupLevel-1))); do
 	eval "Back${x}=${Back}${x}/"
     done
     
     # backup after n-days if archive contents changed.
     # (This uses hardlink to save disk space)
     BACKUP_ARCHIVE_STAMP=/var/lib/apt/periodic/backup-archive-stamp
-    if check_stamp $BACKUP_ARCHIVE_STAMP $BackupArchiveInterval; then
-	if [ $({(cd $Cache 2>/dev/null; find . -name "*.deb"); (cd $Back0 2>/dev/null;find . -name "*.deb") ;}| sort|uniq -u|wc -l) -ne 0 ]; then
+    if check_stamp $BACKUP_ARCHIVE_STAMP "$BackupArchiveInterval"; then
+	if [ $({ (cd $Cache 2>/dev/null; find . -name "*.deb"); (cd $Back0 2>/dev/null;find . -name "*.deb") ;}| sort|uniq -u|wc -l) -ne 0 ]; then
 	    mkdir -p $Back
-	    rm -rf $Back$((${BackupLevel}-1))
-	    for y in $(seq $((${BackupLevel}-1)) -1 1); do 
+	    rm -rf $Back$((BackupLevel-1))
+	    for y in $(seq $((BackupLevel-1)) -1 1); do
 		eval BackY=${Back}$y
-		eval BackZ=${Back}$(($y-1))
+		eval BackZ=${Back}$((y-1))
 		if [ -e $BackZ ]; then 
 		    mv -f $BackZ $BackY ; 
 		fi
@@ -286,11 +306,28 @@ debug_echo()
 {
     # Display message if $VERBOSE >= 1
     if [ "$VERBOSE" -ge 1 ]; then
-	echo $1 1>&2
+        echo "$1" 1>&2
     fi
 }
 
 # ------------------------ main ----------------------------
+if [ "$1" = "lock_is_held" ]; then
+    shift
+else
+    # Maintain a lock on fd 3, so we can't run the script twice at the same
+    # time.
+    eval $(apt-config shell StateDir Dir::State/d)
+    exec 3>${StateDir}/daily_lock
+    if ! flock -w 3600 3; then
+        echo "E: Could not acquire lock" >&2
+        exit 1
+    fi
+
+    # We hold the lock.  Rerun this script as a child process, which
+    # can run without propagating an extra fd to all of its children.
+    "$0" lock_is_held "$@" 3>&-
+    exit $?
+fi
 
 if test -r /var/lib/apt/extended_states; then
     # Backup the 7 last versions of APT's extended_states file
@@ -320,8 +357,8 @@ fi
 VERBOSE=0
 eval $(apt-config shell VERBOSE APT::Periodic::Verbose)
 debug_echo "verbose level $VERBOSE"
-if [ "$VERBOSE" -le 2 ]; then
-    # quiet for 0,1,2
+if [ "$VERBOSE" -le 1 ]; then
+    # quiet for 0/1
     XSTDOUT=">/dev/null"
     XSTDERR="2>/dev/null"
     XAPTOPT="-qq"
@@ -371,12 +408,19 @@ Debdelta=1
 eval $(apt-config shell Debdelta APT::Periodic::Download-Upgradeable-Packages-Debdelta)
 
 # check if we actually have to do anything that requires locking the cache
-if [ $UpdateInterval -eq 0 ] &&
-   [ $DownloadUpgradeableInterval -eq 0 ] &&
-   [ $UnattendedUpgradeInterval -eq 0 ] &&
-   [ $BackupArchiveInterval -eq 0 ] &&
-   [ $AutocleanInterval -eq 0 ] &&
-   [ $CleanInterval -eq 0 ]; then
+if [ $UpdateInterval = always ] ||
+   [ $DownloadUpgradeableInterval = always ] ||
+   [ $UnattendedUpgradeInterval = always ] ||
+   [ $BackupArchiveInterval = always ] ||
+   [ $AutocleanInterval = always ] ||
+   [ $CleanInterval = always ] ; then
+    :
+elif [ $UpdateInterval = 0 ] &&
+     [ $DownloadUpgradeableInterval = 0 ] &&
+     [ $UnattendedUpgradeInterval = 0 ] &&
+     [ $BackupArchiveInterval = 0 ] &&
+     [ $AutocleanInterval = 0 ] &&
+     [ $CleanInterval = 0 ] ; then
 
     # check cache size
     check_size_constraints
@@ -384,97 +428,103 @@ if [ $UpdateInterval -eq 0 ] &&
     exit 0
 fi
 
-# deal with BackupArchiveInterval
-do_cache_backup $BackupArchiveInterval
+if [ "$1" = "update" ] || [ -z "$1" ] ; then
+    # deal with BackupArchiveInterval
+    do_cache_backup $BackupArchiveInterval
 
-# include default system language so that "apt-get update" will
-# fetch the right translated package descriptions
-if [ -r /etc/default/locale ]; then
-    . /etc/default/locale
-    export LANG LANGUAGE LC_MESSAGES LC_ALL
-fi
+    # include default system language so that "apt-get update" will
+    # fetch the right translated package descriptions
+    if [ -r /etc/default/locale ]; then
+	. /etc/default/locale
+	export LANG LANGUAGE LC_MESSAGES LC_ALL
+    fi
 
-# update package lists
-UPDATED=0
-UPDATE_STAMP=/var/lib/apt/periodic/update-stamp
-if check_stamp $UPDATE_STAMP $UpdateInterval; then
-    if eval apt-get $XAPTOPT -y update $XSTDERR; then
-	debug_echo "download updated metadata (success)."
-	if which dbus-send >/dev/null 2>&1 && pidof dbus-daemon >/dev/null 2>&1; then
-	    if dbus-send --system / app.apt.dbus.updated boolean:true ; then
-		debug_echo "send dbus signal (success)"
-	    else
-		debug_echo "send dbus signal (error)"
-	    fi
+    # update package lists
+    UPDATED=0
+    UPDATE_STAMP=/var/lib/apt/periodic/update-stamp
+    if check_stamp $UPDATE_STAMP $UpdateInterval; then
+	if eval apt-get $XAPTOPT -y update $XSTDERR; then
+	    debug_echo "download updated metadata (success)."
+	    update_stamp $UPDATE_STAMP
+	    UPDATED=1
 	else
-	    debug_echo "dbus signal not send (command not available)"
+	    debug_echo "download updated metadata (error)"
 	fi
-	update_stamp $UPDATE_STAMP
-	UPDATED=1
     else
-	debug_echo "download updated metadata (error)"
+	debug_echo "download updated metadata (not run)."
     fi
-else
-    debug_echo "download updated metadata (not run)."
-fi
-	
-# download all upgradeable packages (if it is requested)
-DOWNLOAD_UPGRADEABLE_STAMP=/var/lib/apt/periodic/download-upgradeable-stamp
-if [ $UPDATED -eq 1 ] && check_stamp $DOWNLOAD_UPGRADEABLE_STAMP $DownloadUpgradeableInterval; then
-    if [ $Debdelta -eq 1 ]; then
-        debdelta-upgrade >/dev/null 2>&1 || true
-    fi
-    if  eval apt-get $XAPTOPT -y -d dist-upgrade $XSTDERR; then
-	update_stamp $DOWNLOAD_UPGRADEABLE_STAMP
-	debug_echo "download upgradable (success)"
+	    
+    # download all upgradeable packages (if it is requested)
+    DOWNLOAD_UPGRADEABLE_STAMP=/var/lib/apt/periodic/download-upgradeable-stamp
+    if [ $UPDATED -eq 1 ] && check_stamp $DOWNLOAD_UPGRADEABLE_STAMP $DownloadUpgradeableInterval; then
+	if [ $Debdelta -eq 1 ]; then
+	    debdelta-upgrade >/dev/null 2>&1 || true
+	fi
+	if  eval apt-get $XAPTOPT -y -d dist-upgrade $XSTDERR; then
+	    update_stamp $DOWNLOAD_UPGRADEABLE_STAMP
+	    debug_echo "download upgradable (success)"
+	else
+	    debug_echo "download upgradable (error)"
+	fi
     else
-	debug_echo "download upgradable (error)"
+	debug_echo "download upgradable (not run)"
     fi
-else
-    debug_echo "download upgradable (not run)"
+
+    if which unattended-upgrade >/dev/null 2>&1 && env LC_ALL=C.UTF-8 unattended-upgrade --help | grep -q download-only && check_stamp $DOWNLOAD_UPGRADEABLE_STAMP $UnattendedUpgradeInterval; then
+	if unattended-upgrade --download-only $XUUPOPT; then
+	    update_stamp $DOWNLOAD_UPGRADEABLE_STAMP
+	    debug_echo "unattended-upgrade -d (success)"
+	else
+	    debug_echo "unattended-upgrade -d (error)"
+	fi
+    else
+	debug_echo "unattended-upgrade -d (not run)"
+    fi
 fi
 
-# auto upgrade all upgradeable packages
-UPGRADE_STAMP=/var/lib/apt/periodic/upgrade-stamp
-if which unattended-upgrade >/dev/null 2>&1 && check_stamp $UPGRADE_STAMP $UnattendedUpgradeInterval; then
-    if unattended-upgrade $XUUPOPT; then
-	update_stamp $UPGRADE_STAMP
-	debug_echo "unattended-upgrade (success)"
+if [ "$1" = "install" ] || [ -z "$1" ] ; then
+    # auto upgrade all upgradeable packages
+    UPGRADE_STAMP=/var/lib/apt/periodic/upgrade-stamp
+    if which unattended-upgrade >/dev/null 2>&1 && check_stamp $UPGRADE_STAMP $UnattendedUpgradeInterval; then
+	if unattended-upgrade $XUUPOPT; then
+	    update_stamp $UPGRADE_STAMP
+	    debug_echo "unattended-upgrade (success)"
+	else
+	    debug_echo "unattended-upgrade (error)"
+	fi
     else
-	debug_echo "unattended-upgrade (error)"
+	debug_echo "unattended-upgrade (not run)"
     fi
-else
-    debug_echo "unattended-upgrade (not run)"
-fi
 
-# clean package archive
-CLEAN_STAMP=/var/lib/apt/periodic/clean-stamp
-if check_stamp $CLEAN_STAMP $CleanInterval; then
-    if  eval apt-get $XAPTOPT -y clean $XSTDERR; then
-	debug_echo "clean (success)."
-	update_stamp $CLEAN_STAMP
+    # clean package archive
+    CLEAN_STAMP=/var/lib/apt/periodic/clean-stamp
+    if check_stamp $CLEAN_STAMP $CleanInterval; then
+	if  eval apt-get $XAPTOPT -y clean $XSTDERR; then
+	    debug_echo "clean (success)."
+	    update_stamp $CLEAN_STAMP
+	else
+	    debug_echo "clean (error)"
+	fi
     else
-	debug_echo "clean (error)"
+	debug_echo "clean (not run)"
     fi
-else
-    debug_echo "clean (not run)"
-fi
 
-# autoclean package archive
-AUTOCLEAN_STAMP=/var/lib/apt/periodic/autoclean-stamp
-if check_stamp $AUTOCLEAN_STAMP $AutocleanInterval; then
-    if  eval apt-get $XAPTOPT -y autoclean $XSTDERR; then
-	debug_echo "autoclean (success)."
-	update_stamp $AUTOCLEAN_STAMP
+    # autoclean package archive
+    AUTOCLEAN_STAMP=/var/lib/apt/periodic/autoclean-stamp
+    if check_stamp $AUTOCLEAN_STAMP $AutocleanInterval; then
+	if  eval apt-get $XAPTOPT -y autoclean $XSTDERR; then
+	    debug_echo "autoclean (success)."
+	    update_stamp $AUTOCLEAN_STAMP
+	else
+	    debug_echo "autoclean (error)"
+	fi
     else
-	debug_echo "autoclean (error)"
+	debug_echo "autoclean (not run)"
     fi
-else
-    debug_echo "autoclean (not run)"
-fi
 
-# check cache size 
-check_size_constraints
+    # check cache size 
+    check_size_constraints
+fi
 
 #
 #     vim: set sts=4 ai :

@@ -11,7 +11,6 @@ int CanSocket::initInterface(string interface)
         ROS_FATAL("Cannot create CAN socket err: %d", s);
         return -1;
     }
-
     strcpy(ifr.ifr_name, interface.c_str());
     /* find the right socket name depending on the interface string" */
     ioctl(s, SIOCGIFINDEX, &ifr);
@@ -22,7 +21,11 @@ int CanSocket::initInterface(string interface)
     }
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
-
+    // set the timeout for reading operation of the socket to 100ms
+    //BUG check if it works
+    tv.tv_usec = TIME_OUT_IN_MILI_SEC * 1000;
+    tv.tv_sec = 1;
+    setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
     // bind the socket index to the socket s and verify if it worked
     if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0){
         ROS_FATAL("Cannot bind socket!");

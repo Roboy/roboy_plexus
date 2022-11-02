@@ -1,4 +1,4 @@
-/* Copyright (C) 2004-2016 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _MQUEUE_H
 #define _MQUEUE_H	1
@@ -21,10 +21,8 @@
 #include <features.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#define __need_sigevent_t
-#include <bits/siginfo.h>
-#define __need_timespec
-#include <time.h>
+#include <bits/types/sigevent_t.h>
+#include <bits/types/struct_timespec.h>
 /* Get the definition of mqd_t and struct mq_attr.  */
 #include <bits/mqueue.h>
 

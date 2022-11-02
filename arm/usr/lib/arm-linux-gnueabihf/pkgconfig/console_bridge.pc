@@ -6,7 +6,7 @@ includedir=/usr/include
 
 Name: console_bridge
 Description: Console Bridge
-Version: 0.3.0
+Version: 0.4.4
 Requires: 
 Libs: -L${libdir} -lconsole_bridge
 Cflags: -I${includedir}

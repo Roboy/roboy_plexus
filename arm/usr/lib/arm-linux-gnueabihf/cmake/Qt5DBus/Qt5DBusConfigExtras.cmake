@@ -2,7 +2,7 @@
 if (NOT TARGET Qt5::qdbuscpp2xml)
     add_executable(Qt5::qdbuscpp2xml IMPORTED)
 
-    set(imported_location "${_qt5DBus_install_prefix}/lib/arm-linux-gnueabihf/qt5/bin/qdbuscpp2xml")
+    set(imported_location "${_qt5DBus_install_prefix}/lib/qt5/bin/qdbuscpp2xml")
     _qt5_DBus_check_file_exists(${imported_location})
 
     set_target_properties(Qt5::qdbuscpp2xml PROPERTIES
@@ -13,7 +13,7 @@ endif()
 if (NOT TARGET Qt5::qdbusxml2cpp)
     add_executable(Qt5::qdbusxml2cpp IMPORTED)
 
-    set(imported_location "${_qt5DBus_install_prefix}/lib/arm-linux-gnueabihf/qt5/bin/qdbusxml2cpp")
+    set(imported_location "${_qt5DBus_install_prefix}/lib/qt5/bin/qdbusxml2cpp")
     _qt5_DBus_check_file_exists(${imported_location})
 
     set_target_properties(Qt5::qdbusxml2cpp PROPERTIES

@@ -7,14 +7,15 @@
 package List::Util;
 
 use strict;
+use warnings;
 require Exporter;
 
 our @ISA        = qw(Exporter);
 our @EXPORT_OK  = qw(
-  all any first min max minstr maxstr none notall product reduce sum sum0 shuffle
-  pairmap pairgrep pairfirst pairs pairkeys pairvalues
+  all any first min max minstr maxstr none notall product reduce sum sum0 shuffle uniq uniqnum uniqstr
+  head tail pairs unpairs pairkeys pairvalues pairmap pairgrep pairfirst
 );
-our $VERSION    = "1.41";
+our $VERSION    = "1.50";
 our $XS_VERSION = $VERSION;
 $VERSION    = eval $VERSION;
 
@@ -39,6 +40,3 @@ sub List::Util::_Pair::key   { shift->[0] }
 sub List::Util::_Pair::value { shift->[1] }
 
 1;
-
-__END__
-

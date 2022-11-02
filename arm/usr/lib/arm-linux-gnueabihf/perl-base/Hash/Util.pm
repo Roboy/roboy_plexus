@@ -31,12 +31,21 @@ our @EXPORT_OK  = qw(
                      hash_seed hash_value hv_store
                      bucket_stats bucket_stats_formatted bucket_info bucket_array
                      lock_hash_recurse unlock_hash_recurse
+                     lock_hashref_recurse unlock_hashref_recurse
 
                      hash_traversal_mask
+
+                     bucket_ratio
+                     used_buckets
+                     num_buckets
                     );
-our $VERSION = '0.18';
-require XSLoader;
-XSLoader::load();
+BEGIN {
+    # make sure all our XS routines are available early so their prototypes
+    # are correctly applied in the following code.
+    our $VERSION = '0.22';
+    require XSLoader;
+    XSLoader::load();
+}
 
 sub import {
     my $class = shift;
@@ -51,7 +60,7 @@ sub import {
 sub lock_ref_keys {
     my($hash, @keys) = @_;
 
-    Internals::hv_clear_placeholders %$hash;
+    _clear_placeholders(%$hash);
     if( @keys ) {
         my %keys = map { ($_ => 1) } @keys;
         my %original_keys = map { ($_ => 1) } keys %$hash;
@@ -86,10 +95,23 @@ sub unlock_ref_keys {
 sub   lock_keys (\%;@) {   lock_ref_keys(@_) }
 sub unlock_keys (\%)   { unlock_ref_keys(@_) }
 
+#=item B<_clear_placeholders>
+#
+# This function removes any placeholder keys from a hash. See Perl_hv_clear_placeholders()
+# in hv.c for what it does exactly. It is currently exposed as XS by universal.c and
+# injected into the Hash::Util namespace.
+#
+# It is not intended for use outside of this module, and may be changed
+# or removed without notice or deprecation cycle.
+#
+#=cut
+#
+# sub _clear_placeholders {} # just in case someone searches...
+
 sub lock_ref_keys_plus {
     my ($hash,@keys) = @_;
     my @delete;
-    Internals::hv_clear_placeholders(%$hash);
+    _clear_placeholders(%$hash);
     foreach my $key (@keys) {
         unless (exists($hash->{$key})) {
             $hash->{$key}=undef;
@@ -172,7 +194,7 @@ sub unlock_hashref_recurse {
         if (defined($type) and $type eq 'HASH') {
             unlock_hashref_recurse($value);
         }
-        Internals::SvREADONLY($value,1);
+        Internals::SvREADONLY($value,0);
     }
     unlock_ref_keys($hash);
     return $hash;
